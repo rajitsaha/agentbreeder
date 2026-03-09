@@ -1,0 +1,62 @@
+"""Base interface for framework-specific runtime builders.
+
+Every supported agent framework implements this interface.
+Framework-specific logic MUST stay inside engine/runtimes/ — never leak it elsewhere.
+"""
+
+from __future__ import annotations
+
+from abc import ABC, abstractmethod
+from pathlib import Path
+
+from pydantic import BaseModel
+
+from engine.config_parser import AgentConfig
+
+
+class RuntimeValidationResult(BaseModel):
+    """Result of validating agent code for a specific framework."""
+
+    valid: bool
+    errors: list[str]
+
+
+class ContainerImage(BaseModel):
+    """Represents a built container image ready for deployment."""
+
+    tag: str
+    dockerfile_content: str
+    context_dir: Path
+
+    model_config = {"arbitrary_types_allowed": True}
+
+
+class RuntimeBuilder(ABC):
+    """Abstract base class for framework-specific runtime builders.
+
+    Each framework (LangGraph, CrewAI, etc.) implements this to handle:
+    - Validating agent source code for the framework
+    - Generating a Dockerfile to build the agent container
+    - Specifying the framework's entrypoint command
+    - Listing required dependencies
+    """
+
+    @abstractmethod
+    def validate(self, agent_dir: Path, config: AgentConfig) -> RuntimeValidationResult:
+        """Validate that the agent directory contains valid code for this framework."""
+        ...
+
+    @abstractmethod
+    def build(self, agent_dir: Path, config: AgentConfig) -> ContainerImage:
+        """Generate a Dockerfile and prepare the build context for the agent container."""
+        ...
+
+    @abstractmethod
+    def get_entrypoint(self, config: AgentConfig) -> str:
+        """Return the framework-specific container startup command."""
+        ...
+
+    @abstractmethod
+    def get_requirements(self, config: AgentConfig) -> list[str]:
+        """Return the list of pip dependencies for this framework."""
+        ...

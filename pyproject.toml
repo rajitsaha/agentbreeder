@@ -1,0 +1,78 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "agent-garden"
+version = "0.1.0"
+description = "Define Once. Deploy Anywhere. Govern Automatically."
+readme = "README.md"
+license = "Apache-2.0"
+requires-python = ">=3.11"
+authors = [{ name = "Agent Garden Contributors" }]
+keywords = ["ai", "agents", "deployment", "governance", "mlops"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Libraries",
+]
+dependencies = [
+    "fastapi>=0.110.0",
+    "uvicorn[standard]>=0.27.0",
+    "sqlalchemy[asyncio]>=2.0.0",
+    "asyncpg>=0.29.0",
+    "alembic>=1.13.0",
+    "pydantic[email]>=2.0.0",
+    "pydantic-settings>=2.0.0",
+    "typer[all]>=0.9.0",
+    "rich>=13.0.0",
+    "ruamel.yaml>=0.18.0",
+    "jsonschema>=4.20.0",
+    "docker>=7.0.0",
+    "httpx>=0.27.0",
+    "redis>=5.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.23.0",
+    "pytest-cov>=4.1.0",
+    "ruff>=0.3.0",
+    "mypy>=1.8.0",
+    "types-redis>=4.6.0",
+]
+
+[project.scripts]
+garden = "cli.main:app"
+
+[project.urls]
+Homepage = "https://agent-garden.com"
+Repository = "https://github.com/open-agent-garden/agent-garden"
+Documentation = "https://github.com/open-agent-garden/agent-garden#readme"
+
+[tool.hatch.build.targets.wheel]
+packages = ["engine", "api", "cli", "sdk", "registry", "connectors"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+addopts = "--strict-markers -v"
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+warn_return_any = true
+warn_unused_configs = true
+ignore_missing_imports = true
+
+[tool.ruff]
+target-version = "py311"
+line-length = 99
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N", "UP", "S", "B", "A", "C4", "PT"]
+ignore = ["S101"]  # allow assert in tests

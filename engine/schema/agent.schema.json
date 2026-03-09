@@ -1,0 +1,197 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Agent Garden Agent Configuration",
+  "description": "Schema for agent.yaml — the agent definition file for Agent Garden",
+  "type": "object",
+  "required": ["name", "version", "team", "owner", "framework", "model", "deploy"],
+  "additionalProperties": false,
+  "properties": {
+    "spec_version": {
+      "type": "string",
+      "enum": ["v1"],
+      "default": "v1",
+      "description": "Schema version"
+    },
+    "name": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*[a-z0-9]$",
+      "minLength": 2,
+      "maxLength": 63,
+      "description": "Agent name (slug-friendly)"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Semantic version (e.g., 1.0.0)"
+    },
+    "description": {
+      "type": "string",
+      "maxLength": 500,
+      "description": "Short description of the agent"
+    },
+    "team": {
+      "type": "string",
+      "description": "Team that owns this agent"
+    },
+    "owner": {
+      "type": "string",
+      "format": "email",
+      "description": "Email of the responsible engineer"
+    },
+    "tags": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Tags for discovery"
+    },
+    "framework": {
+      "type": "string",
+      "enum": ["langgraph", "crewai", "claude_sdk", "openai_agents", "google_adk", "custom"],
+      "description": "Agent framework"
+    },
+    "model": {
+      "type": "object",
+      "required": ["primary"],
+      "additionalProperties": false,
+      "properties": {
+        "primary": {
+          "type": "string",
+          "description": "Primary model (registry ref or provider/model-id)"
+        },
+        "fallback": {
+          "type": "string",
+          "description": "Fallback model if primary is unavailable"
+        },
+        "gateway": {
+          "type": "string",
+          "description": "Model gateway (e.g., litellm)"
+        },
+        "temperature": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 2,
+          "description": "Model temperature"
+        },
+        "max_tokens": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Maximum tokens per response"
+        }
+      }
+    },
+    "tools": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "ref": { "type": "string", "description": "Registry reference" },
+          "name": { "type": "string" },
+          "type": { "type": "string", "enum": ["function"] },
+          "description": { "type": "string" },
+          "schema": { "type": "object" }
+        }
+      },
+      "description": "Tools and MCP servers"
+    },
+    "knowledge_bases": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["ref"],
+        "properties": {
+          "ref": { "type": "string" }
+        }
+      },
+      "description": "Knowledge base references"
+    },
+    "prompts": {
+      "type": "object",
+      "properties": {
+        "system": { "type": "string", "description": "System prompt (ref or inline)" }
+      },
+      "description": "Prompt configuration"
+    },
+    "guardrails": {
+      "type": "array",
+      "items": {
+        "oneOf": [
+          { "type": "string" },
+          {
+            "type": "object",
+            "required": ["name"],
+            "properties": {
+              "name": { "type": "string" },
+              "endpoint": { "type": "string", "format": "uri" }
+            }
+          }
+        ]
+      },
+      "description": "Guardrail configuration"
+    },
+    "deploy": {
+      "type": "object",
+      "required": ["cloud"],
+      "additionalProperties": false,
+      "properties": {
+        "cloud": {
+          "type": "string",
+          "enum": ["aws", "gcp", "kubernetes", "local"],
+          "description": "Target cloud platform"
+        },
+        "runtime": {
+          "type": "string",
+          "description": "Deployment runtime (defaults per cloud)"
+        },
+        "region": {
+          "type": "string",
+          "description": "Cloud region"
+        },
+        "scaling": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "min": { "type": "integer", "minimum": 0, "default": 1 },
+            "max": { "type": "integer", "minimum": 1, "default": 10 },
+            "target_cpu": { "type": "integer", "minimum": 1, "maximum": 100, "default": 70 }
+          }
+        },
+        "resources": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "cpu": { "type": "string", "default": "0.5" },
+            "memory": { "type": "string", "default": "1Gi" }
+          }
+        },
+        "env_vars": {
+          "type": "object",
+          "additionalProperties": { "type": "string" },
+          "description": "Non-secret environment variables"
+        },
+        "secrets": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Secret references"
+        }
+      }
+    },
+    "access": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "visibility": {
+          "type": "string",
+          "enum": ["public", "team", "private"],
+          "default": "team"
+        },
+        "allowed_callers": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "require_approval": {
+          "type": "boolean",
+          "default": false
+        }
+      }
+    }
+  }
+}

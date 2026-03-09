@@ -1,0 +1,14 @@
+name: hello-world-agent
+version: 0.1.0
+description: "A simple hello world LangGraph agent for testing Agent Garden"
+team: examples
+owner: dev@agent-garden.com
+tags: [example, langgraph, hello-world]
+
+framework: langgraph
+
+model:
+  primary: gpt-4o-mini
+
+deploy:
+  cloud: local
