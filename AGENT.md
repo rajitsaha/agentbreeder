@@ -708,6 +708,19 @@ Adds a complete new dashboard page. Chains:
 5. `test:e2e` — Playwright tests for the page
 6. Accessibility audit
 
+### `workflow:milestone`
+**Purpose:** Start a new milestone with a clean slate. Run `/clear` before beginning work on any new milestone to reset context and ensure focused, clean execution.
+
+**Trigger:** "Start milestone X", "Next milestone", or `/milestone`
+
+**Chains:**
+1. `/clear` — reset conversation context
+2. Re-read ROADMAP.md to identify the next milestone tasks
+3. Re-read CLAUDE.md and AGENT.md for coding standards
+4. Begin implementation
+
+---
+
 ### `workflow:launch`
 **Purpose:** The pre-release quality gate. Runs the full chain: unit tests with 95%+ coverage, security audit with critical/high fixes, commit, and push. Use this before any release, merge to main, or public milestone.
 
@@ -981,6 +994,9 @@ When any AI agent is working on AgentHub code:
 8. **Always run `workflow:launch`** before any release — tests, security audit, and clean commit are mandatory
 9. **Never ship with coverage below 95%** — write the missing tests, don't lower the bar
 10. **Never ship with Critical or High security findings** — fix them or don't release
+11. **Never ship AI-slop UI** — every frontend component must be innovative, distinctive, and out-of-the-box. No generic templates, no cookie-cutter layouts. Design like a senior product designer, not a chatbot.
+12. **Always test UI with Playwright** — every UI feature must have full Playwright E2E tests before it is considered done. No exceptions.
+13. **Always /clear before a new milestone** — start each milestone with a fresh context to avoid stale assumptions and context bleed
 
 ---
 
