@@ -1,6 +1,5 @@
 import {
   FileCode,
-  Shield,
   Package,
   Server,
   Rocket,

@@ -157,15 +157,19 @@ A read-only dashboard to browse the registry. Not feature-complete — just good
 
 **Design reference:** Linear.app / Vercel dashboard aesthetic. Professional, not consumer.
 
-#### 4.2 — Dashboard: Deploy Status & Auth
-- [ ] Authentication (login page, JWT handling)
-- [ ] Real-time deploy status (polling or WebSocket)
-- [ ] Deploy progress visualization (8-step pipeline with icons)
-- [ ] Deploy history for each agent
-- [ ] Error display with actionable messages
-- [ ] Link to cloud console for deployed resource
-- [ ] Models registry page
-- [ ] Prompts registry page
+#### 4.2 — Dashboard: Deploy Status & Registry Pages
+- [x] Real-time deploy status (polling with 10s auto-refresh)
+- [x] Deploy progress visualization (8-step pipeline with icons: Parse→Build→Provision→Deploy→Health→Register→Done)
+- [x] Deploy history for each agent (agent detail tab, expandable rows)
+- [x] Error display with actionable messages (inline error banners on failed steps)
+- [x] Models registry page (table with provider badges, source icons, filters)
+- [x] Prompts registry page (card grid grouped by name, expandable version history with content preview)
+- [x] Deploys page (global deploy list with status/target filters, expandable pipeline view)
+- [x] Backend: registry services + API routes for models, prompts, deploy jobs
+- [x] Cross-entity search extended to include models and prompts
+- [x] Playwright E2E tests: 30 tests covering all pages
+- [ ] Authentication (login page, JWT handling) — deferred to M4.3
+- [ ] Link to cloud console for deployed resource — deferred to M4.3
 
 **Done when:** A non-engineer can open the dashboard and understand what agents are deployed and their status.
 
@@ -455,6 +459,6 @@ The following are explicitly NOT in scope until v1.0 or later, to keep focus:
 
 ---
 
-*Last updated: March 9, 2026 — M1-M3 complete, M4.1 (Dashboard Foundation) complete, M4.2 in progress*
+*Last updated: March 9, 2026 — M1-M3 complete, M4.1-M4.2 complete (Dashboard + Deploy Status + Registry Pages), Auth deferred to M4.3*
 *Roadmap is directional. Dates are targets, not commitments.*
 *Follow releases on GitHub: github.com/agenthub-oss/agenthub/releases*
