@@ -8,7 +8,7 @@ from typing import Any, Generic, TypeVar
 
 from pydantic import BaseModel, Field
 
-from api.models.enums import AgentStatus, DeployJobStatus
+from api.models.enums import AgentStatus, DeployJobStatus, UserRole
 
 T = TypeVar("T")
 
@@ -28,6 +28,38 @@ class ApiResponse(BaseModel, Generic[T]):
     data: T
     meta: ApiMeta = Field(default_factory=ApiMeta)
     errors: list[str] = Field(default_factory=list)
+
+
+# --- Auth Schemas ---
+
+
+class LoginRequest(BaseModel):
+    email: str
+    password: str
+
+
+class RegisterRequest(BaseModel):
+    email: str
+    name: str
+    password: str
+    team: str = "default"
+
+
+class TokenResponse(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+
+
+class UserResponse(BaseModel):
+    id: uuid.UUID
+    email: str
+    name: str
+    role: UserRole
+    team: str
+    is_active: bool
+    created_at: datetime
+
+    model_config = {"from_attributes": True}
 
 
 # --- Agent Schemas ---

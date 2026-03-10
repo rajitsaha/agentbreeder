@@ -167,9 +167,9 @@ A read-only dashboard to browse the registry. Not feature-complete — just good
 - [x] Deploys page (global deploy list with status/target filters, expandable pipeline view)
 - [x] Backend: registry services + API routes for models, prompts, deploy jobs
 - [x] Cross-entity search extended to include models and prompts
-- [x] Playwright E2E tests: 30 tests covering all pages
-- [ ] Authentication (login page, JWT handling) — deferred to M4.3
-- [ ] Link to cloud console for deployed resource — deferred to M4.3
+- [x] Playwright E2E tests: 40 tests covering all pages + auth
+- [x] Authentication (login page, JWT handling, route guards) — M4.3
+- [ ] Link to cloud console for deployed resource — deferred to M4.4
 
 **Done when:** A non-engineer can open the dashboard and understand what agents are deployed and their status.
 
@@ -459,6 +459,6 @@ The following are explicitly NOT in scope until v1.0 or later, to keep focus:
 
 ---
 
-*Last updated: March 9, 2026 — M1-M3 complete, M4.1-M4.2 complete (Dashboard + Deploy Status + Registry Pages), Auth deferred to M4.3*
+*Last updated: March 9, 2026 — M1-M3 complete, M4.1-M4.3 complete (Dashboard + Deploy Status + Registry Pages + Authentication)*
 *Roadmap is directional. Dates are targets, not commitments.*
 *Follow releases on GitHub: github.com/agenthub-oss/agenthub/releases*

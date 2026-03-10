@@ -1,7 +1,7 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures";
 
 test.describe("Agents Page", () => {
-  test("renders agents page with heading and filters", async ({ page }) => {
+  test("renders agents page with heading and filters", async ({ authedPage: page }) => {
     await page.goto("/agents");
     await expect(page.locator("h1")).toContainText("Agents");
     await expect(page.locator('input[placeholder="Search agents..."]')).toBeVisible();
@@ -9,7 +9,7 @@ test.describe("Agents Page", () => {
     await expect(page.locator("select").first()).toBeVisible();
   });
 
-  test("shows error state when API unavailable", async ({ page }) => {
+  test("shows error state when API unavailable", async ({ authedPage: page }) => {
     await page.goto("/agents");
     // Wait for the API call to fail and show error or empty state
     await page.waitForTimeout(2000);
@@ -21,14 +21,14 @@ test.describe("Agents Page", () => {
     ).toBeTruthy();
   });
 
-  test("search input updates URL params", async ({ page }) => {
+  test("search input updates URL params", async ({ authedPage: page }) => {
     await page.goto("/agents");
     const input = page.locator('input[placeholder="Search agents..."]');
     await input.fill("test-agent");
     await expect(page).toHaveURL(/q=test-agent/);
   });
 
-  test("column headers are visible", async ({ page }) => {
+  test("column headers are visible", async ({ authedPage: page }) => {
     await page.goto("/agents");
     // Use more specific selectors for column headers
     const headerRow = page.locator(".uppercase.tracking-wider");

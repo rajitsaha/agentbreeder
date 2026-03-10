@@ -14,11 +14,26 @@ export interface ApiResponse<T> {
   errors: string[];
 }
 
+function getAuthHeaders(): Record<string, string> {
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  const token = localStorage.getItem("ag-token");
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+  return headers;
+}
+
 async function request<T>(path: string, init?: RequestInit): Promise<ApiResponse<T>> {
   const res = await fetch(`${BASE}${path}`, {
-    headers: { "Content-Type": "application/json" },
+    headers: getAuthHeaders(),
     ...init,
   });
+  if (res.status === 401) {
+    // Token expired or invalid — clear and redirect to login
+    localStorage.removeItem("ag-token");
+    if (window.location.pathname !== "/login") {
+      window.location.href = "/login";
+    }
+    throw new Error("Session expired");
+  }
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
     throw new Error(body.detail ?? `API error ${res.status}`);

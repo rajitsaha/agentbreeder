@@ -8,16 +8,42 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from api.routes import agents, deploys, registry
+from api.routes import agents, auth, deploys, registry
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+
+async def _seed_default_admin() -> None:
+    """Create a default admin user (admin@garden.local / admin) if no users exist."""
+    from api.database import async_session
+    from api.models.enums import UserRole
+    from api.services.auth import create_user, get_user_by_email
+
+    async with async_session() as db:
+        try:
+            existing = await get_user_by_email(db, "admin@agent-garden.local")
+            if existing:
+                return
+            await create_user(
+                db,
+                email="admin@agent-garden.local",
+                name="Gardner",
+                password="plant",
+                team="Agent Garden Platform",
+                role=UserRole.admin,
+            )
+            await db.commit()
+            logger.info("Default admin user created (admin@agent-garden.local / plant)")
+        except Exception as e:
+            logger.debug("Skipping admin seed: %s", e)
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Startup and shutdown events."""
     logger.info("Agent Garden API starting up")
+    await _seed_default_admin()
     yield
     logger.info("Agent Garden API shutting down")
 
@@ -39,6 +65,7 @@ app.add_middleware(
 )
 
 # Routes
+app.include_router(auth.router)
 app.include_router(agents.router)
 app.include_router(deploys.router)
 app.include_router(registry.router)

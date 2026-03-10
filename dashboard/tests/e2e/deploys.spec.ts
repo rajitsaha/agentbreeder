@@ -1,12 +1,12 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures";
 
 test.describe("Deploys Page", () => {
-  test("renders deploys page with heading", async ({ page }) => {
+  test("renders deploys page with heading", async ({ authedPage: page }) => {
     await page.goto("/deploys");
     await expect(page.locator("h1")).toContainText("Deploys");
   });
 
-  test("has status filter dropdown", async ({ page }) => {
+  test("has status filter dropdown", async ({ authedPage: page }) => {
     await page.goto("/deploys");
     await expect(page.locator("select")).toBeVisible();
     // Verify it contains deploy-specific options
@@ -16,7 +16,7 @@ test.describe("Deploys Page", () => {
     expect(options.some((o) => o.includes("Building"))).toBeTruthy();
   });
 
-  test("shows column headers", async ({ page }) => {
+  test("shows column headers", async ({ authedPage: page }) => {
     await page.goto("/deploys");
     const headers = page.locator(".uppercase.tracking-wider");
     await expect(headers.first()).toBeVisible();
@@ -24,7 +24,7 @@ test.describe("Deploys Page", () => {
     expect(text?.toLowerCase()).toContain("agent");
   });
 
-  test("shows empty or error state gracefully", async ({ page }) => {
+  test("shows empty or error state gracefully", async ({ authedPage: page }) => {
     await page.goto("/deploys");
     await page.waitForTimeout(2000);
     const content = await page.textContent("body");
@@ -35,7 +35,7 @@ test.describe("Deploys Page", () => {
     ).toBeTruthy();
   });
 
-  test("navigates to deploys from sidebar", async ({ page }) => {
+  test("navigates to deploys from sidebar", async ({ authedPage: page }) => {
     await page.goto("/");
     await page.locator('aside a[href="/deploys"]').click();
     await expect(page).toHaveURL("/deploys");

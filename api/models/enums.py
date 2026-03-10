@@ -24,6 +24,13 @@ class DeployJobStatus(str, enum.Enum):
     failed = "failed"
 
 
+class UserRole(str, enum.Enum):
+    admin = "admin"
+    deployer = "deployer"
+    contributor = "contributor"
+    viewer = "viewer"
+
+
 class RegistryEntityType(str, enum.Enum):
     agent = "agent"
     tool = "tool"

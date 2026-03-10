@@ -9,10 +9,17 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 from fastapi.testclient import TestClient
 
-from api.models.enums import AgentStatus
+from api.models.enums import AgentStatus, UserRole
 from api.main import app
+from api.services.auth import create_access_token
 
 client = TestClient(app)
+
+
+def _auth_headers() -> dict[str, str]:
+    """Return Authorization headers with a valid JWT for tests."""
+    token = create_access_token(str(uuid.uuid4()), "test@test.com", "viewer")
+    return {"Authorization": f"Bearer {token}"}
 
 _NOW = datetime(2026, 1, 1, tzinfo=timezone.utc)
 
@@ -133,12 +140,34 @@ class TestGetAgent:
         assert resp.status_code == 404
 
 
+def _make_mock_user(**kwargs):
+    """Create a mock User for auth dependency."""
+    defaults = dict(
+        id=uuid.uuid4(),
+        email="test@test.com",
+        name="Test User",
+        role=UserRole.viewer,
+        team="engineering",
+        is_active=True,
+        created_at=_NOW,
+        updated_at=_NOW,
+    )
+    defaults.update(kwargs)
+    mock = MagicMock()
+    for k, v in defaults.items():
+        setattr(mock, k, v)
+    return mock
+
+
 class TestCreateAgent:
+    @patch("api.auth.get_user_by_id", new_callable=AsyncMock)
     @patch("api.routes.agents.AgentRegistry.register", new_callable=AsyncMock)
-    def test_create_agent(self, mock_register: AsyncMock) -> None:
+    def test_create_agent(self, mock_register: AsyncMock, mock_get_user: AsyncMock) -> None:
+        mock_get_user.return_value = _make_mock_user()
         mock_register.return_value = _make_agent("new-agent")
         resp = client.post(
             "/api/v1/agents",
+            headers=_auth_headers(),
             json={
                 "name": "new-agent",
                 "version": "1.0.0",
@@ -152,8 +181,10 @@ class TestCreateAgent:
         assert resp.json()["data"]["name"] == "new-agent"
         mock_register.assert_called_once()
 
+    @patch("api.auth.get_user_by_id", new_callable=AsyncMock)
     @patch("api.routes.agents.AgentRegistry.register", new_callable=AsyncMock)
-    def test_create_agent_with_all_fields(self, mock_register: AsyncMock) -> None:
+    def test_create_agent_with_all_fields(self, mock_register: AsyncMock, mock_get_user: AsyncMock) -> None:
+        mock_get_user.return_value = _make_mock_user()
         mock_register.return_value = _make_agent(
             "full-agent",
             framework="crewai",
@@ -162,6 +193,7 @@ class TestCreateAgent:
         )
         resp = client.post(
             "/api/v1/agents",
+            headers=_auth_headers(),
             json={
                 "name": "full-agent",
                 "version": "2.0.0",
@@ -182,23 +214,29 @@ class TestCreateAgent:
 
 
 class TestUpdateAgent:
+    @patch("api.auth.get_user_by_id", new_callable=AsyncMock)
     @patch("api.routes.agents.AgentRegistry.get_by_id", new_callable=AsyncMock)
-    def test_update_version(self, mock_get: AsyncMock) -> None:
+    def test_update_version(self, mock_get: AsyncMock, mock_get_user: AsyncMock) -> None:
+        mock_get_user.return_value = _make_mock_user()
         agent = _make_agent()
         mock_get.return_value = agent
         resp = client.put(
             f"/api/v1/agents/{agent.id}",
+            headers=_auth_headers(),
             json={"version": "2.0.0"},
         )
         assert resp.status_code == 200
         assert resp.json()["data"]["version"] == "2.0.0"
 
+    @patch("api.auth.get_user_by_id", new_callable=AsyncMock)
     @patch("api.routes.agents.AgentRegistry.get_by_id", new_callable=AsyncMock)
-    def test_update_multiple_fields(self, mock_get: AsyncMock) -> None:
+    def test_update_multiple_fields(self, mock_get: AsyncMock, mock_get_user: AsyncMock) -> None:
+        mock_get_user.return_value = _make_mock_user()
         agent = _make_agent()
         mock_get.return_value = agent
         resp = client.put(
             f"/api/v1/agents/{agent.id}",
+            headers=_auth_headers(),
             json={
                 "description": "Updated",
                 "endpoint_url": "http://new:9090",
@@ -212,29 +250,36 @@ class TestUpdateAgent:
         assert data["status"] == "stopped"
         assert data["tags"] == ["updated"]
 
+    @patch("api.auth.get_user_by_id", new_callable=AsyncMock)
     @patch("api.routes.agents.AgentRegistry.get_by_id", new_callable=AsyncMock)
-    def test_update_not_found(self, mock_get: AsyncMock) -> None:
+    def test_update_not_found(self, mock_get: AsyncMock, mock_get_user: AsyncMock) -> None:
+        mock_get_user.return_value = _make_mock_user()
         mock_get.return_value = None
         resp = client.put(
             f"/api/v1/agents/{uuid.uuid4()}",
+            headers=_auth_headers(),
             json={"version": "2.0.0"},
         )
         assert resp.status_code == 404
 
 
 class TestDeleteAgent:
+    @patch("api.auth.get_user_by_id", new_callable=AsyncMock)
     @patch("api.routes.agents.AgentRegistry.get_by_id", new_callable=AsyncMock)
-    def test_delete_existing(self, mock_get: AsyncMock) -> None:
+    def test_delete_existing(self, mock_get: AsyncMock, mock_get_user: AsyncMock) -> None:
+        mock_get_user.return_value = _make_mock_user()
         agent = _make_agent()
         mock_get.return_value = agent
-        resp = client.delete(f"/api/v1/agents/{agent.id}")
+        resp = client.delete(f"/api/v1/agents/{agent.id}", headers=_auth_headers())
         assert resp.status_code == 200
         assert "archived" in resp.json()["data"]["message"]
 
+    @patch("api.auth.get_user_by_id", new_callable=AsyncMock)
     @patch("api.routes.agents.AgentRegistry.get_by_id", new_callable=AsyncMock)
-    def test_delete_not_found(self, mock_get: AsyncMock) -> None:
+    def test_delete_not_found(self, mock_get: AsyncMock, mock_get_user: AsyncMock) -> None:
+        mock_get_user.return_value = _make_mock_user()
         mock_get.return_value = None
-        resp = client.delete(f"/api/v1/agents/{uuid.uuid4()}")
+        resp = client.delete(f"/api/v1/agents/{uuid.uuid4()}", headers=_auth_headers())
         assert resp.status_code == 404
 
 

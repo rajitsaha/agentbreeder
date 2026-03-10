@@ -10,10 +10,12 @@ import {
   Monitor,
   Activity,
   ChevronRight,
+  LogOut,
 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTheme } from "@/hooks/use-theme";
+import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
 
 const NAV = [
@@ -148,6 +150,44 @@ function Breadcrumbs() {
   );
 }
 
+function UserMenu() {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  if (!user) return null;
+
+  const initials = user.name
+    .split(" ")
+    .map((w) => w[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
+
+  return (
+    <div className="flex items-center gap-2 rounded-md px-2 py-1.5">
+      <div className="flex size-6 items-center justify-center rounded-full bg-foreground text-[10px] font-medium text-background">
+        {initials}
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="truncate text-xs font-medium">{user.name}</div>
+        <div className="truncate text-[10px] text-muted-foreground">{user.team}</div>
+      </div>
+      <button
+        onClick={handleLogout}
+        title="Sign out"
+        className="rounded p-1 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+      >
+        <LogOut className="size-3" />
+      </button>
+    </div>
+  );
+}
+
 export default function Shell() {
   return (
     <div className="flex h-screen overflow-hidden bg-background">
@@ -189,6 +229,7 @@ export default function Shell() {
 
         {/* Footer */}
         <div className="space-y-1 border-t border-border px-3 py-3">
+          <UserMenu />
           <ThemeSwitcher />
           <div className="px-2 text-[10px] text-muted-foreground/60">
             Agent Garden v0.1

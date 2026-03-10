@@ -7,7 +7,9 @@ import uuid
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from api.auth import get_current_user
 from api.database import get_db
+from api.models.database import User
 from api.models.enums import AgentStatus
 from api.models.schemas import (
     AgentCreate,
@@ -70,6 +72,7 @@ async def get_agent(
 @router.post("", response_model=ApiResponse[AgentResponse], status_code=201)
 async def create_agent(
     body: AgentCreate,
+    _user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ) -> ApiResponse[AgentResponse]:
     """Manually register an agent in the registry."""
@@ -97,6 +100,7 @@ async def create_agent(
 async def update_agent(
     agent_id: uuid.UUID,
     body: AgentUpdate,
+    _user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ) -> ApiResponse[AgentResponse]:
     """Update an agent's metadata."""
@@ -122,6 +126,7 @@ async def update_agent(
 @router.delete("/{agent_id}", response_model=ApiResponse[dict])
 async def delete_agent(
     agent_id: uuid.UUID,
+    _user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ) -> ApiResponse[dict]:
     """Soft-delete (archive) an agent."""

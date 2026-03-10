@@ -1,12 +1,12 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures";
 
 test.describe("Models Page", () => {
-  test("renders models page with heading", async ({ page }) => {
+  test("renders models page with heading", async ({ authedPage: page }) => {
     await page.goto("/models");
     await expect(page.locator("h1")).toContainText("Models");
   });
 
-  test("has filter input and provider selector", async ({ page }) => {
+  test("has filter input and provider selector", async ({ authedPage: page }) => {
     await page.goto("/models");
     await expect(
       page.locator('input[placeholder="Filter models..."]')
@@ -14,7 +14,7 @@ test.describe("Models Page", () => {
     await expect(page.locator("select")).toBeVisible();
   });
 
-  test("shows column headers", async ({ page }) => {
+  test("shows column headers", async ({ authedPage: page }) => {
     await page.goto("/models");
     const headers = page.locator(
       ".uppercase.tracking-wider"
@@ -24,7 +24,7 @@ test.describe("Models Page", () => {
     expect(text?.toLowerCase()).toContain("model");
   });
 
-  test("shows empty or error state gracefully", async ({ page }) => {
+  test("shows empty or error state gracefully", async ({ authedPage: page }) => {
     await page.goto("/models");
     await page.waitForTimeout(2000);
     const content = await page.textContent("body");
@@ -35,7 +35,7 @@ test.describe("Models Page", () => {
     ).toBeTruthy();
   });
 
-  test("navigates to models from sidebar", async ({ page }) => {
+  test("navigates to models from sidebar", async ({ authedPage: page }) => {
     await page.goto("/");
     await page.locator('aside a[href="/models"]').click();
     await expect(page).toHaveURL("/models");

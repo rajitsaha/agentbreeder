@@ -1,12 +1,12 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures";
 
 test.describe("Prompts Page", () => {
-  test("renders prompts page with heading", async ({ page }) => {
+  test("renders prompts page with heading", async ({ authedPage: page }) => {
     await page.goto("/prompts");
     await expect(page.locator("h1")).toContainText("Prompts");
   });
 
-  test("has filter input and team selector", async ({ page }) => {
+  test("has filter input and team selector", async ({ authedPage: page }) => {
     await page.goto("/prompts");
     await expect(
       page.locator('input[placeholder="Filter prompts..."]')
@@ -14,7 +14,7 @@ test.describe("Prompts Page", () => {
     await expect(page.locator("select")).toBeVisible();
   });
 
-  test("shows empty or error state gracefully", async ({ page }) => {
+  test("shows empty or error state gracefully", async ({ authedPage: page }) => {
     await page.goto("/prompts");
     await page.waitForTimeout(2000);
     const content = await page.textContent("body");
@@ -25,7 +25,7 @@ test.describe("Prompts Page", () => {
     ).toBeTruthy();
   });
 
-  test("navigates to prompts from sidebar", async ({ page }) => {
+  test("navigates to prompts from sidebar", async ({ authedPage: page }) => {
     await page.goto("/");
     await page.locator('aside a[href="/prompts"]').click();
     await expect(page).toHaveURL("/prompts");

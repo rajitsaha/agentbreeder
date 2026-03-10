@@ -9,11 +9,35 @@ from sqlalchemy import JSON, DateTime, Enum, ForeignKey, Index, String, Text, fu
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
-from api.models.enums import AgentStatus, DeployJobStatus
+from api.models.enums import AgentStatus, DeployJobStatus, UserRole
 
 
 class Base(DeclarativeBase):
     pass
+
+
+class User(Base):
+    """A user account for the Agent Garden platform."""
+
+    __tablename__ = "users"
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
+    email: Mapped[str] = mapped_column(String(255), unique=True, nullable=False, index=True)
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
+    role: Mapped[UserRole] = mapped_column(
+        Enum(UserRole), default=UserRole.viewer, nullable=False
+    )
+    team: Mapped[str] = mapped_column(String(100), nullable=False, default="default")
+    is_active: Mapped[bool] = mapped_column(default=True, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
 
 
 class Agent(Base):

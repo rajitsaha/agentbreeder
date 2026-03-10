@@ -1,7 +1,7 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures";
 
 test.describe("Dashboard Shell", () => {
-  test("renders sidebar with navigation links", async ({ page }) => {
+  test("renders sidebar with navigation links", async ({ authedPage: page }) => {
     await page.goto("/");
     // Sidebar brand
     await expect(page.getByText("Agent Garden", { exact: true })).toBeVisible();
@@ -13,26 +13,26 @@ test.describe("Dashboard Shell", () => {
     await expect(page.locator('aside a[href="/deploys"]')).toBeVisible();
   });
 
-  test("navigates to agents page on click", async ({ page }) => {
+  test("navigates to agents page on click", async ({ authedPage: page }) => {
     await page.goto("/");
     await page.locator('aside a[href="/agents"]').click();
     await expect(page).toHaveURL("/agents");
     await expect(page.locator("h1")).toContainText("Agents");
   });
 
-  test("navigates to tools page on click", async ({ page }) => {
+  test("navigates to tools page on click", async ({ authedPage: page }) => {
     await page.goto("/");
     await page.locator('aside a[href="/tools"]').click();
     await expect(page).toHaveURL("/tools");
     await expect(page.locator("h1")).toContainText("Tools");
   });
 
-  test("shows home overview on root route", async ({ page }) => {
+  test("shows home overview on root route", async ({ authedPage: page }) => {
     await page.goto("/");
     await expect(page.locator("h1")).toContainText("Overview");
   });
 
-  test("command search opens via search button click", async ({ page }) => {
+  test("command search opens via search button click", async ({ authedPage: page }) => {
     await page.goto("/");
     // Click the search button in sidebar to open command search
     await page.locator("aside button", { hasText: "Search..." }).click();
@@ -41,7 +41,7 @@ test.describe("Dashboard Shell", () => {
     ).toBeVisible();
   });
 
-  test("command search closes with Escape", async ({ page }) => {
+  test("command search closes with Escape", async ({ authedPage: page }) => {
     await page.goto("/");
     // Open search via button click
     await page.locator("aside button", { hasText: "Search..." }).click();
@@ -54,7 +54,7 @@ test.describe("Dashboard Shell", () => {
     ).not.toBeVisible();
   });
 
-  test("theme switcher cycles through modes", async ({ page }) => {
+  test("theme switcher cycles through modes", async ({ authedPage: page }) => {
     await page.goto("/");
     const html = page.locator("html");
     // Default is dark
@@ -69,16 +69,23 @@ test.describe("Dashboard Shell", () => {
     await expect(page.locator("button", { hasText: /system/i })).toBeVisible();
   });
 
-  test("breadcrumbs show on sub-pages", async ({ page }) => {
+  test("breadcrumbs show on sub-pages", async ({ authedPage: page }) => {
     await page.goto("/agents");
     const breadcrumb = page.locator("header nav");
     await expect(breadcrumb).toBeVisible();
     await expect(breadcrumb).toContainText("agents", { ignoreCase: true });
   });
 
-  test("unknown routes redirect to home", async ({ page }) => {
+  test("unknown routes redirect to home", async ({ authedPage: page }) => {
     await page.goto("/nonexistent");
     await page.waitForURL("/");
     await expect(page.locator("h1")).toContainText("Overview");
+  });
+
+  test("user menu shows in sidebar", async ({ authedPage: page }) => {
+    await page.goto("/");
+    await expect(page.getByText("TU")).toBeVisible();
+    await expect(page.getByText("Test User")).toBeVisible();
+    await expect(page.locator('button[title="Sign out"]')).toBeVisible();
   });
 });
