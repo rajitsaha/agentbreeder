@@ -163,7 +163,7 @@ tools:
 memory:
   type: buffer_window
   max_messages: 20
-  backend: redis                # or: postgresql, in_memory
+  backend: postgresql            # v0.3: in_memory | postgresql  (v0.4+: redis)
 
 deploy:
   target: local                 # v0.3: local | cloud-run  (v1.0+: ecs-fargate, kubernetes, databricks)
@@ -1476,33 +1476,58 @@ garden clone <repo-url>           # clone external Git repo into platform
 
 ### M10: RAG Builder (Vector DB Index Management)
 
-#### 10.1 — Vector Index Registry
+> **Strategy:** pgvector carries you through v1.0 — zero new services, runs on existing PostgreSQL. Cloud vector DBs deferred to post v1.0.
+
+#### 10.1 — Vector Index Registry (v0.3)
 - [ ] Vector index as a registry resource: name, description, embedding model, chunk strategy, source
-- [ ] Supported vector backends: pgvector (built-in), Qdrant, Pinecone, Weaviate (pluggable)
+- [ ] **pgvector** as the only vector backend (PostgreSQL extension — zero new infrastructure)
+- [ ] `CREATE EXTENSION vector` in migration, vector columns for embeddings
 - [ ] Index metadata: document count, embedding dimensions, last updated, size
 - [ ] Backend: `vector_indexes` table (name, backend, embedding_model, doc_count, status, config_json)
 
-#### 10.2 — Data Ingestion
+#### 10.2 — Data Ingestion — Phased
+
+**v0.3 — File upload only:**
 - [ ] Upload files: drag-and-drop PDF, TXT, MD, CSV, JSON files → auto-chunk → embed → index
-- [ ] Database source: connect to PostgreSQL/MySQL, select table/query, ingest rows as documents
+- [ ] Chunking strategies: fixed-size + recursive text splitter (covers 90% of cases)
+- [ ] Embedding models: OpenAI `text-embedding-3-small` + Ollama `nomic-embed-text` (aligns with v0.3 providers)
+- [ ] Ingestion progress: real-time progress bar (documents processed / total)
+- [ ] Backend: `ingestion_jobs` table (index_id, source_type, status, doc_count, error_log)
+
+**v0.4 — Richer ingestion sources:**
 - [ ] Google Drive source: OAuth2 connect, browse folders, select files/folders to ingest
 - [ ] Google Sheets source: OAuth2 connect, select spreadsheet, map columns to document fields
 - [ ] Web URL source: provide URL(s), crawl pages, extract text, chunk, embed
-- [ ] Chunking strategies: fixed-size, sentence-based, paragraph-based, recursive (configurable)
-- [ ] Embedding model selection: pick from Model Registry (OpenAI ada, Cohere, local models)
-- [ ] Ingestion progress: real-time progress bar (documents processed / total)
+- [ ] Semantic chunking: split by heading/paragraph for better retrieval quality
 - [ ] Scheduled re-ingestion: cron-based refresh from connected sources
-- [ ] Backend: `ingestion_jobs` table (index_id, source_type, status, doc_count, error_log)
 
-#### 10.3 — Vector Search UI
+**v1.0 — Production-grade ingestion:**
+- [ ] Database source: connect to PostgreSQL/MySQL, select table/query, ingest rows as documents
+- [ ] Re-ranking: Cohere Rerank or cross-encoder re-ranking for improved retrieval quality
+- [ ] Multi-index queries: search across multiple RAG indexes in a single agent request
+- [ ] ChromaDB as alternative vector backend (embedded, no server, good for single-machine deploys)
+
+**Post v1.0 — Cloud vector DBs:**
+- [ ] Pinecone connector (P1 — managed, scales infinitely)
+- [ ] Weaviate connector (P2 — strong hybrid search)
+- [ ] Qdrant connector (P2 — fast, Rust-based)
+- [ ] Milvus connector (P3 — enterprise-grade)
+- [ ] Confluence/Notion ingestion (P1 — enterprise knowledge sources)
+- [ ] S3/GCS bucket ingestion (P1 — document lakes)
+
+#### 10.3 — Vector Search UI (v0.3)
 - [ ] Search panel: type a query, select an index, see ranked results with similarity scores
 - [ ] Result display: document chunk, metadata, similarity score, source file/row
 - [ ] Filter results by: metadata fields, date range, source
-- [ ] Search settings: top_k, similarity threshold, reranking toggle
-- [ ] Compare indexes: run same query against two indexes, see results side-by-side
+- [ ] Search settings: top_k, similarity threshold
+- [ ] Hybrid search: combine pgvector similarity + PostgreSQL `tsvector` full-text search
 - [ ] Search API: `POST /api/v1/rag/search` — programmatic access for agents
 
-#### 10.4 — RAG Versioning & Registry
+**v1.0 additions:**
+- [ ] Compare indexes: run same query against two indexes, see results side-by-side
+- [ ] Reranking toggle in search settings
+
+#### 10.4 — RAG Versioning & Registry (v0.3)
 - [ ] Git-backed index configuration versioning
 - [ ] Promote to RAG Registry on approval
 - [ ] Index snapshots: point-in-time backup/restore
@@ -1512,17 +1537,39 @@ garden clone <repo-url>           # clone external Git repo into platform
 
 ### M11: Memory Builder
 
-#### 11.1 — Memory Backend Registry
+> **Strategy:** In-memory + PostgreSQL for v0.3 (zero new services). Redis + smarter memory types added progressively. Semantic memory uses pgvector (same as RAG builder).
+
+#### 11.1 — Memory Backend Registry — Phased
+
+**v0.3 — Two backends (already in the stack):**
 - [ ] Memory as a registry resource: name, backend type, configuration, scope
-- [ ] Supported backends:
-  - **Redis**: conversation buffer, TTL-based expiry, fast read/write
-  - **PostgreSQL**: persistent conversation history, full-text search
-  - **In-Memory**: ephemeral, for testing and development only
-- [ ] Backend configuration UI: connection string, TTL, max messages, namespace pattern
+- [ ] Supported backends (v0.3):
+  - **In-Memory**: buffer window, ephemeral, for dev/testing — zero config
+  - **PostgreSQL**: persistent conversation history, survives restarts, full-text search via `tsvector`
+- [ ] Backend configuration UI: max messages, namespace pattern
 - [ ] Memory metadata: backend type, message count, storage size, linked agents
 - [ ] Backend: `memory_configs` table (name, backend_type, config_json, status)
+- [ ] Backend: `memory_messages` table (config_id, agent_id, session_id, role, content, metadata JSONB, created_at)
 
-#### 11.2 — Memory Management UI
+**v0.4 — Add Redis + smarter types:**
+- [ ] **Redis** backend: conversation buffer, TTL-based auto-expiry, fast read/write (already in Docker Compose)
+- [ ] Redis configuration UI: connection string, TTL, max messages, namespace pattern
+- [ ] Summary memory type: periodic LLM-generated summaries of long conversations (keeps context window small)
+- [ ] Entity memory type: extract and track entities (people, products, tickets) across conversations
+
+**v1.0 — Advanced memory patterns:**
+- [ ] **Semantic memory**: vector-indexed memory via pgvector for similarity-based recall ("What did the user say about billing?")
+- [ ] **Shared memory**: multiple agents read/write to the same memory space (research agent writes, summarizer reads)
+- [ ] **Memory scoping**: per-user, per-session, per-agent, per-team memory isolation
+- [ ] Memory TTL policies: auto-expire conversations older than N days (GDPR-friendly)
+
+**Post v1.0:**
+- [ ] Cross-agent memory federation (P1 — Agent A's findings auto-available to Agent B)
+- [ ] External memory services: Mem0, Zep integration (P2 — for teams that want managed)
+- [ ] Long-term user profiles (P2 — persistent preferences across agents and sessions)
+- [ ] Memory analytics (P3 — what do agents remember? retrieval patterns, storage trends)
+
+#### 11.2 — Memory Management UI (v0.3)
 - [ ] Memory instances page: list all configured memory backends with stats
 - [ ] Memory detail: browse stored conversations (namespaced by agent + user)
 - [ ] Conversation viewer: message-by-message display with timestamps
@@ -1530,15 +1577,19 @@ garden clone <repo-url>           # clone external Git repo into platform
 - [ ] Delete conversations: bulk delete by agent, user, or date range
 - [ ] Memory usage dashboard: storage size over time, message count by agent
 
-#### 11.3 — Memory Types
-- [ ] Buffer Window: sliding window of last N messages (configurable N)
-- [ ] Buffer: full conversation history (no truncation)
-- [ ] Summary: periodic LLM-generated summaries of long conversations
-- [ ] Entity: extract and track entities mentioned across conversations
-- [ ] Semantic: vector-indexed memory for similarity-based recall
+#### 11.3 — Memory Types (phased)
+
+| Type | Description | Available |
+|------|-------------|-----------|
+| **Buffer Window** | Sliding window of last N messages (configurable N) | v0.3 |
+| **Buffer** | Full conversation history (no truncation) | v0.3 |
+| **Summary** | LLM-generated summaries of long conversations | v0.4 |
+| **Entity** | Extract and track entities across conversations | v0.4 |
+| **Semantic** | Vector-indexed memory for similarity-based recall (pgvector) | v1.0 |
+
 - [ ] Each type configurable per agent in agent.yaml `memory:` block
 
-#### 11.4 — Memory Versioning & Registry
+#### 11.4 — Memory Versioning & Registry (v0.3)
 - [ ] Git-backed configuration versioning
 - [ ] Promote to Memory Registry on approval
 - [ ] Linked agents view: which agents use this memory config
@@ -2108,7 +2159,7 @@ These are intentionally deferred indefinitely:
 | Backend language | Python (FastAPI) | AI ecosystem is Python-first; native integration with agent frameworks |
 | CLI | Python (Typer + Rich) | Same language as backend; single install |
 | Dashboard | React 19 + TypeScript + Tailwind v4 | Industry standard; shadcn/ui for Vercel-quality aesthetic |
-| Database | PostgreSQL + SQLAlchemy + Alembic | Mature, reliable; pgvector for future semantic search |
+| Database | PostgreSQL + SQLAlchemy + Alembic + pgvector | Mature, reliable; pgvector for RAG + semantic memory — zero new services |
 | ORM | SQLAlchemy (async) | Most capable Python ORM; async support |
 | Cache | Redis | Rate limiting, task queue, session cache |
 | Container build | Docker | Universal; BuildKit for multi-platform |
