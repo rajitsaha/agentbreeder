@@ -165,6 +165,11 @@ class PromptCreate(BaseModel):
     team: str
 
 
+class PromptUpdate(BaseModel):
+    content: str | None = None
+    description: str | None = None
+
+
 class PromptResponse(BaseModel):
     id: uuid.UUID
     name: str

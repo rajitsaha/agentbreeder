@@ -13,6 +13,7 @@ from api.models.schemas import (
     ModelResponse,
     PromptCreate,
     PromptResponse,
+    PromptUpdate,
     ToolCreate,
     ToolResponse,
     SearchResult,
@@ -127,6 +128,79 @@ async def register_prompt(
         description=body.description,
         team=body.team,
     )
+    return ApiResponse(data=PromptResponse.model_validate(prompt))
+
+
+@router.get("/prompts/{prompt_id}", response_model=ApiResponse[PromptResponse])
+async def get_prompt(
+    prompt_id: str,
+    db: AsyncSession = Depends(get_db),
+) -> ApiResponse[PromptResponse]:
+    """Get a single prompt by ID."""
+    prompt = await PromptRegistry.get_by_id(db, prompt_id)
+    if not prompt:
+        raise HTTPException(status_code=404, detail="Prompt not found")
+    return ApiResponse(data=PromptResponse.model_validate(prompt))
+
+
+@router.put("/prompts/{prompt_id}", response_model=ApiResponse[PromptResponse])
+async def update_prompt(
+    prompt_id: str,
+    body: PromptUpdate,
+    db: AsyncSession = Depends(get_db),
+) -> ApiResponse[PromptResponse]:
+    """Update a prompt's content or description."""
+    prompt = await PromptRegistry.update(
+        db, prompt_id, content=body.content, description=body.description
+    )
+    if not prompt:
+        raise HTTPException(status_code=404, detail="Prompt not found")
+    return ApiResponse(data=PromptResponse.model_validate(prompt))
+
+
+@router.delete("/prompts/{prompt_id}", response_model=ApiResponse[dict])
+async def delete_prompt(
+    prompt_id: str,
+    db: AsyncSession = Depends(get_db),
+) -> ApiResponse[dict]:
+    """Delete a prompt."""
+    deleted = await PromptRegistry.delete(db, prompt_id)
+    if not deleted:
+        raise HTTPException(status_code=404, detail="Prompt not found")
+    return ApiResponse(data={"deleted": True})
+
+
+@router.get(
+    "/prompts/{prompt_id}/versions",
+    response_model=ApiResponse[list[PromptResponse]],
+)
+async def list_prompt_versions(
+    prompt_id: str,
+    db: AsyncSession = Depends(get_db),
+) -> ApiResponse[list[PromptResponse]]:
+    """List all versions of a prompt by name (looked up via the given id)."""
+    versions = await PromptRegistry.get_versions(db, prompt_id)
+    if not versions:
+        raise HTTPException(status_code=404, detail="Prompt not found")
+    return ApiResponse(
+        data=[PromptResponse.model_validate(p) for p in versions],
+        meta=ApiMeta(page=1, per_page=len(versions), total=len(versions)),
+    )
+
+
+@router.post(
+    "/prompts/{prompt_id}/duplicate",
+    response_model=ApiResponse[PromptResponse],
+    status_code=201,
+)
+async def duplicate_prompt(
+    prompt_id: str,
+    db: AsyncSession = Depends(get_db),
+) -> ApiResponse[PromptResponse]:
+    """Duplicate a prompt as a new version."""
+    prompt = await PromptRegistry.duplicate(db, prompt_id)
+    if not prompt:
+        raise HTTPException(status_code=404, detail="Prompt not found")
     return ApiResponse(data=PromptResponse.model_validate(prompt))
 
 
