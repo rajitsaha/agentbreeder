@@ -368,10 +368,9 @@ export default function PromptDetailPage() {
               />
             </div>
 
-            {/* Divider — visible when both panels shown */}
+            {/* Divider -- visible when both panels shown */}
             <div className={cn(
               "hidden md:block w-0",
-              activeTab === "preview" ? "" : ""
             )} />
 
             {/* Preview panel */}

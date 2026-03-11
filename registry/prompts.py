@@ -129,13 +129,11 @@ class PromptRegistry:
         session: AsyncSession, prompt_id: str
     ) -> list[Prompt]:
         """Get all versions of a prompt (looked up by the name of the given id)."""
-        # First get the prompt to find its name
         stmt = select(Prompt).where(Prompt.id == prompt_id)
         result = await session.execute(stmt)
         prompt = result.scalar_one_or_none()
         if not prompt:
             return []
-        # Then get all versions with that name
         stmt = (
             select(Prompt)
             .where(Prompt.name == prompt.name)
@@ -146,7 +144,7 @@ class PromptRegistry:
 
     @staticmethod
     async def duplicate(session: AsyncSession, prompt_id: str) -> Prompt | None:
-        """Duplicate a prompt as a new version (bumps minor version)."""
+        """Duplicate a prompt as a new version (bumps patch version)."""
         stmt = select(Prompt).where(Prompt.id == prompt_id)
         result = await session.execute(stmt)
         source = result.scalar_one_or_none()
@@ -162,7 +160,6 @@ class PromptRegistry:
         all_result = await session.execute(all_versions_stmt)
         all_versions = list(all_result.scalars().all())
 
-        # Compute next version by bumping the patch of the highest version
         latest_version = all_versions[0].version if all_versions else source.version
         parts = latest_version.split(".")
         try:
@@ -181,7 +178,7 @@ class PromptRegistry:
         session.add(new_prompt)
         await session.flush()
         logger.info(
-            "Duplicated prompt '%s' v%s → v%s",
+            "Duplicated prompt '%s' v%s -> v%s",
             source.name,
             source.version,
             new_version,
