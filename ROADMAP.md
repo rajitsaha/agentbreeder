@@ -12,12 +12,12 @@
 |---------|------|-------|------------|--------|
 | **v0.1** | Foundation | CLI + Registry + Basic Dashboard | M1–M5 | Done |
 | **v0.2** | Registry UI | Rich registry pages, YAML editor, prompt manager | M6–M7 | Next |
-| **v0.3** | Builders | All builders + Git workflow + approval + environments + playground + 2 SDK examples (LangGraph, OpenAI Agents) | M8–M13 | Planned |
+| **v0.3** | Builders | All builders + Git workflow + approval + environments + playground + 2 SDKs (LangGraph, OpenAI Agents) + Cloud Run deploy | M8–M13, M23 | Planned |
 | **v0.4** | Observability | Tracing (Langfuse/MLflow), cost monitoring, RBAC, audit trail, lineage | M14–M17 | Planned |
 | **v0.5** | Evaluation | Eval framework, golden datasets, regression detection, CI gates, feedback loop | M18 | Planned |
 | **v0.6** | Connectivity | A2A protocol, MCP server hub, multi-agent orchestration | M19–M20 | Planned |
 | **v0.7** | Marketplace | Community templates, ratings, one-click deploy | M21–M22 | Planned |
-| **v1.0** | GA | Local Docker + Cloud Run, model catalog, SSO, AgentOps | M23–M27 | Planned |
+| **v1.0** | GA | Additional SDKs (ADK, CrewAI, Claude), model catalog, SSO, AgentOps | M24–M27 | Planned |
 
 ---
 
@@ -166,7 +166,7 @@ memory:
   backend: redis                # or: postgresql, in_memory
 
 deploy:
-  target: local                 # local | cloud-run | ecs-fargate | kubernetes
+  target: local                 # v0.3: local | cloud-run  (v1.0+: ecs-fargate, kubernetes, databricks)
   resources:
     cpu: "0.5"
     memory: "512Mi"
@@ -1578,7 +1578,7 @@ The agent builder is the capstone — it pulls from every other registry to asse
 - [ ] Selected components appear as nodes in visual mode / YAML refs in code mode
 
 #### 12.4 — Deploy from Dashboard
-- [ ] Deploy dialog: select target (Local Docker, Kubernetes)
+- [ ] Deploy dialog: select target (Local Docker, Google Cloud Run)
 - [ ] Pre-deploy validation: check all registry refs resolve, MCP servers reachable, model available
 - [ ] Deploy progress: 8-step pipeline visualization, real-time
 - [ ] Deploy log streaming in a bottom panel
@@ -1839,15 +1839,18 @@ Elevate MCP from "tool connector" to a managed server hub with lifecycle managem
 
 ## v1.0 — "General Availability" (Planned)
 
-> **Goal:** The enterprise one-stop shop for AgentOps. Local Docker full-stack + Google Cloud Run for production. Full model catalog. SSO. Operational maturity.
+> **Goal:** The enterprise one-stop shop for AgentOps. Full model catalog. SSO. Operational maturity. (Local Docker + Cloud Run deploy targets ship in v0.3.)
 
 ### M23: Deployment Targets
 
-#### v1.0 Deployers (ship with GA)
-- [ ] **Local Docker** (full stack) — `docker compose up` runs everything: API, dashboard, PostgreSQL, Redis, agents, MCP servers
+#### v0.3 Deployers (ship with Builders)
+- [x] **Local Docker** (full stack) — `docker compose up` runs everything: API, dashboard, PostgreSQL, Redis, agents, MCP servers (already exists)
 - [ ] **Google Cloud Run** — primary cloud target: auto-scaling, scale-to-zero, Artifact Registry, Cloud Load Balancing, Workload Identity
-- [ ] Deploy target selector in dashboard UI
+- [ ] `engine/deployers/gcp_cloudrun.py` — Cloud Run deployer implementation
+- [ ] `garden deploy --target cloud-run` CLI command
+- [ ] Deploy target selector in dashboard UI (Local Docker, Google Cloud Run)
 - [ ] Cloud console deep links on deploy status page
+- [ ] Cloud Run deployment docs + quickstart guide
 
 #### Deployer Priority (post v1.0, in order)
 
