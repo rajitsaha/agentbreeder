@@ -100,10 +100,16 @@ class AgentResponse(BaseModel):
     endpoint_url: str | None
     status: AgentStatus
     tags: list[str]
+    config_snapshot: dict[str, Any]
     created_at: datetime
     updated_at: datetime
 
     model_config = {"from_attributes": True}
+
+
+class AgentCloneRequest(BaseModel):
+    name: str
+    version: str = "1.0.0"
 
 
 # --- Tool Schemas ---
@@ -163,6 +169,11 @@ class PromptCreate(BaseModel):
     content: str
     description: str = ""
     team: str
+
+
+class PromptUpdate(BaseModel):
+    content: str | None = None
+    description: str | None = None
 
 
 class PromptResponse(BaseModel):
