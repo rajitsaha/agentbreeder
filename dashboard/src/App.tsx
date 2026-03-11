@@ -12,6 +12,7 @@ import PromptsPage from "@/pages/prompts";
 import PromptDetailPage from "@/pages/prompt-detail";
 import DeploysPage from "@/pages/deploys";
 import SearchPage from "@/pages/search";
+import SettingsPage from "@/pages/settings";
 import { Loader2 } from "lucide-react";
 
 const queryClient = new QueryClient({
@@ -62,6 +63,7 @@ export default function App() {
               <Route path="prompts/:id" element={<PromptDetailPage />} />
               <Route path="deploys" element={<DeploysPage />} />
               <Route path="search" element={<SearchPage />} />
+              <Route path="settings" element={<SettingsPage />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Route>
           </Routes>
