@@ -14,10 +14,10 @@
 | **v0.2** | Registry UI | Rich registry pages, YAML editor, prompt manager | M6–M7 | Next |
 | **v0.3** | Builders | All builders + Git workflow + approval + environments + playground + 2 SDKs (LangGraph, OpenAI Agents) + Cloud Run deploy | M8–M13, M23 | Planned |
 | **v0.4** | Observability | Tracing (Langfuse/MLflow), cost monitoring, RBAC, audit trail, lineage | M14–M17 | Planned |
-| **v0.5** | Evaluation | Eval framework, golden datasets, regression detection, CI gates, feedback loop | M18 | Planned |
-| **v0.6** | Connectivity | A2A protocol, MCP server hub, multi-agent orchestration | M19–M20 | Planned |
-| **v0.7** | Marketplace | Community templates, ratings, one-click deploy | M21–M22 | Planned |
-| **v1.0** | GA | Additional SDKs (ADK, CrewAI, Claude), model catalog, SSO, AgentOps | M24–M27 | Planned |
+| **v1.0** | GA | Eval framework, golden datasets, regression detection, CI gates, feedback loop | M18 | Planned |
+| **v1.1** | Connectivity | A2A protocol, MCP server hub, multi-agent orchestration | M19–M20 | Planned |
+| **v1.2** | Marketplace | Community templates, ratings, one-click deploy | M21–M22 | Planned |
+| **v1.3** | Enterprise | Additional SDKs (ADK, CrewAI, Claude), model catalog, SSO, AgentOps | M24–M27 | Planned |
 
 ---
 
@@ -166,7 +166,7 @@ memory:
   backend: postgresql            # v0.3: in_memory | postgresql  (v0.4+: redis)
 
 deploy:
-  target: local                 # v0.3: local | cloud-run  (v1.0+: ecs-fargate, kubernetes, databricks)
+  target: local                 # v0.3: local | cloud-run  (v1.3+: ecs-fargate, kubernetes, databricks)
   resources:
     cpu: "0.5"
     memory: "512Mi"
@@ -764,11 +764,11 @@ Step 1: Pick a provider
 │  │          │           │          │          │          │         │
 │  └──────────┘           └──────────┘          └──────────┘         │
 │  ┌──────────┐           ┌──────────┐                               │
-│  │Anthropic │ (v0.4)    │OpenRouter│ (v1.0)                        │
+│  │Anthropic │ (v0.4)    │OpenRouter│ (v1.3)                        │
 │  │          │           │          │                               │
 │  └──────────┘           └──────────┘                               │
 │  ┌──────────┐           ┌──────────┐                               │
-│  │ Google   │ (v0.6)    │ Portkey  │ (v1.0+)                       │
+│  │ Google   │ (v1.1)    │ Portkey  │ (v1.3+)                       │
 │  │          │           │          │                               │
 │  └──────────┘           └──────────┘                               │
 └─────────────────────────────────────────────────────────────────────┘
@@ -919,7 +919,7 @@ garden provider add openrouter --api-key or-...               # connect OpenRout
 |---------|---------------|--------------|
 | **v0.2–v0.3** | `.env` file + env vars | Simple. User pastes key → saved to `.env`. CLI reads from env vars. Dashboard reads from server env. |
 | **v0.4** | Encrypted in PostgreSQL | Keys encrypted at rest (Fernet). Team-scoped keys. Key rotation. |
-| **v1.0** | External secrets managers | AWS Secrets Manager, GCP Secret Manager, HashiCorp Vault, Doppler. Keys never touch our DB. |
+| **v1.3** | External secrets managers | AWS Secrets Manager, GCP Secret Manager, HashiCorp Vault, Doppler. Keys never touch our DB. |
 
 **v0.2–v0.3: Simple `.env` approach (ship now):**
 
@@ -1154,7 +1154,7 @@ UI:   Agent detail → "Playground" tab
 - [ ] CLI: `garden chat` — interactive terminal chat with any agent
 - [ ] CLI: `garden chat --verbose` — show tool calls, token counts, latency
 
-**Level 2: Evaluation (Automated Testing — see v0.5 for full spec)**
+**Level 2: Evaluation (Automated Testing — see v1.0 for full spec)**
 
 Run golden test suites against an agent to measure quality systematically.
 
@@ -1243,7 +1243,7 @@ Training dataset (curated from production traces + feedback)
 - [ ] Side-by-side eval: compare fine-tuned model vs. base model on same eval suite
 - [ ] CLI: `garden fine-tune agent my-agent --provider openai --dataset my-dataset`
 
-**Tier 4: RLHF / Reinforcement Learning (future, post v1.0)**
+**Tier 4: RLHF / Reinforcement Learning (future, post v1.3)**
 
 Use human feedback to systematically improve agent behavior through reward modeling.
 
@@ -1259,7 +1259,7 @@ Production traces + human ratings (thumbs up/down, corrections)
 - [ ] Preference pairs: collect A/B comparisons from users ("response A or B is better?")
 - [ ] DPO dataset export: export preference pairs in DPO format for external training
 - [ ] Reward-guided prompt selection: use reward model to auto-select best prompt variant
-- [ ] This is post-v1.0 — requires significant production data volume to be effective
+- [ ] This is post-v1.3 — requires significant production data volume to be effective
 
 #### Git Workflow — CLI and UI Parity
 
@@ -1476,7 +1476,7 @@ garden clone <repo-url>           # clone external Git repo into platform
 
 ### M10: RAG Builder (Vector DB Index Management)
 
-> **Strategy:** pgvector carries you through v1.0 — zero new services, runs on existing PostgreSQL. Cloud vector DBs deferred to post v1.0.
+> **Strategy:** pgvector carries you through v1.3 — zero new services, runs on existing PostgreSQL. Cloud vector DBs deferred to post v1.3.
 
 #### 10.1 — Vector Index Registry (v0.3)
 - [ ] Vector index as a registry resource: name, description, embedding model, chunk strategy, source
@@ -1501,13 +1501,13 @@ garden clone <repo-url>           # clone external Git repo into platform
 - [ ] Semantic chunking: split by heading/paragraph for better retrieval quality
 - [ ] Scheduled re-ingestion: cron-based refresh from connected sources
 
-**v1.0 — Production-grade ingestion:**
+**v1.3 — Production-grade ingestion:**
 - [ ] Database source: connect to PostgreSQL/MySQL, select table/query, ingest rows as documents
 - [ ] Re-ranking: Cohere Rerank or cross-encoder re-ranking for improved retrieval quality
 - [ ] Multi-index queries: search across multiple RAG indexes in a single agent request
 - [ ] ChromaDB as alternative vector backend (embedded, no server, good for single-machine deploys)
 
-**Post v1.0 — Cloud vector DBs:**
+**Post v1.3 — Cloud vector DBs:**
 - [ ] Pinecone connector (P1 — managed, scales infinitely)
 - [ ] Weaviate connector (P2 — strong hybrid search)
 - [ ] Qdrant connector (P2 — fast, Rust-based)
@@ -1523,7 +1523,7 @@ garden clone <repo-url>           # clone external Git repo into platform
 - [ ] Hybrid search: combine pgvector similarity + PostgreSQL `tsvector` full-text search
 - [ ] Search API: `POST /api/v1/rag/search` — programmatic access for agents
 
-**v1.0 additions:**
+**v1.3 additions:**
 - [ ] Compare indexes: run same query against two indexes, see results side-by-side
 - [ ] Reranking toggle in search settings
 
@@ -1557,13 +1557,13 @@ garden clone <repo-url>           # clone external Git repo into platform
 - [ ] Summary memory type: periodic LLM-generated summaries of long conversations (keeps context window small)
 - [ ] Entity memory type: extract and track entities (people, products, tickets) across conversations
 
-**v1.0 — Advanced memory patterns:**
+**v1.3 — Advanced memory patterns:**
 - [ ] **Semantic memory**: vector-indexed memory via pgvector for similarity-based recall ("What did the user say about billing?")
 - [ ] **Shared memory**: multiple agents read/write to the same memory space (research agent writes, summarizer reads)
 - [ ] **Memory scoping**: per-user, per-session, per-agent, per-team memory isolation
 - [ ] Memory TTL policies: auto-expire conversations older than N days (GDPR-friendly)
 
-**Post v1.0:**
+**Post v1.3:**
 - [ ] Cross-agent memory federation (P1 — Agent A's findings auto-available to Agent B)
 - [ ] External memory services: Mem0, Zep integration (P2 — for teams that want managed)
 - [ ] Long-term user profiles (P2 — persistent preferences across agents and sessions)
@@ -1585,7 +1585,7 @@ garden clone <repo-url>           # clone external Git repo into platform
 | **Buffer** | Full conversation history (no truncation) | v0.3 |
 | **Summary** | LLM-generated summaries of long conversations | v0.4 |
 | **Entity** | Extract and track entities across conversations | v0.4 |
-| **Semantic** | Vector-indexed memory for similarity-based recall (pgvector) | v1.0 |
+| **Semantic** | Vector-indexed memory for similarity-based recall (pgvector) | v1.3 |
 
 - [ ] Each type configurable per agent in agent.yaml `memory:` block
 
@@ -1655,7 +1655,7 @@ Each example is a complete, working agent with `agent.yaml`, source code, `requi
 | **LangGraph / DeepAgent** | `examples/langgraph-agent/` (exists) | `engine/runtimes/langgraph.py` (exists) | P0 (v0.3) | Largest community, complex graph model proves runtime abstraction |
 | **OpenAI Agents SDK** | `examples/openai-agents-agent/` | `engine/runtimes/openai_agents.py` | P0 (v0.3) | Largest enterprise footprint, simple model contrasts LangGraph |
 
-#### Next SDKs (v1.0)
+#### Next SDKs (v1.3)
 
 | SDK | Example | Runtime Builder | Priority | Notes |
 |-----|---------|----------------|----------|-------|
@@ -1663,7 +1663,7 @@ Each example is a complete, working agent with `agent.yaml`, source code, `requi
 | **CrewAI** | `examples/crewai-agent/` | `engine/runtimes/crewai.py` | P2 | Popular for multi-agent, but narrower use case |
 | **Claude SDK** | `examples/claude-sdk-agent/` | `engine/runtimes/claude_sdk.py` | P2 | Excellent SDK, smaller market share currently |
 
-#### Later SDKs (post v1.0)
+#### Later SDKs (post v1.3)
 
 | SDK | Notes |
 |-----|-------|
@@ -1682,7 +1682,7 @@ Each example is a complete, working agent with `agent.yaml`, source code, `requi
 - [ ] Each runtime: Dockerfile generation, dependency resolution, entrypoint config
 - [ ] Integration test per runtime: build container, start, verify `/health` responds
 
-#### 13.3 — Additional SDKs (v1.0)
+#### 13.3 — Additional SDKs (v1.3)
 - [ ] `examples/google-adk-agent/` — Google Agent Development Kit
 - [ ] `examples/crewai-agent/` — CrewAI multi-agent crew
 - [ ] `examples/claude-sdk-agent/` — Anthropic Claude SDK (tool use)
@@ -1704,7 +1704,7 @@ Integrate with Langfuse (primary) and support MLflow as an alternative backend. 
 - [ ] Langfuse Python SDK integration (`langfuse` package) as the default tracing backend
 - [ ] MLflow Tracing support as an alternative (`mlflow.tracing`) — configurable via env var
 - [ ] OpenTelemetry export: emit OTel-compatible spans for each agent invocation
-- [ ] Auto-instrumentation: patch LangGraph, OpenAI Agents SDK + OpenAI API calls automatically (Anthropic in v0.4, Google in v0.6, CrewAI/ADK in v1.0)
+- [ ] Auto-instrumentation: patch LangGraph, OpenAI Agents SDK + OpenAI API calls automatically (Anthropic in v0.4, Google in v1.1, CrewAI/ADK in v1.3)
 - [ ] Trace context propagation: pass trace IDs through tool calls and MCP requests
 - [ ] Config: `TRACING_BACKEND=langfuse|mlflow|otlp|none`, connection URL, API keys
 - [ ] Backend: `traces` table for local trace metadata (trace_id, agent, duration, token_count, cost, status)
@@ -1761,9 +1761,9 @@ Integrate with Langfuse (primary) and support MLflow as an alternative backend. 
 
 ---
 
-## v0.5 — "Evaluation" (Planned)
+## v1.0 — "General Availability" (Planned)
 
-> **Goal:** Teams can measure agent quality systematically — golden test sets, automated scoring, regression detection, and CI/CD gates. Ship agents with confidence.
+> **Goal:** Teams can measure agent quality systematically — golden test sets, automated scoring, regression detection, and CI/CD gates. Ship agents with confidence. This is GA: you have registry, builders, observability, and now eval — a complete agent platform.
 
 ### M18: Evaluation Framework
 
@@ -1812,7 +1812,7 @@ Integrate with Langfuse (primary) and support MLflow as an alternative backend. 
 
 ---
 
-## v0.6 — "Connectivity" (Planned)
+## v1.1 — "Connectivity" (Planned)
 
 > **Goal:** Agents can discover and call each other via A2A protocol. MCP servers become a managed hub. The platform enables multi-agent workflows.
 
@@ -1864,7 +1864,7 @@ Elevate MCP from "tool connector" to a managed server hub with lifecycle managem
 
 ---
 
-## v0.7 — "Marketplace" (Planned)
+## v1.2 — "Marketplace" (Planned)
 
 > **Goal:** Users can discover, share, and one-click deploy agent templates from a community marketplace.
 
@@ -1888,9 +1888,9 @@ Elevate MCP from "tool connector" to a managed server hub with lifecycle managem
 
 ---
 
-## v1.0 — "General Availability" (Planned)
+## v1.3 — "Enterprise" (Planned)
 
-> **Goal:** The enterprise one-stop shop for AgentOps. Full model catalog. SSO. Operational maturity. (Local Docker + Cloud Run deploy targets ship in v0.3.)
+> **Goal:** Enterprise-grade operations: full model catalog, SSO, secrets management, unified AgentOps dashboard. Production hardening.
 
 ### M23: Deployment Targets
 
@@ -1903,7 +1903,7 @@ Elevate MCP from "tool connector" to a managed server hub with lifecycle managem
 - [ ] Cloud console deep links on deploy status page
 - [ ] Cloud Run deployment docs + quickstart guide
 
-#### Deployer Priority (post v1.0, in order)
+#### Deployer Priority (post v1.3, in order)
 
 | Priority | Target | Notes |
 |----------|--------|-------|
@@ -1944,11 +1944,11 @@ model:
 |------|---------|------|-------------|----------|
 | **0** | Direct SDKs + Ollama | No gateway | Dev/test, single-provider, local-first | v0.3 (default) |
 | **1** | LiteLLM | OSS, self-hosted | Production — unified API, cost tracking, fallbacks, 100+ providers | v0.4 (recommended) |
-| **2** | OpenRouter | SaaS | Teams that don't want to manage infra, quick multi-provider access | v1.0 |
-| **3** | Portkey | OSS + SaaS | Advanced — semantic caching, virtual keys, load balancing, guardrails | Post v1.0 |
+| **2** | OpenRouter | SaaS | Teams that don't want to manage infra, quick multi-provider access | v1.3 |
+| **3** | Portkey | OSS + SaaS | Advanced — semantic caching, virtual keys, load balancing, guardrails | Post v1.3 |
 
 **Tier 0: Direct Provider SDKs + Ollama (v0.3 — ships with builders)**
-- [ ] Direct calls to OpenAI SDK — no proxy, no extra service (Anthropic in v0.4, Google in v0.6)
+- [ ] Direct calls to OpenAI SDK — no proxy, no extra service (Anthropic in v0.4, Google in v1.1)
 - [ ] **Ollama integration**: connect to local Ollama instance for zero-cost local dev/test
 - [ ] Ollama auto-detection: if Ollama is running on localhost:11434, auto-register available models in Model Registry
 - [ ] Ollama model pull from UI: "Download Model" button → triggers `ollama pull <model>` behind the scenes
@@ -1989,13 +1989,13 @@ model:
 - [ ] Dashboard: LiteLLM status page (connected models, request count, error rate)
 - [ ] Docker Compose: add LiteLLM service alongside platform services
 
-**Tier 2: OpenRouter (v1.0)**
+**Tier 2: OpenRouter (v1.3)**
 - [ ] OpenRouter integration: route through OpenRouter API with single API key
 - [ ] Model mapping: map Agent Garden model names to OpenRouter model IDs
 - [ ] Cost pass-through: ingest OpenRouter cost data into cost dashboard
 - [ ] Use case: teams that want multi-provider access without running LiteLLM
 
-**Tier 3: Portkey (post v1.0)**
+**Tier 3: Portkey (post v1.3)**
 - [ ] Portkey gateway integration (self-hosted or cloud)
 - [ ] Semantic caching: cache responses for similar prompts (saves cost on repeated queries)
 - [ ] Virtual keys: abstract API keys behind Portkey virtual keys (rotate without agent restart)
@@ -2036,7 +2036,7 @@ model:
 - [ ] Anthropic SDK integration: messages API, streaming, tool use
 - [ ] Model catalog entry: pricing, context window (200K), capabilities
 
-**v0.6 — Add Google**
+**v1.1 — Add Google**
 
 | Provider | Models | Category |
 |----------|--------|----------|
@@ -2046,7 +2046,7 @@ model:
 - [ ] Google AI SDK integration: generate_content, streaming, function calling
 - [ ] Model catalog entry: pricing, context window (1M+), capabilities
 
-**v1.0 — Full Model Catalog**
+**v1.3 — Full Model Catalog**
 
 | Provider | Models | Category |
 |----------|--------|----------|
@@ -2058,7 +2058,7 @@ model:
 - [ ] Model provider abstraction: unified interface across OpenAI, Anthropic, Google, Ollama
 - [ ] Video model support: input/output handling for Sora and Veo in agent tools
 
-#### Later Models (post v1.0)
+#### Later Models (post v1.3)
 
 | Provider | Models | Priority |
 |----------|--------|----------|
@@ -2145,9 +2145,9 @@ The "single pane of glass" for running agents in production. Consolidates observ
 These are intentionally deferred indefinitely:
 
 - Custom model hosting / serving (use vLLM, TrueFoundry, etc.)
-- Full RLHF/PPO training pipelines (post v1.0 — see Tier 4 in Builder spec)
+- Full RLHF/PPO training pipelines (post v1.3 — see Tier 4 in Builder spec)
 - Mobile app
-- Azure deployer (community contribution welcome post-v1.0)
+- Azure deployer (community contribution welcome post-v1.3)
 - Chat interface for end-users (we build the platform, not the consumer UI)
 
 ---
@@ -2163,7 +2163,7 @@ These are intentionally deferred indefinitely:
 | ORM | SQLAlchemy (async) | Most capable Python ORM; async support |
 | Cache | Redis | Rate limiting, task queue, session cache |
 | Container build | Docker | Universal; BuildKit for multi-platform |
-| Auth | JWT + bcrypt | Simple, stateless; OAuth2 providers added in v1.0 |
+| Auth | JWT + bcrypt | Simple, stateless; OAuth2 providers added in v1.3 |
 | Distribution | `pip install agent-garden` (CLI+SDK), Docker image (platform), Helm chart (K8s) | pip for devs, Docker for teams, Helm for production |
 | Project structure | Single-agent (`agent.yaml` at root) or workspace (`garden.yaml` + `agents/`) | Scales from solo developer to multi-team |
 | Config format | YAML as source of truth (all resource types) | Human-readable; JSON Schema for validation; round-trip safe; IDE and UI interoperable |
@@ -2171,7 +2171,7 @@ These are intentionally deferred indefinitely:
 | Version control | Git (local repo, bridgeable to GitHub/GitLab) | Branch-per-draft, PR-based review, semver tagging on merge |
 | Git library | gitpython (Python) | Programmatic Git ops without shelling out; supports bare repos |
 | Local LLM | Ollama | Zero-cost local dev/test; auto-detected; OpenAI-compatible API |
-| Model gateway | Layered: OpenAI + Ollama (v0.3) → +Anthropic (v0.4) → +Google (v0.6) → LiteLLM → OpenRouter | Phased provider rollout; LiteLLM for production (OSS, self-hosted, 100+ providers) |
+| Model gateway | Layered: OpenAI + Ollama (v0.3) → +Anthropic (v0.4) → +Google (v1.1) → LiteLLM → OpenRouter | Phased provider rollout; LiteLLM for production (OSS, self-hosted, 100+ providers) |
 | Tracing | Langfuse (primary), MLflow (alt), OTel export | Open-source, self-hostable, purpose-built for LLM observability |
 | Evaluation | Built-in eval framework + LLM-as-judge | No vendor lock-in; pluggable scoring |
 | Agent improvement | Prompt optimization (primary) → few-shot curation → fine-tuning (advanced) | Most gains come from prompts, not model training |
