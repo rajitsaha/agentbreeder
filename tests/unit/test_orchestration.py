@@ -17,7 +17,7 @@ from engine.orchestration_parser import (
     parse_orchestration,
     validate_orchestration,
 )
-from engine.orchestrator import OrchestrationResult, Orchestrator
+from engine.orchestrator import AgentTraceEntry, OrchestrationResult, Orchestrator
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -423,3 +423,205 @@ class TestOrchestrationStore:
         assert demo is not None
         assert demo["strategy"] == "router"
         assert demo["status"] == "deployed"
+
+
+# ---------------------------------------------------------------------------
+# Edge-case Coverage Tests
+# ---------------------------------------------------------------------------
+
+
+class TestOrchestratorEdgeCases:
+    """Tests for uncovered edge-case branches in the orchestrator and parser."""
+
+    def test_unknown_strategy_raises(self) -> None:
+        config = OrchestrationConfig(
+            name="bad-strategy",
+            version="1.0.0",
+            strategy=OrchestrationStrategy.router,
+            agents={"a": AgentRef(ref="agents/a")},
+        )
+        orchestrator = Orchestrator(config)
+        # Monkey-patch the config strategy to an invalid value
+        config.strategy = "invalid"  # type: ignore[assignment]
+        with pytest.raises(ValueError, match="Unknown strategy"):
+            asyncio.run(orchestrator.execute("test"))
+
+    def test_hierarchical_empty_agents(self) -> None:
+        config = OrchestrationConfig(
+            name="empty-hier",
+            version="1.0.0",
+            strategy=OrchestrationStrategy.hierarchical,
+            agents={},
+        )
+        orchestrator = Orchestrator(config)
+        result = asyncio.run(orchestrator.execute("test"))
+        assert result.output == ""
+        assert result.total_latency_ms == 0
+
+    def test_validate_orchestration_invalid_name(self) -> None:
+        content = (
+            "name: INVALID_NAME\nversion: 1.0.0\n"
+            "strategy: router\nagents:\n  a:\n    ref: agents/a\n"
+        )
+        path = _write_yaml(content)
+        result = validate_orchestration(path)
+        assert not result.valid
+
+    def test_validate_orchestration_invalid_version(self) -> None:
+        content = (
+            "name: test-orch\nversion: bad\nstrategy: router\nagents:\n  a:\n    ref: agents/a\n"
+        )
+        path = _write_yaml(content)
+        result = validate_orchestration(path)
+        assert not result.valid
+
+    def test_validate_orchestration_yaml_parse_error(self) -> None:
+        path = _write_yaml("{{invalid yaml content")
+        result = validate_orchestration(path)
+        assert not result.valid
+
+    def test_parse_orchestration_raises_on_invalid(self) -> None:
+        from engine.orchestration_parser import OrchestrationParseError
+
+        content = (
+            "name: INVALID\nversion: bad\nstrategy: router\nagents:\n  a:\n    ref: agents/a\n"
+        )
+        path = _write_yaml(content)
+        with pytest.raises(OrchestrationParseError):
+            parse_orchestration(path)
+
+    def test_pydantic_name_validation_invalid(self) -> None:
+        """Construct OrchestrationConfig directly to hit pydantic validators."""
+        with pytest.raises(ValueError, match="must be lowercase"):
+            OrchestrationConfig(
+                name="INVALID_NAME",
+                version="1.0.0",
+                strategy=OrchestrationStrategy.router,
+                agents={"a": AgentRef(ref="agents/a")},
+            )
+
+    def test_pydantic_version_validation_invalid(self) -> None:
+        with pytest.raises(ValueError, match="semantic versioning"):
+            OrchestrationConfig(
+                name="valid-name",
+                version="bad-version",
+                strategy=OrchestrationStrategy.router,
+                agents={"a": AgentRef(ref="agents/a")},
+            )
+
+    def test_orchestration_service_deploy_not_found(self) -> None:
+        store = OrchestrationStore()
+        store._orchestrations.clear()
+        result = store.deploy("nonexistent")
+        assert result is None
+
+    def test_orchestration_service_update_not_found(self) -> None:
+        store = OrchestrationStore()
+        store._orchestrations.clear()
+        result = store.update("nonexistent", name="new-name")
+        assert result is None
+
+    def test_orchestration_service_delete_not_found(self) -> None:
+        store = OrchestrationStore()
+        store._orchestrations.clear()
+        assert store.delete("nonexistent") is False
+
+    def test_router_error_fallback(self) -> None:
+        """Test router fallback when primary agent returns error."""
+        config = OrchestrationConfig(
+            name="fallback-test",
+            version="1.0.0",
+            strategy=OrchestrationStrategy.router,
+            agents={
+                "primary": AgentRef(
+                    ref="agents/primary",
+                    routes=[RoutingRule(condition="test", target="primary")],
+                    fallback="backup",
+                ),
+                "backup": AgentRef(ref="agents/backup"),
+            },
+        )
+        orchestrator = Orchestrator(config)
+
+        call_count = 0
+        original_call = orchestrator._call_agent
+
+        async def mock_call_agent(agent_name: str, input_message: str) -> AgentTraceEntry:
+            nonlocal call_count
+            call_count += 1
+            if agent_name == "primary":
+                return AgentTraceEntry(
+                    agent_name=agent_name,
+                    input=input_message,
+                    output="",
+                    latency_ms=100,
+                    tokens=10,
+                    status="error",
+                )
+            return await original_call(agent_name, input_message)
+
+        orchestrator._call_agent = mock_call_agent  # type: ignore[assignment]
+        result = asyncio.run(orchestrator.execute("test input"))
+        assert call_count == 2  # primary + fallback
+        assert result.agent_trace[-1].status == "fallback"
+
+    def test_sequential_error_fallback(self) -> None:
+        """Test sequential fallback when an agent returns error."""
+        config = OrchestrationConfig(
+            name="seq-fallback",
+            version="1.0.0",
+            strategy=OrchestrationStrategy.sequential,
+            agents={
+                "step-one": AgentRef(ref="agents/step-one", fallback="step-recovery"),
+                "step-recovery": AgentRef(ref="agents/step-recovery"),
+            },
+        )
+        orchestrator = Orchestrator(config)
+
+        original_call = orchestrator._call_agent
+
+        async def mock_call_agent(agent_name: str, input_message: str) -> AgentTraceEntry:
+            if agent_name == "step-one":
+                return AgentTraceEntry(
+                    agent_name=agent_name,
+                    input=input_message,
+                    output="",
+                    latency_ms=100,
+                    tokens=10,
+                    status="error",
+                )
+            return await original_call(agent_name, input_message)
+
+        orchestrator._call_agent = mock_call_agent  # type: ignore[assignment]
+        result = asyncio.run(orchestrator.execute("test input"))
+        # Should have: step-one (error) + step-one's fallback + step-recovery (normal)
+        assert any(e.status == "fallback" for e in result.agent_trace)
+
+    def test_sequential_error_no_fallback_breaks(self) -> None:
+        """Sequential stops on error when no fallback is configured."""
+        config = OrchestrationConfig(
+            name="seq-break",
+            version="1.0.0",
+            strategy=OrchestrationStrategy.sequential,
+            agents={
+                "step-one": AgentRef(ref="agents/step-one"),  # no fallback
+                "step-two": AgentRef(ref="agents/step-two"),
+            },
+        )
+        orchestrator = Orchestrator(config)
+
+        async def mock_call_agent(agent_name: str, input_message: str) -> AgentTraceEntry:
+            return AgentTraceEntry(
+                agent_name=agent_name,
+                input=input_message,
+                output="",
+                latency_ms=100,
+                tokens=10,
+                status="error",
+            )
+
+        orchestrator._call_agent = mock_call_agent  # type: ignore[assignment]
+        result = asyncio.run(orchestrator.execute("test input"))
+        # Should stop after step-one error (no fallback, so break)
+        assert len(result.agent_trace) == 1
+        assert result.agent_trace[0].status == "error"

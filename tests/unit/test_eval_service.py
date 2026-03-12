@@ -833,3 +833,111 @@ class TestCascadeDeletion:
         assert len(store.list_rows(ds["id"])) == 0
         assert len(store.list_runs(dataset_id=ds["id"])) == 0
         assert len(store.get_results(run["id"])) == 0
+
+
+# ---------------------------------------------------------------------------
+# Edge-case coverage tests
+# ---------------------------------------------------------------------------
+
+
+class TestEdgeCaseCoverage:
+    """Tests for previously uncovered edge-case lines."""
+
+    def test_list_datasets_filter_by_agent_id(self, store: EvalStore) -> None:
+        ds1 = store.create_dataset(name="ds1", agent_id="agent-1")
+        store.create_dataset(name="ds2", agent_id="agent-2")
+        filtered = store.list_datasets(agent_id="agent-1")
+        assert len(filtered) == 1
+        assert filtered[0]["id"] == ds1["id"]
+
+    def test_list_runs_filter_by_dataset_id(self, store: EvalStore) -> None:
+        ds1 = store.create_dataset(name="ds-a")
+        ds2 = store.create_dataset(name="ds-b")
+        store.create_run(agent_name="a", dataset_id=ds1["id"])
+        store.create_run(agent_name="a", dataset_id=ds2["id"])
+        runs = store.list_runs(dataset_id=ds1["id"])
+        assert len(runs) == 1
+        assert runs[0]["dataset_id"] == ds1["id"]
+
+    def test_update_run_status_not_found(self, store: EvalStore) -> None:
+        result = store.update_run_status("nonexistent-run", "completed")
+        assert result is None
+
+    def test_execute_run_not_found(self, store: EvalStore) -> None:
+        with pytest.raises(ValueError, match="not found"):
+            store.execute_run("nonexistent-run")
+
+    def test_execute_run_empty_dataset(self, store: EvalStore) -> None:
+        ds = store.create_dataset(name="empty-ds")
+        run = store.create_run(agent_name="agent", dataset_id=ds["id"])
+        result = store.execute_run(run["id"])
+        assert result["status"] == "completed"
+        assert result["summary"]["total_results"] == 0
+
+    def test_execute_run_with_judge_model(self, store: EvalStore) -> None:
+        ds = store.create_dataset(name="judge-ds")
+        store.add_rows(
+            ds["id"],
+            [
+                {"input": {"q": "test"}, "expected_output": "The correct answer is test"},
+            ],
+        )
+        run = store.create_run(
+            agent_name="agent",
+            dataset_id=ds["id"],
+            config={"judge_model": "claude-sonnet-4"},
+        )
+        result = store.execute_run(run["id"])
+        assert result["status"] == "completed"
+        results = store.get_results(run["id"])
+        assert "judge" in results[0]["scores"]
+
+    def test_export_jsonl_with_tool_calls_and_metadata(self, store: EvalStore) -> None:
+        ds = store.create_dataset(name="export-ds")
+        store.add_rows(
+            ds["id"],
+            [
+                {
+                    "input": {"q": "test"},
+                    "expected_output": "answer",
+                    "expected_tool_calls": [{"tool": "search", "args": {"q": "test"}}],
+                    "metadata": {"source": "manual"},
+                    "tags": ["tagged"],
+                },
+            ],
+        )
+        content = store.export_jsonl(ds["id"])
+        parsed = json.loads(content)
+        assert "expected_tool_calls" in parsed
+        assert "metadata" in parsed
+        assert "tags" in parsed
+
+    def test_simulate_agent_response_short(self, store: EvalStore) -> None:
+        # Short expected output (<=3 words) returns as-is
+        result = store._simulate_agent_response({"q": "test"}, "Yes it is")
+        assert result == "Yes it is"
+
+    def test_simulate_agent_response_long(self, store: EvalStore) -> None:
+        # Longer expected output gets trimmed
+        result = store._simulate_agent_response({"q": "test"}, "This is a long response text")
+        assert len(result.split()) < len("This is a long response text".split())
+
+    def test_delete_dataset_cascades_results(self, store: EvalStore) -> None:
+        """Verify cascade deletion removes results linked to rows."""
+        ds = store.create_dataset(name="cascade-ds")
+        rows = store.add_rows(
+            ds["id"],
+            [
+                {"input": {"q": "test"}, "expected_output": "answer"},
+            ],
+        )
+        run = store.create_run(agent_name="agent", dataset_id=ds["id"])
+        store.add_result(
+            run_id=run["id"],
+            row_id=rows[0]["id"],
+            actual_output="answer",
+            scores={"correctness": 1.0},
+        )
+        # Now cascade-delete the dataset
+        assert store.delete_dataset(ds["id"]) is True
+        assert len(store._results) == 0
