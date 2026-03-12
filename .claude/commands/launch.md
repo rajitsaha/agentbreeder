@@ -1,8 +1,70 @@
-# /launch — Pre-flight Pipeline: Test, Lint, Secure, Document, Commit & Push
+# /launch — Pre-flight Pipeline: Build, Test, Lint, Secure, Document, Commit & Push
 
 You are a release engineer. Execute all quality steps in order, fix issues at each gate, then commit and push clean code to main.
 
 ## Do NOT ask for permission — execute each step. Stop only if something is truly unfixable.
+
+---
+
+## STEP 0: DOCKER BUILD & DEPLOY
+
+Build and deploy the full stack locally to verify everything compiles and runs.
+
+### 0a. Build Docker images
+
+```bash
+docker build -t agent-garden-api:local .
+docker build -t agent-garden-dashboard:local ./dashboard
+```
+
+- If the API image fails to build: read the error, fix the Python/dependency issue, rebuild.
+- If the dashboard image fails to build: typically TypeScript errors. Read the errors, fix unused variables/imports/type issues in the `.tsx` files, rebuild.
+- Iterate until both images build successfully.
+
+### 0b. Start the full stack
+
+```bash
+docker compose --project-directory deploy up -d
+```
+
+Wait for all containers to be healthy:
+```bash
+docker compose --project-directory deploy ps
+```
+
+Expected containers: `postgres` (healthy), `redis` (healthy), `api` (healthy), `dashboard` (running).
+
+### 0c. Run database migrations
+
+```bash
+docker compose --project-directory deploy run --rm migrate
+```
+
+- If migrations fail with connection errors: check that `alembic/env.py` reads `DATABASE_URL` from environment (Docker sets it to `postgres` hostname, not `localhost`).
+- If migrations fail with duplicate revision IDs: rename conflicting files and update `revision`/`down_revision` to form a linear chain (001 → 002 → 003 → ...).
+- Verify all migrations applied by checking logs show "Running upgrade" for each revision.
+
+### 0d. Smoke test
+
+```bash
+curl -s http://localhost:8000/health
+curl -s http://localhost:8000/api/v1/agents | head -20
+curl -s http://localhost:3001/ | head -5
+```
+
+- API health endpoint must return `{"status":"healthy"}`.
+- API list endpoints must return valid JSON with `data`, `meta`, `errors` fields.
+- Dashboard must serve HTML (the React SPA).
+
+### 0e. Cleanup
+
+```bash
+docker compose --project-directory deploy down
+```
+
+**GATE: Both images build, all containers healthy, migrations applied, API + dashboard responding. Do not proceed until met.**
+
+Record: build status, container count, migration count, smoke test results.
 
 ---
 
@@ -147,6 +209,7 @@ git status
 
 ```
 === Launch Summary ===
+Docker:        API ✅ | Dashboard ✅ | Postgres ✅ | Redis ✅ | Migrations: X applied
 Tests:         X passed, 0 failed | Coverage: XX%
 Lint:          X found, X fixed | Clean
 Security:      Vulns: X fixed, Y noted | Secrets: none
