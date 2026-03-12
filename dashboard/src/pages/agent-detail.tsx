@@ -30,6 +30,7 @@ import {
   X,
   AlertCircle,
   CheckCircle2,
+  GitCompareArrows,
 } from "lucide-react";
 import { api, type Agent, type AgentStatus, type DeployJob } from "@/lib/api";
 import { Badge } from "@/components/ui/badge";
@@ -47,6 +48,8 @@ import {
 } from "@/components/ui/dialog";
 import { DeployPipeline } from "@/components/deploy-pipeline";
 import { RelativeTime } from "@/components/ui/relative-time";
+import { ConfigDiffViewer } from "@/components/config-diff-viewer";
+import { VersionSelector, type VersionEntry } from "@/components/version-selector";
 import { cn } from "@/lib/utils";
 import { jsonToYaml, highlightYaml } from "@/lib/yaml";
 import { useState, useMemo, useCallback, useRef } from "react";
@@ -468,11 +471,27 @@ function validateYamlBasic(text: string): YamlValidation {
 // Configuration (YAML Viewer + Inline Editor) Tab
 // ---------------------------------------------------------------------------
 
+// Mock version data for compare feature
+const MOCK_VERSIONS: VersionEntry[] = [
+  { version: "v1.2.0", date: "2026-03-10", author: "alice" },
+  { version: "v1.1.0", date: "2026-03-05", author: "bob" },
+  { version: "v1.0.0", date: "2026-02-28", author: "alice" },
+];
+
+const MOCK_VERSION_YAML: Record<string, string> = {
+  "v1.0.0": `name: ${"{agent}"}\nversion: "1.0.0"\nframework: langgraph\nmodel:\n  primary: claude-3-5-sonnet\n  temperature: 0.7\n  max_tokens: 4096\ntools:\n  - ref: tools/web-search\ndeploy:\n  cloud: local\n  runtime: docker-compose\n  scaling:\n    min: 1\n    max: 3`,
+  "v1.1.0": `name: ${"{agent}"}\nversion: "1.1.0"\nframework: langgraph\nmodel:\n  primary: claude-sonnet-4\n  temperature: 0.7\n  max_tokens: 4096\ntools:\n  - ref: tools/web-search\n  - ref: tools/database-query\ndeploy:\n  cloud: local\n  runtime: docker-compose\n  scaling:\n    min: 1\n    max: 5`,
+  "v1.2.0": `name: ${"{agent}"}\nversion: "1.2.0"\nframework: langgraph\nmodel:\n  primary: claude-sonnet-4\n  fallback: gpt-4o\n  temperature: 0.5\n  max_tokens: 8192\ntools:\n  - ref: tools/web-search\n  - ref: tools/database-query\n  - ref: tools/slack-notify\nguardrails:\n  - pii_detection\n  - content_filter\ndeploy:\n  cloud: gcp\n  runtime: cloud-run\n  scaling:\n    min: 2\n    max: 10`,
+};
+
 function ConfigurationTab({ agent }: { agent: Agent }) {
   const [copied, setCopied] = useState(false);
   const [editing, setEditing] = useState(false);
   const [editContent, setEditContent] = useState("");
   const [showSaveSuccess, setShowSaveSuccess] = useState(false);
+  const [showDiff, setShowDiff] = useState(false);
+  const [diffVersionA, setDiffVersionA] = useState("v1.0.0");
+  const [diffVersionB, setDiffVersionB] = useState("v1.1.0");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { toast } = useToast();
 
@@ -603,13 +622,25 @@ function ConfigurationTab({ agent }: { agent: Agent }) {
                 </Button>
               </div>
             ) : (
-              <button
-                onClick={handleEdit}
-                className="flex items-center gap-1 rounded-md px-2 py-1 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-              >
-                <Pencil className="size-3" />
-                Edit
-              </button>
+              <>
+                <button
+                  onClick={() => setShowDiff(!showDiff)}
+                  className={cn(
+                    "flex items-center gap-1 rounded-md px-2 py-1 text-xs transition-colors hover:bg-muted hover:text-foreground",
+                    showDiff ? "bg-muted text-foreground" : "text-muted-foreground"
+                  )}
+                >
+                  <GitCompareArrows className="size-3" />
+                  Compare
+                </button>
+                <button
+                  onClick={handleEdit}
+                  className="flex items-center gap-1 rounded-md px-2 py-1 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                >
+                  <Pencil className="size-3" />
+                  Edit
+                </button>
+              </>
             )}
           </div>
         </div>
@@ -661,6 +692,33 @@ function ConfigurationTab({ agent }: { agent: Agent }) {
           </div>
         )}
       </div>
+
+      {/* Compare Versions Panel */}
+      {showDiff && (
+        <div className="mt-4 space-y-3">
+          <div className="flex items-center gap-3">
+            <VersionSelector
+              versions={MOCK_VERSIONS}
+              value={diffVersionA}
+              onChange={setDiffVersionA}
+              label="Before"
+            />
+            <span className="text-xs text-muted-foreground">vs</span>
+            <VersionSelector
+              versions={MOCK_VERSIONS}
+              value={diffVersionB}
+              onChange={setDiffVersionB}
+              label="After"
+            />
+          </div>
+          <ConfigDiffViewer
+            before={MOCK_VERSION_YAML[diffVersionA]?.replace("{agent}", agent.name) ?? ""}
+            after={MOCK_VERSION_YAML[diffVersionB]?.replace("{agent}", agent.name) ?? ""}
+            beforeLabel={diffVersionA}
+            afterLabel={diffVersionB}
+          />
+        </div>
+      )}
     </div>
   );
 }
