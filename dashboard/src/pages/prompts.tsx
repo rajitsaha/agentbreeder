@@ -9,6 +9,12 @@ import {
   Plus,
   MoreHorizontal,
   Trash2,
+  Tag,
+  X,
+  Bold,
+  Italic,
+  Code,
+  Loader2,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { api, type Prompt } from "@/lib/api";
@@ -32,7 +38,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useCallback } from "react";
+import { useToast } from "@/hooks/use-toast";
 
 interface PromptGroup {
   name: string;
@@ -194,7 +201,11 @@ function CreatePromptDialog({ onCreated }: { onCreated: (id: string) => void }) 
   const [description, setDescription] = useState("");
   const [team, setTeam] = useState("");
   const [content, setContent] = useState("");
+  const [tagInput, setTagInput] = useState("");
+  const [tags, setTags] = useState<string[]>([]);
   const [error, setError] = useState("");
+  const contentRef = useRef<HTMLTextAreaElement>(null);
+  const { toast } = useToast();
 
   const queryClient = useQueryClient();
 
@@ -205,10 +216,12 @@ function CreatePromptDialog({ onCreated }: { onCreated: (id: string) => void }) 
       queryClient.invalidateQueries({ queryKey: ["prompts"] });
       setOpen(false);
       resetForm();
+      toast({ title: "Prompt created", description: `"${name}" has been registered.`, variant: "success" });
       onCreated(data.data.id);
     },
     onError: (err: Error) => {
       setError(err.message);
+      toast({ title: "Failed to create prompt", description: err.message, variant: "error" });
     },
   });
 
@@ -218,8 +231,44 @@ function CreatePromptDialog({ onCreated }: { onCreated: (id: string) => void }) 
     setDescription("");
     setTeam("");
     setContent("");
+    setTagInput("");
+    setTags([]);
     setError("");
   };
+
+  const addTag = () => {
+    const tag = tagInput.trim().toLowerCase();
+    if (tag && !tags.includes(tag)) {
+      setTags([...tags, tag]);
+    }
+    setTagInput("");
+  };
+
+  const removeTag = (tag: string) => {
+    setTags(tags.filter((t) => t !== tag));
+  };
+
+  const insertSyntax = useCallback(
+    (before: string, after: string, placeholder: string) => {
+      const textarea = contentRef.current;
+      if (!textarea) return;
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const selected = content.substring(start, end);
+      const text = selected || placeholder;
+      const newContent =
+        content.substring(0, start) + before + text + after + content.substring(end);
+      setContent(newContent);
+      requestAnimationFrame(() => {
+        textarea.focus();
+        const cursorStart = start + before.length;
+        const cursorEnd = cursorStart + text.length;
+        textarea.selectionStart = cursorStart;
+        textarea.selectionEnd = cursorEnd;
+      });
+    },
+    [content]
+  );
 
   const canSubmit = name.trim() && version.trim() && team.trim() && content.trim();
 
@@ -231,7 +280,7 @@ function CreatePromptDialog({ onCreated }: { onCreated: (id: string) => void }) 
         <Plus className="size-3" data-icon="inline-start" />
         New Prompt
       </DialogTrigger>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>Create Prompt</DialogTitle>
           <DialogDescription>
@@ -260,15 +309,60 @@ function CreatePromptDialog({ onCreated }: { onCreated: (id: string) => void }) 
               />
             </div>
           </div>
-          <div>
-            <label className="mb-1 block text-xs font-medium">Team</label>
-            <Input
-              placeholder="e.g. engineering"
-              value={team}
-              onChange={(e) => setTeam(e.target.value)}
-              className="h-8 text-xs"
-            />
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="mb-1 block text-xs font-medium">Team</label>
+              <Input
+                placeholder="e.g. engineering"
+                value={team}
+                onChange={(e) => setTeam(e.target.value)}
+                className="h-8 text-xs"
+              />
+            </div>
+            <div>
+              <label className="mb-1 block text-xs font-medium">Tags</label>
+              <div className="flex items-center gap-1">
+                <Input
+                  placeholder="Add tag..."
+                  value={tagInput}
+                  onChange={(e) => setTagInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      addTag();
+                    }
+                  }}
+                  className="h-8 text-xs"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="h-8 px-2"
+                  onClick={addTag}
+                  disabled={!tagInput.trim()}
+                >
+                  <Plus className="size-3" />
+                </Button>
+              </div>
+            </div>
           </div>
+          {tags.length > 0 && (
+            <div className="flex flex-wrap gap-1">
+              {tags.map((tag) => (
+                <Badge key={tag} variant="outline" className="gap-1 text-[10px]">
+                  <Tag className="size-2.5" />
+                  {tag}
+                  <button
+                    onClick={() => removeTag(tag)}
+                    className="ml-0.5 rounded-full hover:bg-muted"
+                  >
+                    <X className="size-2.5" />
+                  </button>
+                </Badge>
+              ))}
+            </div>
+          )}
           <div>
             <label className="mb-1 block text-xs font-medium">Description</label>
             <Input
@@ -280,11 +374,52 @@ function CreatePromptDialog({ onCreated }: { onCreated: (id: string) => void }) 
           </div>
           <div>
             <label className="mb-1 block text-xs font-medium">Content</label>
+            {/* Mini toolbar */}
+            <div className="flex items-center gap-0.5 rounded-t-md border border-b-0 border-input bg-muted/30 px-1.5 py-0.5">
+              <button
+                type="button"
+                title="Bold"
+                onClick={() => insertSyntax("**", "**", "bold text")}
+                className="flex size-6 items-center justify-center rounded text-muted-foreground hover:bg-muted hover:text-foreground"
+              >
+                <Bold className="size-3" />
+              </button>
+              <button
+                type="button"
+                title="Italic"
+                onClick={() => insertSyntax("*", "*", "italic text")}
+                className="flex size-6 items-center justify-center rounded text-muted-foreground hover:bg-muted hover:text-foreground"
+              >
+                <Italic className="size-3" />
+              </button>
+              <button
+                type="button"
+                title="Code"
+                onClick={() => insertSyntax("`", "`", "code")}
+                className="flex size-6 items-center justify-center rounded text-muted-foreground hover:bg-muted hover:text-foreground"
+              >
+                <Code className="size-3" />
+              </button>
+            </div>
             <textarea
-              placeholder="Write your prompt content..."
+              ref={contentRef}
+              placeholder="Write your prompt content in Markdown..."
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              className="min-h-[120px] w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-xs leading-relaxed outline-none placeholder:text-muted-foreground focus:ring-1 focus:ring-ring"
+              onKeyDown={(e) => {
+                if (e.key === "Tab") {
+                  e.preventDefault();
+                  const target = e.currentTarget;
+                  const start = target.selectionStart;
+                  const end = target.selectionEnd;
+                  const newContent = content.substring(0, start) + "  " + content.substring(end);
+                  setContent(newContent);
+                  requestAnimationFrame(() => {
+                    target.selectionStart = target.selectionEnd = start + 2;
+                  });
+                }
+              }}
+              className="min-h-[160px] w-full rounded-b-md border border-input bg-background px-3 py-2 font-mono text-xs leading-relaxed outline-none placeholder:text-muted-foreground focus:ring-1 focus:ring-ring"
             />
           </div>
           {error && (
@@ -301,7 +436,14 @@ function CreatePromptDialog({ onCreated }: { onCreated: (id: string) => void }) 
             onClick={() => createMutation.mutate()}
             disabled={!canSubmit || createMutation.isPending}
           >
-            {createMutation.isPending ? "Creating..." : "Create"}
+            {createMutation.isPending ? (
+              <>
+                <Loader2 className="size-3 animate-spin" data-icon="inline-start" />
+                Creating...
+              </>
+            ) : (
+              "Create"
+            )}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -340,10 +482,16 @@ export default function PromptsPage() {
     staleTime: 10_000,
   });
 
+  const { toast } = useToast();
+
   const deleteMutation = useMutation({
     mutationFn: (id: string) => api.prompts.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["prompts"] });
+      toast({ title: "Prompt deleted", variant: "success" });
+    },
+    onError: (err: Error) => {
+      toast({ title: "Failed to delete prompt", description: err.message, variant: "error" });
     },
   });
 

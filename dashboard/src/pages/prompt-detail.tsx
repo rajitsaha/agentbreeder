@@ -12,12 +12,24 @@ import {
   Check,
   Eye,
   Pencil,
+  Bold,
+  Italic,
+  Code,
+  Link2,
+  Heading,
+  History,
+  GitCompare,
+  RotateCcw,
+  Tag,
+  Layers,
 } from "lucide-react";
 import { api, type Prompt } from "@/lib/api";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useRef } from "react";
+import { useToast } from "@/hooks/use-toast";
 
 /** Lightweight Markdown-to-HTML renderer for the preview panel. */
 function renderMarkdown(md: string): string {
@@ -44,6 +56,9 @@ function renderMarkdown(md: string): string {
   html = html.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
   html = html.replace(/\*(.+?)\*/g, "<em>$1</em>");
 
+  // Links
+  html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-blue-600 dark:text-blue-400 underline">$1</a>');
+
   // Unordered lists
   html = html.replace(/^- (.+)$/gm, '<li class="ml-4 list-disc text-sm">$1</li>');
 
@@ -67,58 +82,374 @@ function renderMarkdown(md: string): string {
   return html;
 }
 
-function VersionSidebar({
-  versions,
-  currentId,
-  onSelect,
+/** Simple line-by-line diff between two texts. Returns arrays of diff lines. */
+function computeDiff(
+  oldText: string,
+  newText: string
+): { left: DiffLine[]; right: DiffLine[] } {
+  const oldLines = oldText.split("\n");
+  const newLines = newText.split("\n");
+  const left: DiffLine[] = [];
+  const right: DiffLine[] = [];
+
+  // Simple LCS-based diff
+  const maxLen = Math.max(oldLines.length, newLines.length);
+  const lcs = buildLCS(oldLines, newLines);
+
+  let oi = 0;
+  let ni = 0;
+  let li = 0;
+
+  while (oi < oldLines.length || ni < newLines.length) {
+    if (li < lcs.length && oi < oldLines.length && ni < newLines.length && oldLines[oi] === lcs[li] && newLines[ni] === lcs[li]) {
+      // Common line
+      left.push({ text: oldLines[oi], type: "same" });
+      right.push({ text: newLines[ni], type: "same" });
+      oi++;
+      ni++;
+      li++;
+    } else if (oi < oldLines.length && (li >= lcs.length || oldLines[oi] !== lcs[li])) {
+      left.push({ text: oldLines[oi], type: "removed" });
+      right.push({ text: "", type: "spacer" });
+      oi++;
+    } else if (ni < newLines.length && (li >= lcs.length || newLines[ni] !== lcs[li])) {
+      left.push({ text: "", type: "spacer" });
+      right.push({ text: newLines[ni], type: "added" });
+      ni++;
+    } else {
+      // Safety break
+      break;
+    }
+  }
+
+  return { left, right };
+}
+
+interface DiffLine {
+  text: string;
+  type: "same" | "added" | "removed" | "spacer";
+}
+
+function buildLCS(a: string[], b: string[]): string[] {
+  const m = a.length;
+  const n = b.length;
+  // For very large texts, limit to prevent performance issues
+  if (m > 500 || n > 500) {
+    // Fallback: simple line-by-line comparison
+    const result: string[] = [];
+    let bi = 0;
+    for (let ai = 0; ai < m && bi < n; ai++) {
+      if (a[ai] === b[bi]) {
+        result.push(a[ai]);
+        bi++;
+      }
+    }
+    return result;
+  }
+
+  const dp: number[][] = Array.from({ length: m + 1 }, () => Array(n + 1).fill(0));
+  for (let i = 1; i <= m; i++) {
+    for (let j = 1; j <= n; j++) {
+      dp[i][j] = a[i - 1] === b[j - 1] ? dp[i - 1][j - 1] + 1 : Math.max(dp[i - 1][j], dp[i][j - 1]);
+    }
+  }
+
+  const result: string[] = [];
+  let i = m;
+  let j = n;
+  while (i > 0 && j > 0) {
+    if (a[i - 1] === b[j - 1]) {
+      result.unshift(a[i - 1]);
+      i--;
+      j--;
+    } else if (dp[i - 1][j] > dp[i][j - 1]) {
+      i--;
+    } else {
+      j--;
+    }
+  }
+  return result;
+}
+
+/** Toolbar that inserts Markdown syntax into the editor. */
+function EditorToolbar({
+  textareaRef,
+  content,
+  onChange,
 }: {
-  versions: Prompt[];
-  currentId: string;
-  onSelect: (id: string) => void;
+  textareaRef: React.RefObject<HTMLTextAreaElement | null>;
+  content: string;
+  onChange: (value: string) => void;
 }) {
+  const insertSyntax = useCallback(
+    (before: string, after: string, placeholder: string) => {
+      const textarea = textareaRef.current;
+      if (!textarea) return;
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const selected = content.substring(start, end);
+      const text = selected || placeholder;
+      const newContent =
+        content.substring(0, start) + before + text + after + content.substring(end);
+      onChange(newContent);
+      requestAnimationFrame(() => {
+        textarea.focus();
+        const cursorStart = start + before.length;
+        const cursorEnd = cursorStart + text.length;
+        textarea.selectionStart = cursorStart;
+        textarea.selectionEnd = cursorEnd;
+      });
+    },
+    [textareaRef, content, onChange]
+  );
+
+  const buttons = [
+    { icon: Bold, label: "Bold", before: "**", after: "**", placeholder: "bold text" },
+    { icon: Italic, label: "Italic", before: "*", after: "*", placeholder: "italic text" },
+    { icon: Code, label: "Code", before: "`", after: "`", placeholder: "code" },
+    { icon: Link2, label: "Link", before: "[", after: "](url)", placeholder: "link text" },
+    { icon: Heading, label: "Heading", before: "## ", after: "", placeholder: "heading" },
+  ];
+
   return (
-    <div className="space-y-1">
-      <h4 className="mb-2 text-xs font-medium text-muted-foreground uppercase tracking-wider">
-        Versions
-      </h4>
-      {versions.map((v, i) => (
+    <div className="flex items-center gap-0.5 border-b border-border bg-muted/30 px-2 py-1">
+      {buttons.map(({ icon: Icon, label, before, after, placeholder }) => (
         <button
-          key={v.id}
-          onClick={() => onSelect(v.id)}
-          className={cn(
-            "flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs transition-colors",
-            v.id === currentId
-              ? "bg-muted font-medium text-foreground"
-              : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
-          )}
+          key={label}
+          type="button"
+          title={label}
+          onClick={() => insertSyntax(before, after, placeholder)}
+          className="flex size-7 items-center justify-center rounded text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
         >
-          <Badge variant="outline" className="font-mono text-[10px]">
-            v{v.version}
-          </Badge>
-          {i === 0 && (
-            <span className="text-[10px] text-emerald-600 dark:text-emerald-400">latest</span>
-          )}
-          <span className="ml-auto text-[10px] text-muted-foreground">
-            {new Date(v.created_at).toLocaleDateString("en-US", {
-              month: "short",
-              day: "numeric",
-            })}
-          </span>
+          <Icon className="size-3.5" />
         </button>
       ))}
     </div>
   );
 }
 
+/** Version timeline for the Versions tab. */
+function VersionTimeline({
+  versions,
+  currentId,
+  onSelect,
+  onRestore,
+  selectedForCompare,
+  onToggleCompare,
+}: {
+  versions: Prompt[];
+  currentId: string;
+  onSelect: (version: Prompt) => void;
+  onRestore: (version: Prompt) => void;
+  selectedForCompare: Set<string>;
+  onToggleCompare: (id: string) => void;
+}) {
+  return (
+    <div className="space-y-2">
+      {versions.map((v, i) => (
+        <div
+          key={v.id}
+          className={cn(
+            "group relative rounded-lg border border-border p-3 transition-colors hover:bg-muted/20",
+            v.id === currentId && "border-foreground/20 bg-muted/10"
+          )}
+        >
+          <div className="flex items-start justify-between gap-2">
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2">
+                <Badge variant="outline" className="font-mono text-[10px]">
+                  v{v.version}
+                </Badge>
+                {i === 0 && (
+                  <span className="text-[10px] font-medium text-emerald-600 dark:text-emerald-400">
+                    latest
+                  </span>
+                )}
+                <span className="text-[10px] text-muted-foreground">
+                  {new Date(v.created_at).toLocaleDateString("en-US", {
+                    month: "short",
+                    day: "numeric",
+                    year: "numeric",
+                  })}
+                </span>
+              </div>
+              <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">
+                {v.content.substring(0, 100)}
+                {v.content.length > 100 ? "..." : ""}
+              </p>
+            </div>
+            <div className="flex shrink-0 items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+              <label className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                <input
+                  type="checkbox"
+                  checked={selectedForCompare.has(v.id)}
+                  onChange={() => onToggleCompare(v.id)}
+                  className="size-3 rounded"
+                />
+                Compare
+              </label>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-6 px-2 text-[10px]"
+                onClick={() => onSelect(v)}
+              >
+                <Eye className="size-2.5" />
+                View
+              </Button>
+              {i > 0 && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-6 px-2 text-[10px]"
+                  onClick={() => onRestore(v)}
+                >
+                  <RotateCcw className="size-2.5" />
+                  Restore
+                </Button>
+              )}
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/** Diff viewer showing two versions side by side. */
+function DiffViewer({
+  leftVersion,
+  rightVersion,
+}: {
+  leftVersion: Prompt;
+  rightVersion: Prompt;
+}) {
+  const { left, right } = useMemo(
+    () => computeDiff(leftVersion.content, rightVersion.content),
+    [leftVersion.content, rightVersion.content]
+  );
+
+  return (
+    <div className="rounded-lg border border-border overflow-hidden">
+      {/* Header */}
+      <div className="flex border-b border-border bg-muted/30">
+        <div className="flex-1 border-r border-border px-3 py-2">
+          <span className="text-xs font-medium">v{leftVersion.version}</span>
+          <span className="ml-2 text-[10px] text-muted-foreground">
+            {new Date(leftVersion.created_at).toLocaleDateString()}
+          </span>
+        </div>
+        <div className="flex-1 px-3 py-2">
+          <span className="text-xs font-medium">v{rightVersion.version}</span>
+          <span className="ml-2 text-[10px] text-muted-foreground">
+            {new Date(rightVersion.created_at).toLocaleDateString()}
+          </span>
+        </div>
+      </div>
+      {/* Diff content */}
+      <div className="flex max-h-[60vh] overflow-auto">
+        <div className="flex-1 border-r border-border">
+          {left.map((line, i) => (
+            <div
+              key={i}
+              className={cn(
+                "flex min-h-[1.5rem] items-start gap-2 px-3 py-0.5 font-mono text-xs",
+                line.type === "removed" && "bg-red-500/10 text-red-700 dark:text-red-400",
+                line.type === "spacer" && "bg-muted/20"
+              )}
+            >
+              <span className="w-6 shrink-0 select-none text-right text-muted-foreground/50">
+                {line.type !== "spacer" ? i + 1 : ""}
+              </span>
+              <span className="whitespace-pre-wrap break-all">
+                {line.type === "removed" && <span className="mr-1 select-none">-</span>}
+                {line.text}
+              </span>
+            </div>
+          ))}
+        </div>
+        <div className="flex-1">
+          {right.map((line, i) => (
+            <div
+              key={i}
+              className={cn(
+                "flex min-h-[1.5rem] items-start gap-2 px-3 py-0.5 font-mono text-xs",
+                line.type === "added" && "bg-green-500/10 text-green-700 dark:text-green-400",
+                line.type === "spacer" && "bg-muted/20"
+              )}
+            >
+              <span className="w-6 shrink-0 select-none text-right text-muted-foreground/50">
+                {line.type !== "spacer" ? i + 1 : ""}
+              </span>
+              <span className="whitespace-pre-wrap break-all">
+                {line.type === "added" && <span className="mr-1 select-none">+</span>}
+                {line.text}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/** Version content viewer in a modal-like panel. */
+function VersionContentViewer({
+  version,
+  onClose,
+}: {
+  version: Prompt;
+  onClose: () => void;
+}) {
+  const previewHtml = useMemo(() => renderMarkdown(version.content), [version.content]);
+
+  return (
+    <div className="rounded-lg border border-border">
+      <div className="flex items-center justify-between border-b border-border px-3 py-2">
+        <div className="flex items-center gap-2">
+          <Badge variant="outline" className="font-mono text-[10px]">
+            v{version.version}
+          </Badge>
+          <span className="text-xs text-muted-foreground">
+            {new Date(version.created_at).toLocaleDateString("en-US", {
+              month: "short",
+              day: "numeric",
+              year: "numeric",
+            })}
+          </span>
+        </div>
+        <Button variant="outline" size="sm" className="h-6 px-2 text-[10px]" onClick={onClose}>
+          Close
+        </Button>
+      </div>
+      <div className="max-h-[60vh] overflow-auto p-4">
+        <div
+          className="prose-sm max-w-none text-foreground"
+          dangerouslySetInnerHTML={{ __html: previewHtml }}
+        />
+      </div>
+    </div>
+  );
+}
+
+const TAB_TRIGGER_CLASS =
+  "gap-1 rounded-none border-b-2 border-transparent px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors data-active:border-foreground data-active:text-foreground data-active:shadow-none hover:text-foreground";
+
 export default function PromptDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { toast } = useToast();
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const [editedContent, setEditedContent] = useState<string | null>(null);
   const [editedDescription, setEditedDescription] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<"edit" | "preview">("edit");
+  const [activeEditorTab, setActiveEditorTab] = useState<"edit" | "preview">("edit");
   const [saveSuccess, setSaveSuccess] = useState(false);
+
+  // Version history state
+  const [viewingVersion, setViewingVersion] = useState<Prompt | null>(null);
+  const [compareSelection, setCompareSelection] = useState<Set<string>>(new Set());
 
   const { data: promptData, isLoading, error } = useQuery({
     queryKey: ["prompt", id],
@@ -153,6 +484,10 @@ export default function PromptDetailPage() {
       queryClient.invalidateQueries({ queryKey: ["prompt", id] });
       queryClient.invalidateQueries({ queryKey: ["prompt-versions", id] });
       queryClient.invalidateQueries({ queryKey: ["prompts"] });
+      toast({ title: "Prompt saved", variant: "success" });
+    },
+    onError: (err: Error) => {
+      toast({ title: "Failed to save", description: err.message, variant: "error" });
     },
   });
 
@@ -160,7 +495,11 @@ export default function PromptDetailPage() {
     mutationFn: () => api.prompts.delete(id!),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["prompts"] });
+      toast({ title: "Prompt deleted", variant: "success" });
       navigate("/prompts");
+    },
+    onError: (err: Error) => {
+      toast({ title: "Failed to delete", description: err.message, variant: "error" });
     },
   });
 
@@ -168,7 +507,25 @@ export default function PromptDetailPage() {
     mutationFn: () => api.prompts.duplicate(id!),
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["prompts"] });
+      toast({ title: "Prompt duplicated", variant: "success" });
       navigate(`/prompts/${data.data.id}`);
+    },
+    onError: (err: Error) => {
+      toast({ title: "Failed to duplicate", description: err.message, variant: "error" });
+    },
+  });
+
+  const restoreMutation = useMutation({
+    mutationFn: (versionContent: string) =>
+      api.prompts.update(id!, { content: versionContent }),
+    onSuccess: () => {
+      setEditedContent(null);
+      queryClient.invalidateQueries({ queryKey: ["prompt", id] });
+      queryClient.invalidateQueries({ queryKey: ["prompt-versions", id] });
+      toast({ title: "Version restored", variant: "success" });
+    },
+    onError: (err: Error) => {
+      toast({ title: "Failed to restore", description: err.message, variant: "error" });
     },
   });
 
@@ -183,7 +540,6 @@ export default function PromptDetailPage() {
         const value = target.value;
         const newValue = value.substring(0, start) + "  " + value.substring(end);
         setEditedContent(newValue);
-        // Restore cursor position after React re-render
         requestAnimationFrame(() => {
           target.selectionStart = target.selectionEnd = start + 2;
         });
@@ -199,12 +555,34 @@ export default function PromptDetailPage() {
 
   const previewHtml = useMemo(() => renderMarkdown(content), [content]);
 
-  const handleVersionSelect = (versionId: string) => {
-    // Reset edits and navigate to the selected version
-    setEditedContent(null);
-    setEditedDescription(null);
-    navigate(`/prompts/${versionId}`);
-  };
+  const handleToggleCompare = useCallback((versionId: string) => {
+    setCompareSelection((prev) => {
+      const next = new Set(prev);
+      if (next.has(versionId)) {
+        next.delete(versionId);
+      } else if (next.size < 2) {
+        next.add(versionId);
+      } else {
+        // Replace the oldest selection
+        const arr = [...next];
+        next.delete(arr[0]);
+        next.add(versionId);
+      }
+      return next;
+    });
+  }, []);
+
+  const compareVersions = useMemo(() => {
+    if (compareSelection.size !== 2) return null;
+    const [leftId, rightId] = [...compareSelection];
+    const left = versions.find((v) => v.id === leftId);
+    const right = versions.find((v) => v.id === rightId);
+    if (!left || !right) return null;
+    // Put the older version on the left
+    return new Date(left.created_at) <= new Date(right.created_at)
+      ? { left, right }
+      : { left: right, right: left };
+  }, [compareSelection, versions]);
 
   if (isLoading) {
     return (
@@ -255,6 +633,7 @@ export default function PromptDetailPage() {
               placeholder="Add a description..."
               className="mt-1.5 w-full max-w-lg bg-transparent text-xs text-muted-foreground outline-none placeholder:text-muted-foreground/50 focus:text-foreground"
             />
+            {/* Metadata row */}
             <div className="mt-2 flex items-center gap-3">
               <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
                 <Users className="size-2.5" />
@@ -268,10 +647,19 @@ export default function PromptDetailPage() {
                   year: "numeric",
                 })}
               </span>
+              <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                <Layers className="size-2.5" />
+                {versions.length} version{versions.length !== 1 ? "s" : ""}
+              </span>
             </div>
           </div>
 
           <div className="flex shrink-0 items-center gap-2">
+            {hasChanges && (
+              <span className="mr-1 text-[10px] text-amber-600 dark:text-amber-400">
+                Unsaved changes
+              </span>
+            )}
             <Button
               variant="outline"
               size="sm"
@@ -312,101 +700,242 @@ export default function PromptDetailPage() {
         </div>
       </div>
 
-      {/* Main content: editor + preview + version sidebar */}
-      <div className="flex gap-4">
-        {/* Editor + Preview */}
-        <div className="min-w-0 flex-1">
-          {/* Tab bar */}
-          <div className="mb-2 flex items-center gap-1 border-b border-border">
-            <button
-              onClick={() => setActiveTab("edit")}
-              className={cn(
-                "flex items-center gap-1.5 border-b-2 px-3 py-1.5 text-xs font-medium transition-colors",
-                activeTab === "edit"
-                  ? "border-foreground text-foreground"
-                  : "border-transparent text-muted-foreground hover:text-foreground"
-              )}
-            >
-              <Pencil className="size-3" />
-              Edit
-            </button>
-            <button
-              onClick={() => setActiveTab("preview")}
-              className={cn(
-                "flex items-center gap-1.5 border-b-2 px-3 py-1.5 text-xs font-medium transition-colors",
-                activeTab === "preview"
-                  ? "border-foreground text-foreground"
-                  : "border-transparent text-muted-foreground hover:text-foreground"
-              )}
-            >
-              <Eye className="size-3" />
-              Preview
-            </button>
-            {hasChanges && (
-              <span className="ml-2 text-[10px] text-amber-600 dark:text-amber-400">
-                Unsaved changes
-              </span>
+      {/* Main tabs */}
+      <Tabs defaultValue="editor">
+        <TabsList className="h-9 bg-transparent p-0">
+          <TabsTrigger value="editor" className={TAB_TRIGGER_CLASS}>
+            <Pencil className="size-3" />
+            Editor
+          </TabsTrigger>
+          <TabsTrigger value="versions" className={TAB_TRIGGER_CLASS}>
+            <History className="size-3" />
+            Versions
+            {versions.length > 0 && (
+              <Badge variant="outline" className="ml-1 font-mono text-[9px] px-1 py-0">
+                {versions.length}
+              </Badge>
             )}
-          </div>
+          </TabsTrigger>
+          <TabsTrigger value="compare" className={TAB_TRIGGER_CLASS}>
+            <GitCompare className="size-3" />
+            Compare
+          </TabsTrigger>
+        </TabsList>
 
-          {/* Split panel */}
-          <div className="flex gap-0 rounded-lg border border-border overflow-hidden" style={{ height: "calc(100vh - 280px)" }}>
-            {/* Editor panel */}
-            <div
-              className={cn(
-                "relative flex-1 border-r border-border",
-                activeTab === "preview" ? "hidden md:block" : ""
-              )}
-            >
-              <textarea
-                value={content}
-                onChange={(e) => setEditedContent(e.target.value)}
-                onKeyDown={handleKeyDown}
-                className="size-full resize-none bg-background p-4 font-mono text-xs leading-relaxed text-foreground outline-none placeholder:text-muted-foreground/50"
-                placeholder="Write your prompt content here..."
-                spellCheck={false}
-              />
+        {/* Editor Tab */}
+        <TabsContent value="editor">
+          <div className="mt-4">
+            {/* Edit/Preview sub-tabs */}
+            <div className="mb-2 flex items-center gap-1 border-b border-border">
+              <button
+                onClick={() => setActiveEditorTab("edit")}
+                className={cn(
+                  "flex items-center gap-1.5 border-b-2 px-3 py-1.5 text-xs font-medium transition-colors",
+                  activeEditorTab === "edit"
+                    ? "border-foreground text-foreground"
+                    : "border-transparent text-muted-foreground hover:text-foreground"
+                )}
+              >
+                <Pencil className="size-3" />
+                Edit
+              </button>
+              <button
+                onClick={() => setActiveEditorTab("preview")}
+                className={cn(
+                  "flex items-center gap-1.5 border-b-2 px-3 py-1.5 text-xs font-medium transition-colors",
+                  activeEditorTab === "preview"
+                    ? "border-foreground text-foreground"
+                    : "border-transparent text-muted-foreground hover:text-foreground"
+                )}
+              >
+                <Eye className="size-3" />
+                Preview
+              </button>
             </div>
 
-            {/* Divider -- visible when both panels shown */}
-            <div className={cn(
-              "hidden md:block w-0",
-            )} />
-
-            {/* Preview panel */}
-            <div
-              className={cn(
-                "flex-1 overflow-auto bg-muted/20 p-4",
-                activeTab === "edit" ? "hidden md:block" : ""
-              )}
-            >
-              {content ? (
-                <div
-                  className="prose-sm max-w-none text-foreground"
-                  dangerouslySetInnerHTML={{ __html: previewHtml }}
+            {/* Split panel */}
+            <div className="flex gap-0 rounded-lg border border-border overflow-hidden" style={{ height: "calc(100vh - 340px)" }}>
+              {/* Editor panel */}
+              <div
+                className={cn(
+                  "relative flex flex-1 flex-col border-r border-border",
+                  activeEditorTab === "preview" ? "hidden md:flex" : ""
+                )}
+              >
+                {/* Toolbar */}
+                <EditorToolbar
+                  textareaRef={textareaRef}
+                  content={content}
+                  onChange={setEditedContent}
                 />
-              ) : (
-                <p className="text-xs text-muted-foreground italic">
-                  Nothing to preview yet. Start writing in the editor.
-                </p>
-              )}
+                {/* Line-numbered textarea area */}
+                <div className="relative flex-1">
+                  <textarea
+                    ref={textareaRef}
+                    value={content}
+                    onChange={(e) => setEditedContent(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    className="size-full resize-none bg-background p-4 pl-12 font-mono text-xs leading-relaxed text-foreground outline-none placeholder:text-muted-foreground/50"
+                    placeholder="Write your prompt content here..."
+                    spellCheck={false}
+                  />
+                  {/* CSS-based line numbers */}
+                  <div
+                    className="pointer-events-none absolute inset-y-0 left-0 w-10 overflow-hidden border-r border-border/50 bg-muted/20 pt-4"
+                    aria-hidden="true"
+                  >
+                    {content.split("\n").map((_, i) => (
+                      <div
+                        key={i}
+                        className="pr-2 text-right font-mono text-[10px] leading-relaxed text-muted-foreground/40"
+                      >
+                        {i + 1}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Divider */}
+              <div className={cn("hidden md:block w-0")} />
+
+              {/* Preview panel */}
+              <div
+                className={cn(
+                  "flex-1 overflow-auto bg-muted/20 p-4",
+                  activeEditorTab === "edit" ? "hidden md:block" : ""
+                )}
+              >
+                {content ? (
+                  <div
+                    className="prose-sm max-w-none text-foreground"
+                    dangerouslySetInnerHTML={{ __html: previewHtml }}
+                  />
+                ) : (
+                  <p className="text-xs text-muted-foreground italic">
+                    Nothing to preview yet. Start writing in the editor.
+                  </p>
+                )}
+              </div>
             </div>
           </div>
-        </div>
+        </TabsContent>
 
-        {/* Version sidebar */}
-        {versions.length > 0 && (
-          <div className="w-52 shrink-0">
-            <div className="sticky top-6 rounded-lg border border-border p-3">
-              <VersionSidebar
+        {/* Versions Tab */}
+        <TabsContent value="versions">
+          <div className="mt-4">
+            {viewingVersion ? (
+              <div className="space-y-4">
+                <VersionContentViewer
+                  version={viewingVersion}
+                  onClose={() => setViewingVersion(null)}
+                />
+              </div>
+            ) : versions.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-16 text-center">
+                <History className="mb-3 size-8 text-muted-foreground/30" />
+                <p className="text-sm text-muted-foreground">No version history available.</p>
+              </div>
+            ) : (
+              <VersionTimeline
                 versions={versions}
                 currentId={id!}
-                onSelect={handleVersionSelect}
+                onSelect={(v) => setViewingVersion(v)}
+                onRestore={(v) => {
+                  if (window.confirm(`Restore version v${v.version}? This will update the current content.`)) {
+                    restoreMutation.mutate(v.content);
+                  }
+                }}
+                selectedForCompare={compareSelection}
+                onToggleCompare={handleToggleCompare}
               />
-            </div>
+            )}
           </div>
-        )}
-      </div>
+        </TabsContent>
+
+        {/* Compare Tab */}
+        <TabsContent value="compare">
+          <div className="mt-4">
+            {versions.length < 2 ? (
+              <div className="flex flex-col items-center justify-center py-16 text-center">
+                <GitCompare className="mb-3 size-8 text-muted-foreground/30" />
+                <p className="text-sm text-muted-foreground">
+                  Need at least two versions to compare.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {/* Version selector */}
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2">
+                    <label className="text-xs font-medium">Left:</label>
+                    <select
+                      value={[...compareSelection][0] ?? ""}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setCompareSelection((prev) => {
+                          const arr = [...prev];
+                          const next = new Set<string>();
+                          if (val) next.add(val);
+                          if (arr[1]) next.add(arr[1]);
+                          return next;
+                        });
+                      }}
+                      className="h-7 rounded-md border border-input bg-background px-2 text-xs outline-none"
+                    >
+                      <option value="">Select version...</option>
+                      {versions.map((v) => (
+                        <option key={v.id} value={v.id}>
+                          v{v.version} - {new Date(v.created_at).toLocaleDateString()}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <GitCompare className="size-3.5 text-muted-foreground" />
+                  <div className="flex items-center gap-2">
+                    <label className="text-xs font-medium">Right:</label>
+                    <select
+                      value={[...compareSelection][1] ?? ""}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setCompareSelection((prev) => {
+                          const arr = [...prev];
+                          const next = new Set<string>();
+                          if (arr[0]) next.add(arr[0]);
+                          if (val) next.add(val);
+                          return next;
+                        });
+                      }}
+                      className="h-7 rounded-md border border-input bg-background px-2 text-xs outline-none"
+                    >
+                      <option value="">Select version...</option>
+                      {versions.map((v) => (
+                        <option key={v.id} value={v.id}>
+                          v{v.version} - {new Date(v.created_at).toLocaleDateString()}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                {/* Diff display */}
+                {compareVersions ? (
+                  <DiffViewer
+                    leftVersion={compareVersions.left}
+                    rightVersion={compareVersions.right}
+                  />
+                ) : (
+                  <div className="rounded-lg border border-dashed border-border p-8 text-center">
+                    <p className="text-xs text-muted-foreground">
+                      Select two versions above to see their differences.
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
