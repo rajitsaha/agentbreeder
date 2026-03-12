@@ -14,6 +14,7 @@ import ModelComparePage from "@/pages/model-compare";
 import PromptsPage from "@/pages/prompts";
 import PromptDetailPage from "@/pages/prompt-detail";
 import DeploysPage from "@/pages/deploys";
+import ActivityPage from "@/pages/activity";
 import SearchPage from "@/pages/search";
 import SettingsPage from "@/pages/settings";
 import { Loader2 } from "lucide-react";
@@ -68,6 +69,7 @@ export default function App() {
               <Route path="prompts" element={<PromptsPage />} />
               <Route path="prompts/:id" element={<PromptDetailPage />} />
               <Route path="deploys" element={<DeploysPage />} />
+              <Route path="activity" element={<ActivityPage />} />
               <Route path="search" element={<SearchPage />} />
               <Route path="settings" element={<SettingsPage />} />
               <Route path="*" element={<Navigate to="/" replace />} />

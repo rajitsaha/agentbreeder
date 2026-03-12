@@ -21,13 +21,22 @@ import {
   GitCompare,
   RotateCcw,
   Layers,
+  FlaskConical,
+  Send,
+  ChevronDown,
+  ChevronRight,
+  Sparkles,
+  DollarSign,
+  Timer,
+  Bot,
 } from "lucide-react";
 import { api, type Prompt } from "@/lib/api";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { RelativeTime } from "@/components/ui/relative-time";
 import { cn } from "@/lib/utils";
-import { useState, useCallback, useMemo, useRef } from "react";
+import { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 
 /** Lightweight Markdown-to-HTML renderer for the preview panel. */
@@ -264,11 +273,7 @@ function VersionTimeline({
                   </span>
                 )}
                 <span className="text-[10px] text-muted-foreground">
-                  {new Date(v.created_at).toLocaleDateString("en-US", {
-                    month: "short",
-                    day: "numeric",
-                    year: "numeric",
-                  })}
+                  <RelativeTime date={v.created_at} />
                 </span>
               </div>
               <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">
@@ -334,13 +339,13 @@ function DiffViewer({
         <div className="flex-1 border-r border-border px-3 py-2">
           <span className="text-xs font-medium">v{leftVersion.version}</span>
           <span className="ml-2 text-[10px] text-muted-foreground">
-            {new Date(leftVersion.created_at).toLocaleDateString()}
+            <RelativeTime date={leftVersion.created_at} />
           </span>
         </div>
         <div className="flex-1 px-3 py-2">
           <span className="text-xs font-medium">v{rightVersion.version}</span>
           <span className="ml-2 text-[10px] text-muted-foreground">
-            {new Date(rightVersion.created_at).toLocaleDateString()}
+            <RelativeTime date={rightVersion.created_at} />
           </span>
         </div>
       </div>
@@ -409,11 +414,7 @@ function VersionContentViewer({
             v{version.version}
           </Badge>
           <span className="text-xs text-muted-foreground">
-            {new Date(version.created_at).toLocaleDateString("en-US", {
-              month: "short",
-              day: "numeric",
-              year: "numeric",
-            })}
+            <RelativeTime date={version.created_at} />
           </span>
         </div>
         <Button variant="outline" size="sm" className="h-6 px-2 text-[10px]" onClick={onClose}>
@@ -426,6 +427,346 @@ function VersionContentViewer({
           dangerouslySetInnerHTML={{ __html: previewHtml }}
         />
       </div>
+    </div>
+  );
+}
+
+/** Extracts {{variable}} placeholders from a prompt string. */
+function extractTemplateVariables(text: string): string[] {
+  const matches = text.match(/\{\{(\w+)\}\}/g);
+  if (!matches) return [];
+  const unique = [...new Set(matches.map((m) => m.replace(/\{\{|\}\}/g, "")))];
+  return unique;
+}
+
+/** Fills {{variable}} placeholders in text with provided values. */
+function fillTemplateVariables(
+  text: string,
+  variables: Record<string, string>
+): string {
+  return text.replace(/\{\{(\w+)\}\}/g, (match, name) => {
+    return variables[name] ?? match;
+  });
+}
+
+const MOCK_MODELS = [
+  { id: "claude-sonnet-4", name: "Claude Sonnet 4", costPer1kInput: 0.003, costPer1kOutput: 0.015 },
+  { id: "gpt-4o", name: "GPT-4o", costPer1kInput: 0.005, costPer1kOutput: 0.015 },
+  { id: "llama3.2", name: "Llama 3.2", costPer1kInput: 0.0002, costPer1kOutput: 0.0002 },
+  { id: "gemini-2.0-flash", name: "Gemini 2.0 Flash", costPer1kInput: 0.00035, costPer1kOutput: 0.0015 },
+  { id: "claude-haiku-3.5", name: "Claude Haiku 3.5", costPer1kInput: 0.0008, costPer1kOutput: 0.004 },
+];
+
+const MOCK_RESPONSES = [
+  "I've analyzed the information provided and here's my assessment. Based on the context, the key considerations are:\n\n1. **Clarity** - The instructions are well-structured and provide clear guidance\n2. **Completeness** - All necessary context is included for generating a helpful response\n3. **Tone** - The prompt establishes an appropriate professional tone\n\nI'm ready to assist users following these guidelines. Is there anything specific you'd like me to focus on?",
+  "Thank you for the context. Based on the system prompt configuration, I'll operate within these parameters:\n\n- Maintain a helpful and professional demeanor\n- Provide accurate, well-sourced information\n- Flag any uncertainties rather than guessing\n\nThe prompt template is well-designed for this use case. I'd recommend testing with a few edge cases to ensure coverage.",
+  "Understood. I've processed the system prompt and I'm ready to assist. Here's a summary of how I'll approach interactions:\n\n**Approach:** I'll be direct yet thorough, prioritizing accuracy over speed.\n\n**Limitations:** I'll clearly communicate when a question falls outside my configured scope.\n\n**Style:** Responses will be structured with headers and bullet points for readability when appropriate.",
+];
+
+/** Test Prompt panel for trying out prompts with mock LLM responses. */
+function TestPromptPanel({ promptContent }: { promptContent: string }) {
+  const [selectedModel, setSelectedModel] = useState(MOCK_MODELS[0].id);
+  const [temperature, setTemperature] = useState(0.7);
+  const [testMessage, setTestMessage] = useState("");
+  const [variableValues, setVariableValues] = useState<Record<string, string>>({});
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [response, setResponse] = useState<{
+    renderedSystemPrompt: string;
+    assistantMessage: string;
+    inputTokens: number;
+    outputTokens: number;
+    cost: number;
+    responseTime: number;
+  } | null>(null);
+  const [showSystemPrompt, setShowSystemPrompt] = useState(false);
+
+  const templateVars = useMemo(
+    () => extractTemplateVariables(promptContent),
+    [promptContent]
+  );
+
+  // Reset variable values when template vars change
+  useEffect(() => {
+    setVariableValues((prev) => {
+      const next: Record<string, string> = {};
+      for (const v of templateVars) {
+        next[v] = prev[v] ?? "";
+      }
+      return next;
+    });
+  }, [templateVars]);
+
+  const model = MOCK_MODELS.find((m) => m.id === selectedModel) ?? MOCK_MODELS[0];
+
+  const handleSendTest = useCallback(() => {
+    if (!testMessage.trim() && templateVars.length === 0) return;
+
+    setIsGenerating(true);
+    setResponse(null);
+
+    const delay = 500 + Math.random() * 2000;
+
+    setTimeout(() => {
+      const renderedSystemPrompt = fillTemplateVariables(
+        promptContent,
+        variableValues
+      );
+
+      const mockResponse =
+        MOCK_RESPONSES[Math.floor(Math.random() * MOCK_RESPONSES.length)];
+
+      // Estimate tokens: ~1.3 tokens per word
+      const systemWords = renderedSystemPrompt.split(/\s+/).length;
+      const messageWords = testMessage.split(/\s+/).length;
+      const responseWords = mockResponse.split(/\s+/).length;
+      const inputTokens = Math.round((systemWords + messageWords) * 1.3);
+      const outputTokens = Math.round(responseWords * 1.3);
+
+      const cost =
+        (inputTokens / 1000) * model.costPer1kInput +
+        (outputTokens / 1000) * model.costPer1kOutput;
+
+      setResponse({
+        renderedSystemPrompt,
+        assistantMessage: mockResponse,
+        inputTokens,
+        outputTokens,
+        cost,
+        responseTime: delay / 1000,
+      });
+      setIsGenerating(false);
+    }, delay);
+  }, [testMessage, promptContent, variableValues, model, templateVars]);
+
+  return (
+    <div className="mt-4 space-y-4">
+      {/* Controls row */}
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        {/* Left column: model + temperature */}
+        <div className="space-y-3">
+          {/* Model selector */}
+          <div>
+            <label className="mb-1 block text-xs font-medium text-foreground">
+              Model
+            </label>
+            <select
+              value={selectedModel}
+              onChange={(e) => setSelectedModel(e.target.value)}
+              className="h-8 w-full rounded-md border border-input bg-background px-2 text-xs outline-none focus:ring-1 focus:ring-ring"
+            >
+              {MOCK_MODELS.map((m) => (
+                <option key={m.id} value={m.id}>
+                  {m.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Temperature slider */}
+          <div>
+            <label className="mb-1 flex items-center justify-between text-xs font-medium text-foreground">
+              <span>Temperature</span>
+              <span className="font-mono text-[10px] text-muted-foreground">
+                {temperature.toFixed(1)}
+              </span>
+            </label>
+            <input
+              type="range"
+              min="0"
+              max="1"
+              step="0.1"
+              value={temperature}
+              onChange={(e) => setTemperature(parseFloat(e.target.value))}
+              className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-muted accent-foreground"
+            />
+            <div className="mt-0.5 flex justify-between text-[9px] text-muted-foreground/60">
+              <span>Precise</span>
+              <span>Creative</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Right column: template variables (if any) */}
+        <div className="space-y-3">
+          {templateVars.length > 0 ? (
+            <>
+              <label className="mb-1 block text-xs font-medium text-foreground">
+                Template Variables
+              </label>
+              <div className="space-y-2">
+                {templateVars.map((varName) => (
+                  <div key={varName}>
+                    <label className="mb-0.5 block text-[10px] font-medium text-muted-foreground">
+                      {"{{"}
+                      {varName}
+                      {"}}"}
+                    </label>
+                    <input
+                      type="text"
+                      value={variableValues[varName] ?? ""}
+                      onChange={(e) =>
+                        setVariableValues((prev) => ({
+                          ...prev,
+                          [varName]: e.target.value,
+                        }))
+                      }
+                      placeholder={`Enter value for ${varName}...`}
+                      className="h-7 w-full rounded-md border border-input bg-background px-2 text-xs outline-none placeholder:text-muted-foreground/50 focus:ring-1 focus:ring-ring"
+                    />
+                  </div>
+                ))}
+              </div>
+            </>
+          ) : (
+            <div className="flex h-full items-center justify-center rounded-md border border-dashed border-border p-4">
+              <p className="text-[10px] text-muted-foreground/60">
+                No {"{{variables}}"} detected in prompt. Add {"{{variable_name}}"}{" "}
+                placeholders in your prompt to see input fields here.
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Test message input + send */}
+      <div>
+        <label className="mb-1 block text-xs font-medium text-foreground">
+          Test Message
+        </label>
+        <div className="relative">
+          <textarea
+            value={testMessage}
+            onChange={(e) => setTestMessage(e.target.value)}
+            placeholder="Type a test user message..."
+            rows={3}
+            className="w-full resize-none rounded-md border border-input bg-background p-3 pr-20 text-xs leading-relaxed outline-none placeholder:text-muted-foreground/50 focus:ring-1 focus:ring-ring"
+            onKeyDown={(e) => {
+              if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+                e.preventDefault();
+                handleSendTest();
+              }
+            }}
+          />
+          <div className="absolute bottom-2 right-2">
+            <Button
+              size="sm"
+              onClick={handleSendTest}
+              disabled={isGenerating || (!testMessage.trim() && templateVars.length === 0)}
+              className="h-7 gap-1 px-3 text-[10px]"
+            >
+              {isGenerating ? (
+                <Loader2 className="size-3 animate-spin" />
+              ) : (
+                <Send className="size-3" />
+              )}
+              {isGenerating ? "Generating..." : "Send Test"}
+            </Button>
+          </div>
+        </div>
+        <p className="mt-1 text-[10px] text-muted-foreground/60">
+          Press Cmd+Enter to send
+        </p>
+      </div>
+
+      {/* Loading state */}
+      {isGenerating && (
+        <div className="flex items-center gap-2 rounded-lg border border-border bg-muted/20 p-4">
+          <div className="flex items-center gap-2">
+            <Sparkles className="size-3.5 animate-pulse text-amber-500" />
+            <span className="text-xs font-medium text-muted-foreground">
+              Generating response with {model.name}...
+            </span>
+          </div>
+          <div className="flex gap-1">
+            <span className="size-1.5 animate-bounce rounded-full bg-muted-foreground/40 [animation-delay:0ms]" />
+            <span className="size-1.5 animate-bounce rounded-full bg-muted-foreground/40 [animation-delay:150ms]" />
+            <span className="size-1.5 animate-bounce rounded-full bg-muted-foreground/40 [animation-delay:300ms]" />
+          </div>
+        </div>
+      )}
+
+      {/* Response area */}
+      {response && (
+        <div className="space-y-3">
+          {/* Stats bar */}
+          <div className="flex flex-wrap items-center gap-3 rounded-md bg-muted/30 px-3 py-2">
+            <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
+              <Timer className="size-2.5" />
+              {response.responseTime.toFixed(2)}s
+            </span>
+            <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
+              <Sparkles className="size-2.5" />
+              {response.inputTokens} in / {response.outputTokens} out tokens
+            </span>
+            <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
+              <DollarSign className="size-2.5" />
+              ${response.cost.toFixed(6)}
+            </span>
+            <Badge variant="outline" className="text-[9px]">
+              {model.name}
+            </Badge>
+          </div>
+
+          {/* Collapsible system prompt */}
+          <div className="rounded-lg border border-border">
+            <button
+              type="button"
+              onClick={() => setShowSystemPrompt((prev) => !prev)}
+              className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
+            >
+              {showSystemPrompt ? (
+                <ChevronDown className="size-3" />
+              ) : (
+                <ChevronRight className="size-3" />
+              )}
+              Rendered System Prompt
+            </button>
+            {showSystemPrompt && (
+              <div className="border-t border-border bg-muted/10 p-3">
+                <pre className="max-h-48 overflow-auto whitespace-pre-wrap font-mono text-[11px] leading-relaxed text-muted-foreground">
+                  {response.renderedSystemPrompt}
+                </pre>
+              </div>
+            )}
+          </div>
+
+          {/* Chat bubble response */}
+          <div className="flex gap-3">
+            <div className="flex size-7 shrink-0 items-center justify-center rounded-full bg-foreground/10">
+              <Bot className="size-3.5 text-foreground/70" />
+            </div>
+            <div className="flex-1 rounded-lg rounded-tl-none border border-border bg-background p-3">
+              <div className="prose-sm max-w-none text-xs leading-relaxed text-foreground">
+                {response.assistantMessage.split("\n").map((line, i) => {
+                  if (!line.trim()) return <br key={i} />;
+                  // Bold text
+                  const formatted = line.replace(
+                    /\*\*(.+?)\*\*/g,
+                    "<strong>$1</strong>"
+                  );
+                  // List items
+                  if (line.trim().startsWith("- ") || /^\d+\./.test(line.trim())) {
+                    return (
+                      <p
+                        key={i}
+                        className="ml-3 text-xs"
+                        dangerouslySetInnerHTML={{ __html: formatted }}
+                      />
+                    );
+                  }
+                  return (
+                    <p
+                      key={i}
+                      className="text-xs"
+                      dangerouslySetInnerHTML={{ __html: formatted }}
+                    />
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -639,11 +980,7 @@ export default function PromptDetailPage() {
               </span>
               <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
                 <Clock className="size-2.5" />
-                {new Date(prompt.created_at).toLocaleDateString("en-US", {
-                  month: "short",
-                  day: "numeric",
-                  year: "numeric",
-                })}
+                <RelativeTime date={prompt.created_at} />
               </span>
               <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
                 <Layers className="size-2.5" />
@@ -717,6 +1054,10 @@ export default function PromptDetailPage() {
           <TabsTrigger value="compare" className={TAB_TRIGGER_CLASS}>
             <GitCompare className="size-3" />
             Compare
+          </TabsTrigger>
+          <TabsTrigger value="test" className={TAB_TRIGGER_CLASS}>
+            <FlaskConical className="size-3" />
+            Test
           </TabsTrigger>
         </TabsList>
 
@@ -849,6 +1190,11 @@ export default function PromptDetailPage() {
               />
             )}
           </div>
+        </TabsContent>
+
+        {/* Test Tab */}
+        <TabsContent value="test">
+          <TestPromptPanel promptContent={content} />
         </TabsContent>
 
         {/* Compare Tab */}

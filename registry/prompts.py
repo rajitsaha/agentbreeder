@@ -7,7 +7,7 @@ import logging
 from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from api.models.database import Prompt
+from api.models.database import Prompt, PromptVersion
 
 logger = logging.getLogger(__name__)
 

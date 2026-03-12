@@ -1,21 +1,27 @@
 import { useQuery } from "@tanstack/react-query";
-import { useSearchParams, Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Bot, Search, Filter, Circle, Star } from "lucide-react";
 import { api, type Agent, type AgentStatus } from "@/lib/api";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { RelativeTime } from "@/components/ui/relative-time";
 import { cn } from "@/lib/utils";
 import { useState, useMemo } from "react";
 import { FavoriteButton } from "@/components/favorite-button";
 import { ExportDropdown } from "@/components/export-dropdown";
+import { BulkActionBar } from "@/components/bulk-action-bar";
 import { TagFilter } from "@/components/tag-input";
 import { useFavorites } from "@/hooks/use-favorites";
+import { useBulkSelect } from "@/hooks/use-bulk-select";
+import { useUrlState } from "@/hooks/use-url-state";
 
 const STATUS_COLORS: Record<AgentStatus, string> = {
   running: "text-emerald-500",
-  deploying: "text-amber-500 animate-pulse",
+  deploying: "text-blue-500 animate-pulse",
   stopped: "text-muted-foreground",
   failed: "text-destructive",
+  degraded: "text-yellow-500",
+  error: "text-red-500",
 };
 
 const FRAMEWORK_COLORS: Record<string, string> = {
@@ -31,13 +37,37 @@ function StatusDot({ status }: { status: AgentStatus }) {
   return <Circle className={cn("size-2 fill-current", STATUS_COLORS[status])} />;
 }
 
-function AgentRow({ agent }: { agent: Agent }) {
-  const age = timeSince(agent.updated_at);
+function AgentRow({
+  agent,
+  isSelected,
+  onToggleSelect,
+}: {
+  agent: Agent;
+  isSelected: boolean;
+  onToggleSelect: () => void;
+}) {
   return (
     <Link
       to={`/agents/${agent.id}`}
-      className="group flex items-center gap-4 border-b border-border/50 px-6 py-3.5 transition-colors last:border-0 hover:bg-muted/30"
+      className={cn(
+        "group flex items-center gap-4 border-b border-border/50 px-6 py-3.5 transition-colors last:border-0 hover:bg-muted/30",
+        isSelected && "bg-primary/5"
+      )}
     >
+      <input
+        type="checkbox"
+        checked={isSelected}
+        onChange={(e) => {
+          e.preventDefault();
+          onToggleSelect();
+        }}
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          onToggleSelect();
+        }}
+        className="size-3.5 shrink-0 rounded border-border accent-foreground"
+      />
       <FavoriteButton id={agent.id} />
       <StatusDot status={agent.status} />
 
@@ -78,9 +108,10 @@ function AgentRow({ agent }: { agent: Agent }) {
 
       <span className="w-20 text-right text-xs text-muted-foreground">{agent.team}</span>
 
-      <span className="w-16 text-right font-mono text-[10px] text-muted-foreground">
-        {age}
-      </span>
+      <RelativeTime
+        date={agent.updated_at}
+        className="w-16 text-right font-mono text-[10px] text-muted-foreground"
+      />
     </Link>
   );
 }
@@ -104,10 +135,9 @@ function EmptyState({ hasFilter }: { hasFilter: boolean }) {
 }
 
 export default function AgentsPage() {
-  const [searchParams, setSearchParams] = useSearchParams();
-  const [search, setSearch] = useState(searchParams.get("q") ?? "");
-  const [framework, setFramework] = useState(searchParams.get("framework") ?? "");
-  const [status, setStatus] = useState(searchParams.get("status") ?? "");
+  const [search, setSearch] = useUrlState("search", "");
+  const [framework, setFramework] = useUrlState("framework", "");
+  const [status, setStatus] = useUrlState("status", "");
   const [activeTags, setActiveTags] = useState<string[]>([]);
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const { showOnlyFavorites } = useFavorites();
@@ -148,13 +178,7 @@ export default function AgentsPage() {
     filteredAgents = showOnlyFavorites(filteredAgents);
   }
 
-  const handleSearch = (value: string) => {
-    setSearch(value);
-    const sp = new URLSearchParams(searchParams);
-    if (value) sp.set("q", value);
-    else sp.delete("q");
-    setSearchParams(sp, { replace: true });
-  };
+  const bulk = useBulkSelect(filteredAgents);
 
   const toggleTag = (tag: string) => {
     setActiveTags((prev) =>
@@ -185,7 +209,7 @@ export default function AgentsPage() {
           <Input
             placeholder="Search agents..."
             value={search}
-            onChange={(e) => handleSearch(e.target.value)}
+            onChange={(e) => setSearch(e.target.value)}
             className="h-8 pl-9 text-xs"
           />
         </div>
@@ -246,6 +270,12 @@ export default function AgentsPage() {
       <div className="overflow-hidden rounded-lg border border-border">
         {/* Column headers */}
         <div className="flex items-center gap-4 border-b border-border bg-muted/30 px-6 py-2 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+          <input
+            type="checkbox"
+            checked={bulk.isAllSelected}
+            onChange={bulk.toggleAll}
+            className="size-3.5 shrink-0 rounded border-border accent-foreground"
+          />
           <span className="w-3.5" />
           <span className="w-2" />
           <span className="flex-1">Agent</span>
@@ -277,21 +307,25 @@ export default function AgentsPage() {
         ) : filteredAgents.length === 0 ? (
           <EmptyState hasFilter={hasFilter} />
         ) : (
-          filteredAgents.map((agent) => <AgentRow key={agent.id} agent={agent} />)
+          filteredAgents.map((agent) => (
+            <AgentRow
+              key={agent.id}
+              agent={agent}
+              isSelected={bulk.isSelected(agent.id)}
+              onToggleSelect={() => bulk.toggle(agent.id)}
+            />
+          ))
         )}
       </div>
+
+      <BulkActionBar
+        selectedCount={bulk.selectedCount}
+        entityName="agent"
+        selectedItems={bulk.selectedItems as unknown as Record<string, unknown>[]}
+        onClearSelection={bulk.clearSelection}
+        onDelete={() => bulk.clearSelection()}
+      />
     </div>
   );
 }
 
-function timeSince(dateStr: string): string {
-  const seconds = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
-  if (seconds < 60) return "now";
-  const minutes = Math.floor(seconds / 60);
-  if (minutes < 60) return `${minutes}m`;
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}h`;
-  const days = Math.floor(hours / 24);
-  if (days < 30) return `${days}d`;
-  return `${Math.floor(days / 30)}mo`;
-}

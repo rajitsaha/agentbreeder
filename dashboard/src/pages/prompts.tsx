@@ -38,14 +38,19 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { RelativeTime } from "@/components/ui/relative-time";
 import { cn } from "@/lib/utils";
 import { useState, useMemo, useRef, useCallback } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { FavoriteButton } from "@/components/favorite-button";
 import { ExportDropdown } from "@/components/export-dropdown";
+import { BulkActionBar } from "@/components/bulk-action-bar";
 import { useFavorites } from "@/hooks/use-favorites";
+import { useBulkSelect } from "@/hooks/use-bulk-select";
+import { useUrlState } from "@/hooks/use-url-state";
 
 interface PromptGroup {
+  id: string;
   name: string;
   versions: Prompt[];
   latestVersion: string;
@@ -57,24 +62,42 @@ function PromptCard({
   group,
   onNavigate,
   onDelete,
+  isSelected,
+  onToggleSelect,
 }: {
   group: PromptGroup;
   onNavigate: (id: string) => void;
   onDelete: (id: string) => void;
+  isSelected: boolean;
+  onToggleSelect: () => void;
 }) {
   const [expanded, setExpanded] = useState(false);
   const latest = group.versions[0];
 
   return (
-    <div className="overflow-hidden rounded-lg border border-border transition-all hover:border-border">
+    <div className={cn(
+      "overflow-hidden rounded-lg border border-border transition-all hover:border-border",
+      isSelected && "border-primary/30 bg-primary/5"
+    )}>
       {/* Header -- always visible */}
       <div className="flex items-start gap-3 p-4 transition-colors hover:bg-muted/20">
-        <button
-          onClick={() => setExpanded(!expanded)}
-          className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted"
-        >
-          <FileText className="size-4 text-muted-foreground" />
-        </button>
+        <div className="flex flex-col items-center gap-2">
+          <input
+            type="checkbox"
+            checked={isSelected}
+            onChange={(e) => {
+              e.stopPropagation();
+              onToggleSelect();
+            }}
+            className="size-3.5 shrink-0 rounded border-border accent-foreground"
+          />
+          <button
+            onClick={() => setExpanded(!expanded)}
+            className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted"
+          >
+            <FileText className="size-4 text-muted-foreground" />
+          </button>
+        </div>
 
         <div
           className="min-w-0 flex-1 cursor-pointer"
@@ -103,10 +126,7 @@ function PromptCard({
             </span>
             <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
               <Clock className="size-2.5" />
-              {new Date(latest.created_at).toLocaleDateString("en-US", {
-                month: "short",
-                day: "numeric",
-              })}
+              <RelativeTime date={latest.created_at} />
             </span>
           </div>
         </div>
@@ -181,11 +201,7 @@ function PromptCard({
                   </span>
                 )}
                 <span className="ml-auto text-[10px] text-muted-foreground">
-                  {new Date(prompt.created_at).toLocaleDateString("en-US", {
-                    month: "short",
-                    day: "numeric",
-                    year: "numeric",
-                  })}
+                  <RelativeTime date={prompt.created_at} />
                 </span>
               </div>
               <pre className="max-h-40 overflow-auto rounded-md bg-muted/50 px-3 py-2 font-mono text-xs leading-relaxed text-foreground/80">
@@ -475,8 +491,8 @@ function EmptyState({ hasFilter }: { hasFilter: boolean }) {
 }
 
 export default function PromptsPage() {
-  const [search, setSearch] = useState("");
-  const [teamFilter, setTeamFilter] = useState("");
+  const [search, setSearch] = useUrlState("search", "");
+  const [teamFilter, setTeamFilter] = useUrlState("team", "");
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -518,6 +534,7 @@ export default function PromptsPage() {
       // Sort versions descending (newest first)
       versions.sort((a, b) => b.version.localeCompare(a.version, undefined, { numeric: true }));
       result.push({
+        id: versions[0].id,
         name,
         versions,
         latestVersion: versions[0].version,
@@ -542,6 +559,8 @@ export default function PromptsPage() {
       g.versions.some((v) => favorites.has(v.id))
     );
   }
+
+  const bulk = useBulkSelect(filtered);
 
   const teams = [...new Set(prompts.map((p) => p.team))].filter(Boolean).sort();
 
@@ -631,10 +650,20 @@ export default function PromptsPage() {
               group={group}
               onNavigate={(id) => navigate(`/prompts/${id}`)}
               onDelete={(id) => deleteMutation.mutate(id)}
+              isSelected={bulk.isSelected(group.id)}
+              onToggleSelect={() => bulk.toggle(group.id)}
             />
           ))}
         </div>
       )}
+
+      <BulkActionBar
+        selectedCount={bulk.selectedCount}
+        entityName="prompt"
+        selectedItems={bulk.selectedItems as unknown as Record<string, unknown>[]}
+        onClearSelection={bulk.clearSelection}
+        onDelete={() => bulk.clearSelection()}
+      />
     </div>
   );
 }

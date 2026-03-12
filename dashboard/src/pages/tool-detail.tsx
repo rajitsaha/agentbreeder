@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { api, type ToolDetail, type ToolUsage, type ToolHealth, type ToolHealthStatus } from "@/lib/api";
 import { Badge } from "@/components/ui/badge";
+import { RelativeTime } from "@/components/ui/relative-time";
 import { SchemaViewer } from "@/components/schema-viewer";
 import { cn } from "@/lib/utils";
 
@@ -110,15 +111,43 @@ function HealthIndicator({ toolId }: { toolId: string }) {
         <Field label="Last Ping">
           <span className="flex items-center gap-1.5 text-sm">
             <Clock className="size-3 text-muted-foreground" />
-            {new Date(health.last_ping).toLocaleDateString("en-US", {
-              year: "numeric",
-              month: "short",
-              day: "numeric",
-              hour: "2-digit",
-              minute: "2-digit",
-            })}
+            <RelativeTime date={health.last_ping} />
           </span>
         </Field>
+      )}
+    </div>
+  );
+}
+
+function HeaderHealthBadge({ toolId }: { toolId: string }) {
+  const { data, isLoading } = useQuery({
+    queryKey: ["tool-health", toolId],
+    queryFn: () => api.tools.health(toolId),
+    staleTime: 30_000,
+    refetchInterval: 60_000,
+  });
+
+  const health: ToolHealth | undefined = data?.data;
+
+  if (isLoading) {
+    return <div className="h-5 w-20 animate-pulse rounded-full bg-muted" />;
+  }
+
+  if (!health) return null;
+
+  const config = HEALTH_CONFIG[health.status];
+
+  return (
+    <div
+      className={cn(
+        "flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium",
+        config.bgColor
+      )}
+    >
+      <Circle className={cn("size-1.5 fill-current", config.dotColor)} />
+      {config.label}
+      {health.latency_ms != null && (
+        <span className="font-mono text-[10px] opacity-75">{health.latency_ms}ms</span>
       )}
     </div>
   );
@@ -145,7 +174,10 @@ function UsageSection({ toolId }: { toolId: string }) {
 
   if (agents.length === 0) {
     return (
-      <p className="text-xs text-muted-foreground">No agents currently use this tool.</p>
+      <div className="flex flex-col items-center justify-center py-6 text-center">
+        <Users className="size-5 text-muted-foreground/40 mb-2" />
+        <p className="text-xs text-muted-foreground">No agents are using this tool yet</p>
+      </div>
     );
   }
 
@@ -155,18 +187,43 @@ function UsageSection({ toolId }: { toolId: string }) {
         <Link
           key={a.agent_id}
           to={`/agents/${a.agent_id}`}
-          className="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-muted/30"
+          className="flex items-center gap-3 rounded-md px-2 py-2 text-sm transition-colors hover:bg-muted/30"
         >
           <Circle
             className={cn(
               "size-1.5 shrink-0 fill-current",
               a.agent_status === "running"
                 ? "text-emerald-500"
-                : "text-muted-foreground"
+                : a.agent_status === "failed"
+                  ? "text-red-500"
+                  : "text-muted-foreground"
             )}
           />
-          <span>{a.agent_name}</span>
-          <Badge variant="outline" className="ml-auto text-[10px]">
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2">
+              <span className="truncate font-medium">{a.agent_name}</span>
+              <span className="shrink-0 text-[10px] text-muted-foreground">
+                v{a.agent_version}
+              </span>
+            </div>
+            {a.last_deployed && (
+              <p className="flex items-center gap-1 text-[10px] text-muted-foreground mt-0.5">
+                <Clock className="size-2.5" />
+                Deployed <RelativeTime date={a.last_deployed} />
+              </p>
+            )}
+          </div>
+          <Badge
+            variant="outline"
+            className={cn(
+              "ml-auto shrink-0 text-[10px]",
+              a.agent_status === "running"
+                ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
+                : a.agent_status === "failed"
+                  ? "bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20"
+                  : ""
+            )}
+          >
             {a.agent_status}
           </Badge>
         </Link>
@@ -263,6 +320,9 @@ export default function ToolDetailPage() {
               <Circle className="size-1.5 fill-current" />
               {isActive ? "Active" : tool.status}
             </div>
+            {tool.tool_type === "mcp_server" && (
+              <HeaderHealthBadge toolId={id!} />
+            )}
           </div>
           {tool.description && (
             <p className="max-w-2xl text-sm text-muted-foreground">{tool.description}</p>
@@ -335,25 +395,13 @@ export default function ToolDetailPage() {
               <Field label="Created">
                 <span className="flex items-center gap-1.5 text-sm">
                   <Clock className="size-3 text-muted-foreground" />
-                  {new Date(tool.created_at).toLocaleDateString("en-US", {
-                    year: "numeric",
-                    month: "short",
-                    day: "numeric",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
+                  <RelativeTime date={tool.created_at} />
                 </span>
               </Field>
               <Field label="Last Updated">
                 <span className="flex items-center gap-1.5 text-sm">
                   <Clock className="size-3 text-muted-foreground" />
-                  {new Date(tool.updated_at).toLocaleDateString("en-US", {
-                    year: "numeric",
-                    month: "short",
-                    day: "numeric",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
+                  <RelativeTime date={tool.updated_at} />
                 </span>
               </Field>
             </dl>

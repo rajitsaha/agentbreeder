@@ -1,10 +1,14 @@
 import { useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 
-const COMBO_TIMEOUT = 500;
+const COMBO_TIMEOUT = 1000;
 
 interface KeyboardShortcutsOptions {
   onShowHelp?: () => void;
+  onNewResource?: () => void;
+  onChordStart?: () => void;
+  onChordEnd?: () => void;
+  onToggleSidebar?: () => void;
 }
 
 /**
@@ -14,7 +18,13 @@ interface KeyboardShortcutsOptions {
  * Ignores keypresses when the user is focused on an input, textarea, or
  * contenteditable element.
  */
-export function useKeyboardShortcuts({ onShowHelp }: KeyboardShortcutsOptions = {}) {
+export function useKeyboardShortcuts({
+  onShowHelp,
+  onNewResource,
+  onChordStart,
+  onChordEnd,
+  onToggleSidebar,
+}: KeyboardShortcutsOptions = {}) {
   const navigate = useNavigate();
   const pendingKeyRef = useRef<string | null>(null);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -25,7 +35,8 @@ export function useKeyboardShortcuts({ onShowHelp }: KeyboardShortcutsOptions = 
       clearTimeout(timeoutRef.current);
       timeoutRef.current = null;
     }
-  }, []);
+    onChordEnd?.();
+  }, [onChordEnd]);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -68,6 +79,9 @@ export function useKeyboardShortcuts({ onShowHelp }: KeyboardShortcutsOptions = 
           case "d":
             navigate("/deploys");
             return;
+          case "s":
+            navigate("/settings");
+            return;
           default:
             return;
         }
@@ -77,6 +91,7 @@ export function useKeyboardShortcuts({ onShowHelp }: KeyboardShortcutsOptions = 
       if (key === "g") {
         e.preventDefault();
         pendingKeyRef.current = "g";
+        onChordStart?.();
         timeoutRef.current = setTimeout(clearPending, COMBO_TIMEOUT);
         return;
       }
@@ -101,20 +116,19 @@ export function useKeyboardShortcuts({ onShowHelp }: KeyboardShortcutsOptions = 
 
       if (key === "n") {
         e.preventDefault();
-        // Focus the first "New" or "Create" button on the page
-        const newButton = document.querySelector<HTMLElement>(
-          '[data-slot="new-button"], button[data-action="new"]'
-        );
-        if (newButton) {
-          newButton.focus();
-          newButton.click();
-        }
+        onNewResource?.();
         return;
       }
 
       if (key === "?") {
         e.preventDefault();
         onShowHelp?.();
+        return;
+      }
+
+      if (key === "[") {
+        e.preventDefault();
+        onToggleSidebar?.();
         return;
       }
     };
@@ -124,7 +138,7 @@ export function useKeyboardShortcuts({ onShowHelp }: KeyboardShortcutsOptions = 
       window.removeEventListener("keydown", handler);
       clearPending();
     };
-  }, [navigate, onShowHelp, clearPending]);
+  }, [navigate, onShowHelp, onNewResource, onChordStart, onToggleSidebar, clearPending]);
 }
 
 /** Shortcut definitions for display in the help dialog. */
@@ -137,12 +151,14 @@ export const KEYBOARD_SHORTCUTS = [
       { keys: ["g", "m"], description: "Go to Models" },
       { keys: ["g", "p"], description: "Go to Prompts" },
       { keys: ["g", "d"], description: "Go to Deploys" },
+      { keys: ["g", "s"], description: "Go to Settings" },
     ],
   },
   {
     category: "Actions",
     shortcuts: [
-      { keys: ["n"], description: "New / Create" },
+      { keys: ["n"], description: "New resource" },
+      { keys: ["["], description: "Toggle sidebar" },
     ],
   },
   {

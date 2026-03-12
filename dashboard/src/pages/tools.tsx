@@ -8,7 +8,10 @@ import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { FavoriteButton } from "@/components/favorite-button";
 import { ExportDropdown } from "@/components/export-dropdown";
+import { BulkActionBar } from "@/components/bulk-action-bar";
 import { useFavorites } from "@/hooks/use-favorites";
+import { useBulkSelect } from "@/hooks/use-bulk-select";
+import { useUrlState } from "@/hooks/use-url-state";
 
 const TYPE_ICONS: Record<string, typeof Wrench> = {
   mcp_server: Server,
@@ -22,18 +25,43 @@ const SOURCE_COLORS: Record<string, string> = {
   litellm: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20",
 };
 
-function ToolCard({ tool, onClick }: { tool: Tool; onClick: () => void }) {
+function ToolCard({
+  tool,
+  onClick,
+  isSelected,
+  onToggleSelect,
+}: {
+  tool: Tool;
+  onClick: () => void;
+  isSelected: boolean;
+  onToggleSelect: () => void;
+}) {
   const Icon = TYPE_ICONS[tool.tool_type] ?? Wrench;
   const isActive = tool.status === "active";
 
   return (
     <div
       onClick={onClick}
-      className="cursor-pointer rounded-lg border border-border p-4 transition-all hover:border-border hover:bg-muted/20"
+      className={cn(
+        "cursor-pointer rounded-lg border border-border p-4 transition-all hover:border-border hover:bg-muted/20",
+        isSelected && "border-primary/30 bg-primary/5"
+      )}
     >
       <div className="flex items-start gap-3">
-        <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted">
-          <Icon className="size-4 text-muted-foreground" />
+        <div className="flex flex-col items-center gap-2">
+          <input
+            type="checkbox"
+            checked={isSelected}
+            onChange={(e) => {
+              e.stopPropagation();
+              onToggleSelect();
+            }}
+            onClick={(e) => e.stopPropagation()}
+            className="size-3.5 shrink-0 rounded border-border accent-foreground"
+          />
+          <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted">
+            <Icon className="size-4 text-muted-foreground" />
+          </div>
         </div>
 
         <div className="min-w-0 flex-1">
@@ -90,8 +118,8 @@ function EmptyState() {
 
 export default function ToolsPage() {
   const navigate = useNavigate();
-  const [search, setSearch] = useState("");
-  const [typeFilter, setTypeFilter] = useState("");
+  const [search, setSearch] = useUrlState("search", "");
+  const [typeFilter, setTypeFilter] = useUrlState("type", "");
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const { showOnlyFavorites } = useFavorites();
 
@@ -115,6 +143,8 @@ export default function ToolsPage() {
   if (showFavoritesOnly) {
     filtered = showOnlyFavorites(filtered);
   }
+
+  const bulk = useBulkSelect(filtered);
 
   return (
     <div className="mx-auto max-w-5xl p-6">
@@ -194,10 +224,20 @@ export default function ToolsPage() {
               key={tool.id}
               tool={tool}
               onClick={() => navigate(`/tools/${tool.id}`)}
+              isSelected={bulk.isSelected(tool.id)}
+              onToggleSelect={() => bulk.toggle(tool.id)}
             />
           ))}
         </div>
       )}
+
+      <BulkActionBar
+        selectedCount={bulk.selectedCount}
+        entityName="tool"
+        selectedItems={bulk.selectedItems as unknown as Record<string, unknown>[]}
+        onClearSelection={bulk.clearSelection}
+        onDelete={() => bulk.clearSelection()}
+      />
     </div>
   );
 }

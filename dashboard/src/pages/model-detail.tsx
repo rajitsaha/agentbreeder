@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { api, type Model, type ModelUsage } from "@/lib/api";
 import { Badge } from "@/components/ui/badge";
+import { RelativeTime } from "@/components/ui/relative-time";
 import { cn } from "@/lib/utils";
 
 const PROVIDER_COLORS: Record<string, string> = {
@@ -324,13 +325,7 @@ export default function ModelDetailPage() {
               <Field label="Created">
                 <span className="flex items-center gap-1.5 text-sm">
                   <Clock className="size-3 text-muted-foreground" />
-                  {new Date(model.created_at).toLocaleDateString("en-US", {
-                    year: "numeric",
-                    month: "short",
-                    day: "numeric",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
+                  <RelativeTime date={model.created_at} />
                 </span>
               </Field>
             </dl>

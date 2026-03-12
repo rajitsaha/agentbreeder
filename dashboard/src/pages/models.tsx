@@ -28,7 +28,10 @@ import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { FavoriteButton } from "@/components/favorite-button";
 import { ExportDropdown } from "@/components/export-dropdown";
+import { BulkActionBar } from "@/components/bulk-action-bar";
 import { useFavorites } from "@/hooks/use-favorites";
+import { useBulkSelect } from "@/hooks/use-bulk-select";
+import { useUrlState } from "@/hooks/use-url-state";
 
 const PROVIDER_COLORS: Record<string, string> = {
   anthropic: "bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500/20",
@@ -76,7 +79,10 @@ function ModelRow({
 }) {
   const isActive = model.status === "active";
   return (
-    <div className="flex items-center gap-4 border-b border-border/50 px-5 py-3 transition-colors last:border-0 hover:bg-muted/20">
+    <div className={cn(
+      "flex items-center gap-4 border-b border-border/50 px-5 py-3 transition-colors last:border-0 hover:bg-muted/20",
+      isSelected && "bg-primary/5"
+    )}>
       <input
         type="checkbox"
         checked={isSelected}
@@ -301,9 +307,9 @@ function EmptyState({ hasFilter }: { hasFilter: boolean }) {
 
 export default function ModelsPage() {
   const navigate = useNavigate();
-  const [search, setSearch] = useState("");
-  const [providerFilter, setProviderFilter] = useState("");
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [search, setSearch] = useUrlState("search", "");
+  const [providerFilter, setProviderFilter] = useUrlState("provider", "");
+  const [compareIds, setCompareIds] = useState<Set<string>>(new Set());
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const { showOnlyFavorites, favorites } = useFavorites();
 
@@ -330,8 +336,10 @@ export default function ModelsPage() {
     filtered = showOnlyFavorites(filtered);
   }
 
-  function toggleSelect(id: string) {
-    setSelectedIds((prev) => {
+  const bulk = useBulkSelect(filtered);
+
+  function toggleCompare(id: string) {
+    setCompareIds((prev) => {
       const next = new Set(prev);
       if (next.has(id)) {
         next.delete(id);
@@ -344,11 +352,11 @@ export default function ModelsPage() {
   }
 
   function handleCompare() {
-    const ids = Array.from(selectedIds).join(",");
+    const ids = Array.from(compareIds).join(",");
     navigate(`/models/compare?ids=${ids}`);
   }
 
-  const canCompare = selectedIds.size >= 2 && selectedIds.size <= 3;
+  const canCompare = compareIds.size >= 2 && compareIds.size <= 3;
 
   return (
     <div className="mx-auto max-w-5xl p-6">
@@ -360,7 +368,7 @@ export default function ModelsPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          {selectedIds.size > 0 && (
+          {compareIds.size > 0 && (
             <button
               onClick={handleCompare}
               disabled={!canCompare}
@@ -372,7 +380,7 @@ export default function ModelsPage() {
               )}
             >
               <GitCompareArrows className="size-3" />
-              Compare ({selectedIds.size})
+              Compare ({compareIds.size})
             </button>
           )}
           <ExportDropdown
@@ -436,7 +444,12 @@ export default function ModelsPage() {
       {/* Table */}
       <div className="overflow-hidden rounded-lg border border-border">
         <div className="flex items-center gap-4 border-b border-border bg-muted/30 px-5 py-2 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-          <span className="w-3.5" />
+          <input
+            type="checkbox"
+            checked={bulk.isAllSelected}
+            onChange={bulk.toggleAll}
+            className="size-3.5 shrink-0 rounded border-border accent-foreground"
+          />
           <span className="w-3.5" />
           <span className="w-1.5" />
           <span className="flex-1">Model</span>
@@ -478,13 +491,21 @@ export default function ModelsPage() {
             <ModelRow
               key={model.id}
               model={model}
-              isSelected={selectedIds.has(model.id)}
-              onToggleSelect={() => toggleSelect(model.id)}
+              isSelected={bulk.isSelected(model.id)}
+              onToggleSelect={() => bulk.toggle(model.id)}
               onClick={() => navigate(`/models/${model.id}`)}
             />
           ))
         )}
       </div>
+
+      <BulkActionBar
+        selectedCount={bulk.selectedCount}
+        entityName="model"
+        selectedItems={bulk.selectedItems as unknown as Record<string, unknown>[]}
+        onClearSelection={bulk.clearSelection}
+        onDelete={() => bulk.clearSelection()}
+      />
     </div>
   );
 }

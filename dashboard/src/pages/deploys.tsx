@@ -11,8 +11,10 @@ import {
 import { api, type DeployJob, type DeployJobStatus } from "@/lib/api";
 import { DeployPipeline } from "@/components/deploy-pipeline";
 import { Badge } from "@/components/ui/badge";
+import { RelativeTime } from "@/components/ui/relative-time";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
+import { useUrlState } from "@/hooks/use-url-state";
 
 const STATUS_COLORS: Record<string, string> = {
   completed: "text-emerald-500",
@@ -91,9 +93,10 @@ function DeployRow({ job }: { job: DeployJob }) {
           {duration}
         </span>
 
-        <span className="w-16 text-right text-[10px] text-muted-foreground">
-          {timeSince(job.started_at)}
-        </span>
+        <RelativeTime
+          date={job.started_at}
+          className="w-16 text-right text-[10px] text-muted-foreground"
+        />
 
         {expanded ? (
           <ChevronDown className="size-3.5 shrink-0 text-muted-foreground" />
@@ -113,26 +116,12 @@ function DeployRow({ job }: { job: DeployJob }) {
               <Target className="size-2.5" />
               Target: {job.target}
             </span>
-            <span>
-              Started:{" "}
-              {new Date(job.started_at).toLocaleString("en-US", {
-                month: "short",
-                day: "numeric",
-                hour: "2-digit",
-                minute: "2-digit",
-                second: "2-digit",
-              })}
+            <span className="flex items-center gap-1">
+              Started: <RelativeTime date={job.started_at} />
             </span>
             {job.completed_at && (
-              <span>
-                Finished:{" "}
-                {new Date(job.completed_at).toLocaleString("en-US", {
-                  month: "short",
-                  day: "numeric",
-                  hour: "2-digit",
-                  minute: "2-digit",
-                  second: "2-digit",
-                })}
+              <span className="flex items-center gap-1">
+                Finished: <RelativeTime date={job.completed_at} />
               </span>
             )}
           </div>
@@ -161,7 +150,7 @@ function EmptyState({ hasFilter }: { hasFilter: boolean }) {
 }
 
 export default function DeploysPage() {
-  const [statusFilter, setStatusFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useUrlState("status", "");
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["deploys", { statusFilter }],
@@ -260,14 +249,3 @@ function formatDuration(start: Date, end: Date): string {
   return `${hours}h ${minutes % 60}m`;
 }
 
-function timeSince(dateStr: string): string {
-  const seconds = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
-  if (seconds < 60) return "now";
-  const minutes = Math.floor(seconds / 60);
-  if (minutes < 60) return `${minutes}m ago`;
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
-  const days = Math.floor(hours / 24);
-  if (days < 30) return `${days}d ago`;
-  return `${Math.floor(days / 30)}mo ago`;
-}

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ChevronRight, ChevronDown } from "lucide-react";
+import { ChevronRight, ChevronDown, Code, List } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
@@ -32,7 +32,7 @@ const TYPE_COLORS: Record<string, string> = {
 
 function getTypeLabel(prop: JsonSchemaProperty): string {
   if (prop.type === "array" && prop.items?.type) {
-    return `Array of ${prop.items.type}`;
+    return `${prop.items.type}[]`;
   }
   return prop.type ?? "unknown";
 }
@@ -86,9 +86,9 @@ function PropertyRow({
           <span className="w-3 shrink-0" />
         )}
 
-        <span className="text-sm font-medium">{name}</span>
+        <span className="text-sm font-medium font-mono">{name}</span>
         {isRequired && (
-          <span className="text-[10px] text-destructive font-medium">*</span>
+          <span className="text-xs text-destructive font-bold">*</span>
         )}
 
         <Badge
@@ -101,15 +101,9 @@ function PropertyRow({
           {getTypeLabel(prop)}
         </Badge>
 
-        {prop.enum && (
-          <span className="text-[10px] text-muted-foreground ml-1">
-            [{prop.enum.join(" | ")}]
-          </span>
-        )}
-
         {prop.default !== undefined && (
-          <span className="text-[10px] text-muted-foreground ml-auto">
-            default: {JSON.stringify(prop.default)}
+          <span className="text-[10px] text-muted-foreground ml-auto font-mono">
+            = {JSON.stringify(prop.default)}
           </span>
         )}
       </div>
@@ -120,8 +114,21 @@ function PropertyRow({
         </p>
       )}
 
+      {prop.enum && prop.enum.length > 0 && (
+        <div className="flex flex-wrap gap-1 ml-7 mb-1">
+          {prop.enum.map((value) => (
+            <span
+              key={value}
+              className="inline-flex items-center rounded-md bg-muted/60 px-1.5 py-0.5 text-[10px] font-mono text-muted-foreground ring-1 ring-inset ring-border/50"
+            >
+              {value}
+            </span>
+          ))}
+        </div>
+      )}
+
       {expanded && hasChildren && nestedProperties && (
-        <div className="ml-4 border-l border-border/50 pl-2">
+        <div className="ml-4 border-l-2 border-border/40 pl-2">
           {Object.entries(nestedProperties).map(([childName, childProp]) => (
             <PropertyRow
               key={childName}
@@ -138,36 +145,75 @@ function PropertyRow({
 }
 
 export function SchemaViewer({ schema }: { schema: Record<string, unknown> }) {
+  const [showRaw, setShowRaw] = useState(false);
   const typedSchema = schema as JsonSchema;
+  const hasProperties =
+    typedSchema.properties && Object.keys(typedSchema.properties).length > 0;
+  const isEmpty = Object.keys(schema).length === 0;
 
-  if (!typedSchema.properties || Object.keys(typedSchema.properties).length === 0) {
-    if (Object.keys(schema).length === 0) {
-      return (
-        <p className="text-xs text-muted-foreground italic">No schema defined</p>
-      );
-    }
-    // Fallback: render raw JSON for non-standard schemas
+  if (isEmpty) {
     return (
-      <pre className="overflow-x-auto rounded-md bg-muted/50 p-3 font-mono text-xs">
-        {JSON.stringify(schema, null, 2)}
-      </pre>
+      <div className="flex flex-col items-center justify-center py-8 text-center">
+        <Code className="size-6 text-muted-foreground/50 mb-2" />
+        <p className="text-xs text-muted-foreground">No schema defined for this tool</p>
+      </div>
     );
   }
 
   return (
-    <div className="space-y-0.5">
-      {typedSchema.description && (
-        <p className="text-xs text-muted-foreground mb-3">{typedSchema.description}</p>
+    <div className="space-y-3">
+      {/* View toggle */}
+      <div className="flex items-center gap-1 rounded-md bg-muted/40 p-0.5 w-fit">
+        <button
+          onClick={() => setShowRaw(false)}
+          className={cn(
+            "flex items-center gap-1.5 rounded px-2.5 py-1 text-xs font-medium transition-colors",
+            !showRaw
+              ? "bg-background text-foreground shadow-sm"
+              : "text-muted-foreground hover:text-foreground"
+          )}
+        >
+          <List className="size-3" />
+          Form
+        </button>
+        <button
+          onClick={() => setShowRaw(true)}
+          className={cn(
+            "flex items-center gap-1.5 rounded px-2.5 py-1 text-xs font-medium transition-colors",
+            showRaw
+              ? "bg-background text-foreground shadow-sm"
+              : "text-muted-foreground hover:text-foreground"
+          )}
+        >
+          <Code className="size-3" />
+          Raw JSON
+        </button>
+      </div>
+
+      {showRaw ? (
+        <pre className="overflow-x-auto rounded-md bg-muted/50 p-3 font-mono text-xs leading-relaxed">
+          {JSON.stringify(schema, null, 2)}
+        </pre>
+      ) : hasProperties ? (
+        <div className="space-y-0.5">
+          {typedSchema.description && (
+            <p className="text-xs text-muted-foreground mb-3">{typedSchema.description}</p>
+          )}
+          {Object.entries(typedSchema.properties!).map(([name, prop]) => (
+            <PropertyRow
+              key={name}
+              name={name}
+              prop={prop}
+              isRequired={typedSchema.required?.includes(name) ?? false}
+              depth={0}
+            />
+          ))}
+        </div>
+      ) : (
+        <pre className="overflow-x-auto rounded-md bg-muted/50 p-3 font-mono text-xs leading-relaxed">
+          {JSON.stringify(schema, null, 2)}
+        </pre>
       )}
-      {Object.entries(typedSchema.properties).map(([name, prop]) => (
-        <PropertyRow
-          key={name}
-          name={name}
-          prop={prop}
-          isRequired={typedSchema.required?.includes(name) ?? false}
-          depth={0}
-        />
-      ))}
     </div>
   );
 }

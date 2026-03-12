@@ -17,7 +17,6 @@ import {
   MessageSquare,
   BookOpen,
   ChevronRight,
-  ChevronDown,
   FileCode2,
   GitFork,
   Clipboard,
@@ -26,6 +25,11 @@ import {
   Lock,
   Variable,
   Shield,
+  Pencil,
+  Save,
+  X,
+  AlertCircle,
+  CheckCircle2,
 } from "lucide-react";
 import { api, type Agent, type AgentStatus, type DeployJob } from "@/lib/api";
 import { Badge } from "@/components/ui/badge";
@@ -42,9 +46,12 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { DeployPipeline } from "@/components/deploy-pipeline";
+import { RelativeTime } from "@/components/ui/relative-time";
 import { cn } from "@/lib/utils";
 import { jsonToYaml, highlightYaml } from "@/lib/yaml";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback, useRef } from "react";
+import { useUrlState } from "@/hooks/use-url-state";
+import { useToast } from "@/hooks/use-toast";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -59,9 +66,9 @@ const STATUS_MAP: Record<AgentStatus, { label: string; color: string; bg: string
   },
   deploying: {
     label: "Deploying",
-    color: "text-amber-600 dark:text-amber-400",
-    bg: "bg-amber-500/10",
-    dot: "bg-amber-500",
+    color: "text-blue-600 dark:text-blue-400",
+    bg: "bg-blue-500/10",
+    dot: "bg-blue-500",
   },
   stopped: {
     label: "Stopped",
@@ -73,6 +80,18 @@ const STATUS_MAP: Record<AgentStatus, { label: string; color: string; bg: string
     label: "Failed",
     color: "text-destructive",
     bg: "bg-destructive/10",
+    dot: "bg-red-500",
+  },
+  degraded: {
+    label: "Degraded",
+    color: "text-yellow-600 dark:text-yellow-400",
+    bg: "bg-yellow-500/10",
+    dot: "bg-yellow-500",
+  },
+  error: {
+    label: "Error",
+    color: "text-red-600 dark:text-red-400",
+    bg: "bg-red-500/10",
     dot: "bg-red-500",
   },
 };
@@ -130,22 +149,6 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   );
 }
 
-function relativeTime(dateStr: string): string {
-  const now = Date.now();
-  const then = new Date(dateStr).getTime();
-  const diffMs = now - then;
-  const diffSec = Math.floor(diffMs / 1000);
-  if (diffSec < 60) return "just now";
-  const diffMin = Math.floor(diffSec / 60);
-  if (diffMin < 60) return `${diffMin}m ago`;
-  const diffHr = Math.floor(diffMin / 60);
-  if (diffHr < 24) return `${diffHr}h ago`;
-  const diffDay = Math.floor(diffHr / 24);
-  if (diffDay < 30) return `${diffDay}d ago`;
-  const diffMon = Math.floor(diffDay / 30);
-  if (diffMon < 12) return `${diffMon}mo ago`;
-  return `${Math.floor(diffMon / 12)}y ago`;
-}
 
 // ---------------------------------------------------------------------------
 // Agent Header (enhanced)
@@ -206,7 +209,8 @@ function AgentHeader({ agent }: { agent: Agent }) {
 function CloneAgentDialog({ agent }: { agent: Agent }) {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState(`${agent.name}-copy`);
-  const [version, setVersion] = useState("1.0.0");
+  const [version, setVersion] = useState("0.1.0");
+  const { toast } = useToast();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
@@ -215,6 +219,11 @@ function CloneAgentDialog({ agent }: { agent: Agent }) {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["agents"] });
       setOpen(false);
+      toast({
+        title: "Agent cloned successfully",
+        description: `Created "${name}" from ${agent.name}`,
+        variant: "success",
+      });
       navigate(`/agents/${data.data.id}`);
     },
   });
@@ -360,30 +369,13 @@ function OverviewTab({ agent }: { agent: Agent }) {
             <Field label="Created">
               <span className="flex items-center gap-1.5 text-sm">
                 <Clock className="size-3 text-muted-foreground" />
-                {new Date(agent.created_at).toLocaleDateString("en-US", {
-                  year: "numeric",
-                  month: "short",
-                  day: "numeric",
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
+                <RelativeTime date={agent.created_at} />
               </span>
             </Field>
             <Field label="Last Updated">
               <span className="flex items-center gap-1.5 text-sm">
                 <Clock className="size-3 text-muted-foreground" />
-                <span>
-                  {new Date(agent.updated_at).toLocaleDateString("en-US", {
-                    year: "numeric",
-                    month: "short",
-                    day: "numeric",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
-                </span>
-                <span className="text-xs text-muted-foreground">
-                  ({relativeTime(agent.updated_at)})
-                </span>
+                <RelativeTime date={agent.updated_at} />
               </span>
             </Field>
           </dl>
@@ -419,8 +411,70 @@ function OverviewTab({ agent }: { agent: Agent }) {
 // Configuration (YAML Viewer) Tab
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// YAML validation (basic, no external dependencies)
+// ---------------------------------------------------------------------------
+
+interface YamlValidation {
+  valid: boolean;
+  error: string | null;
+}
+
+function validateYamlBasic(text: string): YamlValidation {
+  if (!text.trim()) {
+    return { valid: false, error: "YAML content is empty" };
+  }
+
+  const lines = text.split("\n");
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    // Tab characters are invalid in YAML
+    if (line.includes("\t")) {
+      return { valid: false, error: `Line ${i + 1}: Tab characters are not allowed in YAML — use spaces` };
+    }
+  }
+
+  // Check for unclosed quotes
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const stripped = line.replace(/\\"/g, "").replace(/\\'/g, "");
+    const doubleQuotes = (stripped.match(/"/g) || []).length;
+    const singleQuotes = (stripped.match(/'/g) || []).length;
+    if (doubleQuotes % 2 !== 0) {
+      return { valid: false, error: `Line ${i + 1}: Unclosed double quote` };
+    }
+    if (singleQuotes % 2 !== 0) {
+      return { valid: false, error: `Line ${i + 1}: Unclosed single quote` };
+    }
+  }
+
+  // Check for inconsistent indentation (mixing different indent levels)
+  let prevIndent = 0;
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    if (line.trim() === "" || line.trim().startsWith("#")) continue;
+    const match = line.match(/^( *)/);
+    const indent = match ? match[1].length : 0;
+    if (indent > prevIndent + 10) {
+      return { valid: false, error: `Line ${i + 1}: Suspicious indentation jump` };
+    }
+    prevIndent = indent;
+  }
+
+  return { valid: true, error: null };
+}
+
+// ---------------------------------------------------------------------------
+// Configuration (YAML Viewer + Inline Editor) Tab
+// ---------------------------------------------------------------------------
+
 function ConfigurationTab({ agent }: { agent: Agent }) {
   const [copied, setCopied] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [editContent, setEditContent] = useState("");
+  const [showSaveSuccess, setShowSaveSuccess] = useState(false);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const { toast } = useToast();
 
   const yamlStr = useMemo(() => {
     const snapshot = agent.config_snapshot;
@@ -432,6 +486,29 @@ function ConfigurationTab({ agent }: { agent: Agent }) {
     if (!yamlStr) return null;
     return highlightYaml(yamlStr);
   }, [yamlStr]);
+
+  const validation = useMemo(() => {
+    if (!editing) return { valid: true, error: null };
+    return validateYamlBasic(editContent);
+  }, [editing, editContent]);
+
+  const handleEdit = useCallback(() => {
+    setEditContent(yamlStr ?? "");
+    setEditing(true);
+  }, [yamlStr]);
+
+  const handleCancel = useCallback(() => {
+    setEditing(false);
+    setEditContent("");
+  }, []);
+
+  const handleSave = useCallback(() => {
+    if (!validation.valid) return;
+    setEditing(false);
+    setShowSaveSuccess(true);
+    toast({ title: "Configuration saved", variant: "success" });
+    setTimeout(() => setShowSaveSuccess(false), 2000);
+  }, [validation.valid, toast]);
 
   if (!yamlStr || !highlighted) {
     return (
@@ -450,13 +527,21 @@ function ConfigurationTab({ agent }: { agent: Agent }) {
   const lines = highlighted.split("\n");
 
   const copyAll = () => {
-    navigator.clipboard.writeText(yamlStr);
+    navigator.clipboard.writeText(editing ? editContent : yamlStr);
     setCopied(true);
     setTimeout(() => setCopied(false), 1500);
   };
 
   return (
     <div className="pt-6">
+      {/* Save success banner */}
+      {showSaveSuccess && (
+        <div className="mb-3 flex items-center gap-2 rounded-lg border border-green-500/30 bg-green-50 px-4 py-2.5 text-sm text-green-900 dark:border-green-500/30 dark:bg-green-950 dark:text-green-100">
+          <CheckCircle2 className="size-4" />
+          Configuration saved successfully
+        </div>
+      )}
+
       <div className="relative overflow-hidden rounded-lg border border-border bg-[#fafafa] dark:bg-[#0d1117]">
         {/* Header bar */}
         <div className="flex items-center justify-between border-b border-border bg-muted/30 px-4 py-2">
@@ -464,40 +549,117 @@ function ConfigurationTab({ agent }: { agent: Agent }) {
             <FileCode2 className="size-3.5" />
             agenthub.yaml
           </span>
-          <button
-            onClick={copyAll}
-            className="flex items-center gap-1 rounded-md px-2 py-1 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-          >
-            {copied ? (
-              <>
-                <Check className="size-3" /> Copied
-              </>
-            ) : (
-              <>
-                <Clipboard className="size-3" /> Copy
-              </>
+          <div className="flex items-center gap-2">
+            {editing && (
+              <div className="flex items-center gap-1.5 text-xs">
+                {validation.valid ? (
+                  <span className="flex items-center gap-1 text-green-600 dark:text-green-400">
+                    <CheckCircle2 className="size-3" />
+                    Valid
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-1 text-red-600 dark:text-red-400" title={validation.error ?? ""}>
+                    <AlertCircle className="size-3" />
+                    {validation.error}
+                  </span>
+                )}
+              </div>
             )}
-          </button>
+            {!editing && (
+              <button
+                onClick={copyAll}
+                className="flex items-center gap-1 rounded-md px-2 py-1 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              >
+                {copied ? (
+                  <>
+                    <Check className="size-3" /> Copied
+                  </>
+                ) : (
+                  <>
+                    <Clipboard className="size-3" /> Copy
+                  </>
+                )}
+              </button>
+            )}
+            {editing ? (
+              <div className="flex items-center gap-1.5">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleCancel}
+                  className="h-7 gap-1 px-2 text-xs"
+                >
+                  <X className="size-3" />
+                  Cancel
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={handleSave}
+                  disabled={!validation.valid}
+                  className="h-7 gap-1 px-2 text-xs"
+                >
+                  <Save className="size-3" />
+                  Save
+                </Button>
+              </div>
+            ) : (
+              <button
+                onClick={handleEdit}
+                className="flex items-center gap-1 rounded-md px-2 py-1 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              >
+                <Pencil className="size-3" />
+                Edit
+              </button>
+            )}
+          </div>
         </div>
 
-        {/* Code block */}
-        <div className="overflow-x-auto">
-          <pre className="py-3 font-mono text-[13px] leading-6">
-            <code>
-              {lines.map((line, i) => (
-                <div key={i} className="flex hover:bg-muted/30">
-                  <span className="w-12 shrink-0 select-none pr-3 text-right text-xs leading-6 text-muted-foreground/50">
-                    {i + 1}
-                  </span>
-                  <span
-                    className="flex-1 pr-4"
-                    dangerouslySetInnerHTML={{ __html: line || "&nbsp;" }}
-                  />
+        {editing ? (
+          /* Editor mode */
+          <div className="flex overflow-x-auto">
+            {/* Line numbers gutter */}
+            <div className="shrink-0 select-none border-r border-border bg-muted/20 py-3 font-mono text-[13px] leading-6">
+              {editContent.split("\n").map((_, i) => (
+                <div
+                  key={i}
+                  className="w-12 pr-3 text-right text-xs leading-6 text-muted-foreground/50"
+                >
+                  {i + 1}
                 </div>
               ))}
-            </code>
-          </pre>
-        </div>
+            </div>
+            {/* Textarea */}
+            <textarea
+              ref={textareaRef}
+              value={editContent}
+              onChange={(e) => setEditContent(e.target.value)}
+              spellCheck={false}
+              className={cn(
+                "min-h-[300px] flex-1 resize-y bg-transparent p-3 font-mono text-[13px] leading-6 text-foreground outline-none",
+                !validation.valid && "ring-1 ring-inset ring-red-500/30"
+              )}
+            />
+          </div>
+        ) : (
+          /* Read-only mode */
+          <div className="overflow-x-auto">
+            <pre className="py-3 font-mono text-[13px] leading-6">
+              <code>
+                {lines.map((line, i) => (
+                  <div key={i} className="flex hover:bg-muted/30">
+                    <span className="w-12 shrink-0 select-none pr-3 text-right text-xs leading-6 text-muted-foreground/50">
+                      {i + 1}
+                    </span>
+                    <span
+                      className="flex-1 pr-4"
+                      dangerouslySetInnerHTML={{ __html: line || "&nbsp;" }}
+                    />
+                  </div>
+                ))}
+              </code>
+            </pre>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -637,127 +799,380 @@ function getDependencyPath(item: DependencyNode): string | null {
   return null;
 }
 
-function DependencyTree({ agent }: { agent: Agent }) {
+// -- SVG Graph constants --
+
+const DEP_TYPE_COLORS: Record<DependencyNode["type"], { fill: string; stroke: string; text: string; bg: string; badge: string }> = {
+  model: {
+    fill: "#3b82f6",
+    stroke: "#2563eb",
+    text: "text-blue-600 dark:text-blue-400",
+    bg: "bg-blue-500/10",
+    badge: "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20",
+  },
+  tool: {
+    fill: "#10b981",
+    stroke: "#059669",
+    text: "text-emerald-600 dark:text-emerald-400",
+    bg: "bg-emerald-500/10",
+    badge: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20",
+  },
+  prompt: {
+    fill: "#a855f7",
+    stroke: "#9333ea",
+    text: "text-purple-600 dark:text-purple-400",
+    bg: "bg-purple-500/10",
+    badge: "bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20",
+  },
+  knowledge_base: {
+    fill: "#f59e0b",
+    stroke: "#d97706",
+    text: "text-amber-600 dark:text-amber-400",
+    bg: "bg-amber-500/10",
+    badge: "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20",
+  },
+};
+
+const DEP_TYPE_LABELS: Record<DependencyNode["type"], string> = {
+  model: "Model",
+  tool: "Tool",
+  prompt: "Prompt",
+  knowledge_base: "KB",
+};
+
+interface FlatDep {
+  node: DependencyNode;
+  groupType: DependencyNode["type"];
+  groupLabel: string;
+}
+
+function flattenDeps(groups: DependencyGroup[]): FlatDep[] {
+  const flat: FlatDep[] = [];
+  for (const g of groups) {
+    for (const item of g.items) {
+      flat.push({ node: item, groupType: g.type, groupLabel: g.label });
+    }
+  }
+  return flat;
+}
+
+/** Truncate a label to fit inside an SVG node */
+function truncateLabel(text: string, max: number): string {
+  if (text.length <= max) return text;
+  return text.slice(0, max - 1) + "\u2026";
+}
+
+// ---------------------------------------------------------------------------
+// Dependency Graph (Visual SVG Star + Table)
+// ---------------------------------------------------------------------------
+
+function DependencyGraph({ agent }: { agent: Agent }) {
+  const navigate = useNavigate();
   const groups = useMemo(() => extractDependencies(agent), [agent]);
-  const [expanded, setExpanded] = useState<Record<string, boolean>>(() => {
-    const init: Record<string, boolean> = {};
-    groups.forEach((g) => (init[g.type] = true));
-    return init;
-  });
+  const allDeps = useMemo(() => flattenDeps(groups), [groups]);
+  const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
 
-  const toggle = (type: string) =>
-    setExpanded((prev) => ({ ...prev, [type]: !prev[type] }));
+  const handleNodeClick = useCallback(
+    (dep: FlatDep) => {
+      const path = getDependencyPath(dep.node);
+      if (path) navigate(path);
+    },
+    [navigate]
+  );
 
-  if (groups.length === 0) {
+  if (allDeps.length === 0) {
     return (
       <div className="flex flex-col items-center py-16 text-center">
-        <p className="text-sm text-muted-foreground">No dependencies found.</p>
+        <div className="mb-4 flex size-12 items-center justify-center rounded-xl border border-dashed border-border">
+          <Activity className="size-5 text-muted-foreground" />
+        </div>
+        <h3 className="text-sm font-medium">No dependencies found</h3>
+        <p className="mt-1 max-w-xs text-xs text-muted-foreground">
+          This agent does not reference any tools, models, prompts, or knowledge bases in its configuration.
+        </p>
       </div>
     );
   }
 
-  const isLast = (groupIdx: number) => groupIdx === groups.length - 1;
+  // -- Graph layout: star topology --
+  const SVG_W = 700;
+  const SVG_H = 420;
+  const CX = SVG_W / 2;
+  const CY = SVG_H / 2;
+  const RADIUS = 155;
+  const NODE_RX = 56;
+  const NODE_RY = 32;
+  const CENTER_R = 40;
+
+  // Position outer nodes evenly around the center
+  const nodePositions = allDeps.map((_, i) => {
+    const angle = (2 * Math.PI * i) / allDeps.length - Math.PI / 2;
+    return {
+      x: CX + RADIUS * Math.cos(angle),
+      y: CY + RADIUS * Math.sin(angle),
+    };
+  });
 
   return (
-    <div className="pt-6">
-      <div className="rounded-lg border border-border p-5">
-        {/* Root node */}
-        <div className="flex items-center gap-2 font-mono text-sm">
-          <Activity className="size-4 text-foreground" />
-          <span className="font-medium">{agent.name}</span>
-          <span className="text-muted-foreground">v{agent.version}</span>
-        </div>
+    <div className="space-y-6 pt-6">
+      {/* Visual graph */}
+      <div className="rounded-lg border border-border bg-muted/5 p-4 overflow-x-auto">
+        <svg
+          viewBox={`0 0 ${SVG_W} ${SVG_H}`}
+          className="mx-auto block w-full max-w-[700px]"
+          style={{ minWidth: 400 }}
+        >
+          <defs>
+            {/* Glow filter for center node */}
+            <filter id="dep-center-glow" x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur stdDeviation="4" result="blur" />
+              <feMerge>
+                <feMergeNode in="blur" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
+          </defs>
 
-        {/* Groups */}
-        <div className="mt-1 ml-2 border-l border-border/60">
-          {groups.map((group, gIdx) => {
-            const last = isLast(gIdx);
-            const isOpen = expanded[group.type] ?? true;
+          {/* Connection lines */}
+          {nodePositions.map((pos, i) => {
+            const colors = DEP_TYPE_COLORS[allDeps[i].groupType];
+            const isHovered = hoveredIdx === i;
             return (
-              <div key={group.type} className="relative">
-                {/* Group header */}
-                <button
-                  onClick={() => toggle(group.type)}
-                  className="group/dep flex w-full items-center gap-1.5 py-1.5 font-mono text-sm hover:bg-muted/30"
+              <line
+                key={`line-${i}`}
+                x1={CX}
+                y1={CY}
+                x2={pos.x}
+                y2={pos.y}
+                stroke={isHovered ? colors.fill : "currentColor"}
+                className={isHovered ? "" : "text-border"}
+                strokeWidth={isHovered ? 2 : 1}
+                strokeDasharray={allDeps[i].node.isRef ? "none" : "4 3"}
+                opacity={isHovered ? 1 : 0.5}
+              />
+            );
+          })}
+
+          {/* Center node (the agent) */}
+          <g filter="url(#dep-center-glow)">
+            <circle cx={CX} cy={CY} r={CENTER_R} className="fill-foreground/5 stroke-foreground/30" strokeWidth={2} />
+            <circle cx={CX} cy={CY} r={CENTER_R - 4} className="fill-background stroke-foreground/20" strokeWidth={1} />
+          </g>
+          {/* Agent icon (activity/pulse) */}
+          <path
+            d={`M${CX - 10} ${CY} l4 -7 3 14 3 -14 4 7`}
+            fill="none"
+            className="stroke-foreground"
+            strokeWidth={2}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+          <text
+            x={CX}
+            y={CY + CENTER_R + 16}
+            textAnchor="middle"
+            className="fill-foreground text-[11px] font-medium"
+          >
+            {truncateLabel(agent.name, 20)}
+          </text>
+          <text
+            x={CX}
+            y={CY + CENTER_R + 29}
+            textAnchor="middle"
+            className="fill-muted-foreground text-[9px]"
+          >
+            v{agent.version}
+          </text>
+
+          {/* Outer dependency nodes */}
+          {nodePositions.map((pos, i) => {
+            const dep = allDeps[i];
+            const colors = DEP_TYPE_COLORS[dep.groupType];
+            const isHovered = hoveredIdx === i;
+            const isClickable = getDependencyPath(dep.node) !== null;
+            const shortName = dep.node.name.includes("/")
+              ? dep.node.name.split("/").pop()!
+              : dep.node.name;
+
+            return (
+              <g
+                key={`node-${i}`}
+                onMouseEnter={() => setHoveredIdx(i)}
+                onMouseLeave={() => setHoveredIdx(null)}
+                onClick={() => handleNodeClick(dep)}
+                className={isClickable ? "cursor-pointer" : "cursor-default"}
+              >
+                {/* Node background */}
+                <rect
+                  x={pos.x - NODE_RX}
+                  y={pos.y - NODE_RY}
+                  width={NODE_RX * 2}
+                  height={NODE_RY * 2}
+                  rx={10}
+                  ry={10}
+                  fill={isHovered ? colors.fill : "var(--color-background, white)"}
+                  fillOpacity={isHovered ? 0.12 : 1}
+                  stroke={colors.fill}
+                  strokeWidth={isHovered ? 2 : 1.5}
+                  strokeOpacity={isHovered ? 1 : 0.4}
+                />
+                {/* Type color dot */}
+                <circle
+                  cx={pos.x - NODE_RX + 14}
+                  cy={pos.y - NODE_RY + 12}
+                  r={4}
+                  fill={colors.fill}
+                />
+                {/* Type badge text */}
+                <text
+                  x={pos.x - NODE_RX + 22}
+                  y={pos.y - NODE_RY + 15}
+                  className="fill-muted-foreground text-[8px] font-medium uppercase"
                 >
-                  <span className="w-5 text-border/60">
-                    {last ? "\u2514\u2500" : "\u251c\u2500"}
-                  </span>
-                  {isOpen ? (
-                    <ChevronDown className={cn("size-3.5", group.colorClass)} />
-                  ) : (
-                    <ChevronRight className={cn("size-3.5", group.colorClass)} />
-                  )}
-                  <span className={cn("flex items-center gap-1.5", group.colorClass)}>
-                    {group.icon}
-                    <span className="font-medium">{group.label}</span>
-                  </span>
-                  <span className="text-[10px] text-muted-foreground">
-                    ({group.items.length})
-                  </span>
-                </button>
-
-                {/* Items */}
-                {isOpen && (
-                  <div className={cn("ml-5", !last && "border-l border-border/40")}>
-                    {group.items.map((item, iIdx) => {
-                      const itemLast = iIdx === group.items.length - 1;
-                      const detailPath = getDependencyPath(item);
-                      const content = (
-                        <>
-                          <span className="w-5 text-border/40">
-                            {itemLast ? "\u2514\u2500" : "\u251c\u2500"}
-                          </span>
-                          <span className={cn("size-1.5 rounded-full shrink-0", {
-                            "bg-blue-500": group.type === "model",
-                            "bg-emerald-500": group.type === "tool",
-                            "bg-purple-500": group.type === "prompt",
-                            "bg-amber-500": group.type === "knowledge_base",
-                          })} />
-                          <span className={detailPath ? "text-foreground hover:underline" : "text-foreground"}>
-                            {item.name}
-                          </span>
-                          {item.detail && (
-                            <span className="text-[10px] text-muted-foreground">
-                              ({item.detail})
-                            </span>
-                          )}
-                          {item.isRef && (
-                            <Badge
-                              variant="outline"
-                              className={cn("text-[9px] px-1 py-0 border", group.badgeClass)}
-                            >
-                              ref
-                            </Badge>
-                          )}
-                          {detailPath && (
-                            <ExternalLink className="size-2.5 text-muted-foreground opacity-0 transition-opacity group-hover/item:opacity-100" />
-                          )}
-                        </>
-                      );
-
-                      return detailPath ? (
-                        <Link
-                          key={`${item.name}-${iIdx}`}
-                          to={detailPath}
-                          className="group/item flex items-center gap-1.5 py-1 font-mono text-sm transition-colors hover:bg-muted/30 rounded-sm px-1 -mx-1"
-                        >
-                          {content}
-                        </Link>
-                      ) : (
-                        <div
-                          key={`${item.name}-${iIdx}`}
-                          className="group/item flex items-center gap-1.5 py-1 font-mono text-sm"
-                        >
-                          {content}
-                        </div>
-                      );
-                    })}
-                  </div>
+                  {DEP_TYPE_LABELS[dep.groupType]}
+                </text>
+                {/* Name */}
+                <text
+                  x={pos.x}
+                  y={pos.y + 2}
+                  textAnchor="middle"
+                  className="fill-foreground text-[10px] font-medium"
+                >
+                  {truncateLabel(shortName, 16)}
+                </text>
+                {/* Detail (e.g. "primary", "fallback", "system") */}
+                {dep.node.detail && (
+                  <text
+                    x={pos.x}
+                    y={pos.y + 14}
+                    textAnchor="middle"
+                    className="fill-muted-foreground text-[8px]"
+                  >
+                    {dep.node.detail}
+                  </text>
                 )}
+                {/* Ref indicator */}
+                {dep.node.isRef && (
+                  <text
+                    x={pos.x + NODE_RX - 12}
+                    y={pos.y - NODE_RY + 15}
+                    textAnchor="end"
+                    className="fill-muted-foreground text-[7px] italic"
+                  >
+                    ref
+                  </text>
+                )}
+              </g>
+            );
+          })}
+        </svg>
+
+        {/* Legend */}
+        <div className="mt-3 flex flex-wrap items-center justify-center gap-4">
+          {(["model", "tool", "prompt", "knowledge_base"] as const).map((t) => {
+            const colors = DEP_TYPE_COLORS[t];
+            const count = allDeps.filter((d) => d.groupType === t).length;
+            if (count === 0) return null;
+            return (
+              <div key={t} className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+                <span
+                  className="inline-block size-2.5 rounded-full"
+                  style={{ background: colors.fill }}
+                />
+                <span className="capitalize">{DEP_TYPE_LABELS[t]}</span>
+                <span>({count})</span>
               </div>
             );
           })}
+          <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+            <svg width="20" height="6"><line x1="0" y1="3" x2="20" y2="3" stroke="currentColor" strokeWidth="1" strokeDasharray="4 3" /></svg>
+            <span>inline</span>
+          </div>
+          <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+            <svg width="20" height="6"><line x1="0" y1="3" x2="20" y2="3" stroke="currentColor" strokeWidth="1" /></svg>
+            <span>registry ref</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Dependency table */}
+      <div className="rounded-lg border border-border overflow-hidden">
+        <div className="flex items-center gap-2 border-b border-border bg-muted/30 px-4 py-2.5">
+          <Activity className="size-3.5 text-muted-foreground" />
+          <span className="text-xs font-medium text-muted-foreground">
+            All Dependencies
+          </span>
+          <span className="text-[10px] text-muted-foreground">({allDeps.length})</span>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-border bg-muted/10 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+                <th className="px-4 py-2 text-left">Type</th>
+                <th className="px-4 py-2 text-left">Name</th>
+                <th className="px-4 py-2 text-left">Detail</th>
+                <th className="px-4 py-2 text-left">Source</th>
+                <th className="px-4 py-2 text-left">Link</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border">
+              {allDeps.map((dep, i) => {
+                const colors = DEP_TYPE_COLORS[dep.groupType];
+                const path = getDependencyPath(dep.node);
+                return (
+                  <tr
+                    key={`${dep.node.name}-${i}`}
+                    className="transition-colors hover:bg-muted/10"
+                    onMouseEnter={() => setHoveredIdx(i)}
+                    onMouseLeave={() => setHoveredIdx(null)}
+                  >
+                    <td className="px-4 py-2.5">
+                      <Badge
+                        variant="outline"
+                        className={cn("text-[10px] border", colors.badge)}
+                      >
+                        <span
+                          className="mr-1 inline-block size-1.5 rounded-full"
+                          style={{ background: colors.fill }}
+                        />
+                        {DEP_TYPE_LABELS[dep.groupType]}
+                      </Badge>
+                    </td>
+                    <td className="px-4 py-2.5">
+                      <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs">
+                        {dep.node.name}
+                      </code>
+                    </td>
+                    <td className="px-4 py-2.5 text-xs text-muted-foreground">
+                      {dep.node.detail ?? "\u2014"}
+                    </td>
+                    <td className="px-4 py-2.5">
+                      {dep.node.isRef ? (
+                        <span className="inline-flex items-center gap-1 text-[10px] text-muted-foreground">
+                          <ExternalLink className="size-2.5" />
+                          registry
+                        </span>
+                      ) : (
+                        <span className="text-[10px] text-muted-foreground">inline</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-2.5">
+                      {path ? (
+                        <Link
+                          to={path}
+                          className="inline-flex items-center gap-1 text-xs text-blue-600 hover:underline dark:text-blue-400"
+                        >
+                          View
+                          <ChevronRight className="size-3" />
+                        </Link>
+                      ) : (
+                        <span className="text-[10px] text-muted-foreground">\u2014</span>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
@@ -1011,14 +1426,10 @@ function DeployHistoryTab({ agentId }: { agentId: string }) {
                 <Clock className="size-2.5" />
                 {duration}
               </span>
-              <span className="text-[10px] text-muted-foreground">
-                {new Date(job.started_at).toLocaleDateString("en-US", {
-                  month: "short",
-                  day: "numeric",
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
-              </span>
+              <RelativeTime
+                date={job.started_at}
+                className="text-[10px] text-muted-foreground"
+              />
             </div>
 
             {isExpanded && (
@@ -1053,6 +1464,7 @@ function formatDeployDuration(start: Date, end: Date): string {
 
 export default function AgentDetailPage() {
   const { id } = useParams<{ id: string }>();
+  const [activeTab, setActiveTab] = useUrlState("tab", "overview");
   const { data, isLoading, error } = useQuery({
     queryKey: ["agent", id],
     queryFn: () => api.agents.get(id!),
@@ -1099,7 +1511,7 @@ export default function AgentDetailPage() {
 
       <AgentHeader agent={agent} />
 
-      <Tabs defaultValue="overview" className="mt-6">
+      <Tabs value={activeTab} onValueChange={(val) => setActiveTab(val as string)} className="mt-6">
         <TabsList className="h-9 bg-transparent p-0">
           <TabsTrigger value="overview" className={TAB_TRIGGER_CLASS}>
             Overview
@@ -1127,7 +1539,7 @@ export default function AgentDetailPage() {
           <ConfigurationTab agent={agent} />
         </TabsContent>
         <TabsContent value="dependencies">
-          <DependencyTree agent={agent} />
+          <DependencyGraph agent={agent} />
         </TabsContent>
         <TabsContent value="environment">
           <EnvironmentTab agent={agent} />

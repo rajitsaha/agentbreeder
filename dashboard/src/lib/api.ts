@@ -43,7 +43,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<ApiResponse
 
 // --- Agent types ---
 
-export type AgentStatus = "deploying" | "running" | "stopped" | "failed";
+export type AgentStatus = "deploying" | "running" | "stopped" | "failed" | "degraded" | "error";
 
 export interface Agent {
   id: string;
@@ -84,7 +84,9 @@ export interface ToolDetail extends Tool {
 export interface ToolUsage {
   agent_id: string;
   agent_name: string;
+  agent_version: string;
   agent_status: string;
+  last_deployed: string | null;
 }
 
 export type ToolHealthStatus = "healthy" | "slow" | "down" | "unknown";

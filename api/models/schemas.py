@@ -237,6 +237,34 @@ class PromptResponse(BaseModel):
     model_config = {"from_attributes": True}
 
 
+# --- Prompt Version Schemas ---
+
+
+class PromptVersionCreate(BaseModel):
+    version: str
+    content: str
+    change_summary: str | None = None
+    author: str
+
+
+class PromptVersionResponse(BaseModel):
+    id: uuid.UUID
+    prompt_id: uuid.UUID
+    version: str
+    content: str
+    change_summary: str | None
+    author: str
+    created_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
+class PromptVersionDiffResponse(BaseModel):
+    version_a: PromptVersionResponse
+    version_b: PromptVersionResponse
+    diff: list[str]
+
+
 # --- Deploy Schemas ---
 
 

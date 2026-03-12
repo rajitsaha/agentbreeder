@@ -166,7 +166,37 @@ class Prompt(Base):
         DateTime(timezone=True), server_default=func.now()
     )
 
+    versions: Mapped[list[PromptVersion]] = relationship(
+        back_populates="prompt", cascade="all, delete-orphan"
+    )
+
     __table_args__ = (Index("ix_prompts_name_version", "name", "version", unique=True),)
+
+
+class PromptVersion(Base):
+    """A versioned snapshot of a prompt's content."""
+
+    __tablename__ = "prompt_versions"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    prompt_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("prompts.id", ondelete="CASCADE"), nullable=False
+    )
+    version: Mapped[str] = mapped_column(String(20), nullable=False)
+    content: Mapped[str] = mapped_column(Text, nullable=False)
+    change_summary: Mapped[str | None] = mapped_column(Text, nullable=True)
+    author: Mapped[str] = mapped_column(String(255), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+
+    prompt: Mapped[Prompt] = relationship(back_populates="versions")
+
+    __table_args__ = (
+        Index("ix_prompt_versions_prompt_id", "prompt_id"),
+        Index("ix_prompt_versions_created_at", "created_at"),
+        Index("ix_prompt_versions_prompt_id_version", "prompt_id", "version", unique=True),
+    )
 
 
 class KnowledgeBase(Base):

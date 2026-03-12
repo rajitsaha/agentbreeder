@@ -51,8 +51,16 @@ const RESOURCE_TYPES = [
  * "New..." button that opens a dialog with resource type selector.
  * Selecting a type navigates to the appropriate creation flow.
  */
-export function NewResourceDialog() {
-  const [open, setOpen] = useState(false);
+export function NewResourceDialog({
+  open: controlledOpen,
+  onOpenChange: controlledOnOpenChange,
+}: {
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+} = {}) {
+  const [internalOpen, setInternalOpen] = useState(false);
+  const open = controlledOpen ?? internalOpen;
+  const setOpen = controlledOnOpenChange ?? setInternalOpen;
   const navigate = useNavigate();
 
   const handleSelect = (path: string) => {
