@@ -10,8 +10,10 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from api.routes import (
     agents,
+    audit,
     auth,
     builders,
+    costs,
     deploys,
     git,
     mcp_servers,
@@ -22,6 +24,8 @@ from api.routes import (
     rag,
     registry,
     sandbox,
+    teams,
+    tracing,
 )
 
 logging.basicConfig(level=logging.INFO)
@@ -92,6 +96,10 @@ app.include_router(git.router)
 app.include_router(memory.router)
 app.include_router(rag.router)
 app.include_router(playground.router)
+app.include_router(tracing.router)
+app.include_router(teams.router)
+app.include_router(costs.router)
+app.include_router(audit.router)
 
 
 @app.get("/health")

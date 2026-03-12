@@ -277,9 +277,118 @@ GET    /api/v1/registry/tools         # List tools/MCP servers
 GET    /api/v1/registry/prompts       # List prompt templates
 GET    /api/v1/registry/models        # List approved models
 
-GET    /api/v1/governance/costs       # Cost data
-GET    /api/v1/governance/audit       # Audit trail
+# Tracing (M14)
+GET    /api/v1/traces                 # List traces (filterable by agent, status, date, cost)
+POST   /api/v1/traces                 # Ingest a new trace
+GET    /api/v1/traces/{trace_id}      # Get trace with all spans
+GET    /api/v1/traces/metrics/{agent} # Aggregated metrics for an agent
+POST   /api/v1/traces/{trace_id}/spans  # Add a span to a trace
+DELETE /api/v1/traces                 # Bulk delete traces before a date
+
+# Teams & RBAC (M15)
+GET    /api/v1/teams                  # List teams
+POST   /api/v1/teams                  # Create team
+GET    /api/v1/teams/{id}             # Team detail with members
+PUT    /api/v1/teams/{id}             # Update team
+DELETE /api/v1/teams/{id}             # Delete team
+POST   /api/v1/teams/{id}/members     # Add member
+PUT    /api/v1/teams/{id}/members/{uid}  # Update member role
+DELETE /api/v1/teams/{id}/members/{uid}  # Remove member
+GET    /api/v1/teams/{id}/api-keys    # List API keys (hints only)
+POST   /api/v1/teams/{id}/api-keys    # Set API key for a provider
+DELETE /api/v1/teams/{id}/api-keys/{kid} # Delete API key
+POST   /api/v1/teams/{id}/api-keys/{kid}/test  # Test API key
+
+# Cost Tracking (M16)
+POST   /api/v1/costs/events           # Record a cost event
+GET    /api/v1/costs/summary          # Aggregated cost summary
+GET    /api/v1/costs/breakdown        # Cost breakdown by agent/model/team
+GET    /api/v1/costs/trend            # Daily cost trend
+GET    /api/v1/costs/top-spenders     # Top N agents by cost
+POST   /api/v1/costs/compare          # Compare model costs
+GET    /api/v1/budgets                # List team budgets
+POST   /api/v1/budgets                # Create/update budget
+GET    /api/v1/budgets/{team}         # Get team budget
+PUT    /api/v1/budgets/{team}         # Update team budget
+
+# Audit & Lineage (M17)
+GET    /api/v1/audit                  # List audit events (filterable)
+POST   /api/v1/audit                  # Record audit event
+GET    /api/v1/audit/resource/{type}/{id}  # Events for a resource
+GET    /api/v1/lineage/{type}/{id}    # Dependency graph for a resource
+GET    /api/v1/lineage/impact/{type}/{name}  # Impact analysis
+POST   /api/v1/lineage/dependencies   # Register a dependency
+POST   /api/v1/lineage/sync/{agent}   # Sync agent dependencies from config
 ```
+
+---
+
+## Observability Layer (v0.4)
+
+Agent Garden provides built-in observability across three dimensions: tracing, cost tracking, and audit. These services are implemented as FastAPI route modules backed by dedicated service classes.
+
+### Tracing (`api/routes/tracing.py`, `api/services/tracing_service.py`)
+
+Every LLM call, tool invocation, and agent step is captured as a **trace** containing one or more **spans**. The tracing store supports:
+
+- **Trace ingestion** — sidecars and SDKs POST traces and spans via the REST API.
+- **Filtering and search** — list traces by agent, status, date range, duration, or cost; full-text search over inputs/outputs.
+- **Agent metrics** — aggregated summaries (request count, error rate, P50/P95 latency, token usage) over a configurable time window.
+- **Bulk cleanup** — delete traces older than a given date to manage storage.
+
+The tracing backend is pluggable: Langfuse (default), MLflow, or raw OpenTelemetry export. Configured via `TRACING_BACKEND` env var.
+
+### Cost Tracking (`api/routes/costs.py`, `api/services/cost_service.py`)
+
+Cost events are recorded per LLM call with token counts, model name, provider, and dollar cost. The cost service provides:
+
+- **Summary and breakdown** — aggregate spend by team, agent, or model over any time window.
+- **Daily trend** — time-series cost data for charting.
+- **Top spenders** — ranked list of agents by cost.
+- **Model comparison** — estimate cost differences between two models for a given token volume.
+- **Budgets** — per-team monthly spending limits with configurable alert thresholds (default 80%).
+
+### Audit & Lineage (`api/routes/audit.py`, `api/services/audit_service.py`)
+
+An immutable audit log records every significant action (deploy, config change, delete, access change) with actor, action, resource, team, and timestamp. The lineage system tracks resource dependencies:
+
+- **Dependency graph** — for any resource (agent, tool, prompt, model), retrieve its full dependency tree as nodes and edges.
+- **Impact analysis** — answer "if I change this prompt/tool, which agents are affected?" before making changes.
+- **Dependency sync** — automatically extract and register dependencies from an agent's config snapshot.
+
+---
+
+## RBAC & Teams (v0.4)
+
+Team management is implemented in `api/routes/teams.py` and `api/services/team_service.py`. Every agent, tool, prompt, and model belongs to a team. Key capabilities:
+
+- **Team CRUD** — create, update, delete teams with display name and description.
+- **Membership** — add/remove members, assign roles (Viewer, Deployer, Admin).
+- **Team-scoped API keys** — each team manages its own provider keys (Anthropic, OpenAI, etc.), stored encrypted. Keys can be tested before activation.
+- **Permission checks** — all CRUD operations validate the caller's team role before proceeding.
+
+---
+
+## Full Code SDK (v0.4)
+
+The Python SDK (`sdk/python/agenthub/`) provides the Full Code tier for agent development. It exposes a builder-pattern API:
+
+```python
+from agenthub import Agent, Tool, Model, Memory
+
+agent = (
+    Agent("my-agent", version="1.0.0", team="engineering")
+    .with_model(primary="claude-sonnet-4", fallback="gpt-4o")
+    .with_tool(Tool.from_ref("tools/zendesk-mcp"))
+    .with_memory(backend="redis")
+    .with_guardrail("pii_detection")
+    .with_deploy(cloud="aws", runtime="ecs-fargate")
+)
+```
+
+Key classes: `Agent`, `Tool`, `Model`, `Memory`, `DeployConfig`. The SDK supports full YAML round-trip: `agent.to_yaml()` serializes to valid `agent.yaml`, and `Agent.from_yaml()` loads YAML back into SDK objects.
+
+The `garden eject` CLI command (`cli/commands/eject.py`) generates an SDK scaffold from any existing `agent.yaml`, enabling tier mobility from Low Code to Full Code without losing configuration.
 
 ---
 

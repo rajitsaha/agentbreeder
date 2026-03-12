@@ -519,6 +519,247 @@ export interface SaveEvalCaseResponse {
   saved: boolean;
 }
 
+// --- Trace types ---
+
+export type TraceStatus = "success" | "error" | "timeout";
+export type SpanType = "llm" | "tool" | "agent" | "retrieval" | "custom";
+
+export interface Trace {
+  id: string;
+  trace_id: string;
+  agent_id: string | null;
+  agent_name: string;
+  status: TraceStatus;
+  duration_ms: number;
+  total_tokens: number;
+  input_tokens: number;
+  output_tokens: number;
+  cost_usd: number;
+  model_name: string | null;
+  input_preview: string | null;
+  output_preview: string | null;
+  error_message: string | null;
+  metadata: Record<string, unknown>;
+  created_at: string;
+}
+
+export interface Span {
+  id: string;
+  trace_id: string;
+  span_id: string;
+  parent_span_id: string | null;
+  name: string;
+  span_type: SpanType;
+  status: string;
+  duration_ms: number;
+  input_data: Record<string, unknown> | null;
+  output_data: Record<string, unknown> | null;
+  model_name: string | null;
+  input_tokens: number;
+  output_tokens: number;
+  cost_usd: number;
+  metadata: Record<string, unknown>;
+  started_at: string;
+  ended_at: string | null;
+  children: Span[];
+}
+
+export interface TraceDetail {
+  trace: Trace;
+  spans: Span[];
+}
+
+export interface TraceMetrics {
+  agent_name: string;
+  request_count: number;
+  error_count: number;
+  avg_duration_ms: number;
+  p50_duration_ms: number;
+  p95_duration_ms: number;
+  p99_duration_ms: number;
+  total_tokens: number;
+  total_cost_usd: number;
+  period_days: number;
+}
+
+// --- Team types ---
+
+export interface TeamResponse {
+  id: string;
+  name: string;
+  display_name: string;
+  description: string;
+  member_count: number;
+  created_at: string;
+}
+
+export interface TeamMemberResponse {
+  id: string;
+  user_id: string;
+  user_email: string;
+  user_name: string;
+  role: string;
+  joined_at: string;
+}
+
+export interface TeamDetailResponse {
+  id: string;
+  name: string;
+  display_name: string;
+  description: string;
+  member_count: number;
+  members: TeamMemberResponse[];
+  created_at: string;
+  updated_at: string;
+}
+
+export interface TeamApiKeyResponse {
+  id: string;
+  provider: string;
+  key_hint: string;
+  created_by: string;
+  created_at: string;
+}
+
+// --- Cost types ---
+
+export interface CostEvent {
+  id: string;
+  trace_id: string | null;
+  agent_id: string | null;
+  agent_name: string;
+  team: string;
+  model_name: string;
+  provider: string;
+  input_tokens: number;
+  output_tokens: number;
+  total_tokens: number;
+  cost_usd: number;
+  request_type: string;
+  created_at: string;
+}
+
+export interface CostSummary {
+  total_cost: number;
+  total_tokens: number;
+  request_count: number;
+  period: string;
+}
+
+export interface CostBreakdownItem {
+  name: string;
+  cost: number;
+  tokens: number;
+  requests: number;
+}
+
+export interface CostBreakdown {
+  by_agent: CostBreakdownItem[];
+  by_model: CostBreakdownItem[];
+  by_team: CostBreakdownItem[];
+}
+
+export interface DailyCostPoint {
+  date: string;
+  cost: number;
+  tokens: number;
+  requests: number;
+}
+
+export interface CostTrendResponse {
+  points: DailyCostPoint[];
+  total_cost: number;
+  period: string;
+}
+
+export interface TopSpender {
+  agent_name: string;
+  cost: number;
+  tokens: number;
+  requests: number;
+  team: string;
+}
+
+export interface CostComparisonResponse {
+  model_a: string;
+  model_b: string;
+  model_a_cost: number;
+  model_b_cost: number;
+  savings_pct: number;
+  sample_tokens: number;
+}
+
+export interface Budget {
+  id: string;
+  team: string;
+  monthly_limit_usd: number;
+  alert_threshold_pct: number;
+  current_month_spend: number;
+  pct_used: number;
+  is_exceeded: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+// --- Audit types ---
+
+export interface AuditEvent {
+  id: string;
+  actor: string;
+  actor_id: string | null;
+  action: string;
+  resource_type: string;
+  resource_id: string | null;
+  resource_name: string;
+  team: string | null;
+  details: Record<string, unknown>;
+  ip_address: string | null;
+  created_at: string;
+}
+
+// --- Lineage types ---
+
+export interface LineageNode {
+  id: string;
+  name: string;
+  type: string;
+  status: string;
+}
+
+export interface LineageEdge {
+  source_id: string;
+  target_id: string;
+  dependency_type: string;
+}
+
+export interface LineageGraphResponse {
+  nodes: LineageNode[];
+  edges: LineageEdge[];
+}
+
+export interface AffectedAgent {
+  name: string;
+  dependency_type: string;
+}
+
+export interface ImpactAnalysisResponse {
+  resource_name: string;
+  resource_type: string;
+  affected_agents: AffectedAgent[];
+}
+
+export interface ResourceDependency {
+  id: string;
+  source_type: string;
+  source_id: string;
+  source_name: string;
+  target_type: string;
+  target_id: string;
+  target_name: string;
+  dependency_type: string;
+  created_at: string;
+}
+
 // --- Search types ---
 
 export interface SearchResult {
@@ -1002,6 +1243,275 @@ export const api = {
       request<SaveEvalCaseResponse>("/playground/eval-case", {
         method: "POST",
         body: JSON.stringify(body),
+      }),
+  },
+  traces: {
+    list: (params?: {
+      agent_name?: string;
+      status?: TraceStatus;
+      date_from?: string;
+      date_to?: string;
+      min_duration?: number;
+      min_cost?: number;
+      q?: string;
+      page?: number;
+      per_page?: number;
+    }) => {
+      const sp = new URLSearchParams();
+      if (params?.agent_name) sp.set("agent_name", params.agent_name);
+      if (params?.status) sp.set("status", params.status);
+      if (params?.date_from) sp.set("date_from", params.date_from);
+      if (params?.date_to) sp.set("date_to", params.date_to);
+      if (params?.min_duration != null) sp.set("min_duration", String(params.min_duration));
+      if (params?.min_cost != null) sp.set("min_cost", String(params.min_cost));
+      if (params?.q) sp.set("q", params.q);
+      if (params?.page) sp.set("page", String(params.page));
+      if (params?.per_page) sp.set("per_page", String(params.per_page));
+      const qs = sp.toString();
+      return request<Trace[]>(`/traces${qs ? `?${qs}` : ""}`);
+    },
+    get: (traceId: string) =>
+      request<TraceDetail>(`/traces/${encodeURIComponent(traceId)}`),
+    create: (body: {
+      trace_id: string;
+      agent_name: string;
+      status?: string;
+      duration_ms?: number;
+      total_tokens?: number;
+      input_tokens?: number;
+      output_tokens?: number;
+      cost_usd?: number;
+      model_name?: string;
+      input_preview?: string;
+      output_preview?: string;
+      error_message?: string;
+      metadata?: Record<string, unknown>;
+    }) =>
+      request<Trace>("/traces", {
+        method: "POST",
+        body: JSON.stringify(body),
+      }),
+    createSpan: (
+      traceId: string,
+      body: {
+        span_id: string;
+        name: string;
+        span_type?: string;
+        parent_span_id?: string;
+        status?: string;
+        duration_ms?: number;
+        input_data?: Record<string, unknown>;
+        output_data?: Record<string, unknown>;
+        model_name?: string;
+        input_tokens?: number;
+        output_tokens?: number;
+        cost_usd?: number;
+        metadata?: Record<string, unknown>;
+        started_at?: string;
+        ended_at?: string;
+      }
+    ) =>
+      request<Span>(`/traces/${encodeURIComponent(traceId)}/spans`, {
+        method: "POST",
+        body: JSON.stringify(body),
+      }),
+    metrics: (agentName: string, days?: number) => {
+      const sp = new URLSearchParams();
+      if (days) sp.set("days", String(days));
+      const qs = sp.toString();
+      return request<TraceMetrics>(
+        `/traces/metrics/${encodeURIComponent(agentName)}${qs ? `?${qs}` : ""}`
+      );
+    },
+    delete: (before: string) =>
+      request<{ deleted_count: number }>(`/traces?before=${encodeURIComponent(before)}`, {
+        method: "DELETE",
+      }),
+  },
+  teams: {
+    list: (params?: { page?: number; per_page?: number }) => {
+      const sp = new URLSearchParams();
+      if (params?.page) sp.set("page", String(params.page));
+      if (params?.per_page) sp.set("per_page", String(params.per_page));
+      const qs = sp.toString();
+      return request<TeamResponse[]>(`/teams${qs ? `?${qs}` : ""}`);
+    },
+    get: (id: string) => request<TeamDetailResponse>(`/teams/${id}`),
+    create: (body: { name: string; display_name: string; description?: string }) =>
+      request<TeamResponse>("/teams", {
+        method: "POST",
+        body: JSON.stringify(body),
+      }),
+    update: (id: string, body: { display_name?: string; description?: string }) =>
+      request<TeamResponse>(`/teams/${id}`, {
+        method: "PUT",
+        body: JSON.stringify(body),
+      }),
+    delete: (id: string) =>
+      request<{ deleted: boolean }>(`/teams/${id}`, { method: "DELETE" }),
+    addMember: (teamId: string, body: { user_email: string; role?: string }) =>
+      request<TeamMemberResponse>(`/teams/${teamId}/members`, {
+        method: "POST",
+        body: JSON.stringify(body),
+      }),
+    updateMemberRole: (teamId: string, userId: string, body: { role: string }) =>
+      request<TeamMemberResponse>(`/teams/${teamId}/members/${userId}`, {
+        method: "PUT",
+        body: JSON.stringify(body),
+      }),
+    removeMember: (teamId: string, userId: string) =>
+      request<{ removed: boolean }>(`/teams/${teamId}/members/${userId}`, {
+        method: "DELETE",
+      }),
+    listApiKeys: (teamId: string) =>
+      request<TeamApiKeyResponse[]>(`/teams/${teamId}/api-keys`),
+    setApiKey: (teamId: string, body: { provider: string; api_key: string }) =>
+      request<TeamApiKeyResponse>(`/teams/${teamId}/api-keys`, {
+        method: "POST",
+        body: JSON.stringify(body),
+      }),
+    deleteApiKey: (teamId: string, keyId: string) =>
+      request<{ deleted: boolean }>(`/teams/${teamId}/api-keys/${keyId}`, {
+        method: "DELETE",
+      }),
+    testApiKey: (teamId: string, keyId: string) =>
+      request<{ success: boolean; error?: string }>(`/teams/${teamId}/api-keys/${keyId}/test`, {
+        method: "POST",
+      }),
+  },
+  costs: {
+    recordEvent: (body: {
+      agent_name: string;
+      team: string;
+      model_name: string;
+      provider: string;
+      input_tokens: number;
+      output_tokens: number;
+      cost_usd: number;
+      request_type?: string;
+      trace_id?: string;
+    }) =>
+      request<CostEvent>("/costs/events", {
+        method: "POST",
+        body: JSON.stringify(body),
+      }),
+    summary: (params?: { team?: string; agent_name?: string; days?: number }) => {
+      const sp = new URLSearchParams();
+      if (params?.team) sp.set("team", params.team);
+      if (params?.agent_name) sp.set("agent_name", params.agent_name);
+      if (params?.days) sp.set("days", String(params.days));
+      const qs = sp.toString();
+      return request<CostSummary>(`/costs/summary${qs ? `?${qs}` : ""}`);
+    },
+    breakdown: (params?: { days?: number; group_by?: string }) => {
+      const sp = new URLSearchParams();
+      if (params?.days) sp.set("days", String(params.days));
+      if (params?.group_by) sp.set("group_by", params.group_by);
+      const qs = sp.toString();
+      return request<CostBreakdown>(`/costs/breakdown${qs ? `?${qs}` : ""}`);
+    },
+    trend: (params?: { days?: number; team?: string; agent_name?: string }) => {
+      const sp = new URLSearchParams();
+      if (params?.days) sp.set("days", String(params.days));
+      if (params?.team) sp.set("team", params.team);
+      if (params?.agent_name) sp.set("agent_name", params.agent_name);
+      const qs = sp.toString();
+      return request<CostTrendResponse>(`/costs/trend${qs ? `?${qs}` : ""}`);
+    },
+    topSpenders: (params?: { days?: number; limit?: number }) => {
+      const sp = new URLSearchParams();
+      if (params?.days) sp.set("days", String(params.days));
+      if (params?.limit) sp.set("limit", String(params.limit));
+      const qs = sp.toString();
+      return request<TopSpender[]>(`/costs/top-spenders${qs ? `?${qs}` : ""}`);
+    },
+    compare: (body: { model_a: string; model_b: string; sample_tokens?: number }) =>
+      request<CostComparisonResponse>("/costs/compare", {
+        method: "POST",
+        body: JSON.stringify(body),
+      }),
+  },
+  budgets: {
+    list: () => request<Budget[]>("/budgets"),
+    create: (body: { team: string; monthly_limit_usd: number; alert_threshold_pct?: number }) =>
+      request<Budget>("/budgets", {
+        method: "POST",
+        body: JSON.stringify(body),
+      }),
+    get: (team: string) => request<Budget>(`/budgets/${encodeURIComponent(team)}`),
+    update: (team: string, body: { monthly_limit_usd?: number; alert_threshold_pct?: number }) =>
+      request<Budget>(`/budgets/${encodeURIComponent(team)}`, {
+        method: "PUT",
+        body: JSON.stringify(body),
+      }),
+  },
+  audit: {
+    list: (params?: {
+      actor?: string;
+      action?: string;
+      resource_type?: string;
+      resource_name?: string;
+      team?: string;
+      date_from?: string;
+      date_to?: string;
+      page?: number;
+      per_page?: number;
+    }) => {
+      const sp = new URLSearchParams();
+      if (params?.actor) sp.set("actor", params.actor);
+      if (params?.action) sp.set("action", params.action);
+      if (params?.resource_type) sp.set("resource_type", params.resource_type);
+      if (params?.resource_name) sp.set("resource_name", params.resource_name);
+      if (params?.team) sp.set("team", params.team);
+      if (params?.date_from) sp.set("date_from", params.date_from);
+      if (params?.date_to) sp.set("date_to", params.date_to);
+      if (params?.page) sp.set("page", String(params.page));
+      if (params?.per_page) sp.set("per_page", String(params.per_page));
+      const qs = sp.toString();
+      return request<AuditEvent[]>(`/audit${qs ? `?${qs}` : ""}`);
+    },
+    forResource: (resourceType: string, resourceId: string) =>
+      request<AuditEvent[]>(`/audit/resource/${resourceType}/${resourceId}`),
+    create: (body: {
+      actor: string;
+      action: string;
+      resource_type: string;
+      resource_name: string;
+      resource_id?: string;
+      team?: string;
+      details?: Record<string, unknown>;
+    }) =>
+      request<AuditEvent>("/audit", {
+        method: "POST",
+        body: JSON.stringify(body),
+      }),
+  },
+  lineage: {
+    graph: (resourceType: string, resourceId: string) =>
+      request<LineageGraphResponse>(
+        `/lineage/${resourceType}/${encodeURIComponent(resourceId)}`
+      ),
+    impact: (resourceType: string, resourceName: string) =>
+      request<ImpactAnalysisResponse>(
+        `/lineage/impact/${resourceType}/${encodeURIComponent(resourceName)}`
+      ),
+    registerDependency: (body: {
+      source_type: string;
+      source_id: string;
+      source_name: string;
+      target_type: string;
+      target_id: string;
+      target_name: string;
+      dependency_type: string;
+    }) =>
+      request<ResourceDependency>("/lineage/dependencies", {
+        method: "POST",
+        body: JSON.stringify(body),
+      }),
+    syncAgent: (agentName: string, configSnapshot: Record<string, unknown>) =>
+      request<ResourceDependency[]>(`/lineage/sync/${encodeURIComponent(agentName)}`, {
+        method: "POST",
+        body: JSON.stringify(configSnapshot),
       }),
   },
   search: (q: string) =>

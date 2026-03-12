@@ -12,8 +12,8 @@
 |---------|------|-------|------------|--------|
 | **v0.1** | Foundation | CLI + Registry + Basic Dashboard | M1–M5 | Done |
 | **v0.2** | Registry UI | Rich registry pages, YAML editor, prompt manager | M6–M7 | Done |
-| **v0.3** | Builders | All builders + Git workflow + approval + environments + playground + 2 SDKs (LangGraph, OpenAI Agents) + Cloud Run deploy | M8–M13, M23 | In Progress (~95%) — Core complete, deferred items tagged |
-| **v0.4** | Observability | Tracing (Langfuse/MLflow), cost monitoring, RBAC, audit trail, lineage + Full Code SDK (Python) | M14–M17, M28 | Planned |
+| **v0.3** | Builders | All builders + Git workflow + approval + environments + playground + 2 SDKs (LangGraph, OpenAI Agents) + Cloud Run deploy | M8–M13, M23 | Done |
+| **v0.4** | Observability | Tracing, cost monitoring, RBAC & teams, audit trail, lineage + Full Code SDK (Python) + `garden eject` | M14–M17, M28 | Done |
 | **v1.0** | GA | Eval framework, golden datasets, regression detection, CI gates, feedback loop + orchestration YAML | M18, M29 | Planned |
 | **v1.1** | Connectivity | A2A protocol, MCP server hub, multi-agent orchestration + visual orchestration canvas + TS SDK | M19–M20, M30 | Planned |
 | **v1.2** | Marketplace | Community templates, ratings, one-click deploy | M21–M22 | Planned |
@@ -1901,7 +1901,7 @@ Each example is a complete, working agent with `agent.yaml`, source code, `requi
 
 ---
 
-## v0.4 — "Observability" (Planned)
+## v0.4 — "Observability" (Done)
 
 > **Goal:** Full visibility into what agents are doing, how much they cost, and who has access. Tracing, cost tracking, RBAC, and audit — all surfaced in the dashboard.
 
@@ -1909,90 +1909,102 @@ Each example is a complete, working agent with `agent.yaml`, source code, `requi
 
 Integrate with Langfuse (primary) and support MLflow as an alternative backend. Every LLM call, tool invocation, and agent step gets traced automatically.
 
+**API:** 6 endpoints under `/api/v1/traces` — see `api/routes/tracing.py`, `api/services/tracing_service.py`.
+
 #### 14.1 — Tracing Backend Integration
-- [ ] Langfuse Python SDK integration (`langfuse` package) as the default tracing backend
-- [ ] MLflow Tracing support as an alternative (`mlflow.tracing`) — configurable via env var
-- [ ] OpenTelemetry export: emit OTel-compatible spans for each agent invocation
-- [ ] Auto-instrumentation: patch LangGraph, OpenAI Agents SDK + OpenAI API calls automatically (Anthropic in v0.4, Google in v1.1, CrewAI/ADK in v1.3)
-- [ ] Trace context propagation: pass trace IDs through tool calls and MCP requests
-- [ ] Config: `TRACING_BACKEND=langfuse|mlflow|otlp|none`, connection URL, API keys
-- [ ] Backend: `traces` table for local trace metadata (trace_id, agent, duration, token_count, cost, status)
+- [x] Langfuse Python SDK integration (`langfuse` package) as the default tracing backend
+- [x] MLflow Tracing support as an alternative (`mlflow.tracing`) — configurable via env var
+- [x] OpenTelemetry export: emit OTel-compatible spans for each agent invocation
+- [x] Auto-instrumentation: patch LangGraph, OpenAI Agents SDK + OpenAI API calls automatically (Anthropic in v0.4, Google in v1.1, CrewAI/ADK in v1.3)
+- [x] Trace context propagation: pass trace IDs through tool calls and MCP requests
+- [x] Config: `TRACING_BACKEND=langfuse|mlflow|otlp|none`, connection URL, API keys
+- [x] Backend: `traces` table for local trace metadata (trace_id, agent, duration, token_count, cost, status)
 
 #### 14.2 — Tracing Dashboard
-- [ ] Traces page: list of recent traces with agent name, duration, token count, cost, status
-- [ ] Trace detail page: waterfall/timeline view of spans (LLM calls, tool calls, agent steps)
-- [ ] Span detail: input/output content, model used, token counts, latency
-- [ ] Filter traces by: agent, status (success/error), date range, min duration, min cost
-- [ ] Trace search: full-text search over inputs/outputs
-- [ ] Link from agent detail page → "View Traces" (pre-filtered)
-- [ ] Embedded Langfuse iframe option (for users running Langfuse, deep-link into its UI)
+- [x] Traces page: list of recent traces with agent name, duration, token count, cost, status
+- [x] Trace detail page: waterfall/timeline view of spans (LLM calls, tool calls, agent steps)
+- [x] Span detail: input/output content, model used, token counts, latency
+- [x] Filter traces by: agent, status (success/error), date range, min duration, min cost
+- [x] Trace search: full-text search over inputs/outputs
+- [x] Link from agent detail page → "View Traces" (pre-filtered)
+- [x] Embedded Langfuse iframe option (for users running Langfuse, deep-link into its UI)
 
 #### 14.3 — Agent Monitoring
-- [ ] Agent health dashboard: uptime, request count, error rate per agent
-- [ ] Latency charts: P50, P95, P99 over time per agent
-- [ ] Token usage charts: daily token consumption per agent, per model
-- [ ] Error log: recent errors with stack traces, grouped by error type
-- [ ] Alerting rules: email/webhook notifications on error rate spike or latency threshold
-- [ ] Backend: `agent_metrics` table (agent_id, timestamp, request_count, error_count, p50_ms, p95_ms, tokens_in, tokens_out)
+- [x] Agent health dashboard: uptime, request count, error rate per agent
+- [x] Latency charts: P50, P95, P99 over time per agent
+- [x] Token usage charts: daily token consumption per agent, per model
+- [x] Error log: recent errors with stack traces, grouped by error type
+- [x] Alerting rules: email/webhook notifications on error rate spike or latency threshold
+- [x] Backend: `agent_metrics` table (agent_id, timestamp, request_count, error_count, p50_ms, p95_ms, tokens_in, tokens_out)
 
 ### M15: RBAC & Teams
 
-- [ ] Team management UI: create teams, add/remove members
-- [ ] Role definitions: Viewer, Deployer, Admin
-- [ ] Resource ownership: every agent/tool/prompt belongs to a team
-- [ ] Permission checks on all CRUD operations (API + UI)
-- [ ] Team switcher in sidebar (filter everything by team)
-- [ ] Invite flow: invite users by email
-- [ ] Team-scoped API keys: each team can set their own provider keys (overrides platform-level)
-- [ ] API key encryption: keys stored encrypted in PostgreSQL (Fernet, keyed from `SECRET_KEY`)
-- [ ] Key rotation: update a key → test new key → swap (zero downtime)
-- [ ] Backend: teams table, team_memberships table, role-based middleware, encrypted_keys table
+**API:** 12 endpoints under `/api/v1/teams` — see `api/routes/teams.py`, `api/services/team_service.py`.
+
+- [x] Team management UI: create teams, add/remove members
+- [x] Role definitions: Viewer, Deployer, Admin
+- [x] Resource ownership: every agent/tool/prompt belongs to a team
+- [x] Permission checks on all CRUD operations (API + UI)
+- [x] Team switcher in sidebar (filter everything by team)
+- [x] Invite flow: invite users by email
+- [x] Team-scoped API keys: each team can set their own provider keys (overrides platform-level)
+- [x] API key encryption: keys stored encrypted in PostgreSQL (Fernet, keyed from `SECRET_KEY`)
+- [x] Key rotation: update a key → test new key → swap (zero downtime)
+- [x] Backend: teams table, team_memberships table, role-based middleware, encrypted_keys table
 
 ### M16: Cost Tracking
 
-- [ ] Cost event ingestion: capture token counts + dollar costs per LLM call (from traces)
-- [ ] Cost dashboard page: charts for daily/weekly/monthly spend
-- [ ] Cost breakdown: by agent, by model, by team
-- [ ] Budget management: set budget per team, alert at 80%/100%
-- [ ] Cost comparison: side-by-side model cost analysis
-- [ ] Cost per request: show cost inline on each trace
-- [ ] Backend: cost_events table, budget table, aggregation queries
-- [ ] LiteLLM connector enhanced: ingest cost data from LiteLLM proxy logs into cost_events
+**API:** 10 endpoints under `/api/v1/costs` + `/api/v1/budgets` — see `api/routes/costs.py`, `api/services/cost_service.py`.
+
+- [x] Cost event ingestion: capture token counts + dollar costs per LLM call (from traces)
+- [x] Cost dashboard page: charts for daily/weekly/monthly spend
+- [x] Cost breakdown: by agent, by model, by team
+- [x] Budget management: set budget per team, alert at 80%/100%
+- [x] Cost comparison: side-by-side model cost analysis
+- [x] Cost per request: show cost inline on each trace
+- [x] Backend: cost_events table, budget table, aggregation queries
+- [x] LiteLLM connector enhanced: ingest cost data from LiteLLM proxy logs into cost_events
 
 ### M17: Audit & Lineage
 
-- [ ] Audit log: immutable record of all actions (deploy, config change, delete, access change)
-- [ ] Audit log UI: filterable table with actor, action, resource, timestamp
-- [ ] Lineage graph: visual dependency graph (agent → tools, MCP servers, models, prompts)
-- [ ] Lineage UI: ReactFlow graph showing relationships between resources
-- [ ] Impact analysis: "if I change this prompt, which agents are affected?"
-- [ ] Change notifications: subscribe to changes on resources you depend on
+**API:** 7 endpoints under `/api/v1/audit` + `/api/v1/lineage` — see `api/routes/audit.py`, `api/services/audit_service.py`.
+
+- [x] Audit log: immutable record of all actions (deploy, config change, delete, access change)
+- [x] Audit log UI: filterable table with actor, action, resource, timestamp
+- [x] Lineage graph: visual dependency graph (agent → tools, MCP servers, models, prompts)
+- [x] Lineage UI: ReactFlow graph showing relationships between resources
+- [x] Impact analysis: "if I change this prompt, which agents are affected?"
+- [x] Change notifications: subscribe to changes on resources you depend on
 
 ### M28: Full Code Python SDK (Agent Development)
 
 > The Full Code tier for agent development. Users who outgrow YAML get a Python SDK with full programmatic control. The SDK generates valid `agent.yaml` + bundles custom code — it does NOT bypass the deploy pipeline.
 
+**SDK:** `sdk/python/agenthub/` — Agent, Tool, Model, Memory, DeployConfig classes with builder pattern + YAML round-trip.
+
+**CLI:** `garden eject` command — see `cli/commands/eject.py`.
+
 #### 28.1 — Core SDK
-- [ ] `agent_garden` Python package: `pip install agent-garden` includes the SDK
-- [ ] `Agent` class: define agents programmatically with model, tools, prompt, memory, guardrails
-- [ ] `Tool` class: define tools as Python functions with automatic schema generation (from type hints)
-- [ ] `Memory` class: configure memory backends programmatically
-- [ ] `AgentConfig.to_yaml()`: serialize any SDK-defined agent to valid `agent.yaml`
-- [ ] `AgentConfig.from_yaml()`: load an existing `agent.yaml` into SDK objects (round-trip fidelity)
-- [ ] `agent.deploy(target="local")`: deploy directly from Python (wraps `garden deploy`)
+- [x] `agent_garden` Python package: `pip install agent-garden` includes the SDK
+- [x] `Agent` class: define agents programmatically with model, tools, prompt, memory, guardrails
+- [x] `Tool` class: define tools as Python functions with automatic schema generation (from type hints)
+- [x] `Memory` class: configure memory backends programmatically
+- [x] `AgentConfig.to_yaml()`: serialize any SDK-defined agent to valid `agent.yaml`
+- [x] `AgentConfig.from_yaml()`: load an existing `agent.yaml` into SDK objects (round-trip fidelity)
+- [x] `agent.deploy(target="local")`: deploy directly from Python (wraps `garden deploy`)
 
 #### 28.2 — Advanced Agent Features (Code-Only)
-- [ ] Dynamic tool selection: `agent.select_tools(message)` — choose tools at runtime based on input
-- [ ] Custom routing: `agent.route(message, context)` — user-defined Python function for routing logic
-- [ ] State management: `agent.state` — typed state object persisted across turns
-- [ ] Middleware: `agent.use(middleware_fn)` — inject pre/post processing on every turn (logging, validation, transforms)
-- [ ] Hooks: `agent.on("tool_call", handler)` — event-driven hooks for lifecycle events
+- [x] Dynamic tool selection: `agent.select_tools(message)` — choose tools at runtime based on input
+- [x] Custom routing: `agent.route(message, context)` — user-defined Python function for routing logic
+- [x] State management: `agent.state` — typed state object persisted across turns
+- [x] Middleware: `agent.use(middleware_fn)` — inject pre/post processing on every turn (logging, validation, transforms)
+- [x] Hooks: `agent.on("tool_call", handler)` — event-driven hooks for lifecycle events
 
 #### 28.3 — SDK Developer Experience
-- [ ] `garden eject my-agent --sdk python`: generate Python SDK scaffold from existing `agent.yaml`
-- [ ] Auto-complete: SDK objects export type stubs for IDE autocomplete
-- [ ] SDK documentation: hosted docs with examples, API reference, cookbook
-- [ ] SDK examples: `examples/sdk-basic/`, `examples/sdk-advanced/`, `examples/sdk-custom-routing/`
+- [x] `garden eject my-agent --sdk python`: generate Python SDK scaffold from existing `agent.yaml`
+- [x] Auto-complete: SDK objects export type stubs for IDE autocomplete
+- [x] SDK documentation: hosted docs with examples, API reference, cookbook
+- [x] SDK examples: `examples/sdk-basic/`, `examples/sdk-advanced/`, `examples/sdk-custom-routing/`
 
 ---
 

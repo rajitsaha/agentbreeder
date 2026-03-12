@@ -27,6 +27,14 @@ import ApprovalsPage from "@/pages/approvals";
 import PRDetailPage from "@/pages/pr-detail";
 import PlaygroundPage from "@/pages/playground";
 import SettingsPage from "@/pages/settings";
+import TracesPage from "@/pages/traces";
+import TraceDetailPage from "@/pages/trace-detail";
+import TeamsPage from "@/pages/teams";
+import TeamDetailPage from "@/pages/team-detail";
+import CostsPage from "@/pages/costs";
+import BudgetsPage from "@/pages/budgets";
+import AuditPage from "@/pages/audit";
+import LineagePage from "@/pages/lineage";
 import { Loader2 } from "lucide-react";
 
 const queryClient = new QueryClient({
@@ -95,6 +103,14 @@ export default function App() {
               <Route path="activity" element={<ActivityPage />} />
               <Route path="search" element={<SearchPage />} />
               <Route path="settings" element={<SettingsPage />} />
+              <Route path="traces" element={<TracesPage />} />
+              <Route path="traces/:traceId" element={<TraceDetailPage />} />
+              <Route path="teams" element={<TeamsPage />} />
+              <Route path="teams/:id" element={<TeamDetailPage />} />
+              <Route path="costs" element={<CostsPage />} />
+              <Route path="budgets" element={<BudgetsPage />} />
+              <Route path="audit" element={<AuditPage />} />
+              <Route path="lineage" element={<LineagePage />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Route>
           </Routes>

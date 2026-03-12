@@ -19,6 +19,10 @@ import {
   Database,
   GitPullRequest,
   MessageSquare,
+  Shield,
+  DollarSign,
+  ScrollText,
+  GitBranch,
 } from "lucide-react";
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -38,7 +42,7 @@ import {
   TooltipProvider,
 } from "@/components/ui/tooltip";
 
-const NAV = [
+const REGISTRY_NAV = [
   { to: "/agents", icon: Bot, label: "Agents" },
   { to: "/tools", icon: Wrench, label: "Tools" },
   { to: "/mcp-servers", icon: Server, label: "MCP Servers" },
@@ -47,8 +51,19 @@ const NAV = [
   { to: "/memory", icon: Brain, label: "Memory" },
   { to: "/rag", icon: Database, label: "RAG" },
   { to: "/playground", icon: MessageSquare, label: "Playground" },
+] as const;
+
+const OBSERVABILITY_NAV = [
+  { to: "/traces", icon: Activity, label: "Traces" },
+  { to: "/costs", icon: DollarSign, label: "Costs" },
+] as const;
+
+const GOVERNANCE_NAV = [
+  { to: "/teams", icon: Shield, label: "Teams" },
   { to: "/approvals", icon: GitPullRequest, label: "Approvals" },
-  { to: "/deploys", icon: Activity, label: "Deploys" },
+  { to: "/audit", icon: ScrollText, label: "Audit Log" },
+  { to: "/lineage", icon: GitBranch, label: "Lineage" },
+  { to: "/deploys", icon: Monitor, label: "Deploys" },
   { to: "/activity", icon: Clock, label: "Activity" },
 ] as const;
 
@@ -225,8 +240,14 @@ const BREADCRUMB_ICONS: Record<string, React.ComponentType<{ className?: string 
   memory: Brain,
   playground: MessageSquare,
   approvals: GitPullRequest,
-  deploys: Activity,
+  deploys: Monitor,
   activity: Clock,
+  traces: Activity,
+  teams: Shield,
+  costs: DollarSign,
+  budgets: DollarSign,
+  audit: ScrollText,
+  lineage: GitBranch,
 };
 
 function Breadcrumbs() {
@@ -568,8 +589,21 @@ function ShellInner() {
           )}
 
           {/* Nav */}
-          <nav className="flex-1 space-y-0.5 overflow-hidden px-1.5 pt-2">
-            {NAV.map(({ to, icon, label }) => (
+          <nav className="flex-1 space-y-0.5 overflow-y-auto overflow-x-hidden px-1.5 pt-2">
+            {!collapsed && <div className="px-2 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60">Registry</div>}
+            {REGISTRY_NAV.map(({ to, icon, label }) => (
+              <SidebarNavItem key={to} to={to} icon={icon} label={label} collapsed={collapsed} />
+            ))}
+
+            <div className="!my-2 h-px bg-border" />
+            {!collapsed && <div className="px-2 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60">Observability</div>}
+            {OBSERVABILITY_NAV.map(({ to, icon, label }) => (
+              <SidebarNavItem key={to} to={to} icon={icon} label={label} collapsed={collapsed} />
+            ))}
+
+            <div className="!my-2 h-px bg-border" />
+            {!collapsed && <div className="px-2 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60">Governance</div>}
+            {GOVERNANCE_NAV.map(({ to, icon, label }) => (
               <SidebarNavItem
                 key={to}
                 to={to}
@@ -580,15 +614,8 @@ function ShellInner() {
               />
             ))}
 
-            {/* Separator */}
             <div className="!my-2 h-px bg-border" />
-
-            <SidebarNavItem
-              to="/settings"
-              icon={Settings}
-              label="Settings"
-              collapsed={collapsed}
-            />
+            <SidebarNavItem to="/settings" icon={Settings} label="Settings" collapsed={collapsed} />
           </nav>
 
           {/* Footer */}
