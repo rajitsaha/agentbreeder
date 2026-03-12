@@ -15,7 +15,7 @@ import {
   FileCode,
   Braces,
 } from "lucide-react";
-import { api, type Prompt, type PromptVersion } from "@/lib/api";
+import { api } from "@/lib/api";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -31,7 +31,6 @@ import { useToast } from "@/hooks/use-toast";
 import {
   extractVariables,
   promptToYaml,
-  yamlToPrompt,
   type PromptVariable,
   type PromptYamlData,
 } from "@/lib/prompt-yaml";
@@ -154,11 +153,9 @@ function computeSimpleDiff(oldText: string, newText: string): DiffLine[] {
 
 function VersionHistoryPanel({
   promptId,
-  currentContent,
   onRestore,
 }: {
   promptId: string;
-  currentContent: string;
   onRestore: (content: string) => void;
 }) {
   const [compareA, setCompareA] = useState<string | null>(null);
@@ -428,7 +425,6 @@ export default function PromptBuilderPage() {
     new Map()
   );
   const [isDirty, setIsDirty] = useState(false);
-  const [showPreview, setShowPreview] = useState(true);
   const [showYaml, setShowYaml] = useState(false);
   const [rightPanel, setRightPanel] = useState<
     "preview" | "variables" | "history"
@@ -1000,7 +996,6 @@ export default function PromptBuilderPage() {
                 <div className="py-2">
                   <VersionHistoryPanel
                     promptId={id}
-                    currentContent={content}
                     onRestore={handleRestoreVersion}
                   />
                 </div>

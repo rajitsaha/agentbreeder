@@ -22,6 +22,8 @@ const STATUS_COLORS: Record<AgentStatus, string> = {
   deploying: "text-amber-500 animate-pulse",
   stopped: "text-muted-foreground",
   failed: "text-destructive",
+  error: "text-destructive",
+  degraded: "text-amber-500",
 };
 
 const FRAMEWORK_COLORS: Record<string, string> = {

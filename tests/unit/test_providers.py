@@ -138,12 +138,8 @@ class TestHealthCheck:
     @pytest.mark.asyncio
     async def test_updates_provider_status(self, session: AsyncSession) -> None:
         """Health check should update status and latency for enabled providers."""
-        await ProviderRegistry.create(
-            session, name="p1", provider_type=ProviderType.openai
-        )
-        await ProviderRegistry.create(
-            session, name="p2", provider_type=ProviderType.anthropic
-        )
+        await ProviderRegistry.create(session, name="p1", provider_type=ProviderType.openai)
+        await ProviderRegistry.create(session, name="p2", provider_type=ProviderType.anthropic)
 
         # Force all checks to succeed
         with patch("api.tasks.provider_health.random") as mock_random:
@@ -161,9 +157,7 @@ class TestHealthCheck:
     @pytest.mark.asyncio
     async def test_skips_disabled_providers(self, session: AsyncSession) -> None:
         """Health check should skip disabled providers."""
-        p = await ProviderRegistry.create(
-            session, name="p1", provider_type=ProviderType.openai
-        )
+        p = await ProviderRegistry.create(session, name="p1", provider_type=ProviderType.openai)
         await ProviderRegistry.toggle(session, p)  # disable
 
         results = await check_all_providers(session)
@@ -174,9 +168,7 @@ class TestHealthCheck:
     @pytest.mark.asyncio
     async def test_handles_failure(self, session: AsyncSession) -> None:
         """Health check failure should set provider status to error."""
-        await ProviderRegistry.create(
-            session, name="p1", provider_type=ProviderType.openai
-        )
+        await ProviderRegistry.create(session, name="p1", provider_type=ProviderType.openai)
 
         with patch("api.tasks.provider_health.random") as mock_random:
             mock_random.random.return_value = 0.99  # > 0.95 => failure
@@ -246,12 +238,8 @@ class TestProviderStatus:
     @pytest.mark.asyncio
     async def test_with_providers(self, session: AsyncSession) -> None:
         """Status should report correct counts when providers exist."""
-        await ProviderRegistry.create(
-            session, name="p1", provider_type=ProviderType.openai
-        )
-        await ProviderRegistry.create(
-            session, name="p2", provider_type=ProviderType.anthropic
-        )
+        await ProviderRegistry.create(session, name="p1", provider_type=ProviderType.openai)
+        await ProviderRegistry.create(session, name="p2", provider_type=ProviderType.anthropic)
 
         providers, total = await ProviderRegistry.list(session)
         assert total == 2
@@ -277,9 +265,7 @@ class TestProviderStatus:
 class TestGetByType:
     @pytest.mark.asyncio
     async def test_get_by_type_found(self, session: AsyncSession) -> None:
-        await ProviderRegistry.create(
-            session, name="p1", provider_type=ProviderType.ollama
-        )
+        await ProviderRegistry.create(session, name="p1", provider_type=ProviderType.ollama)
         found = await ProviderRegistry.get_by_type(session, ProviderType.ollama)
         assert found is not None
         assert found.provider_type == ProviderType.ollama

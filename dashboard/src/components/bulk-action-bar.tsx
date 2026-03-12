@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { X, Tag, Download, Trash2, Loader2, Plus } from "lucide-react";
+import { X, Tag, Download, Trash2, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,

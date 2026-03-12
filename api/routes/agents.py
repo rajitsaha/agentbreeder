@@ -56,15 +56,11 @@ async def validate_agent_yaml(
         data=AgentValidationResponse(
             valid=result.valid,
             errors=[
-                AgentValidationErrorItem(
-                    path=e.path, message=e.message, suggestion=e.suggestion
-                )
+                AgentValidationErrorItem(path=e.path, message=e.message, suggestion=e.suggestion)
                 for e in result.errors
             ],
             warnings=[
-                AgentValidationErrorItem(
-                    path=w.path, message=w.message, suggestion=w.suggestion
-                )
+                AgentValidationErrorItem(path=w.path, message=w.message, suggestion=w.suggestion)
                 for w in result.warnings
             ],
         )

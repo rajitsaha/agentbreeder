@@ -625,9 +625,7 @@ function PromptTestPanel({ content }: { content: string }) {
 
 /** Version history panel that fetches real data from the API. */
 function VersionHistoryPanel({
-  promptId,
   versions,
-  currentId,
   onRestore,
 }: {
   promptId: string;
@@ -775,7 +773,7 @@ export default function PromptDetailPage() {
   const { toast } = useToast();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const [activeTab, setActiveTab] = useUrlState("tab", "editor");
+  const [activeTab, setActiveTab] = useUrlState("tab", "editor" as string);
   const [editedContent, setEditedContent] = useState<string | null>(null);
   const [editedDescription, setEditedDescription] = useState<string | null>(null);
   const [activeEditorTab, setActiveEditorTab] = useState<"edit" | "preview">("edit");

@@ -105,9 +105,7 @@ class McpServerRegistry:
         return True
 
     @staticmethod
-    async def test_connection(
-        session: AsyncSession, server_id: str
-    ) -> dict[str, object]:
+    async def test_connection(session: AsyncSession, server_id: str) -> dict[str, object]:
         """Test connectivity to an MCP server (mock implementation)."""
         server = await McpServerRegistry.get_by_id(session, server_id)
         if not server:
@@ -121,9 +119,7 @@ class McpServerRegistry:
         return {"success": True, "latency_ms": 42}
 
     @staticmethod
-    async def discover_tools(
-        session: AsyncSession, server_id: str
-    ) -> dict[str, object]:
+    async def discover_tools(session: AsyncSession, server_id: str) -> dict[str, object]:
         """Discover tools exposed by an MCP server (mock implementation)."""
         server = await McpServerRegistry.get_by_id(session, server_id)
         if not server:

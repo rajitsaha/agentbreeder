@@ -13,7 +13,6 @@ import {
   AlertCircle,
   ChevronDown,
   ChevronRight,
-  Trash2,
 } from "lucide-react";
 import { api, type McpServer, type McpServerDiscoveredTool } from "@/lib/api";
 import { Badge } from "@/components/ui/badge";

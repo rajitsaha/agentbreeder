@@ -168,7 +168,7 @@ export default function ModelDetailPage() {
     staleTime: 10_000,
   });
 
-  const [activeTab, setActiveTab] = useUrlState("tab", "overview");
+  const [activeTab, setActiveTab] = useUrlState("tab", "overview" as string);
   const model: Model | undefined = data?.data;
   const usageCount = usageData?.data?.length ?? 0;
 

@@ -162,26 +162,18 @@ def validate_config_yaml(yaml_string: str) -> YamlValidationResult:
     # Warnings
     tools = raw.get("tools")
     if not tools or (isinstance(tools, list) and len(tools) == 0):
-        warnings.append(
-            ConfigError(path="tools", message="No tools defined")
-        )
+        warnings.append(ConfigError(path="tools", message="No tools defined"))
 
     prompts = raw.get("prompts")
     if not prompts or (isinstance(prompts, dict) and not prompts.get("system")):
-        warnings.append(
-            ConfigError(path="prompts.system", message="No system prompt defined")
-        )
+        warnings.append(ConfigError(path="prompts.system", message="No system prompt defined"))
 
     guardrails = raw.get("guardrails")
     if not guardrails or (isinstance(guardrails, list) and len(guardrails) == 0):
-        warnings.append(
-            ConfigError(path="guardrails", message="No guardrails enabled")
-        )
+        warnings.append(ConfigError(path="guardrails", message="No guardrails enabled"))
 
     if not raw.get("description"):
-        warnings.append(
-            ConfigError(path="description", message="Description is empty")
-        )
+        warnings.append(ConfigError(path="description", message="Description is empty"))
 
     return YamlValidationResult(
         valid=len(errors) == 0,

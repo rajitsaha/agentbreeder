@@ -2,7 +2,7 @@
  * Prompt YAML serialization/deserialization.
  *
  * Converts prompt objects to/from a human-readable YAML format
- * suitable for version control and the AgentHub registry.
+ * suitable for version control and the Agent Garden registry.
  */
 
 export interface PromptVariable {

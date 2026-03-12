@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import { Link } from "react-router-dom";
 import {
   Clock,
@@ -6,11 +6,6 @@ import {
   Pencil,
   Rocket,
   Trash2,
-  Bot,
-  Wrench,
-  FileText,
-  Cpu,
-  Activity,
   CheckCircle2,
   XCircle,
 } from "lucide-react";
@@ -275,13 +270,6 @@ const ACTION_COLORS: Record<string, string> = {
   failed: "text-red-500 bg-red-500/10",
 };
 
-const RESOURCE_ICONS: Record<ResourceType, typeof Bot> = {
-  agent: Bot,
-  tool: Wrench,
-  prompt: FileText,
-  model: Cpu,
-  deploy: Activity,
-};
 
 const RESOURCE_BADGE_COLORS: Record<ResourceType, string> = {
   agent: "bg-sky-500/10 text-sky-600 dark:text-sky-400 border-sky-500/20",

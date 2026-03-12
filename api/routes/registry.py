@@ -412,9 +412,7 @@ async def diff_prompt_version_snapshots(
     db: AsyncSession = Depends(get_db),
 ) -> ApiResponse[PromptVersionDiffResponse]:
     """Compute a unified diff between two prompt version snapshots."""
-    ver1, ver2, diff_text = await PromptRegistry.diff_version_snapshots(
-        db, prompt_id, v1, v2
-    )
+    ver1, ver2, diff_text = await PromptRegistry.diff_version_snapshots(db, prompt_id, v1, v2)
     if not ver1 or not ver2:
         raise HTTPException(status_code=404, detail="One or both versions not found")
     return ApiResponse(

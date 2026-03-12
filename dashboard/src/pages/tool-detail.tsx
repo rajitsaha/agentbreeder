@@ -343,7 +343,7 @@ export default function ToolDetailPage() {
       </div>
 
       {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={(val) => setActiveTab(val as string)} className="mt-6">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-6">
         <TabsList variant="line">
           <TabsTrigger value="overview" className="text-xs">
             Overview

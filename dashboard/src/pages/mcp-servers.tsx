@@ -11,7 +11,7 @@ import {
   AlertCircle,
   Wrench,
 } from "lucide-react";
-import { api, type McpServer, type McpTransport } from "@/lib/api";
+import { api, type McpTransport } from "@/lib/api";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";

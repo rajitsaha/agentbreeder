@@ -124,7 +124,7 @@ export interface DiffHunk {
  */
 export function groupIntoHunks(
   diffLines: DiffLine[],
-  contextLines: number = 3
+  _contextLines: number = 3
 ): DiffHunk[] {
   if (diffLines.length === 0) return [];
 

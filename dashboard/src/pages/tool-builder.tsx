@@ -6,7 +6,6 @@ import {
   Plus,
   Trash2,
   Play,
-  Clock,
   AlertCircle,
   CheckCircle2,
   Code,
@@ -99,7 +98,7 @@ function schemaToParameters(schema: Record<string, unknown>): SchemaParameter[] 
 }
 
 function generateMockOutput(
-  schema: Record<string, unknown>,
+  _schema: Record<string, unknown>,
   input: Record<string, unknown>
 ): Record<string, unknown> {
   const toolName = (input.query as string) || "result";

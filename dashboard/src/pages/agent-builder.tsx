@@ -4,7 +4,7 @@
  */
 
 import { useState, useCallback, useMemo, useRef, useEffect } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import {
   ArrowLeft,
@@ -21,11 +21,9 @@ import {
   AlertCircle,
   CheckCircle2,
   AlertTriangle,
-  Circle,
   X,
   Plus,
   Trash2,
-  Loader2,
   Bot,
   Wrench,
   FileText,
@@ -44,10 +42,10 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { DeployPipeline } from "@/components/deploy-pipeline";
-import { RegistryPicker, getMockModels, getMockTools, getMockPrompts } from "@/components/registry-picker";
+import { RegistryPicker, getMockModels, getMockTools } from "@/components/registry-picker";
 import { cn } from "@/lib/utils";
 import { highlightYaml, validateYamlBasic } from "@/lib/yaml";
-import { api, type Agent, type DeployJobStatus } from "@/lib/api";
+import { api, type DeployJobStatus } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
 import { useUnsavedChanges } from "@/hooks/use-unsaved-changes";
 
@@ -1027,7 +1025,6 @@ function DeployDialog({
   const validationItems = useMemo(() => validateAgentYaml(yaml), [yaml]);
 
   const hasErrors = validationItems.some((i) => i.status === "fail");
-  const isDeploying = deployStatus !== null && deployStatus !== "completed" && deployStatus !== "failed";
 
   const deploySteps: DeployJobStatus[] = [
     "pending",
@@ -1143,9 +1140,8 @@ function DeployDialog({
 
 export default function AgentBuilderPage() {
   const { id } = useParams();
-  const navigate = useNavigate();
   const { toast } = useToast();
-  const { isDirty, markDirty, markClean, isBlocked, confirmNavigation, cancelNavigation } = useUnsavedChanges();
+  const { isDirty: _isDirty, markDirty, markClean, isBlocked, confirmNavigation, cancelNavigation } = useUnsavedChanges();
 
   const [mode, setMode] = useState<"yaml" | "visual">("yaml");
   const [leftSidebarOpen, setLeftSidebarOpen] = useState(true);

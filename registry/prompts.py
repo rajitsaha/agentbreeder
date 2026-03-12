@@ -243,9 +243,7 @@ class PromptRegistry:
     # --- Prompt Version Snapshot methods ---
 
     @staticmethod
-    async def list_version_snapshots(
-        session: AsyncSession, prompt_id: str
-    ) -> list[PromptVersion]:
+    async def list_version_snapshots(session: AsyncSession, prompt_id: str) -> list[PromptVersion]:
         """List all version snapshots of a prompt, ordered by created_at descending."""
         stmt = (
             select(PromptVersion)

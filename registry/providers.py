@@ -421,9 +421,7 @@ class ProviderRegistry:
             model_name = model_data["id"]
             existing = await ModelRegistry.get(session, model_name)
             if existing is not None:
-                logger.debug(
-                    "Model '%s' already exists in registry, skipping", model_name
-                )
+                logger.debug("Model '%s' already exists in registry, skipping", model_name)
                 continue
 
             await ModelRegistry.register(
@@ -452,9 +450,7 @@ class ProviderRegistry:
         return registered_count
 
     @staticmethod
-    async def get_by_type(
-        session: AsyncSession, provider_type: ProviderType
-    ) -> Provider | None:
+    async def get_by_type(session: AsyncSession, provider_type: ProviderType) -> Provider | None:
         """Get first provider matching the given type."""
         stmt = select(Provider).where(Provider.provider_type == provider_type).limit(1)
         result = await session.execute(stmt)

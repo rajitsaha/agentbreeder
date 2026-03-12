@@ -532,7 +532,7 @@ function ConfigurationTab({ agent }: { agent: Agent }) {
         <div className="flex items-center justify-between border-b border-border bg-muted/30 px-4 py-2">
           <span className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
             <FileCode2 className="size-3.5" />
-            agenthub.yaml
+            agent.yaml
           </span>
           <div className="flex items-center gap-2">
             {editing && (
@@ -665,14 +665,14 @@ function ConfigurationTab({ agent }: { agent: Agent }) {
           <div className="flex items-center gap-3">
             <VersionSelector
               versions={MOCK_VERSIONS}
-              value={diffVersionA}
+              selected={diffVersionA}
               onChange={setDiffVersionA}
               label="Before"
             />
             <span className="text-xs text-muted-foreground">vs</span>
             <VersionSelector
               versions={MOCK_VERSIONS}
-              value={diffVersionB}
+              selected={diffVersionB}
               onChange={setDiffVersionB}
               label="After"
             />
@@ -1494,7 +1494,7 @@ function formatDeployDuration(start: Date, end: Date): string {
 
 export default function AgentDetailPage() {
   const { id } = useParams<{ id: string }>();
-  const [activeTab, setActiveTab] = useUrlState("tab", "overview");
+  const [activeTab, setActiveTab] = useUrlState("tab", "overview" as string);
   const { data, isLoading, error } = useQuery({
     queryKey: ["agent", id],
     queryFn: () => api.agents.get(id!),

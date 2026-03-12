@@ -43,7 +43,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<ApiResponse
 
 // --- Agent types ---
 
-export type AgentStatus = "deploying" | "running" | "stopped" | "failed";
+export type AgentStatus = "deploying" | "running" | "stopped" | "failed" | "degraded" | "error";
 
 export interface Agent {
   id: string;

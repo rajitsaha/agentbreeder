@@ -46,7 +46,7 @@ const SIDEBAR_MIN = 48;
 const SIDEBAR_DEFAULT = 256;
 const SIDEBAR_MAX = 320;
 const SIDEBAR_COLLAPSED_THRESHOLD = 100;
-const SIDEBAR_STORAGE_KEY = "agenthub-sidebar-width";
+const SIDEBAR_STORAGE_KEY = "agent-garden-sidebar-width";
 
 function getSavedSidebarWidth(): number {
   try {
