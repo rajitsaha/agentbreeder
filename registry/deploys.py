@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 import uuid
 
-from sqlalchemy import select, func
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -50,9 +50,7 @@ class DeployRegistry:
     async def get(session: AsyncSession, job_id: uuid.UUID) -> DeployJob | None:
         """Get a deploy job by ID."""
         stmt = (
-            select(DeployJob)
-            .options(selectinload(DeployJob.agent))
-            .where(DeployJob.id == job_id)
+            select(DeployJob).options(selectinload(DeployJob.agent)).where(DeployJob.id == job_id)
         )
         result = await session.execute(stmt)
         return result.scalar_one_or_none()

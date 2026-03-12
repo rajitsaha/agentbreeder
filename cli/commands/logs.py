@@ -10,7 +10,6 @@ from pathlib import Path
 import typer
 from rich.console import Console
 from rich.panel import Panel
-from rich.text import Text
 
 console = Console()
 
@@ -132,7 +131,7 @@ def _show_logs(
     except RuntimeError as e:
         if not json_output:
             console.print(Panel(f"[red]{e}[/red]", title="Error", border_style="red"))
-        raise typer.Exit(code=1)
+        raise typer.Exit(code=1) from None
 
     # Trim to requested line count
     if len(log_lines) > lines:
@@ -142,8 +141,7 @@ def _show_logs(
         import sys
 
         sys.stdout.write(
-            json.dumps({"agent": agent_name, "lines": log_lines, "count": len(log_lines)})
-            + "\n"
+            json.dumps({"agent": agent_name, "lines": log_lines, "count": len(log_lines)}) + "\n"
         )
         return
 
@@ -152,7 +150,9 @@ def _show_logs(
         return
 
     console.print()
-    console.print(f"  [bold]Logs:[/bold] [cyan]{agent_name}[/cyan]  [dim]({len(log_lines)} lines)[/dim]\n")
+    console.print(
+        f"  [bold]Logs:[/bold] [cyan]{agent_name}[/cyan]  [dim]({len(log_lines)} lines)[/dim]\n"
+    )
 
     for line in log_lines:
         _print_log_line(line)

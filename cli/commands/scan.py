@@ -10,8 +10,8 @@ from pathlib import Path
 import typer
 from rich.console import Console
 
-from connectors.mcp_scanner.scanner import MCPScanner
 from connectors.litellm.connector import LiteLLMConnector
+from connectors.mcp_scanner.scanner import MCPScanner
 
 console = Console()
 

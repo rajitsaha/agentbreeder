@@ -129,7 +129,9 @@ def _list_models(json_output: bool = False) -> None:
         if json_output:
             console.print("[]")
         else:
-            console.print("[dim]No models registered yet. Connect LiteLLM to discover models.[/dim]")
+            console.print(
+                "[dim]No models registered yet. Connect LiteLLM to discover models.[/dim]"
+            )
         return
 
     registry = json.loads(registry_file.read_text())

@@ -13,9 +13,8 @@ from pathlib import Path
 import typer
 from rich.console import Console
 from rich.panel import Panel
-from rich.table import Table
-from rich.text import Text
 from rich.rule import Rule
+from rich.table import Table
 
 from engine.config_parser import validate_config
 
@@ -447,7 +446,7 @@ def _show_selection(title: str, items: list[dict], selected: int) -> None:
         num = str(i + 1)
         if i == selected:
             table.add_row(
-                f"[bold cyan]›[/bold cyan]",
+                "[bold cyan]›[/bold cyan]",
                 item["icon"],
                 f"[bold cyan]{item['name']}[/bold cyan]",
                 f"[dim cyan]{item['tagline']}[/dim cyan]",
@@ -564,7 +563,7 @@ def init(
     cloud = _prompt_selection("Where will it run?", CLOUDS)
 
     # ── Step 3: Details ──────────────────────────────────────────
-    console.print(f"\n  [bold]Project details[/bold]\n")
+    console.print("\n  [bold]Project details[/bold]\n")
 
     cwd_name = Path.cwd().name
     default_name = re.sub(r"[^a-z0-9-]", "-", cwd_name.lower()).strip("-") or "my-agent"
@@ -661,9 +660,9 @@ def init(
     console.print()
 
     if validation.valid:
-        console.print(f"  [green]✓[/green] agent.yaml validated")
+        console.print("  [green]✓[/green] agent.yaml validated")
     else:
-        console.print(f"  [yellow]⚠[/yellow] agent.yaml has validation warnings:")
+        console.print("  [yellow]⚠[/yellow] agent.yaml has validation warnings:")
         for err in validation.errors:
             console.print(f"    [dim]- {err.path}: {err.message}[/dim]")
 

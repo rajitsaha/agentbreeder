@@ -91,9 +91,7 @@ async def create_agent(
         deploy={"cloud": "local"},
         tags=body.tags,
     )
-    agent = await AgentRegistry.register(
-        db, config, endpoint_url=body.endpoint_url or ""
-    )
+    agent = await AgentRegistry.register(db, config, endpoint_url=body.endpoint_url or "")
     return ApiResponse(data=AgentResponse.model_validate(agent))
 
 

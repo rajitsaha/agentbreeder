@@ -11,7 +11,19 @@ from __future__ import annotations
 
 import typer
 
-from cli.commands import deploy, validate, list_cmd, describe, search, scan, init_cmd, logs, status, teardown, provider
+from cli.commands import (
+    deploy,
+    describe,
+    init_cmd,
+    list_cmd,
+    logs,
+    provider,
+    scan,
+    search,
+    status,
+    teardown,
+    validate,
+)
 
 app = typer.Typer(
     name="garden",

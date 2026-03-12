@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 import uuid
 
-from sqlalchemy import select, func, or_
+from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.models.database import Agent, Model
@@ -127,9 +127,7 @@ class ModelRegistry:
         return list(result.scalars().all())
 
     @staticmethod
-    async def get_usage(
-        session: AsyncSession, model_id: str
-    ) -> list[tuple[Agent, str]]:
+    async def get_usage(session: AsyncSession, model_id: str) -> list[tuple[Agent, str]]:
         """Find agents that use this model as primary or fallback.
 
         Returns list of (agent, usage_type) tuples.

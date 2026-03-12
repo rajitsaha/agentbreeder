@@ -8,7 +8,6 @@ from pathlib import Path
 import pytest
 
 from engine.config_parser import (
-    AgentConfig,
     CloudType,
     ConfigParseError,
     FrameworkType,
@@ -227,7 +226,9 @@ deploy:
         with pytest.raises(ConfigParseError) as exc_info:
             parse_config(path)
         errors = exc_info.value.errors
-        assert any("enum" in e.suggestion.lower() or "one of" in e.suggestion.lower() for e in errors)
+        assert any(
+            "enum" in e.suggestion.lower() or "one of" in e.suggestion.lower() for e in errors
+        )
 
     def test_invalid_cloud_raises(self) -> None:
         yaml = """\

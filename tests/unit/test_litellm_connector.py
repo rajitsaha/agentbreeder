@@ -62,13 +62,16 @@ class TestLiteLLMConnectorScan:
     @pytest.mark.asyncio
     async def test_scan_models(self) -> None:
         connector = LiteLLMConnector(base_url="http://localhost:4000")
-        resp = _mock_response(200, json_data={
-            "data": [
-                {"id": "openai/gpt-4o", "object": "model", "owned_by": "openai"},
-                {"id": "claude-sonnet-4", "object": "model", "owned_by": "anthropic"},
-                {"id": "gemini-pro", "object": "model", "owned_by": "google"},
-            ]
-        })
+        resp = _mock_response(
+            200,
+            json_data={
+                "data": [
+                    {"id": "openai/gpt-4o", "object": "model", "owned_by": "openai"},
+                    {"id": "claude-sonnet-4", "object": "model", "owned_by": "anthropic"},
+                    {"id": "gemini-pro", "object": "model", "owned_by": "google"},
+                ]
+            },
+        )
         client = _mock_client(get_return=resp)
         with patch("connectors.litellm.connector.httpx.AsyncClient", return_value=client):
             models = await connector.scan()
@@ -167,6 +170,7 @@ class TestLiteLLMConnectorConfig:
 
     def test_env_base_url(self) -> None:
         import os
+
         with patch.dict(os.environ, {"LITELLM_BASE_URL": "http://env:4000"}):
             c = LiteLLMConnector()
             assert c._base_url == "http://env:4000"

@@ -6,8 +6,8 @@ This is the foundation of the deploy pipeline — everything depends on it.
 
 from __future__ import annotations
 
+import enum
 import json
-from enum import Enum
 from pathlib import Path
 from typing import Any
 
@@ -18,7 +18,7 @@ from ruamel.yaml import YAML
 SCHEMA_PATH = Path(__file__).parent / "schema" / "agent.schema.json"
 
 
-class FrameworkType(str, Enum):
+class FrameworkType(enum.StrEnum):
     langgraph = "langgraph"
     crewai = "crewai"
     claude_sdk = "claude_sdk"
@@ -27,14 +27,14 @@ class FrameworkType(str, Enum):
     custom = "custom"
 
 
-class CloudType(str, Enum):
+class CloudType(enum.StrEnum):
     aws = "aws"
     gcp = "gcp"
     kubernetes = "kubernetes"
     local = "local"
 
 
-class Visibility(str, Enum):
+class Visibility(enum.StrEnum):
     public = "public"
     team = "team"
     private = "private"
@@ -254,7 +254,10 @@ def validate_config(path: Path) -> ValidationResult:
                 ConfigValidationError(
                     path=str(path),
                     message="Empty configuration file",
-                    suggestion="Add required fields: name, version, team, owner, framework, model, deploy",
+                    suggestion=(
+                        "Add required fields: name, version, team, owner,"
+                        " framework, model, deploy"
+                    ),
                 )
             ],
         )

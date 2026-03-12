@@ -28,7 +28,8 @@ def search(
         query_lower = query.lower()
         for agent in registry.values():
             searchable = " ".join(
-                str(v) for v in [
+                str(v)
+                for v in [
                     agent.get("name", ""),
                     agent.get("description", ""),
                     agent.get("team", ""),

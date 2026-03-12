@@ -8,8 +8,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from engine.builder import DeployEngine, DeployError
-from engine.config_parser import FrameworkType
+from engine.builder import DeployEngine
 from engine.deployers.base import DeployResult, HealthStatus, InfraResult
 from engine.governance import RBACDeniedError
 from engine.runtimes.base import RuntimeValidationResult
@@ -106,17 +105,14 @@ class TestDeployEngineEdgeCases:
                 version="1.0.0",
             )
         )
-        mock_deployer.health_check = AsyncMock(
-            return_value=HealthStatus(healthy=True, checks={})
-        )
+        mock_deployer.health_check = AsyncMock(return_value=HealthStatus(healthy=True, checks={}))
 
-        with patch("engine.builder.get_deployer", return_value=mock_deployer), patch(
-            "engine.builder.REGISTRY_DIR", agent_dir / "registry"
+        with (
+            patch("engine.builder.get_deployer", return_value=mock_deployer),
+            patch("engine.builder.REGISTRY_DIR", agent_dir / "registry"),
         ):
             engine = DeployEngine()
-            result = await engine.deploy(
-                agent_dir / "agent.yaml", target="kubernetes"
-            )
+            result = await engine.deploy(agent_dir / "agent.yaml", target="kubernetes")
 
         assert result.endpoint_url == "http://localhost:8080"
 
@@ -138,15 +134,14 @@ class TestDeployEngineEdgeCases:
                 version="1.0.0",
             )
         )
-        mock_deployer.health_check = AsyncMock(
-            return_value=HealthStatus(healthy=True, checks={})
-        )
+        mock_deployer.health_check = AsyncMock(return_value=HealthStatus(healthy=True, checks={}))
 
-        with patch("engine.builder.get_deployer", return_value=mock_deployer), patch(
-            "engine.builder.REGISTRY_DIR", Path("/nonexistent/impossible/path")
+        with (
+            patch("engine.builder.get_deployer", return_value=mock_deployer),
+            patch("engine.builder.REGISTRY_DIR", Path("/nonexistent/impossible/path")),
         ):
             engine = DeployEngine()
-            with pytest.raises(Exception):
+            with pytest.raises(OSError):
                 await engine.deploy(agent_dir / "agent.yaml")
 
 

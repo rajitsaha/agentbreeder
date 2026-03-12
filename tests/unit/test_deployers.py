@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import patch
 
 import pytest
 
@@ -48,11 +48,12 @@ class TestDockerComposeDeployer:
     @pytest.fixture
     def deployer(self, tmp_path) -> DockerComposeDeployer:
         """Create a deployer with a temp state directory."""
-        with patch(
-            "engine.deployers.docker_compose.GARDEN_DIR", tmp_path / ".garden"
-        ), patch(
-            "engine.deployers.docker_compose.STATE_FILE",
-            tmp_path / ".garden" / "state.json",
+        with (
+            patch("engine.deployers.docker_compose.GARDEN_DIR", tmp_path / ".garden"),
+            patch(
+                "engine.deployers.docker_compose.STATE_FILE",
+                tmp_path / ".garden" / "state.json",
+            ),
         ):
             d = DockerComposeDeployer()
             return d

@@ -11,7 +11,6 @@ from pathlib import Path
 import typer
 from rich.console import Console
 from rich.panel import Panel
-from rich.progress import Progress, SpinnerColumn, TextColumn
 
 from engine.builder import DeployEngine, PipelineStep
 
@@ -73,12 +72,11 @@ def deploy(
     engine = DeployEngine(on_step=on_step)
 
     try:
-        result = asyncio.run(
-            engine.deploy(config_path=config_path, target=target)
-        )
+        result = asyncio.run(engine.deploy(config_path=config_path, target=target))
 
         if json_output:
             import json as json_lib
+
             console.print(json_lib.dumps(result.model_dump(), indent=2))
         else:
             console.print()
@@ -101,6 +99,7 @@ def deploy(
         if json_output:
             import json as json_lib
             import sys
+
             # Write directly to stdout to avoid Rich formatting in JSON mode
             sys.stdout.write(json_lib.dumps({"error": str(e)}) + "\n")
         else:
@@ -113,4 +112,4 @@ def deploy(
                 )
             )
             console.print()
-        raise typer.Exit(code=1)
+        raise typer.Exit(code=1) from None

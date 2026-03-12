@@ -21,9 +21,11 @@ class TestScanCommand:
     def test_scan_discovers_tools(self, MockMCP, MockLiteLLM) -> None:
         mock_mcp = MockMCP.return_value
         mock_mcp.is_available = AsyncMock(return_value=True)
-        mock_mcp.scan = AsyncMock(return_value=[
-            {"name": "fs-server", "tool_type": "mcp_server", "source": "mcp_scanner"},
-        ])
+        mock_mcp.scan = AsyncMock(
+            return_value=[
+                {"name": "fs-server", "tool_type": "mcp_server", "source": "mcp_scanner"},
+            ]
+        )
 
         mock_litellm = MockLiteLLM.return_value
         mock_litellm.is_available = AsyncMock(return_value=False)
@@ -41,9 +43,11 @@ class TestScanCommand:
 
         mock_litellm = MockLiteLLM.return_value
         mock_litellm.is_available = AsyncMock(return_value=True)
-        mock_litellm.scan = AsyncMock(return_value=[
-            {"name": "gpt-4o", "provider": "openai", "source": "litellm"},
-        ])
+        mock_litellm.scan = AsyncMock(
+            return_value=[
+                {"name": "gpt-4o", "provider": "openai", "source": "litellm"},
+            ]
+        )
 
         result = runner.invoke(app, ["scan"])
         assert result.exit_code == 0
@@ -55,15 +59,19 @@ class TestScanCommand:
     def test_scan_json_output(self, MockMCP, MockLiteLLM) -> None:
         mock_mcp = MockMCP.return_value
         mock_mcp.is_available = AsyncMock(return_value=True)
-        mock_mcp.scan = AsyncMock(return_value=[
-            {"name": "fs", "tool_type": "mcp_server", "source": "mcp_scanner"},
-        ])
+        mock_mcp.scan = AsyncMock(
+            return_value=[
+                {"name": "fs", "tool_type": "mcp_server", "source": "mcp_scanner"},
+            ]
+        )
 
         mock_litellm = MockLiteLLM.return_value
         mock_litellm.is_available = AsyncMock(return_value=True)
-        mock_litellm.scan = AsyncMock(return_value=[
-            {"name": "gpt-4o", "provider": "openai", "source": "litellm"},
-        ])
+        mock_litellm.scan = AsyncMock(
+            return_value=[
+                {"name": "gpt-4o", "provider": "openai", "source": "litellm"},
+            ]
+        )
 
         result = runner.invoke(app, ["scan", "--json"])
         assert result.exit_code == 0
@@ -111,7 +119,15 @@ class TestListToolsCommand:
 
     def test_list_tools_json(self) -> None:
         d = Path(tempfile.mkdtemp())
-        tools = {"t1": {"name": "t1", "tool_type": "mcp_server", "description": "test", "source": "manual", "endpoint": None}}
+        tools = {
+            "t1": {
+                "name": "t1",
+                "tool_type": "mcp_server",
+                "description": "test",
+                "source": "manual",
+                "endpoint": None,
+            }
+        }
         (d / "tools.json").write_text(json.dumps(tools))
         with patch("cli.commands.list_cmd.REGISTRY_DIR", d):
             result = runner.invoke(app, ["list", "tools", "--json"])
@@ -145,7 +161,9 @@ class TestListModelsCommand:
 
     def test_list_models_json(self) -> None:
         d = Path(tempfile.mkdtemp())
-        models = {"m1": {"name": "m1", "provider": "openai", "description": "test", "source": "litellm"}}
+        models = {
+            "m1": {"name": "m1", "provider": "openai", "description": "test", "source": "litellm"}
+        }
         (d / "models.json").write_text(json.dumps(models))
         with patch("cli.commands.list_cmd.REGISTRY_DIR", d):
             result = runner.invoke(app, ["list", "models", "--json"])

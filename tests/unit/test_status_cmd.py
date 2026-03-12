@@ -19,21 +19,23 @@ def _make_state(agents: dict | None = None) -> dict:
 
 
 def _sample_state() -> dict:
-    return _make_state({
-        "my-agent": {
-            "port": 8080,
-            "endpoint_url": "http://localhost:8080",
-            "container_id": "abc123def456",
-            "status": "running",
-            "deployed_at": "2026-03-09T10:00:00",
-        },
-        "other-agent": {
-            "port": 8081,
-            "endpoint_url": "http://localhost:8081",
-            "status": "stopped",
-            "deployed_at": "2026-03-08T09:00:00",
-        },
-    })
+    return _make_state(
+        {
+            "my-agent": {
+                "port": 8080,
+                "endpoint_url": "http://localhost:8080",
+                "container_id": "abc123def456",
+                "status": "running",
+                "deployed_at": "2026-03-09T10:00:00",
+            },
+            "other-agent": {
+                "port": 8081,
+                "endpoint_url": "http://localhost:8081",
+                "status": "stopped",
+                "deployed_at": "2026-03-08T09:00:00",
+            },
+        }
+    )
 
 
 def _sample_registry() -> dict:

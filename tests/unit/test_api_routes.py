@@ -3,14 +3,13 @@
 from __future__ import annotations
 
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from unittest.mock import AsyncMock, MagicMock, patch
 
-import pytest
 from fastapi.testclient import TestClient
 
-from api.models.enums import AgentStatus, UserRole
 from api.main import app
+from api.models.enums import AgentStatus, UserRole
 from api.services.auth import create_access_token
 
 client = TestClient(app)
@@ -21,28 +20,29 @@ def _auth_headers() -> dict[str, str]:
     token = create_access_token(str(uuid.uuid4()), "test@test.com", "viewer")
     return {"Authorization": f"Bearer {token}"}
 
-_NOW = datetime(2026, 1, 1, tzinfo=timezone.utc)
+
+_NOW = datetime(2026, 1, 1, tzinfo=UTC)
 
 
 def _make_agent(name: str = "test-agent", **kwargs):
     """Create a mock Agent-like object."""
-    defaults = dict(
-        id=kwargs.pop("id", uuid.uuid4()),
-        name=name,
-        version="1.0.0",
-        description="A test agent",
-        team="engineering",
-        owner="test@example.com",
-        framework="langgraph",
-        model_primary="gpt-4o",
-        model_fallback=None,
-        endpoint_url="http://localhost:8080",
-        status=AgentStatus.running,
-        tags=[],
-        config_snapshot={},
-        created_at=_NOW,
-        updated_at=_NOW,
-    )
+    defaults = {
+        "id": kwargs.pop("id", uuid.uuid4()),
+        "name": name,
+        "version": "1.0.0",
+        "description": "A test agent",
+        "team": "engineering",
+        "owner": "test@example.com",
+        "framework": "langgraph",
+        "model_primary": "gpt-4o",
+        "model_fallback": None,
+        "endpoint_url": "http://localhost:8080",
+        "status": AgentStatus.running,
+        "tags": [],
+        "config_snapshot": {},
+        "created_at": _NOW,
+        "updated_at": _NOW,
+    }
     defaults.update(kwargs)
     mock = MagicMock()
     for k, v in defaults.items():
@@ -52,18 +52,18 @@ def _make_agent(name: str = "test-agent", **kwargs):
 
 def _make_tool(name: str = "test-tool", **kwargs):
     """Create a mock Tool-like object."""
-    defaults = dict(
-        id=kwargs.pop("id", uuid.uuid4()),
-        name=name,
-        description="A test tool",
-        tool_type="mcp_server",
-        schema_definition={},
-        endpoint="http://localhost:3000",
-        status="active",
-        source="manual",
-        created_at=_NOW,
-        updated_at=_NOW,
-    )
+    defaults = {
+        "id": kwargs.pop("id", uuid.uuid4()),
+        "name": name,
+        "description": "A test tool",
+        "tool_type": "mcp_server",
+        "schema_definition": {},
+        "endpoint": "http://localhost:3000",
+        "status": "active",
+        "source": "manual",
+        "created_at": _NOW,
+        "updated_at": _NOW,
+    }
     defaults.update(kwargs)
     mock = MagicMock()
     for k, v in defaults.items():
@@ -95,7 +95,9 @@ class TestListAgents:
     @patch("api.routes.agents.AgentRegistry.list", new_callable=AsyncMock)
     def test_list_passes_filters(self, mock_list: AsyncMock) -> None:
         mock_list.return_value = ([], 0)
-        client.get("/api/v1/agents", params={"team": "alpha", "framework": "crewai", "status": "running"})
+        client.get(
+            "/api/v1/agents", params={"team": "alpha", "framework": "crewai", "status": "running"}
+        )
         call_kwargs = mock_list.call_args
         assert call_kwargs[1]["team"] == "alpha"
         assert call_kwargs[1]["framework"] == "crewai"
@@ -142,16 +144,16 @@ class TestGetAgent:
 
 def _make_mock_user(**kwargs):
     """Create a mock User for auth dependency."""
-    defaults = dict(
-        id=uuid.uuid4(),
-        email="test@test.com",
-        name="Test User",
-        role=UserRole.viewer,
-        team="engineering",
-        is_active=True,
-        created_at=_NOW,
-        updated_at=_NOW,
-    )
+    defaults = {
+        "id": uuid.uuid4(),
+        "email": "test@test.com",
+        "name": "Test User",
+        "role": UserRole.viewer,
+        "team": "engineering",
+        "is_active": True,
+        "created_at": _NOW,
+        "updated_at": _NOW,
+    }
     defaults.update(kwargs)
     mock = MagicMock()
     for k, v in defaults.items():
@@ -183,7 +185,9 @@ class TestCreateAgent:
 
     @patch("api.auth.get_user_by_id", new_callable=AsyncMock)
     @patch("api.routes.agents.AgentRegistry.register", new_callable=AsyncMock)
-    def test_create_agent_with_all_fields(self, mock_register: AsyncMock, mock_get_user: AsyncMock) -> None:
+    def test_create_agent_with_all_fields(
+        self, mock_register: AsyncMock, mock_get_user: AsyncMock
+    ) -> None:
         mock_get_user.return_value = _make_mock_user()
         mock_register.return_value = _make_agent(
             "full-agent",

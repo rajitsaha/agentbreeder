@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 import tempfile
 from pathlib import Path
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 
 from typer.testing import CliRunner
 
@@ -19,16 +19,18 @@ def _make_state(agents: dict | None = None) -> dict:
 
 
 def _sample_state() -> dict:
-    return _make_state({
-        "my-agent": {
-            "port": 8080,
-            "endpoint_url": "http://localhost:8080",
-            "container_id": "abc123def456",
-            "container_name": "garden-my-agent",
-            "status": "running",
-            "deployed_at": "2026-03-09T10:00:00",
+    return _make_state(
+        {
+            "my-agent": {
+                "port": 8080,
+                "endpoint_url": "http://localhost:8080",
+                "container_id": "abc123def456",
+                "container_name": "garden-my-agent",
+                "status": "running",
+                "deployed_at": "2026-03-09T10:00:00",
+            }
         }
-    })
+    )
 
 
 def _sample_registry() -> dict:
@@ -152,13 +154,15 @@ class TestTeardownCommand:
 
     def test_teardown_stopped_agent(self) -> None:
         """Tearing down an already-stopped agent should still update state."""
-        state = _make_state({
-            "my-agent": {
-                "port": 8080,
-                "status": "stopped",
-                "endpoint_url": "http://localhost:8080",
+        state = _make_state(
+            {
+                "my-agent": {
+                    "port": 8080,
+                    "status": "stopped",
+                    "endpoint_url": "http://localhost:8080",
+                }
             }
-        })
+        )
         with tempfile.TemporaryDirectory() as tmpdir:
             state_file = Path(tmpdir) / "state.json"
             state_file.write_text(json.dumps(state))

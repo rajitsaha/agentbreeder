@@ -3,10 +3,9 @@
 from __future__ import annotations
 
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from unittest.mock import AsyncMock, MagicMock, patch
 
-import pytest
 from fastapi.testclient import TestClient
 
 from api.main import app
@@ -20,7 +19,7 @@ from api.services.auth import (
 
 client = TestClient(app)
 
-_NOW = datetime(2026, 3, 9, tzinfo=timezone.utc)
+_NOW = datetime(2026, 3, 9, tzinfo=UTC)
 
 
 def _make_user(
@@ -30,17 +29,17 @@ def _make_user(
     **kwargs,
 ):
     """Create a mock User-like object."""
-    defaults = dict(
-        id=kwargs.pop("id", uuid.uuid4()),
-        email=email,
-        name=name,
-        password_hash=hash_password("testpass123"),
-        role=role,
-        team="engineering",
-        is_active=True,
-        created_at=_NOW,
-        updated_at=_NOW,
-    )
+    defaults = {
+        "id": kwargs.pop("id", uuid.uuid4()),
+        "email": email,
+        "name": name,
+        "password_hash": hash_password("testpass123"),
+        "role": role,
+        "team": "engineering",
+        "is_active": True,
+        "created_at": _NOW,
+        "updated_at": _NOW,
+    }
     defaults.update(kwargs)
     mock = MagicMock()
     for k, v in defaults.items():
@@ -111,7 +110,9 @@ class TestLoginRoute:
         mock_db.return_value.__aenter__ = AsyncMock(return_value=MagicMock())
         mock_db.return_value.__aexit__ = AsyncMock(return_value=None)
 
-        res = client.post("/api/v1/auth/login", json={"email": "test@example.com", "password": "testpass123"})
+        res = client.post(
+            "/api/v1/auth/login", json={"email": "test@example.com", "password": "testpass123"}
+        )
         assert res.status_code == 200
         data = res.json()["data"]
         assert data["access_token"] == "fake-jwt-token"
@@ -124,7 +125,9 @@ class TestLoginRoute:
         mock_db.return_value.__aenter__ = AsyncMock(return_value=MagicMock())
         mock_db.return_value.__aexit__ = AsyncMock(return_value=None)
 
-        res = client.post("/api/v1/auth/login", json={"email": "bad@test.com", "password": "wrong"})
+        res = client.post(
+            "/api/v1/auth/login", json={"email": "bad@test.com", "password": "wrong"}
+        )
         assert res.status_code == 401
         assert "Invalid email or password" in res.json()["detail"]
 
@@ -221,10 +224,17 @@ class TestMeRoute:
 
 class TestProtectedAgentRoutes:
     def test_create_agent_requires_auth(self):
-        res = client.post("/api/v1/agents", json={
-            "name": "test", "version": "1.0.0", "team": "eng",
-            "owner": "a@b.com", "framework": "langgraph", "model_primary": "gpt-4o",
-        })
+        res = client.post(
+            "/api/v1/agents",
+            json={
+                "name": "test",
+                "version": "1.0.0",
+                "team": "eng",
+                "owner": "a@b.com",
+                "framework": "langgraph",
+                "model_primary": "gpt-4o",
+            },
+        )
         assert res.status_code == 401
 
     def test_update_agent_requires_auth(self):

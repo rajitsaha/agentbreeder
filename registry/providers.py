@@ -4,9 +4,9 @@ from __future__ import annotations
 
 import logging
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
-from sqlalchemy import select, func
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.models.database import Provider
@@ -113,33 +113,49 @@ class ProviderRegistry:
         NOTE: This is a simulated test. In production, this would actually
         call the provider API to verify connectivity.
         """
-        import time
         import random
+        import time
 
         start = time.monotonic()
 
         # Simulate provider-specific connection test
         simulated_models: dict[str, list[str]] = {
             "openai": [
-                "gpt-4o", "gpt-4o-mini", "gpt-4-turbo", "gpt-3.5-turbo",
-                "o1", "o1-mini", "o3-mini",
+                "gpt-4o",
+                "gpt-4o-mini",
+                "gpt-4-turbo",
+                "gpt-3.5-turbo",
+                "o1",
+                "o1-mini",
+                "o3-mini",
             ],
             "anthropic": [
-                "claude-sonnet-4-20250514", "claude-haiku-4-20250414",
-                "claude-3.5-sonnet-20241022", "claude-3-haiku-20240307",
+                "claude-sonnet-4-20250514",
+                "claude-haiku-4-20250414",
+                "claude-3.5-sonnet-20241022",
+                "claude-3-haiku-20240307",
             ],
             "google": [
-                "gemini-2.0-flash", "gemini-1.5-pro", "gemini-1.5-flash",
+                "gemini-2.0-flash",
+                "gemini-1.5-pro",
+                "gemini-1.5-flash",
             ],
             "ollama": [
-                "llama3.2", "mistral", "codellama", "phi3",
+                "llama3.2",
+                "mistral",
+                "codellama",
+                "phi3",
             ],
             "litellm": [
-                "gpt-4o", "claude-sonnet-4-20250514", "gemini-2.0-flash",
+                "gpt-4o",
+                "claude-sonnet-4-20250514",
+                "gemini-2.0-flash",
             ],
             "openrouter": [
-                "openai/gpt-4o", "anthropic/claude-sonnet-4-20250514",
-                "google/gemini-2.0-flash", "meta-llama/llama-3.1-70b",
+                "openai/gpt-4o",
+                "anthropic/claude-sonnet-4-20250514",
+                "google/gemini-2.0-flash",
+                "meta-llama/llama-3.1-70b",
             ],
         }
 
@@ -147,7 +163,7 @@ class ProviderRegistry:
         elapsed_ms = int((time.monotonic() - start) * 1000) + random.randint(20, 150)
 
         # Update provider record
-        provider.last_verified = datetime.now(timezone.utc)
+        provider.last_verified = datetime.now(UTC)
         provider.latency_ms = elapsed_ms
         provider.model_count = len(models)
         provider.status = ProviderStatus.active
@@ -172,25 +188,41 @@ class ProviderRegistry:
         """
         simulated_models: dict[str, list[str]] = {
             "openai": [
-                "gpt-4o", "gpt-4o-mini", "gpt-4-turbo", "gpt-3.5-turbo",
-                "o1", "o1-mini", "o3-mini",
+                "gpt-4o",
+                "gpt-4o-mini",
+                "gpt-4-turbo",
+                "gpt-3.5-turbo",
+                "o1",
+                "o1-mini",
+                "o3-mini",
             ],
             "anthropic": [
-                "claude-sonnet-4-20250514", "claude-haiku-4-20250414",
-                "claude-3.5-sonnet-20241022", "claude-3-haiku-20240307",
+                "claude-sonnet-4-20250514",
+                "claude-haiku-4-20250414",
+                "claude-3.5-sonnet-20241022",
+                "claude-3-haiku-20240307",
             ],
             "google": [
-                "gemini-2.0-flash", "gemini-1.5-pro", "gemini-1.5-flash",
+                "gemini-2.0-flash",
+                "gemini-1.5-pro",
+                "gemini-1.5-flash",
             ],
             "ollama": [
-                "llama3.2", "mistral", "codellama", "phi3",
+                "llama3.2",
+                "mistral",
+                "codellama",
+                "phi3",
             ],
             "litellm": [
-                "gpt-4o", "claude-sonnet-4-20250514", "gemini-2.0-flash",
+                "gpt-4o",
+                "claude-sonnet-4-20250514",
+                "gemini-2.0-flash",
             ],
             "openrouter": [
-                "openai/gpt-4o", "anthropic/claude-sonnet-4-20250514",
-                "google/gemini-2.0-flash", "meta-llama/llama-3.1-70b",
+                "openai/gpt-4o",
+                "anthropic/claude-sonnet-4-20250514",
+                "google/gemini-2.0-flash",
+                "meta-llama/llama-3.1-70b",
             ],
         }
 

@@ -52,10 +52,12 @@ class TestGetRuntime:
 class TestLangGraphRuntime:
     def test_validate_valid_agent(self) -> None:
         runtime = LangGraphRuntime()
-        agent_dir = _make_agent_dir({
-            "agent.py": "graph = None",
-            "requirements.txt": "langgraph>=0.2.0",
-        })
+        agent_dir = _make_agent_dir(
+            {
+                "agent.py": "graph = None",
+                "requirements.txt": "langgraph>=0.2.0",
+            }
+        )
         config = _make_config()
         result = runtime.validate(agent_dir, config)
         assert result.valid is True
@@ -79,20 +81,24 @@ class TestLangGraphRuntime:
 
     def test_validate_pyproject_accepted(self) -> None:
         runtime = LangGraphRuntime()
-        agent_dir = _make_agent_dir({
-            "agent.py": "graph = None",
-            "pyproject.toml": "[project]\nname='test'",
-        })
+        agent_dir = _make_agent_dir(
+            {
+                "agent.py": "graph = None",
+                "pyproject.toml": "[project]\nname='test'",
+            }
+        )
         config = _make_config()
         result = runtime.validate(agent_dir, config)
         assert result.valid is True
 
     def test_build_creates_container_image(self) -> None:
         runtime = LangGraphRuntime()
-        agent_dir = _make_agent_dir({
-            "agent.py": "graph = None",
-            "requirements.txt": "langgraph>=0.2.0",
-        })
+        agent_dir = _make_agent_dir(
+            {
+                "agent.py": "graph = None",
+                "requirements.txt": "langgraph>=0.2.0",
+            }
+        )
         config = _make_config()
         image = runtime.build(agent_dir, config)
         assert image.tag == "garden/test-agent:1.0.0"
@@ -104,10 +110,12 @@ class TestLangGraphRuntime:
 
     def test_build_copies_server_template(self) -> None:
         runtime = LangGraphRuntime()
-        agent_dir = _make_agent_dir({
-            "agent.py": "graph = None",
-            "requirements.txt": "langgraph>=0.2.0",
-        })
+        agent_dir = _make_agent_dir(
+            {
+                "agent.py": "graph = None",
+                "requirements.txt": "langgraph>=0.2.0",
+            }
+        )
         config = _make_config()
         image = runtime.build(agent_dir, config)
         server_file = image.context_dir / "server.py"
@@ -116,10 +124,12 @@ class TestLangGraphRuntime:
 
     def test_build_merges_requirements(self) -> None:
         runtime = LangGraphRuntime()
-        agent_dir = _make_agent_dir({
-            "agent.py": "graph = None",
-            "requirements.txt": "custom-package>=1.0\nlanggraph>=0.2.0",
-        })
+        agent_dir = _make_agent_dir(
+            {
+                "agent.py": "graph = None",
+                "requirements.txt": "custom-package>=1.0\nlanggraph>=0.2.0",
+            }
+        )
         config = _make_config()
         image = runtime.build(agent_dir, config)
         reqs = (image.context_dir / "requirements.txt").read_text()
@@ -129,11 +139,13 @@ class TestLangGraphRuntime:
 
     def test_build_skips_hidden_files(self) -> None:
         runtime = LangGraphRuntime()
-        agent_dir = _make_agent_dir({
-            "agent.py": "graph = None",
-            "requirements.txt": "langgraph>=0.2.0",
-            ".env": "SECRET=value",
-        })
+        agent_dir = _make_agent_dir(
+            {
+                "agent.py": "graph = None",
+                "requirements.txt": "langgraph>=0.2.0",
+                ".env": "SECRET=value",
+            }
+        )
         config = _make_config()
         image = runtime.build(agent_dir, config)
         assert not (image.context_dir / ".env").exists()

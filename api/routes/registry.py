@@ -15,11 +15,11 @@ from api.models.schemas import (
     PromptCreate,
     PromptResponse,
     PromptUpdate,
+    SearchResult,
     ToolCreate,
     ToolDetailResponse,
     ToolResponse,
     ToolUsageResponse,
-    SearchResult,
 )
 from registry.agents import AgentRegistry
 from registry.models import ModelRegistry
@@ -215,9 +215,7 @@ async def list_prompts(
     db: AsyncSession = Depends(get_db),
 ) -> ApiResponse[list[PromptResponse]]:
     """List prompt templates from the registry."""
-    prompts, total = await PromptRegistry.list(
-        db, team=team, page=page, per_page=per_page
-    )
+    prompts, total = await PromptRegistry.list(db, team=team, page=page, per_page=per_page)
     return ApiResponse(
         data=[PromptResponse.model_validate(p) for p in prompts],
         meta=ApiMeta(page=page, per_page=per_page, total=total),

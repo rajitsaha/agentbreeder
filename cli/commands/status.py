@@ -78,14 +78,16 @@ def _show_all_status(agents: dict, registry: dict, json_output: bool) -> None:
         result = []
         for name, info in agents.items():
             reg = registry.get(name, {})
-            result.append({
-                "name": name,
-                "status": info.get("status", "unknown"),
-                "endpoint_url": info.get("endpoint_url", ""),
-                "deployed_at": info.get("deployed_at", ""),
-                "version": reg.get("version", ""),
-                "framework": reg.get("framework", ""),
-            })
+            result.append(
+                {
+                    "name": name,
+                    "status": info.get("status", "unknown"),
+                    "endpoint_url": info.get("endpoint_url", ""),
+                    "deployed_at": info.get("deployed_at", ""),
+                    "version": reg.get("version", ""),
+                    "framework": reg.get("framework", ""),
+                }
+            )
         sys.stdout.write(json.dumps(result, indent=2) + "\n")
         return
 
@@ -145,12 +147,14 @@ def _show_agent_status(
         import sys
 
         result = {**info, "name": agent_name}
-        result.update({
-            "version": reg.get("version", ""),
-            "framework": reg.get("framework", ""),
-            "team": reg.get("team", ""),
-            "model_primary": reg.get("model_primary", ""),
-        })
+        result.update(
+            {
+                "version": reg.get("version", ""),
+                "framework": reg.get("framework", ""),
+                "team": reg.get("team", ""),
+                "model_primary": reg.get("model_primary", ""),
+            }
+        )
         sys.stdout.write(json.dumps(result, indent=2) + "\n")
         return
 
@@ -168,10 +172,12 @@ def _show_agent_status(
     if container_status:
         detail_lines.append(f"  Container:   {container_status}")
 
-    detail_lines.extend([
-        f"  Endpoint:    [bold]{info.get('endpoint_url', 'N/A')}[/bold]",
-        f"  Deployed:    {_format_time(info.get('deployed_at', ''))}",
-    ])
+    detail_lines.extend(
+        [
+            f"  Endpoint:    [bold]{info.get('endpoint_url', 'N/A')}[/bold]",
+            f"  Deployed:    {_format_time(info.get('deployed_at', ''))}",
+        ]
+    )
 
     if info.get("container_id"):
         detail_lines.append(f"  Container ID: [dim]{info['container_id'][:12]}[/dim]")
@@ -186,7 +192,13 @@ def _show_agent_status(
         detail_lines.append(f"  Team:        {reg.get('team', '')}")
         detail_lines.append(f"  Model:       {reg.get('model_primary', '')}")
 
-    border = "green" if status_val == "running" else "red" if status_val in ("stopped", "failed") else "blue"
+    border = (
+        "green"
+        if status_val == "running"
+        else "red"
+        if status_val in ("stopped", "failed")
+        else "blue"
+    )
 
     console.print()
     console.print(Panel("\n".join(detail_lines), title="Agent Status", border_style=border))

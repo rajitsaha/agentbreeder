@@ -2,16 +2,14 @@
 
 from __future__ import annotations
 
-import uuid
-
 import pytest
 from sqlalchemy import create_engine
-from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import sessionmaker
 
 from api.models.database import Agent, Base, Tool
 from api.models.enums import AgentStatus
 from engine.config_parser import AgentConfig, FrameworkType
-
 
 # Use synchronous SQLite for unit tests (no need for async in unit tests)
 engine = create_engine("sqlite:///:memory:")
@@ -98,15 +96,17 @@ class TestAgentRegistrySync:
     def test_list_agents_with_filters(self) -> None:
         with TestSession() as session:
             for i, team in enumerate(["alpha", "alpha", "beta"]):
-                session.add(Agent(
-                    name=f"agent-{i}",
-                    version="1.0.0",
-                    team=team,
-                    owner="a@b.com",
-                    framework="langgraph",
-                    model_primary="gpt-4o",
-                    status=AgentStatus.running,
-                ))
+                session.add(
+                    Agent(
+                        name=f"agent-{i}",
+                        version="1.0.0",
+                        team=team,
+                        owner="a@b.com",
+                        framework="langgraph",
+                        model_primary="gpt-4o",
+                        status=AgentStatus.running,
+                    )
+                )
             session.commit()
 
             alpha_agents = session.query(Agent).filter_by(team="alpha").all()
@@ -117,39 +117,39 @@ class TestAgentRegistrySync:
 
     def test_search_agents(self) -> None:
         with TestSession() as session:
-            session.add(Agent(
-                name="customer-support",
-                version="1.0.0",
-                description="Handles customer tickets",
-                team="support",
-                owner="a@b.com",
-                framework="langgraph",
-                model_primary="gpt-4o",
-                status=AgentStatus.running,
-            ))
-            session.add(Agent(
-                name="data-pipeline",
-                version="1.0.0",
-                description="ETL processing",
-                team="data",
-                owner="a@b.com",
-                framework="crewai",
-                model_primary="gpt-4o",
-                status=AgentStatus.running,
-            ))
+            session.add(
+                Agent(
+                    name="customer-support",
+                    version="1.0.0",
+                    description="Handles customer tickets",
+                    team="support",
+                    owner="a@b.com",
+                    framework="langgraph",
+                    model_primary="gpt-4o",
+                    status=AgentStatus.running,
+                )
+            )
+            session.add(
+                Agent(
+                    name="data-pipeline",
+                    version="1.0.0",
+                    description="ETL processing",
+                    team="data",
+                    owner="a@b.com",
+                    framework="crewai",
+                    model_primary="gpt-4o",
+                    status=AgentStatus.running,
+                )
+            )
             session.commit()
 
             # Search by name
-            results = session.query(Agent).filter(
-                Agent.name.like("%customer%")
-            ).all()
+            results = session.query(Agent).filter(Agent.name.like("%customer%")).all()
             assert len(results) == 1
             assert results[0].name == "customer-support"
 
             # Search by description
-            results = session.query(Agent).filter(
-                Agent.description.like("%ETL%")
-            ).all()
+            results = session.query(Agent).filter(Agent.description.like("%ETL%")).all()
             assert len(results) == 1
             assert results[0].name == "data-pipeline"
 
@@ -175,27 +175,31 @@ class TestAgentRegistrySync:
 
     def test_agent_unique_name(self) -> None:
         with TestSession() as session:
-            session.add(Agent(
-                name="unique-agent",
-                version="1.0.0",
-                team="eng",
-                owner="a@b.com",
-                framework="langgraph",
-                model_primary="gpt-4o",
-                status=AgentStatus.running,
-            ))
+            session.add(
+                Agent(
+                    name="unique-agent",
+                    version="1.0.0",
+                    team="eng",
+                    owner="a@b.com",
+                    framework="langgraph",
+                    model_primary="gpt-4o",
+                    status=AgentStatus.running,
+                )
+            )
             session.commit()
 
-            session.add(Agent(
-                name="unique-agent",
-                version="2.0.0",
-                team="eng",
-                owner="a@b.com",
-                framework="langgraph",
-                model_primary="gpt-4o",
-                status=AgentStatus.running,
-            ))
-            with pytest.raises(Exception):
+            session.add(
+                Agent(
+                    name="unique-agent",
+                    version="2.0.0",
+                    team="eng",
+                    owner="a@b.com",
+                    framework="langgraph",
+                    model_primary="gpt-4o",
+                    status=AgentStatus.running,
+                )
+            )
+            with pytest.raises(IntegrityError):
                 session.commit()
 
 
@@ -220,12 +224,14 @@ class TestToolRegistrySync:
     def test_list_tools(self) -> None:
         with TestSession() as session:
             for name in ["tool-a", "tool-b", "tool-c"]:
-                session.add(Tool(
-                    name=name,
-                    description=f"Description for {name}",
-                    tool_type="mcp_server",
-                    source="scanner",
-                ))
+                session.add(
+                    Tool(
+                        name=name,
+                        description=f"Description for {name}",
+                        tool_type="mcp_server",
+                        source="scanner",
+                    )
+                )
             session.commit()
 
             tools = session.query(Tool).all()
@@ -237,8 +243,6 @@ class TestToolRegistrySync:
             session.add(Tool(name="slack-mcp", description="Slack messaging"))
             session.commit()
 
-            results = session.query(Tool).filter(
-                Tool.name.like("%slack%")
-            ).all()
+            results = session.query(Tool).filter(Tool.name.like("%slack%")).all()
             assert len(results) == 1
             assert results[0].name == "slack-mcp"

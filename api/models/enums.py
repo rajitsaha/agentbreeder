@@ -5,14 +5,14 @@ from __future__ import annotations
 import enum
 
 
-class AgentStatus(str, enum.Enum):
+class AgentStatus(enum.StrEnum):
     deploying = "deploying"
     running = "running"
     stopped = "stopped"
     failed = "failed"
 
 
-class DeployJobStatus(str, enum.Enum):
+class DeployJobStatus(enum.StrEnum):
     pending = "pending"
     parsing = "parsing"
     building = "building"
@@ -24,14 +24,14 @@ class DeployJobStatus(str, enum.Enum):
     failed = "failed"
 
 
-class UserRole(str, enum.Enum):
+class UserRole(enum.StrEnum):
     admin = "admin"
     deployer = "deployer"
     contributor = "contributor"
     viewer = "viewer"
 
 
-class RegistryEntityType(str, enum.Enum):
+class RegistryEntityType(enum.StrEnum):
     agent = "agent"
     tool = "tool"
     model = "model"
@@ -39,7 +39,7 @@ class RegistryEntityType(str, enum.Enum):
     knowledge_base = "knowledge_base"
 
 
-class ProviderType(str, enum.Enum):
+class ProviderType(enum.StrEnum):
     openai = "openai"
     anthropic = "anthropic"
     google = "google"
@@ -48,7 +48,7 @@ class ProviderType(str, enum.Enum):
     openrouter = "openrouter"
 
 
-class ProviderStatus(str, enum.Enum):
+class ProviderStatus(enum.StrEnum):
     active = "active"
     disabled = "disabled"
     error = "error"

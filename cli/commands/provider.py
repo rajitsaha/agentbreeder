@@ -36,8 +36,13 @@ PROVIDER_TYPES = {
         "requires_key": True,
         "help_url": "https://platform.openai.com/api-keys",
         "models": [
-            "gpt-4o", "gpt-4o-mini", "gpt-4-turbo", "gpt-3.5-turbo",
-            "o1", "o1-mini", "o3-mini",
+            "gpt-4o",
+            "gpt-4o-mini",
+            "gpt-4-turbo",
+            "gpt-3.5-turbo",
+            "o1",
+            "o1-mini",
+            "o3-mini",
         ],
     },
     "anthropic": {
@@ -47,8 +52,10 @@ PROVIDER_TYPES = {
         "requires_key": True,
         "help_url": "https://console.anthropic.com/settings/keys",
         "models": [
-            "claude-opus-4-20250514", "claude-sonnet-4-20250514",
-            "claude-haiku-4-20250414", "claude-3.5-sonnet-20241022",
+            "claude-opus-4-20250514",
+            "claude-sonnet-4-20250514",
+            "claude-haiku-4-20250414",
+            "claude-3.5-sonnet-20241022",
         ],
     },
     "google": {
@@ -58,7 +65,9 @@ PROVIDER_TYPES = {
         "requires_key": True,
         "help_url": "https://aistudio.google.com/app/apikey",
         "models": [
-            "gemini-2.0-flash", "gemini-1.5-pro", "gemini-1.5-flash",
+            "gemini-2.0-flash",
+            "gemini-1.5-pro",
+            "gemini-1.5-flash",
         ],
     },
     "ollama": {
@@ -68,7 +77,10 @@ PROVIDER_TYPES = {
         "requires_key": False,
         "help_url": "https://ollama.com/download",
         "models": [
-            "llama3.2", "mistral", "codellama", "phi3",
+            "llama3.2",
+            "mistral",
+            "codellama",
+            "phi3",
         ],
     },
     "litellm": {
@@ -78,7 +90,9 @@ PROVIDER_TYPES = {
         "requires_key": False,
         "help_url": "https://docs.litellm.ai/",
         "models": [
-            "gpt-4o", "claude-sonnet-4-20250514", "gemini-2.0-flash",
+            "gpt-4o",
+            "claude-sonnet-4-20250514",
+            "gemini-2.0-flash",
         ],
     },
     "openrouter": {
@@ -88,8 +102,10 @@ PROVIDER_TYPES = {
         "requires_key": True,
         "help_url": "https://openrouter.ai/keys",
         "models": [
-            "openai/gpt-4o", "anthropic/claude-sonnet-4-20250514",
-            "google/gemini-2.0-flash", "meta-llama/llama-3.1-70b",
+            "openai/gpt-4o",
+            "anthropic/claude-sonnet-4-20250514",
+            "google/gemini-2.0-flash",
+            "meta-llama/llama-3.1-70b",
         ],
     },
 }
@@ -456,9 +472,13 @@ def provider_remove(
     meta = PROVIDER_TYPES.get(name, {})
 
     if not json_output:
-        confirm = console.input(
-            f"  [bold]Remove {provider['name']}? This will delete the API key. (y/N): [/bold]"
-        ).strip().lower()
+        confirm = (
+            console.input(
+                f"  [bold]Remove {provider['name']}? This will delete the API key. (y/N): [/bold]"
+            )
+            .strip()
+            .lower()
+        )
         if confirm != "y":
             console.print("  [dim]Cancelled.[/dim]")
             raise typer.Exit(code=0)

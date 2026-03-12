@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 
-from sqlalchemy import select, func, or_
+from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.models.database import Prompt
@@ -125,20 +125,14 @@ class PromptRegistry:
         return True
 
     @staticmethod
-    async def get_versions(
-        session: AsyncSession, prompt_id: str
-    ) -> list[Prompt]:
+    async def get_versions(session: AsyncSession, prompt_id: str) -> list[Prompt]:
         """Get all versions of a prompt (looked up by the name of the given id)."""
         stmt = select(Prompt).where(Prompt.id == prompt_id)
         result = await session.execute(stmt)
         prompt = result.scalar_one_or_none()
         if not prompt:
             return []
-        stmt = (
-            select(Prompt)
-            .where(Prompt.name == prompt.name)
-            .order_by(Prompt.version.desc())
-        )
+        stmt = select(Prompt).where(Prompt.name == prompt.name).order_by(Prompt.version.desc())
         result = await session.execute(stmt)
         return list(result.scalars().all())
 
@@ -153,9 +147,7 @@ class PromptRegistry:
 
         # Find the latest version for this prompt name to compute next version
         all_versions_stmt = (
-            select(Prompt)
-            .where(Prompt.name == source.name)
-            .order_by(Prompt.version.desc())
+            select(Prompt).where(Prompt.name == source.name).order_by(Prompt.version.desc())
         )
         all_result = await session.execute(all_versions_stmt)
         all_versions = list(all_result.scalars().all())

@@ -84,8 +84,7 @@ def teardown(
     if not force and not json_output:
         console.print()
         console.print(
-            f"  [bold]Teardown:[/bold] [cyan]{agent_name}[/cyan]  "
-            f"[dim](status: {status})[/dim]"
+            f"  [bold]Teardown:[/bold] [cyan]{agent_name}[/cyan]  [dim](status: {status})[/dim]"
         )
         endpoint = agent_info.get("endpoint_url", "")
         if endpoint:
@@ -113,11 +112,13 @@ def teardown(
         import sys
 
         sys.stdout.write(
-            json.dumps({
-                "agent": agent_name,
-                "status": "stopped",
-                "container_removed": container_removed,
-            })
+            json.dumps(
+                {
+                    "agent": agent_name,
+                    "status": "stopped",
+                    "container_removed": container_removed,
+                }
+            )
             + "\n"
         )
         return

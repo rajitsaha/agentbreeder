@@ -31,9 +31,9 @@ class LiteLLMConnector(BaseConnector):
         api_key: str | None = None,
         timeout: float = 5.0,
     ) -> None:
-        self._base_url = (
-            base_url or os.environ.get("LITELLM_BASE_URL", DEFAULT_BASE_URL)
-        ).rstrip("/")
+        self._base_url = (base_url or os.environ.get("LITELLM_BASE_URL", DEFAULT_BASE_URL)).rstrip(
+            "/"
+        )
         self._api_key = api_key or os.environ.get("LITELLM_API_KEY")
         self._timeout = timeout
 
@@ -51,9 +51,7 @@ class LiteLLMConnector(BaseConnector):
         """Check if the LiteLLM proxy is reachable."""
         try:
             async with httpx.AsyncClient(timeout=self._timeout) as client:
-                resp = await client.get(
-                    f"{self._base_url}/health", headers=self._headers()
-                )
+                resp = await client.get(f"{self._base_url}/health", headers=self._headers())
                 return resp.status_code == 200
         except httpx.HTTPError:
             return False
@@ -65,9 +63,7 @@ class LiteLLMConnector(BaseConnector):
         try:
             async with httpx.AsyncClient(timeout=self._timeout) as client:
                 # LiteLLM exposes OpenAI-compatible /v1/models endpoint
-                resp = await client.get(
-                    f"{self._base_url}/v1/models", headers=self._headers()
-                )
+                resp = await client.get(f"{self._base_url}/v1/models", headers=self._headers())
                 resp.raise_for_status()
                 data = resp.json()
         except httpx.HTTPError as e:
@@ -85,20 +81,22 @@ class LiteLLMConnector(BaseConnector):
             # Determine provider from model ID (e.g., "openai/gpt-4o" -> "openai")
             provider = _extract_provider(model_id)
 
-            models.append({
-                "name": model_id,
-                "provider": provider,
-                "description": f"Model {model_id} via LiteLLM gateway",
-                "source": "litellm",
-                "config": {
-                    "litellm_base_url": self._base_url,
-                    "model_info": {
-                        k: v
-                        for k, v in model_entry.items()
-                        if k in ("id", "object", "created", "owned_by")
+            models.append(
+                {
+                    "name": model_id,
+                    "provider": provider,
+                    "description": f"Model {model_id} via LiteLLM gateway",
+                    "source": "litellm",
+                    "config": {
+                        "litellm_base_url": self._base_url,
+                        "model_info": {
+                            k: v
+                            for k, v in model_entry.items()
+                            if k in ("id", "object", "created", "owned_by")
+                        },
                     },
-                },
-            })
+                }
+            )
 
         logger.info("LiteLLM connector discovered %d models", len(models))
         return models

@@ -110,8 +110,22 @@ class TestListCommand:
     def test_list_filter_by_team(self) -> None:
         d = Path(tempfile.mkdtemp())
         registry = {
-            "agent-a": {"name": "agent-a", "team": "alpha", "version": "1.0.0", "framework": "langgraph", "status": "running", "endpoint_url": "http://localhost:8080"},
-            "agent-b": {"name": "agent-b", "team": "beta", "version": "1.0.0", "framework": "langgraph", "status": "running", "endpoint_url": "http://localhost:8081"},
+            "agent-a": {
+                "name": "agent-a",
+                "team": "alpha",
+                "version": "1.0.0",
+                "framework": "langgraph",
+                "status": "running",
+                "endpoint_url": "http://localhost:8080",
+            },
+            "agent-b": {
+                "name": "agent-b",
+                "team": "beta",
+                "version": "1.0.0",
+                "framework": "langgraph",
+                "status": "running",
+                "endpoint_url": "http://localhost:8081",
+            },
         }
         (d / "agents.json").write_text(json.dumps(registry))
         with patch("cli.commands.list_cmd.REGISTRY_DIR", d):

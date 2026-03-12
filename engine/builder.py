@@ -67,7 +67,9 @@ class PipelineStep:
         self.status = "failed"
         self.error = error
         self.completed_at = datetime.now()
-        logger.error("[%d/%d] %s — FAILED: %s", self.step_number, self.total_steps, self.name, error)
+        logger.error(
+            "[%d/%d] %s — FAILED: %s", self.step_number, self.total_steps, self.name, error
+        )
 
 
 class DeployEngine:

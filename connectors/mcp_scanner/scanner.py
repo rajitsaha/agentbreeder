@@ -96,19 +96,21 @@ class MCPScanner(BaseConnector):
             # Try to extract the npm package name from args
             package_name = _extract_package_name(args)
 
-            results.append({
-                "name": server_name,
-                "description": description,
-                "tool_type": "mcp_server",
-                "source": "mcp_scanner",
-                "endpoint": None,
-                "schema_definition": {
-                    "command": command,
-                    "args": args,
-                    "package": package_name,
-                    "config_file": str(config_path),
-                },
-            })
+            results.append(
+                {
+                    "name": server_name,
+                    "description": description,
+                    "tool_type": "mcp_server",
+                    "source": "mcp_scanner",
+                    "endpoint": None,
+                    "schema_definition": {
+                        "command": command,
+                        "args": args,
+                        "package": package_name,
+                        "config_file": str(config_path),
+                    },
+                }
+            )
             logger.debug("Found MCP server '%s' in %s", server_name, config_path)
 
         return results
@@ -126,23 +128,18 @@ class MCPScanner(BaseConnector):
 
         return results
 
-    async def _probe_single_port(
-        self, client: httpx.AsyncClient, base_url: str
-    ) -> dict | None:
+    async def _probe_single_port(self, client: httpx.AsyncClient, base_url: str) -> dict | None:
         """Probe a single URL for an MCP-compatible server."""
         # Try common MCP/health endpoints
         for path in ["/health", "/", "/mcp"]:
             try:
                 resp = await client.get(f"{base_url}{path}")
                 if resp.status_code == 200:
-                    body = resp.text
                     # Try to parse as JSON for server info
                     try:
                         data = resp.json()
                         name = data.get("name", f"mcp-{base_url.split(':')[-1]}")
-                        description = data.get(
-                            "description", f"MCP server at {base_url}"
-                        )
+                        description = data.get("description", f"MCP server at {base_url}")
                     except (json.JSONDecodeError, ValueError):
                         name = f"mcp-{base_url.split(':')[-1]}"
                         description = f"MCP server at {base_url}"
@@ -162,7 +159,10 @@ class MCPScanner(BaseConnector):
 
 
 def _extract_package_name(args: list[str]) -> str | None:
-    """Extract npm package name from npx args like ['-y', '@modelcontextprotocol/server-filesystem']."""
+    """Extract npm package name from npx args.
+
+    Parses args like ['-y', '@modelcontextprotocol/server-filesystem'].
+    """
     for arg in args:
         if arg.startswith("@") or (not arg.startswith("-") and "/" not in arg and arg != "-y"):
             return arg

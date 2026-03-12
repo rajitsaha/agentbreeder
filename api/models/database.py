@@ -32,15 +32,11 @@ class User(Base):
 
     __tablename__ = "users"
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
-    )
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     email: Mapped[str] = mapped_column(String(255), unique=True, nullable=False, index=True)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
-    role: Mapped[UserRole] = mapped_column(
-        Enum(UserRole), default=UserRole.viewer, nullable=False
-    )
+    role: Mapped[UserRole] = mapped_column(Enum(UserRole), default=UserRole.viewer, nullable=False)
     team: Mapped[str] = mapped_column(String(100), nullable=False, default="default")
     is_active: Mapped[bool] = mapped_column(default=True, nullable=False)
     created_at: Mapped[datetime] = mapped_column(
@@ -56,9 +52,7 @@ class Agent(Base):
 
     __tablename__ = "agents"
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
-    )
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     name: Mapped[str] = mapped_column(String(63), unique=True, nullable=False, index=True)
     version: Mapped[str] = mapped_column(String(20), nullable=False)
     description: Mapped[str] = mapped_column(Text, default="")
@@ -80,7 +74,7 @@ class Agent(Base):
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
     )
 
-    deploy_jobs: Mapped[list["DeployJob"]] = relationship(back_populates="agent")
+    deploy_jobs: Mapped[list[DeployJob]] = relationship(back_populates="agent")
 
     __table_args__ = (
         Index("ix_agents_team_status", "team", "status"),
@@ -93,9 +87,7 @@ class DeployJob(Base):
 
     __tablename__ = "deploy_jobs"
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
-    )
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     agent_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("agents.id"), nullable=False
     )
@@ -108,11 +100,9 @@ class DeployJob(Base):
     started_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
-    completed_at: Mapped[datetime | None] = mapped_column(
-        DateTime(timezone=True), nullable=True
-    )
+    completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
-    agent: Mapped["Agent"] = relationship(back_populates="deploy_jobs")
+    agent: Mapped[Agent] = relationship(back_populates="deploy_jobs")
 
 
 class Tool(Base):
@@ -120,9 +110,7 @@ class Tool(Base):
 
     __tablename__ = "tools"
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
-    )
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     name: Mapped[str] = mapped_column(String(100), unique=True, nullable=False, index=True)
     description: Mapped[str] = mapped_column(Text, default="")
     tool_type: Mapped[str] = mapped_column(String(50), default="mcp_server")
@@ -143,9 +131,7 @@ class Model(Base):
 
     __tablename__ = "models"
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
-    )
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     name: Mapped[str] = mapped_column(String(100), unique=True, nullable=False, index=True)
     provider: Mapped[str] = mapped_column(String(50), nullable=False)
     description: Mapped[str] = mapped_column(Text, default="")
@@ -170,9 +156,7 @@ class Prompt(Base):
 
     __tablename__ = "prompts"
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
-    )
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     name: Mapped[str] = mapped_column(String(100), nullable=False, index=True)
     version: Mapped[str] = mapped_column(String(20), nullable=False)
     content: Mapped[str] = mapped_column(Text, nullable=False)
@@ -182,9 +166,7 @@ class Prompt(Base):
         DateTime(timezone=True), server_default=func.now()
     )
 
-    __table_args__ = (
-        Index("ix_prompts_name_version", "name", "version", unique=True),
-    )
+    __table_args__ = (Index("ix_prompts_name_version", "name", "version", unique=True),)
 
 
 class KnowledgeBase(Base):
@@ -192,9 +174,7 @@ class KnowledgeBase(Base):
 
     __tablename__ = "knowledge_bases"
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
-    )
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     name: Mapped[str] = mapped_column(String(100), unique=True, nullable=False, index=True)
     description: Mapped[str] = mapped_column(Text, default="")
     kb_type: Mapped[str] = mapped_column(String(50), default="document")
@@ -214,20 +194,14 @@ class Provider(Base):
 
     __tablename__ = "providers"
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
-    )
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     name: Mapped[str] = mapped_column(String(100), unique=True, nullable=False, index=True)
-    provider_type: Mapped[ProviderType] = mapped_column(
-        Enum(ProviderType), nullable=False
-    )
+    provider_type: Mapped[ProviderType] = mapped_column(Enum(ProviderType), nullable=False)
     base_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
     status: Mapped[ProviderStatus] = mapped_column(
         Enum(ProviderStatus), default=ProviderStatus.active, nullable=False
     )
-    last_verified: Mapped[datetime | None] = mapped_column(
-        DateTime(timezone=True), nullable=True
-    )
+    last_verified: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     latency_ms: Mapped[int | None] = mapped_column(Integer, nullable=True)
     model_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     config: Mapped[dict | None] = mapped_column(JSON, nullable=True)
@@ -238,6 +212,4 @@ class Provider(Base):
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
     )
 
-    __table_args__ = (
-        Index("ix_providers_provider_type", "provider_type"),
-    )
+    __table_args__ = (Index("ix_providers_provider_type", "provider_type"),)

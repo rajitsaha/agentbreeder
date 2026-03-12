@@ -45,8 +45,9 @@ class TestDockerComposeDeployerState:
         garden_dir = tmp / ".garden"
         state_file = garden_dir / "state.json"
 
-        with patch("engine.deployers.docker_compose.GARDEN_DIR", garden_dir), patch(
-            "engine.deployers.docker_compose.STATE_FILE", state_file
+        with (
+            patch("engine.deployers.docker_compose.GARDEN_DIR", garden_dir),
+            patch("engine.deployers.docker_compose.STATE_FILE", state_file),
         ):
             deployer = DockerComposeDeployer()
             port = deployer._allocate_port()
@@ -64,8 +65,9 @@ class TestDockerComposeDeployerState:
         state_file = garden_dir / "state.json"
         state_file.write_text(json.dumps({"agents": {}, "next_port": 9000}))
 
-        with patch("engine.deployers.docker_compose.GARDEN_DIR", garden_dir), patch(
-            "engine.deployers.docker_compose.STATE_FILE", state_file
+        with (
+            patch("engine.deployers.docker_compose.GARDEN_DIR", garden_dir),
+            patch("engine.deployers.docker_compose.STATE_FILE", state_file),
         ):
             deployer = DockerComposeDeployer()
             port = deployer._allocate_port()
@@ -93,9 +95,11 @@ class TestDockerComposeDeployerDeploy:
         mock_docker.errors.NotFound = type("NotFound", (Exception,), {})
         mock_client.containers.get.side_effect = mock_docker.errors.NotFound()
 
-        with patch("engine.deployers.docker_compose.GARDEN_DIR", garden_dir), patch(
-            "engine.deployers.docker_compose.STATE_FILE", state_file
-        ), patch.dict("sys.modules", {"docker": mock_docker}):
+        with (
+            patch("engine.deployers.docker_compose.GARDEN_DIR", garden_dir),
+            patch("engine.deployers.docker_compose.STATE_FILE", state_file),
+            patch.dict("sys.modules", {"docker": mock_docker}),
+        ):
             deployer = DockerComposeDeployer()
             # Pre-provision
             config = _make_config()
@@ -126,9 +130,11 @@ class TestDockerComposeDeployerDeploy:
         mock_docker.errors = MagicMock()
         mock_docker.errors.NotFound = type("NotFound", (Exception,), {})
 
-        with patch("engine.deployers.docker_compose.GARDEN_DIR", garden_dir), patch(
-            "engine.deployers.docker_compose.STATE_FILE", state_file
-        ), patch.dict("sys.modules", {"docker": mock_docker}):
+        with (
+            patch("engine.deployers.docker_compose.GARDEN_DIR", garden_dir),
+            patch("engine.deployers.docker_compose.STATE_FILE", state_file),
+            patch.dict("sys.modules", {"docker": mock_docker}),
+        ):
             deployer = DockerComposeDeployer()
             await deployer.teardown("test-agent")
 
@@ -148,9 +154,11 @@ class TestDockerComposeDeployerDeploy:
         mock_client.containers.get.side_effect = not_found()
         mock_docker.from_env.return_value = mock_client
 
-        with patch("engine.deployers.docker_compose.GARDEN_DIR", garden_dir), patch(
-            "engine.deployers.docker_compose.STATE_FILE", state_file
-        ), patch.dict("sys.modules", {"docker": mock_docker}):
+        with (
+            patch("engine.deployers.docker_compose.GARDEN_DIR", garden_dir),
+            patch("engine.deployers.docker_compose.STATE_FILE", state_file),
+            patch.dict("sys.modules", {"docker": mock_docker}),
+        ):
             deployer = DockerComposeDeployer()
             # Should not raise
             await deployer.teardown("nonexistent")
@@ -171,9 +179,11 @@ class TestDockerComposeDeployerDeploy:
         mock_docker.errors = MagicMock()
         mock_docker.errors.NotFound = type("NotFound", (Exception,), {})
 
-        with patch("engine.deployers.docker_compose.GARDEN_DIR", garden_dir), patch(
-            "engine.deployers.docker_compose.STATE_FILE", state_file
-        ), patch.dict("sys.modules", {"docker": mock_docker}):
+        with (
+            patch("engine.deployers.docker_compose.GARDEN_DIR", garden_dir),
+            patch("engine.deployers.docker_compose.STATE_FILE", state_file),
+            patch.dict("sys.modules", {"docker": mock_docker}),
+        ):
             deployer = DockerComposeDeployer()
             logs = await deployer.get_logs("test-agent")
 
@@ -193,9 +203,11 @@ class TestDockerComposeDeployerDeploy:
         mock_client.containers.get.side_effect = not_found()
         mock_docker.from_env.return_value = mock_client
 
-        with patch("engine.deployers.docker_compose.GARDEN_DIR", garden_dir), patch(
-            "engine.deployers.docker_compose.STATE_FILE", state_file
-        ), patch.dict("sys.modules", {"docker": mock_docker}):
+        with (
+            patch("engine.deployers.docker_compose.GARDEN_DIR", garden_dir),
+            patch("engine.deployers.docker_compose.STATE_FILE", state_file),
+            patch.dict("sys.modules", {"docker": mock_docker}),
+        ):
             deployer = DockerComposeDeployer()
             logs = await deployer.get_logs("nonexistent")
 
@@ -208,8 +220,9 @@ class TestDockerComposeDeployerDeploy:
         garden_dir = tmp / ".garden"
         state_file = garden_dir / "state.json"
 
-        with patch("engine.deployers.docker_compose.GARDEN_DIR", garden_dir), patch(
-            "engine.deployers.docker_compose.STATE_FILE", state_file
+        with (
+            patch("engine.deployers.docker_compose.GARDEN_DIR", garden_dir),
+            patch("engine.deployers.docker_compose.STATE_FILE", state_file),
         ):
             deployer = DockerComposeDeployer()
 

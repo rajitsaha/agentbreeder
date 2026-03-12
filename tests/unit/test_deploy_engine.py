@@ -9,9 +9,8 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 
 from engine.builder import DeployEngine, PipelineStep
-from engine.config_parser import FrameworkType
+from engine.config_parser import ConfigParseError
 from engine.deployers.base import DeployResult, HealthStatus, InfraResult
-from engine.runtimes.base import ContainerImage, RuntimeValidationResult
 
 
 def _make_agent_dir() -> Path:
@@ -80,8 +79,9 @@ class TestDeployEngine:
             return_value=HealthStatus(healthy=True, checks={"healthy": True})
         )
 
-        with patch("engine.builder.get_deployer", return_value=mock_deployer), patch(
-            "engine.builder.REGISTRY_DIR", agent_dir / "registry"
+        with (
+            patch("engine.builder.get_deployer", return_value=mock_deployer),
+            patch("engine.builder.REGISTRY_DIR", agent_dir / "registry"),
         ):
             engine = DeployEngine(on_step=on_step)
             result = await engine.deploy(agent_dir / "agent.yaml")
@@ -96,7 +96,7 @@ class TestDeployEngine:
         (d / "agent.yaml").write_text("invalid: yaml: broken")
 
         engine = DeployEngine()
-        with pytest.raises(Exception):
+        with pytest.raises(ConfigParseError):
             await engine.deploy(d / "agent.yaml")
 
     @pytest.mark.asyncio
@@ -152,8 +152,9 @@ class TestDeployEngine:
             return_value=HealthStatus(healthy=True, checks={"healthy": True})
         )
 
-        with patch("engine.builder.get_deployer", return_value=mock_deployer), patch(
-            "engine.builder.REGISTRY_DIR", registry_dir
+        with (
+            patch("engine.builder.get_deployer", return_value=mock_deployer),
+            patch("engine.builder.REGISTRY_DIR", registry_dir),
         ):
             engine = DeployEngine()
             await engine.deploy(agent_dir / "agent.yaml")
@@ -191,8 +192,9 @@ class TestDeployEngine:
             return_value=HealthStatus(healthy=True, checks={"healthy": True})
         )
 
-        with patch("engine.builder.get_deployer", return_value=mock_deployer), patch(
-            "engine.builder.REGISTRY_DIR", agent_dir / "registry"
+        with (
+            patch("engine.builder.get_deployer", return_value=mock_deployer),
+            patch("engine.builder.REGISTRY_DIR", agent_dir / "registry"),
         ):
             engine = DeployEngine(on_step=on_step)
             await engine.deploy(agent_dir / "agent.yaml")

@@ -181,7 +181,9 @@ class TestMCPScannerFull:
         }
 
         scanner = MCPScanner(config_paths=[d / ".mcp.json"], probe_ports=[3000])
-        with patch.object(scanner, "_probe_ports_for_mcp", new_callable=AsyncMock, return_value=[probe_result]):
+        with patch.object(
+            scanner, "_probe_ports_for_mcp", new_callable=AsyncMock, return_value=[probe_result]
+        ):
             results = await scanner.scan()
 
         assert len(results) == 1
@@ -190,7 +192,10 @@ class TestMCPScannerFull:
 
 class TestExtractPackageName:
     def test_scoped_package(self) -> None:
-        assert _extract_package_name(["-y", "@modelcontextprotocol/server-filesystem"]) == "@modelcontextprotocol/server-filesystem"
+        assert (
+            _extract_package_name(["-y", "@modelcontextprotocol/server-filesystem"])
+            == "@modelcontextprotocol/server-filesystem"
+        )
 
     def test_no_args(self) -> None:
         assert _extract_package_name([]) is None

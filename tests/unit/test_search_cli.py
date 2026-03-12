@@ -62,7 +62,14 @@ class TestSearchCommand:
     def test_search_by_team(self) -> None:
         d = Path(tempfile.mkdtemp())
         registry = {
-            "agent-a": {"name": "agent-a", "description": "", "team": "platform", "framework": "langgraph", "status": "running", "tags": []},
+            "agent-a": {
+                "name": "agent-a",
+                "description": "",
+                "team": "platform",
+                "framework": "langgraph",
+                "status": "running",
+                "tags": [],
+            },
         }
         (d / "agents.json").write_text(json.dumps(registry))
         with patch("cli.commands.search.REGISTRY_DIR", d):
@@ -73,7 +80,14 @@ class TestSearchCommand:
     def test_search_by_tag(self) -> None:
         d = Path(tempfile.mkdtemp())
         registry = {
-            "tagged-agent": {"name": "tagged-agent", "description": "", "team": "eng", "framework": "langgraph", "status": "running", "tags": ["production", "critical"]},
+            "tagged-agent": {
+                "name": "tagged-agent",
+                "description": "",
+                "team": "eng",
+                "framework": "langgraph",
+                "status": "running",
+                "tags": ["production", "critical"],
+            },
         }
         (d / "agents.json").write_text(json.dumps(registry))
         with patch("cli.commands.search.REGISTRY_DIR", d):
@@ -84,7 +98,14 @@ class TestSearchCommand:
     def test_search_json_output(self) -> None:
         d = Path(tempfile.mkdtemp())
         registry = {
-            "my-agent": {"name": "my-agent", "description": "test", "team": "eng", "framework": "langgraph", "status": "running", "tags": []},
+            "my-agent": {
+                "name": "my-agent",
+                "description": "test",
+                "team": "eng",
+                "framework": "langgraph",
+                "status": "running",
+                "tags": [],
+            },
         }
         (d / "agents.json").write_text(json.dumps(registry))
         with patch("cli.commands.search.REGISTRY_DIR", d):

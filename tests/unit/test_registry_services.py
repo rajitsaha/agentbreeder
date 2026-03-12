@@ -7,7 +7,7 @@ import uuid
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
-from api.models.database import Agent, Base, Tool
+from api.models.database import Base
 from api.models.enums import AgentStatus
 from engine.config_parser import AgentConfig, FrameworkType
 from registry.agents import AgentRegistry
@@ -18,7 +18,7 @@ _engine = create_async_engine("sqlite+aiosqlite:///:memory:")
 _SessionFactory = async_sessionmaker(_engine, class_=AsyncSession, expire_on_commit=False)
 
 
-@pytest.fixture()
+@pytest.fixture
 async def session():
     async with _engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
@@ -56,9 +56,7 @@ class TestAgentRegistryRegister:
     @pytest.mark.asyncio
     async def test_register_updates_existing(self, session: AsyncSession) -> None:
         await AgentRegistry.register(session, _config(version="1.0.0"), "http://a:8080")
-        agent = await AgentRegistry.register(
-            session, _config(version="2.0.0"), "http://b:9090"
-        )
+        agent = await AgentRegistry.register(session, _config(version="2.0.0"), "http://b:9090")
         assert agent.version == "2.0.0"
         assert agent.endpoint_url == "http://b:9090"
 
@@ -134,9 +132,7 @@ class TestAgentRegistryList:
     @pytest.mark.asyncio
     async def test_list_pagination(self, session: AsyncSession) -> None:
         for i in range(5):
-            await AgentRegistry.register(
-                session, _config(name=f"agent-{i}"), f"http://a:{i}"
-            )
+            await AgentRegistry.register(session, _config(name=f"agent-{i}"), f"http://a:{i}")
         agents, total = await AgentRegistry.list(session, page=2, per_page=2)
         assert total == 5
         assert len(agents) == 2
@@ -197,9 +193,7 @@ class TestAgentRegistrySearch:
     @pytest.mark.asyncio
     async def test_search_pagination(self, session: AsyncSession) -> None:
         for i in range(5):
-            await AgentRegistry.register(
-                session, _config(name=f"bot-{i}"), f"http://a:{i}"
-            )
+            await AgentRegistry.register(session, _config(name=f"bot-{i}"), f"http://a:{i}")
         agents, total = await AgentRegistry.search(session, "bot", page=2, per_page=2)
         assert total == 5
         assert len(agents) == 2

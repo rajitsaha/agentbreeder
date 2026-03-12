@@ -297,14 +297,17 @@ class TestProviderDisableEnable:
 class TestHelpers:
     def test_mask_key_short(self):
         from cli.commands.provider import _mask_key
+
         assert _mask_key("short") == "••••"
 
     def test_mask_key_long(self):
         from cli.commands.provider import _mask_key
+
         assert _mask_key("sk-proj-abcdef1234") == "••••1234"
 
     def test_load_providers_missing_file(self, providers_file):
         from cli.commands.provider import _load_providers
+
         assert _load_providers() == {}
 
     def test_env_key_write_and_update(self, tmp_path):

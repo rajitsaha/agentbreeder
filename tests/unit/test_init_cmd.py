@@ -2,10 +2,8 @@
 
 from __future__ import annotations
 
-import json
 import tempfile
 from pathlib import Path
-from unittest.mock import patch
 
 import pytest
 from typer.testing import CliRunner
@@ -178,7 +176,9 @@ class TestInitCommand:
                 assert result.exit_code == 0, result.output
 
                 reqs = (outdir / "requirements.txt").read_text()
-                assert expected_dep in reqs, f"Expected '{expected_dep}' in requirements for framework {fw_num}"
+                assert expected_dep in reqs, (
+                    f"Expected '{expected_dep}' in requirements for framework {fw_num}"
+                )
 
     def test_init_env_example_has_correct_key(self) -> None:
         """The .env.example should have the right API key placeholder."""

@@ -15,7 +15,12 @@ from api.models.schemas import (
     TokenResponse,
     UserResponse,
 )
-from api.services.auth import authenticate_user, create_access_token, create_user, get_user_by_email
+from api.services.auth import (
+    authenticate_user,
+    create_access_token,
+    create_user,
+    get_user_by_email,
+)
 
 router = APIRouter(prefix="/api/v1/auth", tags=["auth"])
 

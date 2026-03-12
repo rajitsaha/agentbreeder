@@ -58,7 +58,7 @@ async def get_provider(
 @router.post("", response_model=ApiResponse[ProviderResponse], status_code=201)
 async def create_provider(
     body: ProviderCreate,
-    _user: User = Depends(get_current_user),
+    user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ) -> ApiResponse[ProviderResponse]:
     """Register a new provider."""
@@ -76,7 +76,7 @@ async def create_provider(
 async def update_provider(
     provider_id: uuid.UUID,
     body: ProviderUpdate,
-    _user: User = Depends(get_current_user),
+    user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ) -> ApiResponse[ProviderResponse]:
     """Update a provider configuration."""
@@ -98,7 +98,7 @@ async def update_provider(
 @router.delete("/{provider_id}", response_model=ApiResponse[dict])
 async def delete_provider(
     provider_id: uuid.UUID,
-    _user: User = Depends(get_current_user),
+    user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ) -> ApiResponse[dict]:
     """Delete a provider."""
@@ -114,7 +114,7 @@ async def delete_provider(
 @router.post("/{provider_id}/test", response_model=ApiResponse[ProviderTestResult])
 async def test_provider(
     provider_id: uuid.UUID,
-    _user: User = Depends(get_current_user),
+    user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ) -> ApiResponse[ProviderTestResult]:
     """Test a provider connection."""
@@ -129,7 +129,7 @@ async def test_provider(
 @router.post("/{provider_id}/discover", response_model=ApiResponse[ProviderDiscoverResult])
 async def discover_models(
     provider_id: uuid.UUID,
-    _user: User = Depends(get_current_user),
+    user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ) -> ApiResponse[ProviderDiscoverResult]:
     """Discover available models from a provider."""
@@ -138,6 +138,4 @@ async def discover_models(
         raise HTTPException(status_code=404, detail="Provider not found")
 
     models = await ProviderRegistry.discover_models(db, provider)
-    return ApiResponse(
-        data=ProviderDiscoverResult(models=models, total=len(models))
-    )
+    return ApiResponse(data=ProviderDiscoverResult(models=models, total=len(models)))
