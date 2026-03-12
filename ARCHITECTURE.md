@@ -4,6 +4,85 @@
 
 ---
 
+## Three-Tier Builder Model
+
+Agent Garden supports three ways to build agents and orchestrations. All three tiers compile down to the same internal representation (`agent.yaml` + optional code) and share the same deploy pipeline, governance, and observability.
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                     THREE BUILDER TIERS                                  │
+│                                                                         │
+│  No Code (UI)          Low Code (YAML)         Full Code (SDK)          │
+│  ─────────────         ───────────────          ──────────────          │
+│  Visual drag-and-drop  agent.yaml in any IDE    Python/TS SDK           │
+│  Registry pickers      YAML orchestration       Programmatic control    │
+│  ReactFlow canvas      Any editor works         Custom routing logic    │
+│                                                                         │
+│         │                     │                        │                │
+│         └─────────────────────┼────────────────────────┘                │
+│                               │                                         │
+│                               ▼                                         │
+│                    ┌──────────────────────┐                              │
+│                    │  agent.yaml + code   │  ← Unified internal format  │
+│                    └──────────────────────┘                              │
+│                               │                                         │
+│                               ▼                                         │
+│                    ┌──────────────────────┐                              │
+│                    │   Deploy Pipeline    │  ← Same for all tiers       │
+│                    │   Governance         │                              │
+│                    │   Observability      │                              │
+│                    │   Registry           │                              │
+│                    └──────────────────────┘                              │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+### Tier Details
+
+| Tier | Agent Development | Agent Orchestration | Eject Path |
+|------|-------------------|---------------------|------------|
+| **No Code** | Visual builder: pick model, tools, prompt, guardrails from registry. Generates `agent.yaml`. | Visual canvas: wire agents as nodes, define routing/handoff rules. Generates `orchestration.yaml`. | "View YAML" → opens in Low Code editor |
+| **Low Code** | Write `agent.yaml` in any IDE (Cursor, Claude Code, VS Code, vim) or the dashboard YAML editor | Write `orchestration.yaml` defining agent graph, routing strategy, shared state | "Eject to SDK" → generates Python/TS scaffold |
+| **Full Code** | Python/TS SDK: `from agent_garden import Agent, Tool, Memory` — full programmatic control, custom logic, dynamic tool selection | Python/TS SDK: define orchestration graphs, custom routing functions, state machines, human-in-the-loop breakpoints | N/A (maximum control) |
+
+### Compilation Model
+
+The key architectural insight: all three tiers produce the same artifact that the deploy pipeline consumes.
+
+```python
+# No Code UI → generates this YAML internally
+# Low Code   → developer writes this YAML directly
+# Full Code  → SDK wraps this YAML + bundles custom code
+
+agent.yaml + optional code directory
+    │
+    ├── engine/config_parser.py    # parses YAML (same for all tiers)
+    ├── engine/runtimes/           # builds container (same for all tiers)
+    ├── engine/deployers/          # provisions cloud (same for all tiers)
+    └── engine/governance.py       # validates RBAC (same for all tiers)
+```
+
+**No Code** generates pure YAML — no custom code. The platform provides all logic via built-in components.
+
+**Low Code** is pure YAML — the developer writes it directly. They may include simple inline tool definitions or prompt text.
+
+**Full Code** produces YAML + a code directory. The SDK generates a valid `agent.yaml` from programmatic definitions and bundles the custom code (routing functions, state management, custom tools) alongside it. The runtime builder packages both into the container.
+
+### Tier Mobility (Ejection)
+
+Users can move between tiers without losing work:
+
+```
+No Code ──"View YAML"──→ Low Code ──"Eject to SDK"──→ Full Code
+                                                         │
+   ← "Import YAML" ←──────────────── ← (manual) ←──────┘
+```
+
+- **No Code → Low Code**: The visual builder always shows a "View YAML" tab. The generated YAML is valid, readable, and editable. Switching to Low Code is just opening that YAML in an editor.
+- **Low Code → Full Code**: A CLI command (`garden eject my-agent --sdk python`) generates a Python project scaffold that recreates the YAML config as SDK code, ready for extension.
+- **Full Code → Low Code**: Not automatic (code can express things YAML can't), but the SDK always generates a valid `agent.yaml` that can be imported back.
+
+---
+
 ## System Overview
 
 ```
@@ -215,6 +294,10 @@ GET    /api/v1/governance/audit       # Audit trail
 4. **Registry consistency** — all writes go through registry service classes. No direct database access from application code.
 
 5. **The deploy pipeline is sacred** — the 8-step flow is the product. Protect it like an API contract. Never skip a step. Never break atomicity.
+
+6. **Three tiers, one pipeline** — No Code (UI), Low Code (YAML), and Full Code (SDK) all compile to the same internal format (`agent.yaml` + optional code). The deploy pipeline, governance, observability, and registry are tier-agnostic. This applies to both agent development and multi-agent orchestration.
+
+7. **Tier mobility** — users can move between tiers without losing work. No Code generates valid YAML (eject to Low Code). Low Code can be scaffolded into SDK code (`garden eject`). This prevents vendor lock-in at any abstraction level.
 
 ---
 

@@ -18,7 +18,12 @@ Agent Garden is an **open-source platform** for building, deploying, and governi
 - Multi-cloud first (AWS ECS/Lambda/EKS and GCP Cloud Run/GKE as equal first-class targets)
 - Governance is a **side effect** of deploying, not extra configuration
 - Shared org-wide registry for agents, prompts, tools/MCP servers, models, knowledge bases
-- Three builder tiers: Full Code (CLI), Low Code (visual), No Code (templates)
+- **Three builder tiers** for both agent development AND agent orchestration:
+  - **No Code** — Visual drag-and-drop UI, registry pickers, ReactFlow canvas (for PMs, analysts, citizen builders)
+  - **Low Code** — YAML config (`agent.yaml`, `orchestration.yaml`) in any IDE or the dashboard editor (for ML engineers, DevOps)
+  - **Full Code** — Python/TS SDK with full programmatic control, custom routing, state machines (for senior engineers, researchers)
+- All three tiers compile to the same internal format and share the same deploy pipeline, governance, and observability
+- **Tier mobility** — start No Code, eject to YAML, eject to Full Code. No vendor lock-in at any level.
 
 ---
 
@@ -176,6 +181,23 @@ Registry entries are created/updated only by:
 3. Manual `garden register` (operator override)
 
 Never write directly to registry tables from application code. Always go through `registry/` services.
+
+### 6. Three-Tier Builder Model (No Code / Low Code / Full Code)
+Agent Garden supports three builder tiers for both individual agent development and multi-agent orchestration. All three compile to the same internal representation (`agent.yaml` + optional code) and share the same deploy pipeline.
+
+```
+No Code (UI)    ──→ generates agent.yaml      ──→ deploy pipeline
+Low Code (YAML) ──→ is agent.yaml             ──→ deploy pipeline
+Full Code (SDK) ──→ agent.yaml + custom code  ──→ deploy pipeline
+```
+
+**Rules:**
+- The deploy pipeline does NOT know which tier produced the config. Never add tier-specific logic to the engine.
+- No Code always generates valid, human-readable YAML. Never generate YAML that a human couldn't maintain.
+- The Full Code SDK generates `agent.yaml` + bundles code — it does NOT bypass the config parser.
+- Tier mobility is a first-class feature: No Code → Low Code (view YAML), Low Code → Full Code (`garden eject`).
+- Visual builder layout metadata (node positions, etc.) lives in `.garden/layout.json`, never in `agent.yaml`.
+- Orchestration follows the same pattern: visual canvas → `orchestration.yaml` → SDK orchestration code.
 
 ---
 

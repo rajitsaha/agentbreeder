@@ -9,6 +9,8 @@
 
 Every team picks a different AI agent framework. Nobody knows what's already deployed. Nobody tracks the cost. Agent Garden fixes that — one open-source platform to build, deploy, govern, and discover all your AI agents.
 
+**Build agents your way — drag-and-drop, YAML, or code. Deploy and govern them all the same.**
+
 ---
 
 ## The Problem
@@ -17,6 +19,25 @@ Every team picks a different AI agent framework. Nobody knows what's already dep
 - **No discoverability** — five teams build five Salesforce tools because nobody knows the others exist
 - **No cost visibility** — AI spend is a black box across teams, agents, and models
 - **Governance is bolted on** — RBAC, audit trails, and compliance are always an afterthought
+- **Skill gap** — PMs want to prototype agents, but only engineers can build them; engineers want full programmatic control, but are forced into limited UIs
+
+## Three Ways to Build
+
+Agent Garden supports three builder tiers — No Code, Low Code, and Full Code — for both **individual agents** and **multi-agent orchestration**. All three tiers compile down to the same internal representation and share the same deploy pipeline, governance, and observability.
+
+```
+No Code (UI)  ──→  agent.yaml  ──→  garden deploy  ──→  running agent
+Low Code (YAML) ──→  agent.yaml  ──→  garden deploy  ──→  running agent
+Full Code (SDK) ──→  agent.yaml + code  ──→  garden deploy  ──→  running agent
+```
+
+| Tier | Who it's for | Agent Development | Agent Orchestration |
+|------|-------------|-------------------|---------------------|
+| **No Code** | PMs, analysts, citizen builders | Visual drag-and-drop: pick model, tools, prompt from registry | Visual canvas: wire agents together, define routing rules |
+| **Low Code** | ML engineers, DevOps | YAML config (`agent.yaml`) in any IDE | YAML orchestration (`orchestration.yaml`) |
+| **Full Code** | Senior engineers, researchers | Python/TS SDK with full programmatic control | SDK for complex workflows, dynamic routing, state machines |
+
+**Tier mobility** is the key — start No Code, hit a wall, eject to YAML. Hit another wall, eject to Full Code. At every stage, the platform still manages deploy, governance, observability, and registry.
 
 ## How Agent Garden Works
 
@@ -56,16 +77,18 @@ Run `garden deploy` and your agent is live on AWS or GCP — with RBAC, cost tra
 
 ## Features
 
-| Feature | v0.1 | v0.2 | v0.3 (Current) |
-|---------|:-:|:-:|:-:|
-| Frameworks | LangGraph | +CrewAI, Claude SDK, ADK, Custom | +OpenAI Agents runtime |
-| Cloud targets | Local / Docker Compose | +Kubernetes | +GCP Cloud Run |
-| Registry | Agents, Tools, Models | +Prompts, KBs, Semantic search | +RAG indexes, Memory configs |
-| Dashboard | Read-only browser | +Low-code builders (Prompt, Tool, MCP) | +Visual Agent Builder, Deploy dialog, RAG/Memory builders, Approvals |
-| Providers | - | LiteLLM gateway | +Provider abstraction (OpenAI, Ollama, fallback chains) |
-| Governance | Auto-registration | +Basic RBAC | +Approval workflows, PR review, environment promotion |
-| Git workflow | - | - | Git backend, PR creation + review |
-| Cost tracking | - | Basic | Per-team/agent/model |
+| Feature | v0.1 | v0.2 | v0.3 (Current) | v0.4+ |
+|---------|:-:|:-:|:-:|:-:|
+| **Builder tiers** | CLI only | +Low Code (YAML editors) | +No Code (visual builder) | +Full Code (Python/TS SDK) |
+| **Orchestration** | - | - | - | YAML → Visual canvas → SDK |
+| Frameworks | LangGraph | +CrewAI, Claude SDK, ADK, Custom | +OpenAI Agents runtime | All frameworks via SDK |
+| Cloud targets | Local / Docker Compose | +Kubernetes | +GCP Cloud Run | +AWS ECS, Lambda |
+| Registry | Agents, Tools, Models | +Prompts, KBs, Semantic search | +RAG indexes, Memory configs | +Orchestrations |
+| Dashboard | Read-only browser | +Low-code builders (Prompt, Tool, MCP) | +Visual Agent Builder, Deploy dialog, RAG/Memory builders, Approvals | +Orchestration canvas |
+| Providers | - | LiteLLM gateway | +Provider abstraction (OpenAI, Ollama, fallback chains) | +Anthropic, Google |
+| Governance | Auto-registration | +Basic RBAC | +Approval workflows, PR review, environment promotion | +Teams, cost budgets |
+| Git workflow | - | - | Git backend, PR creation + review | Mature |
+| Cost tracking | - | Basic | Per-team/agent/model | +Budgets, alerts |
 
 ### What's New in v0.3
 

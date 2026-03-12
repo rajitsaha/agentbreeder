@@ -13,11 +13,216 @@
 | **v0.1** | Foundation | CLI + Registry + Basic Dashboard | M1–M5 | Done |
 | **v0.2** | Registry UI | Rich registry pages, YAML editor, prompt manager | M6–M7 | Done |
 | **v0.3** | Builders | All builders + Git workflow + approval + environments + playground + 2 SDKs (LangGraph, OpenAI Agents) + Cloud Run deploy | M8–M13, M23 | In Progress (~40%) |
-| **v0.4** | Observability | Tracing (Langfuse/MLflow), cost monitoring, RBAC, audit trail, lineage | M14–M17 | Planned |
-| **v1.0** | GA | Eval framework, golden datasets, regression detection, CI gates, feedback loop | M18 | Planned |
-| **v1.1** | Connectivity | A2A protocol, MCP server hub, multi-agent orchestration | M19–M20 | Planned |
+| **v0.4** | Observability | Tracing (Langfuse/MLflow), cost monitoring, RBAC, audit trail, lineage + Full Code SDK (Python) | M14–M17, M28 | Planned |
+| **v1.0** | GA | Eval framework, golden datasets, regression detection, CI gates, feedback loop + orchestration YAML | M18, M29 | Planned |
+| **v1.1** | Connectivity | A2A protocol, MCP server hub, multi-agent orchestration + visual orchestration canvas + TS SDK | M19–M20, M30 | Planned |
 | **v1.2** | Marketplace | Community templates, ratings, one-click deploy | M21–M22 | Planned |
-| **v1.3** | Enterprise | Additional SDKs (ADK, CrewAI, Claude), model catalog, SSO, AgentOps | M24–M27 | Planned |
+| **v1.3** | Enterprise | Additional SDKs (ADK, CrewAI, Claude), model catalog, SSO, AgentOps + Full Code orchestration SDK | M24–M27, M31 | Planned |
+
+---
+
+## Three-Tier Builder Model — No Code / Low Code / Full Code
+
+> **Core principle:** Agent Garden supports three ways to build agents and orchestrations. All three tiers compile to the same internal representation and share the same deploy pipeline, governance, and observability. Users can move between tiers without losing work.
+
+### Why Three Tiers?
+
+Real teams aren't homogeneous. Within the same org:
+
+| Person | What they need | Tier |
+|--------|---------------|------|
+| Product manager | "I want a support bot that uses our FAQ and routes to humans" | No Code |
+| ML engineer | "I need to tweak the prompt, add a custom tool, configure RAG" | Low Code |
+| Senior engineer | "I need a multi-agent pipeline with custom state management and dynamic routing" | Full Code |
+
+Without tier mobility, No Code tools become prisons. With it, they become on-ramps.
+
+### The Three Tiers
+
+#### No Code (Visual UI)
+- **Agent Development**: Drag-and-drop visual builder. Pick model, tools, prompt, guardrails from registry. ReactFlow canvas with node types for every component. Zero YAML knowledge required.
+- **Agent Orchestration**: Visual canvas where agents are nodes and edges are routing/handoff rules. Define "if customer asks about billing → route to billing-agent" visually.
+- **Output**: Generates valid, human-readable `agent.yaml` / `orchestration.yaml`.
+- **Who**: PMs, analysts, citizen builders, non-engineers prototyping.
+- **Analogy**: Retool for agent building.
+
+#### Low Code (YAML)
+- **Agent Development**: Write `agent.yaml` in any IDE (Cursor, Claude Code, VS Code, vim) or the dashboard YAML editor. Schema-aware autocomplete, live validation.
+- **Agent Orchestration**: Write `orchestration.yaml` defining agent graph, routing strategy, shared state.
+- **Output**: The YAML files themselves ARE the artifact. No compilation step.
+- **Who**: ML engineers, DevOps, developers comfortable with config files.
+- **Analogy**: Docker Compose for agents.
+
+#### Full Code (Python/TS SDK)
+- **Agent Development**: `from agent_garden import Agent, Tool, Memory` — define agents programmatically with full control over routing, tool selection, state management.
+- **Agent Orchestration**: SDK for complex workflows that YAML can't express — dynamic agent spawning, stateful workflows, human-in-the-loop breakpoints, conditional branching based on runtime data.
+- **Output**: SDK generates `agent.yaml` + bundles custom code. The deploy pipeline consumes both.
+- **Who**: Senior engineers, researchers, teams that have outgrown YAML.
+- **Analogy**: Pulumi (code) vs. Terraform (config) — same infra, different authoring experience.
+
+### Compilation Model — All Tiers Converge
+
+```
+┌────────────┐     ┌────────────┐     ┌────────────────┐
+│  No Code   │     │  Low Code  │     │   Full Code    │
+│  (UI)      │     │  (YAML)    │     │   (SDK)        │
+└─────┬──────┘     └─────┬──────┘     └───────┬────────┘
+      │                  │                     │
+      │  generates       │  is                 │  generates +
+      │  YAML            │  YAML               │  bundles code
+      │                  │                     │
+      └──────────────────┼─────────────────────┘
+                         │
+                         ▼
+              ┌──────────────────────┐
+              │  agent.yaml + code   │  ← Unified internal format
+              └──────────┬───────────┘
+                         │
+          ┌──────────────┼──────────────┐
+          │              │              │
+          ▼              ▼              ▼
+    Config Parser   Runtime Builder   Deployer
+    (same)          (same)            (same)
+          │              │              │
+          └──────────────┼──────────────┘
+                         │
+                         ▼
+              ┌──────────────────────┐
+              │  Running Agent       │
+              │  + Governance        │
+              │  + Observability     │
+              │  + Registry Entry    │
+              └──────────────────────┘
+```
+
+The deploy pipeline does NOT know which tier produced the config. This is intentional — it means governance, cost tracking, audit trail, and registry work identically regardless of how the agent was built.
+
+### Tier Mobility (Ejection)
+
+```
+No Code ──"View YAML"──→ Low Code ──"garden eject"──→ Full Code
+   ↑                                                      │
+   └──────── "Import YAML" ←───── (manual) ←─────────────┘
+```
+
+| Transition | How it works | Data preserved |
+|-----------|-------------|----------------|
+| **No Code → Low Code** | Visual builder shows "View YAML" tab. The generated YAML is valid, readable, and editable. | 100% — YAML is the source of truth |
+| **Low Code → Full Code** | CLI: `garden eject my-agent --sdk python`. Generates a Python project scaffold that recreates the YAML config as SDK code. | 100% — SDK generates equivalent agent.yaml |
+| **Full Code → Low Code** | Not automatic (code can express things YAML can't). But the SDK always generates a valid `agent.yaml` that can be imported. | Partial — custom code logic not representable in YAML |
+| **Low Code → No Code** | "Import YAML" in the visual builder opens the YAML and renders it as nodes on the canvas. | 100% if YAML uses standard patterns |
+
+### Orchestration Across Tiers
+
+Multi-agent orchestration follows the same three-tier model:
+
+**No Code Orchestration:**
+```
+┌─────────────────────────────────────────────────────────────┐
+│  Orchestration Canvas                                        │
+│                                                              │
+│  ┌──────────┐    billing?    ┌──────────────┐               │
+│  │  Triage  │───────────────→│ Billing Agent │               │
+│  │  Agent   │    technical?  ├──────────────┤               │
+│  │          │───────────────→│ Tech Support  │               │
+│  │          │    default     ├──────────────┤               │
+│  │          │───────────────→│ General Agent │               │
+│  └──────────┘                └──────────────┘               │
+│                                                              │
+│  Strategy: [Router ▼]   Shared state: [Session context ▼]   │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**Low Code Orchestration (`orchestration.yaml`):**
+```yaml
+name: support-pipeline
+version: "1.0.0"
+description: "Multi-agent support routing"
+
+strategy: router          # router | sequential | parallel | hierarchical
+
+agents:
+  triage:
+    ref: agents/triage-agent
+    routes:
+      billing: agents/billing-agent
+      technical: agents/tech-support-agent
+      default: agents/general-agent
+
+  billing:
+    ref: agents/billing-agent
+    fallback: agents/general-agent
+
+  technical:
+    ref: agents/tech-support-agent
+    fallback: agents/general-agent
+
+  general:
+    ref: agents/general-agent
+
+shared_state:
+  type: session_context
+  backend: redis
+
+deploy:
+  target: local
+```
+
+**Full Code Orchestration (Python SDK):**
+```python
+from agent_garden import Orchestration, Router, Agent
+from agent_garden.routing import ClassifierRouter
+
+# Custom routing logic that YAML can't express
+class SupportRouter(ClassifierRouter):
+    async def route(self, message, context):
+        # Dynamic routing based on classifier + business rules
+        intent = await self.classify(message)
+        if intent == "billing" and context.user.tier == "enterprise":
+            return "priority-billing"  # VIP gets different agent
+        if context.escalation_count > 2:
+            return "human-handoff"     # Auto-escalate after 2 failures
+        return intent
+
+pipeline = Orchestration(
+    name="support-pipeline",
+    router=SupportRouter(model="claude-haiku-4"),
+    agents={
+        "billing": Agent.from_registry("agents/billing-agent"),
+        "priority-billing": Agent.from_registry("agents/priority-billing-agent"),
+        "technical": Agent.from_registry("agents/tech-support-agent"),
+        "general": Agent.from_registry("agents/general-agent"),
+        "human-handoff": Agent.from_registry("agents/human-handoff-agent"),
+    },
+    shared_state={"type": "session_context", "backend": "redis"},
+)
+
+# Deploy with the same pipeline as YAML-defined agents
+pipeline.deploy(target="cloud-run")
+```
+
+### Competitive Positioning
+
+No other platform offers all three tiers + orchestration + deploy + governance in one product:
+
+| Platform | No Code | Low Code | Full Code | Orchestration | Deploy + Govern |
+|----------|:-------:|:--------:|:---------:|:-------------:|:---------------:|
+| LangGraph Studio | Partial | No | Yes | Yes | No |
+| CrewAI Studio | Yes | No | Yes | Yes | No |
+| Dify | Yes | Partial | No | Partial | Partial |
+| Flowise | Yes | No | Partial | Partial | No |
+| AWS Bedrock Agents | Partial | No | Yes | Partial | Yes (AWS only) |
+| **Agent Garden** | **Yes** | **Yes** | **Yes** | **Yes** | **Yes** |
+
+### Implementation Roadmap for Three Tiers
+
+| Phase | What ships | Tier coverage |
+|-------|-----------|---------------|
+| **v0.3** (current) | Low Code YAML builders, No Code visual agent builder (ReactFlow) | Low Code complete, No Code partial |
+| **v0.4** | Full Code Python SDK for agent development | Full Code (agents) |
+| **v1.0** | Orchestration YAML (`orchestration.yaml`), orchestration UI | Low Code + No Code (orchestration) |
+| **v1.1** | TypeScript SDK, visual orchestration canvas | Full Code (agents TS), No Code (orchestration) |
+| **v1.3** | Full Code orchestration SDK (Python + TS) | Full Code (orchestration) |
 
 ---
 
@@ -1763,6 +1968,32 @@ Integrate with Langfuse (primary) and support MLflow as an alternative backend. 
 - [ ] Impact analysis: "if I change this prompt, which agents are affected?"
 - [ ] Change notifications: subscribe to changes on resources you depend on
 
+### M28: Full Code Python SDK (Agent Development)
+
+> The Full Code tier for agent development. Users who outgrow YAML get a Python SDK with full programmatic control. The SDK generates valid `agent.yaml` + bundles custom code — it does NOT bypass the deploy pipeline.
+
+#### 28.1 — Core SDK
+- [ ] `agent_garden` Python package: `pip install agent-garden` includes the SDK
+- [ ] `Agent` class: define agents programmatically with model, tools, prompt, memory, guardrails
+- [ ] `Tool` class: define tools as Python functions with automatic schema generation (from type hints)
+- [ ] `Memory` class: configure memory backends programmatically
+- [ ] `AgentConfig.to_yaml()`: serialize any SDK-defined agent to valid `agent.yaml`
+- [ ] `AgentConfig.from_yaml()`: load an existing `agent.yaml` into SDK objects (round-trip fidelity)
+- [ ] `agent.deploy(target="local")`: deploy directly from Python (wraps `garden deploy`)
+
+#### 28.2 — Advanced Agent Features (Code-Only)
+- [ ] Dynamic tool selection: `agent.select_tools(message)` — choose tools at runtime based on input
+- [ ] Custom routing: `agent.route(message, context)` — user-defined Python function for routing logic
+- [ ] State management: `agent.state` — typed state object persisted across turns
+- [ ] Middleware: `agent.use(middleware_fn)` — inject pre/post processing on every turn (logging, validation, transforms)
+- [ ] Hooks: `agent.on("tool_call", handler)` — event-driven hooks for lifecycle events
+
+#### 28.3 — SDK Developer Experience
+- [ ] `garden eject my-agent --sdk python`: generate Python SDK scaffold from existing `agent.yaml`
+- [ ] Auto-complete: SDK objects export type stubs for IDE autocomplete
+- [ ] SDK documentation: hosted docs with examples, API reference, cookbook
+- [ ] SDK examples: `examples/sdk-basic/`, `examples/sdk-advanced/`, `examples/sdk-custom-routing/`
+
 ---
 
 ## v1.0 — "General Availability" (Planned)
@@ -1813,6 +2044,36 @@ Integrate with Langfuse (primary) and support MLflow as an alternative backend. 
 - [ ] Eval badge: embed score badge in README (like coverage badges)
 - [ ] Scheduled evals: cron-based regression runs (daily/weekly)
 - [ ] Promotion gate: require passing eval before registry promotion (ties into approval workflow)
+
+### M29: Orchestration — Low Code (YAML)
+
+> Multi-agent orchestration defined in YAML. The `orchestration.yaml` format defines agent graphs, routing strategies, shared state, and deployment targets. This is the Low Code tier for orchestration.
+
+#### 29.1 — Orchestration YAML Specification
+- [ ] `orchestration.yaml` schema: name, version, strategy, agents, shared_state, deploy
+- [ ] JSON Schema for `orchestration.yaml` with IDE autocomplete support
+- [ ] Orchestration strategies: `router` (intent-based routing), `sequential` (pipeline), `parallel` (fan-out/fan-in), `hierarchical` (supervisor/worker)
+- [ ] Agent references: local (`./agents/billing`), registry (`registry://agents/billing@v1`), URL (already deployed)
+- [ ] Routing rules: field-based routing (intent → agent), condition-based routing (if/else), fallback agents
+- [ ] Shared state: configurable state backend (in-memory, Redis, PostgreSQL) shared across agents in the orchestration
+- [ ] `garden validate orchestration.yaml` — validate orchestration config
+
+#### 29.2 — Orchestration Engine
+- [ ] `engine/orchestrator.py`: orchestration runtime that executes the agent graph
+- [ ] Router strategy: classify input → route to appropriate agent
+- [ ] Sequential strategy: pass output of agent N as input to agent N+1
+- [ ] Parallel strategy: fan-out to multiple agents, merge results
+- [ ] Hierarchical strategy: supervisor agent delegates to workers, aggregates results
+- [ ] Shared state propagation: pass context between agents in the graph
+- [ ] Error handling: per-agent fallback, circuit breaker, retry with backoff
+- [ ] Orchestration as a deployable unit: `garden deploy orchestration.yaml` deploys the entire graph
+
+#### 29.3 — Orchestration CLI
+- [ ] `garden init my-pipeline --orchestration` — scaffold orchestration project
+- [ ] `garden deploy orchestration.yaml` — deploy multi-agent pipeline
+- [ ] `garden chat orchestration.yaml` — test orchestration interactively
+- [ ] `garden status my-pipeline` — show status of all agents in the orchestration
+- [ ] `garden logs my-pipeline` — aggregate logs across all agents
 
 ---
 
@@ -1865,6 +2126,32 @@ Elevate MCP from "tool connector" to a managed server hub with lifecycle managem
 - [ ] MCP compose: `agent.yaml` `mcp_servers:` field auto-starts required MCP servers at deploy time
 - [ ] MCP server metrics: request count, latency, error rate per server per tool
 - [ ] MCP server UI enhancements: "Try Tool" panel (invoke a tool with sample input, see output)
+
+### M30: Visual Orchestration Canvas + TypeScript SDK
+
+> The No Code tier for orchestration (visual canvas) and the Full Code tier for agent development in TypeScript.
+
+#### 30.1 — Visual Orchestration Canvas (No Code)
+- [ ] Orchestration canvas page: ReactFlow-based editor for multi-agent workflows
+- [ ] Agent nodes: drag agents from registry onto canvas, configure per-agent settings
+- [ ] Edge types: routing edges (intent-based), sequential edges (pipeline), parallel edges (fan-out)
+- [ ] Routing rule editor: click an edge → define routing conditions (intent match, field match, custom expression)
+- [ ] Shared state configuration: click canvas background → configure shared state backend
+- [ ] Strategy selector: dropdown to set overall strategy (router, sequential, parallel, hierarchical)
+- [ ] Canvas → generates valid `orchestration.yaml` (No Code → Low Code ejection)
+- [ ] "View YAML" tab: always shows the generated YAML alongside the canvas
+- [ ] Live preview: test the orchestration from the canvas (sends a message, shows agent routing in real-time)
+- [ ] Visual debugging: highlight active agent during execution, show message flow on edges
+
+#### 30.2 — TypeScript SDK (Agent Development)
+- [ ] `@agent-garden/sdk` npm package: TypeScript SDK for agent development
+- [ ] `Agent` class: define agents with model, tools, prompt, memory, guardrails (TypeScript types)
+- [ ] `Tool` class: define tools as TypeScript functions with Zod schema generation
+- [ ] `agent.toYaml()`: serialize to valid `agent.yaml`
+- [ ] `Agent.fromYaml()`: load existing YAML into SDK objects
+- [ ] `agent.deploy()`: deploy from TypeScript (wraps `garden deploy`)
+- [ ] `garden eject my-agent --sdk typescript`: generate TS SDK scaffold from YAML
+- [ ] Deno + Node.js runtime support
 
 ---
 
@@ -2142,6 +2429,37 @@ The "single pane of glass" for running agents in production. Consolidates observ
 - [ ] Docs site (GitHub Pages or Mintlify)
 - [ ] API stability: versioned API with deprecation policy
 
+### M31: Full Code Orchestration SDK (Python + TypeScript)
+
+> The Full Code tier for orchestration. For complex multi-agent workflows that YAML and visual canvas can't express — dynamic agent spawning, stateful workflows, human-in-the-loop, conditional branching based on runtime data.
+
+#### 31.1 — Python Orchestration SDK
+- [ ] `Orchestration` class: define multi-agent workflows programmatically
+- [ ] `Router` base class: user-defined routing logic (classifier-based, rule-based, ML-based)
+- [ ] Built-in routers: `IntentRouter`, `ClassifierRouter`, `KeywordRouter`, `RoundRobinRouter`
+- [ ] `Pipeline` class: sequential agent chains with transform functions between steps
+- [ ] `FanOut` class: parallel execution with configurable merge strategies (first-wins, majority-vote, aggregate)
+- [ ] `Supervisor` class: hierarchical orchestration with a supervisor agent delegating to workers
+- [ ] Shared state API: typed state objects shared across agents (`orchestration.state.get/set`)
+- [ ] Human-in-the-loop: `await orchestration.pause(reason="needs approval")` — pause execution, resume on human input
+- [ ] Dynamic agent spawning: `orchestration.spawn(agent_config)` — create agents at runtime based on context
+- [ ] Conditional branching: Python if/else, match/case — full language power for routing decisions
+- [ ] Error handling: per-agent retry, circuit breaker, fallback chains, dead-letter queue
+- [ ] `orchestration.deploy()`: deploy the entire graph as a single unit
+
+#### 31.2 — TypeScript Orchestration SDK
+- [ ] Same API surface as Python SDK, TypeScript-native types
+- [ ] Zod schemas for orchestration config validation
+- [ ] `Orchestration`, `Router`, `Pipeline`, `FanOut`, `Supervisor` classes
+
+#### 31.3 — Advanced Orchestration Patterns
+- [ ] Conversation handoff: transfer conversation state + history from one agent to another
+- [ ] Agent marketplace integration: dynamically discover and wire in agents from the marketplace
+- [ ] Orchestration versioning: version the entire multi-agent graph as a unit
+- [ ] Orchestration replay: replay a past orchestration execution for debugging (from traces)
+- [ ] Orchestration templates: pre-built patterns (customer support routing, research pipeline, review chain)
+- [ ] Cost budgets: set per-orchestration cost limits, auto-terminate if exceeded
+
 ---
 
 ## Out of Scope
@@ -2171,6 +2489,8 @@ These are intentionally deferred indefinitely:
 | Distribution | `pip install agent-garden` (CLI+SDK), Docker image (platform), Helm chart (K8s) | pip for devs, Docker for teams, Helm for production |
 | Project structure | Single-agent (`agent.yaml` at root) or workspace (`garden.yaml` + `agents/`) | Scales from solo developer to multi-team |
 | Config format | YAML as source of truth (all resource types) | Human-readable; JSON Schema for validation; round-trip safe; IDE and UI interoperable |
+| Builder model | Three tiers: No Code (UI) → Low Code (YAML) → Full Code (SDK) | Matches how real teams work — PMs prototype in UI, engineers refine in YAML/code. Tier mobility prevents lock-in. All tiers compile to same internal format. |
+| Orchestration model | Same three tiers for multi-agent orchestration | Visual canvas, `orchestration.yaml`, and Python/TS SDK. Same compilation model — orchestration config + optional code → deploy pipeline. |
 | YAML parser | ruamel.yaml (round-trip mode) | Preserves comments and key order — critical for CLI/UI interop |
 | Version control | Git (local repo, bridgeable to GitHub/GitLab) | Branch-per-draft, PR-based review, semver tagging on merge |
 | Git library | gitpython (Python) | Programmatic Git ops without shelling out; supports bare repos |
