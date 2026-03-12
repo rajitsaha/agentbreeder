@@ -21,6 +21,11 @@ import {
   FileCode2,
   GitFork,
   Clipboard,
+  Eye,
+  EyeOff,
+  Lock,
+  Variable,
+  Shield,
 } from "lucide-react";
 import { api, type Agent, type AgentStatus, type DeployJob } from "@/lib/api";
 import { Badge } from "@/components/ui/badge";
@@ -614,6 +619,24 @@ function extractDependencies(agent: Agent): DependencyGroup[] {
   return groups;
 }
 
+function getDependencyPath(item: DependencyNode): string | null {
+  if (!item.isRef) return null;
+  // Registry refs like "tools/zendesk-mcp" → /tools/zendesk-mcp
+  // or "prompts/support-system-v3" → /prompts/support-system-v3
+  // or "kb/product-docs" → /knowledge-bases/product-docs
+  const name = item.name;
+  if (item.type === "tool" && name.startsWith("tools/")) {
+    return `/${name}`;
+  }
+  if (item.type === "prompt" && name.startsWith("prompts/")) {
+    return `/${name}`;
+  }
+  if (item.type === "knowledge_base" && name.startsWith("kb/")) {
+    return `/knowledge-bases/${name.slice(3)}`;
+  }
+  return null;
+}
+
 function DependencyTree({ agent }: { agent: Agent }) {
   const groups = useMemo(() => extractDependencies(agent), [agent]);
   const [expanded, setExpanded] = useState<Record<string, boolean>>(() => {
@@ -679,11 +702,9 @@ function DependencyTree({ agent }: { agent: Agent }) {
                   <div className={cn("ml-5", !last && "border-l border-border/40")}>
                     {group.items.map((item, iIdx) => {
                       const itemLast = iIdx === group.items.length - 1;
-                      return (
-                        <div
-                          key={`${item.name}-${iIdx}`}
-                          className="flex items-center gap-1.5 py-1 font-mono text-sm"
-                        >
+                      const detailPath = getDependencyPath(item);
+                      const content = (
+                        <>
                           <span className="w-5 text-border/40">
                             {itemLast ? "\u2514\u2500" : "\u251c\u2500"}
                           </span>
@@ -693,7 +714,9 @@ function DependencyTree({ agent }: { agent: Agent }) {
                             "bg-purple-500": group.type === "prompt",
                             "bg-amber-500": group.type === "knowledge_base",
                           })} />
-                          <span className="text-foreground">{item.name}</span>
+                          <span className={detailPath ? "text-foreground hover:underline" : "text-foreground"}>
+                            {item.name}
+                          </span>
                           {item.detail && (
                             <span className="text-[10px] text-muted-foreground">
                               ({item.detail})
@@ -707,6 +730,26 @@ function DependencyTree({ agent }: { agent: Agent }) {
                               ref
                             </Badge>
                           )}
+                          {detailPath && (
+                            <ExternalLink className="size-2.5 text-muted-foreground opacity-0 transition-opacity group-hover/item:opacity-100" />
+                          )}
+                        </>
+                      );
+
+                      return detailPath ? (
+                        <Link
+                          key={`${item.name}-${iIdx}`}
+                          to={detailPath}
+                          className="group/item flex items-center gap-1.5 py-1 font-mono text-sm transition-colors hover:bg-muted/30 rounded-sm px-1 -mx-1"
+                        >
+                          {content}
+                        </Link>
+                      ) : (
+                        <div
+                          key={`${item.name}-${iIdx}`}
+                          className="group/item flex items-center gap-1.5 py-1 font-mono text-sm"
+                        >
+                          {content}
                         </div>
                       );
                     })}
@@ -717,6 +760,144 @@ function DependencyTree({ agent }: { agent: Agent }) {
           })}
         </div>
       </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Environment Tab
+// ---------------------------------------------------------------------------
+
+interface EnvEntry {
+  key: string;
+  value: string;
+  isSecret: boolean;
+}
+
+function extractEnvEntries(agent: Agent): EnvEntry[] {
+  const snapshot = agent.config_snapshot ?? {};
+  const deploy = (snapshot.deploy as Record<string, unknown>) ?? {};
+  const entries: EnvEntry[] = [];
+
+  // env_vars section (non-secret)
+  const envVars = (deploy.env_vars as Record<string, unknown>) ?? {};
+  for (const [key, val] of Object.entries(envVars)) {
+    entries.push({ key, value: String(val), isSecret: false });
+  }
+
+  // secrets section
+  const secrets = (deploy.secrets as unknown[]) ?? [];
+  for (const s of secrets) {
+    const name = typeof s === "string" ? s : String((s as Record<string, unknown>).name ?? s);
+    entries.push({ key: name, value: "", isSecret: true });
+  }
+
+  return entries;
+}
+
+function EnvironmentTab({ agent }: { agent: Agent }) {
+  const entries = useMemo(() => extractEnvEntries(agent), [agent]);
+  const [revealed, setRevealed] = useState<Record<string, boolean>>({});
+
+  const toggleReveal = (key: string) =>
+    setRevealed((prev) => ({ ...prev, [key]: !prev[key] }));
+
+  if (entries.length === 0) {
+    return (
+      <div className="flex flex-col items-center py-16 text-center">
+        <div className="mb-4 flex size-12 items-center justify-center rounded-xl border border-dashed border-border">
+          <Variable className="size-5 text-muted-foreground" />
+        </div>
+        <h3 className="text-sm font-medium">No environment variables</h3>
+        <p className="mt-1 max-w-xs text-xs text-muted-foreground">
+          This agent does not have any configured environment variables or secrets.
+        </p>
+      </div>
+    );
+  }
+
+  const envVars = entries.filter((e) => !e.isSecret);
+  const secrets = entries.filter((e) => e.isSecret);
+
+  return (
+    <div className="space-y-6 pt-6">
+      {/* Environment Variables */}
+      {envVars.length > 0 && (
+        <div className="rounded-lg border border-border">
+          <div className="flex items-center gap-2 border-b border-border bg-muted/30 px-4 py-2.5">
+            <Variable className="size-3.5 text-muted-foreground" />
+            <span className="text-xs font-medium text-muted-foreground">
+              Environment Variables
+            </span>
+            <span className="text-[10px] text-muted-foreground">({envVars.length})</span>
+          </div>
+          <div className="divide-y divide-border">
+            {envVars.map((entry) => (
+              <div
+                key={entry.key}
+                className="flex items-center gap-3 px-4 py-2.5 hover:bg-muted/10"
+              >
+                <code className="min-w-[180px] shrink-0 font-mono text-xs font-medium text-foreground">
+                  {entry.key}
+                </code>
+                <span className="text-muted-foreground">=</span>
+                <code className="flex-1 truncate font-mono text-xs text-green-600 dark:text-green-400">
+                  {entry.value}
+                </code>
+                <CopyButton text={`${entry.key}=${entry.value}`} />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Secrets */}
+      {secrets.length > 0 && (
+        <div className="rounded-lg border border-border">
+          <div className="flex items-center gap-2 border-b border-border bg-muted/30 px-4 py-2.5">
+            <Shield className="size-3.5 text-muted-foreground" />
+            <span className="text-xs font-medium text-muted-foreground">
+              Secrets
+            </span>
+            <span className="text-[10px] text-muted-foreground">({secrets.length})</span>
+          </div>
+          <div className="divide-y divide-border">
+            {secrets.map((entry) => (
+              <div
+                key={entry.key}
+                className="flex items-center gap-3 px-4 py-2.5 hover:bg-muted/10"
+              >
+                <div className="flex min-w-[180px] shrink-0 items-center gap-1.5">
+                  <Lock className="size-3 text-amber-500" />
+                  <code className="font-mono text-xs font-medium text-foreground">
+                    {entry.key}
+                  </code>
+                </div>
+                <span className="text-muted-foreground">=</span>
+                <code className="flex-1 truncate font-mono text-xs text-muted-foreground">
+                  {revealed[entry.key] ? entry.key : "\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022"}
+                </code>
+                <button
+                  onClick={() => toggleReveal(entry.key)}
+                  className="rounded p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                  title={revealed[entry.key] ? "Hide value" : "Reveal name"}
+                >
+                  {revealed[entry.key] ? (
+                    <EyeOff className="size-3" />
+                  ) : (
+                    <Eye className="size-3" />
+                  )}
+                </button>
+              </div>
+            ))}
+          </div>
+          <div className="border-t border-border bg-muted/20 px-4 py-2">
+            <p className="text-[10px] text-muted-foreground">
+              Secret values are stored in your cloud provider's Secrets Manager and are not available in the dashboard.
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -929,6 +1110,9 @@ export default function AgentDetailPage() {
           <TabsTrigger value="dependencies" className={TAB_TRIGGER_CLASS}>
             Dependencies
           </TabsTrigger>
+          <TabsTrigger value="environment" className={TAB_TRIGGER_CLASS}>
+            Environment
+          </TabsTrigger>
           <TabsTrigger value="deploys" className={TAB_TRIGGER_CLASS}>
             Deploy History
           </TabsTrigger>
@@ -944,6 +1128,9 @@ export default function AgentDetailPage() {
         </TabsContent>
         <TabsContent value="dependencies">
           <DependencyTree agent={agent} />
+        </TabsContent>
+        <TabsContent value="environment">
+          <EnvironmentTab agent={agent} />
         </TabsContent>
         <TabsContent value="deploys">
           <DeployHistoryTab agentId={id!} />
