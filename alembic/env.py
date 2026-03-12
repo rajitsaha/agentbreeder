@@ -1,6 +1,7 @@
 """Alembic migration environment."""
 
 import asyncio
+import os
 from logging.config import fileConfig
 
 from sqlalchemy import pool
@@ -12,6 +13,11 @@ from api.models.database import Base
 config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
+
+# Allow DATABASE_URL env var to override alembic.ini (for Docker)
+database_url = os.environ.get("DATABASE_URL")
+if database_url:
+    config.set_main_option("sqlalchemy.url", database_url)
 
 target_metadata = Base.metadata
 

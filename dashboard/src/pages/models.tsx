@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import {
   Cpu,
@@ -154,8 +154,6 @@ function CreateModelDialog() {
   const [contextWindow, setContextWindow] = useState("");
   const [inputPrice, setInputPrice] = useState("");
   const [outputPrice, setOutputPrice] = useState("");
-
-  const queryClient = useQueryClient();
 
   const resetForm = () => {
     setName("");

@@ -110,7 +110,7 @@ export default function AgentsPage() {
   const [status, setStatus] = useState(searchParams.get("status") ?? "");
   const [activeTags, setActiveTags] = useState<string[]>([]);
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
-  const { showOnlyFavorites, favorites } = useFavorites();
+  const { showOnlyFavorites } = useFavorites();
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["agents", { search, framework, status }],

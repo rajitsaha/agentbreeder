@@ -93,7 +93,7 @@ export default function ToolsPage() {
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState("");
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
-  const { showOnlyFavorites, favorites } = useFavorites();
+  const { showOnlyFavorites } = useFavorites();
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["tools", { typeFilter }],

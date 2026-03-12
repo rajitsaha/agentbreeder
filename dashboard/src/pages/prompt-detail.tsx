@@ -20,7 +20,6 @@ import {
   History,
   GitCompare,
   RotateCcw,
-  Tag,
   Layers,
 } from "lucide-react";
 import { api, type Prompt } from "@/lib/api";
@@ -93,7 +92,6 @@ function computeDiff(
   const right: DiffLine[] = [];
 
   // Simple LCS-based diff
-  const maxLen = Math.max(oldLines.length, newLines.length);
   const lcs = buildLCS(oldLines, newLines);
 
   let oi = 0;
