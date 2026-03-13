@@ -47,6 +47,7 @@ dev = [
     "mypy>=1.8.0",
     "types-redis>=4.6.0",
     "types-PyYAML>=6.0.0",
+    "aiosqlite>=0.20.0",
 ]
 
 [project.scripts]

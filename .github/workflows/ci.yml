@@ -92,7 +92,7 @@ jobs:
 
       - name: Run unit tests with coverage
         env:
-          DATABASE_URL: postgresql://agent_garden:agent_garden@localhost:5432/agent_garden_test
+          DATABASE_URL: postgresql+asyncpg://agent_garden:agent_garden@localhost:5432/agent_garden_test
           REDIS_URL: redis://localhost:6379
           SECRET_KEY: test-secret-key-for-ci
           GARDEN_ENV: test
