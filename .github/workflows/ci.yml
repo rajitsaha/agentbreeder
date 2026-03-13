@@ -90,6 +90,11 @@ jobs:
       - name: Install dependencies
         run: pip install -e ".[dev]"
 
+      - name: Configure git identity for tests
+        run: |
+          git config --global user.email "ci@agent-garden.dev"
+          git config --global user.name "Agent Garden CI"
+
       - name: Run unit tests with coverage
         env:
           DATABASE_URL: postgresql+asyncpg://agent_garden:agent_garden@localhost:5432/agent_garden_test
