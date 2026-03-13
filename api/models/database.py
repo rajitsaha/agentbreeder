@@ -32,7 +32,7 @@ from api.models.enums import (
 )
 
 
-class Base(DeclarativeBase):
+class Base(DeclarativeBase):  # type: ignore[misc]
     pass
 
 
