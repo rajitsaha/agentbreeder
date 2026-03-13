@@ -47,6 +47,10 @@ import EvalDatasetDetailPage from "@/pages/eval-dataset-detail";
 import EvalRunsPage from "@/pages/eval-runs";
 import EvalRunDetailPage from "@/pages/eval-run-detail";
 import EvalComparisonPage from "@/pages/eval-comparison";
+import GatewayPage from "@/pages/gateway";
+import AgentOpsPage from "@/pages/agentops";
+import IncidentsPage from "@/pages/incidents";
+import CompliancePage from "@/pages/compliance";
 import { Loader2 } from "lucide-react";
 
 const queryClient = new QueryClient({
@@ -135,6 +139,10 @@ export default function App() {
               <Route path="evals/runs" element={<EvalRunsPage />} />
               <Route path="evals/runs/:id" element={<EvalRunDetailPage />} />
               <Route path="evals/compare" element={<EvalComparisonPage />} />
+              <Route path="gateway" element={<GatewayPage />} />
+              <Route path="agentops" element={<AgentOpsPage />} />
+              <Route path="incidents" element={<IncidentsPage />} />
+              <Route path="compliance" element={<CompliancePage />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Route>
           </Routes>

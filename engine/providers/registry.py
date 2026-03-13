@@ -9,7 +9,9 @@ from __future__ import annotations
 import logging
 import os
 
+from engine.providers.anthropic_provider import AnthropicProvider
 from engine.providers.base import ProviderBase, ProviderError
+from engine.providers.google_provider import GoogleProvider
 from engine.providers.models import (
     FallbackConfig,
     GenerateResult,
@@ -27,6 +29,10 @@ logger = logging.getLogger(__name__)
 _PROVIDER_CLASSES: dict[ProviderType, type[ProviderBase]] = {
     ProviderType.openai: OpenAIProvider,
     ProviderType.ollama: OllamaProvider,
+    ProviderType.anthropic: AnthropicProvider,
+    ProviderType.google: GoogleProvider,
+    # OpenRouter is OpenAI-compatible, use OpenAIProvider with a custom base_url
+    ProviderType.openrouter: OpenAIProvider,
 }
 
 
@@ -67,6 +73,13 @@ def create_provider_from_env(
         config.api_key = os.environ.get("OPENAI_API_KEY")
     elif provider_type == ProviderType.ollama:
         config.base_url = os.environ.get("OLLAMA_BASE_URL")
+    elif provider_type == ProviderType.anthropic:
+        config.api_key = os.environ.get("ANTHROPIC_API_KEY")
+    elif provider_type == ProviderType.google:
+        config.api_key = os.environ.get("GOOGLE_AI_API_KEY")
+    elif provider_type == ProviderType.openrouter:
+        config.api_key = os.environ.get("OPENROUTER_API_KEY")
+        config.base_url = os.environ.get("OPENROUTER_BASE_URL")
 
     return create_provider(config)
 

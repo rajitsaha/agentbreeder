@@ -17,7 +17,7 @@
 | **v1.0** | GA | Eval framework, golden datasets, regression detection, CI gates, feedback loop + orchestration YAML | M18, M29 | Done |
 | **v1.1** | Connectivity | A2A protocol, MCP server hub, multi-agent orchestration + visual orchestration canvas + TS SDK | M19–M20, M30 | Done |
 | **v1.2** | Marketplace | Community templates, ratings, one-click deploy | M21–M22 | Done |
-| **v1.3** | Enterprise | Additional SDKs (ADK, CrewAI, Claude), model catalog, SSO, AgentOps + Full Code orchestration SDK | M24–M27, M31 | Planned |
+| **v1.3** | Enterprise | Additional SDKs (ADK, CrewAI, Claude), model catalog, SSO, AgentOps + Full Code orchestration SDK | M24–M27, M31 | In Progress (M24, M26 Done) |
 
 ---
 
@@ -218,7 +218,7 @@ No other platform offers all three tiers + orchestration + deploy + governance i
 
 | Phase | What ships | Tier coverage |
 |-------|-----------|---------------|
-| **v0.3** (current) | Low Code YAML builders, No Code visual agent builder (ReactFlow) | Low Code complete, No Code partial |
+| **v0.3** | Low Code YAML builders, No Code visual agent builder (ReactFlow) | Low Code complete, No Code partial |
 | **v0.4** | Full Code Python SDK for agent development | Full Code (agents) |
 | **v1.0** | Orchestration YAML (`orchestration.yaml`), orchestration UI | Low Code + No Code (orchestration) |
 | **v1.1** | TypeScript SDK, visual orchestration canvas | Full Code (agents TS), No Code (orchestration) |
@@ -884,7 +884,7 @@ $ garden init my-workspace --workspace
 
 ---
 
-## v0.2 — "Registry UI" (In Progress)
+## v0.2 — "Registry UI" (Done)
 
 > **Goal:** The dashboard becomes the primary way to explore, edit, and manage everything in the registry. Not just read-only browse — full CRUD with a polished UI.
 
@@ -1199,7 +1199,7 @@ garden provider remove openai                     # remove key from .env
 
 ---
 
-## v0.3 — "Builders" (Planned)
+## v0.3 — "Builders" (Done)
 
 > **Goal:** Every building block — agents, prompts, tools, RAG indexes, memory — has a dedicated builder UI with Git integration, an approval workflow, and registry promotion with versioning. The agent builder composes from all other registries. This is the core product.
 

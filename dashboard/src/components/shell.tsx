@@ -28,6 +28,10 @@ import {
   Network,
   Package,
   Store,
+  Layers,
+  BarChart3,
+  ShieldCheck,
+  Siren,
 } from "lucide-react";
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -74,6 +78,12 @@ const EVALUATION_NAV = [
   { to: "/evals/runs", icon: PlayCircle, label: "Eval Runs" },
 ] as const;
 
+const AGENTOPS_NAV = [
+  { to: "/agentops", icon: BarChart3, label: "Fleet" },
+  { to: "/incidents", icon: Siren, label: "Incidents" },
+  { to: "/compliance", icon: ShieldCheck, label: "Compliance" },
+] as const;
+
 const GOVERNANCE_NAV = [
   { to: "/teams", icon: Shield, label: "Teams" },
   { to: "/approvals", icon: GitPullRequest, label: "Approvals" },
@@ -81,6 +91,11 @@ const GOVERNANCE_NAV = [
   { to: "/lineage", icon: GitBranch, label: "Lineage" },
   { to: "/deploys", icon: Monitor, label: "Deploys" },
   { to: "/activity", icon: Clock, label: "Activity" },
+] as const;
+
+const SETTINGS_NAV = [
+  { to: "/gateway", icon: Layers, label: "Gateway" },
+  { to: "/settings", icon: Settings, label: "Settings" },
 ] as const;
 
 const SIDEBAR_MIN = 48;
@@ -268,6 +283,10 @@ const BREADCRUMB_ICONS: Record<string, React.ComponentType<{ className?: string 
   evals: FlaskConical,
   templates: Package,
   marketplace: Store,
+  gateway: Layers,
+  agentops: BarChart3,
+  incidents: Siren,
+  compliance: ShieldCheck,
 };
 
 function Breadcrumbs() {
@@ -634,6 +653,12 @@ function ShellInner() {
             ))}
 
             <div className="!my-2 h-px bg-border" />
+            {!collapsed && <div className="px-2 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60">AgentOps</div>}
+            {AGENTOPS_NAV.map(({ to, icon, label }) => (
+              <SidebarNavItem key={to} to={to} icon={icon} label={label} collapsed={collapsed} />
+            ))}
+
+            <div className="!my-2 h-px bg-border" />
             {!collapsed && <div className="px-2 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60">Governance</div>}
             {GOVERNANCE_NAV.map(({ to, icon, label }) => (
               <SidebarNavItem
@@ -647,7 +672,10 @@ function ShellInner() {
             ))}
 
             <div className="!my-2 h-px bg-border" />
-            <SidebarNavItem to="/settings" icon={Settings} label="Settings" collapsed={collapsed} />
+            {!collapsed && <div className="px-2 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60">Settings</div>}
+            {SETTINGS_NAV.map(({ to, icon, label }) => (
+              <SidebarNavItem key={to} to={to} icon={icon} label={label} collapsed={collapsed} />
+            ))}
           </nav>
 
           {/* Footer */}

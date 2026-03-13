@@ -17,6 +17,9 @@ class ProviderType(enum.StrEnum):
 
     openai = "openai"
     ollama = "ollama"
+    anthropic = "anthropic"
+    google = "google"
+    openrouter = "openrouter"
 
 
 class ToolFunction(BaseModel):

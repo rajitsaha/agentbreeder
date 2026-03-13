@@ -10,6 +10,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from api.routes import (
     a2a,
+    agentops,
     agents,
     audit,
     auth,
@@ -17,6 +18,7 @@ from api.routes import (
     costs,
     deploys,
     evals,
+    gateway,
     git,
     marketplace,
     mcp_servers,
@@ -110,6 +112,8 @@ app.include_router(orchestrations.router)
 app.include_router(a2a.router)
 app.include_router(templates.router)
 app.include_router(marketplace.router)
+app.include_router(agentops.router)
+app.include_router(gateway.router)
 
 
 @app.get("/health")

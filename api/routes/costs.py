@@ -179,3 +179,40 @@ async def update_budget(team: str, body: dict[str, Any]) -> ApiResponse[dict]:
     if not budget:
         raise HTTPException(status_code=404, detail=f"No budget found for team '{team}'")
     return ApiResponse(data=budget.to_dict())
+
+
+# ---------------------------------------------------------------------------
+# AgentOps Cost Intelligence (delegated to AgentOps service)
+# ---------------------------------------------------------------------------
+
+
+@router.get("/costs/forecast")
+async def get_cost_forecast(days: int = Query(30, ge=1, le=90)) -> ApiResponse[dict]:
+    """30-day spend projection."""
+    from api.services.agentops_service import get_agentops_store
+
+    return ApiResponse(data=get_agentops_store().get_cost_forecast(days=days))
+
+
+@router.get("/costs/anomalies")
+async def get_cost_anomalies() -> ApiResponse[list]:
+    """Cost spike alerts."""
+    from api.services.agentops_service import get_agentops_store
+
+    return ApiResponse(data=get_agentops_store().get_cost_anomalies())
+
+
+@router.get("/costs/suggestions")
+async def get_cost_suggestions() -> ApiResponse[list]:
+    """Model swap recommendations."""
+    from api.services.agentops_service import get_agentops_store
+
+    return ApiResponse(data=get_agentops_store().get_cost_suggestions())
+
+
+@router.get("/costs/chargeback")
+async def get_cost_chargeback(days: int = Query(30, ge=1, le=90)) -> ApiResponse[list]:
+    """Team-level cost chargeback report."""
+    from api.services.agentops_service import get_agentops_store
+
+    return ApiResponse(data=get_agentops_store().get_team_comparison())

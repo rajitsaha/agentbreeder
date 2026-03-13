@@ -71,6 +71,23 @@ services:
       api:
         condition: service_healthy
 
+  litellm:
+    image: ghcr.io/berriai/litellm:main-latest
+    ports:
+      - "4000:4000"
+    environment:
+      DATABASE_URL: postgresql://garden:garden@postgres:5432/agentgarden
+      STORE_MODEL_IN_DB: "True"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: ["--config", "/app/config.yaml", "--port", "4000"]
+    volumes:
+      - ./litellm_config.yaml:/app/config.yaml
+    restart: unless-stopped
+
   mcp-example:
     build:
       context: ../examples/mcp-server
