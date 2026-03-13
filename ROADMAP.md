@@ -15,7 +15,7 @@
 | **v0.3** | Builders | All builders + Git workflow + approval + environments + playground + 2 SDKs (LangGraph, OpenAI Agents) + Cloud Run deploy | M8–M13, M23 | Done |
 | **v0.4** | Observability | Tracing, cost monitoring, RBAC & teams, audit trail, lineage + Full Code SDK (Python) + `garden eject` | M14–M17, M28 | Done |
 | **v1.0** | GA | Eval framework, golden datasets, regression detection, CI gates, feedback loop + orchestration YAML | M18, M29 | Done |
-| **v1.1** | Connectivity | A2A protocol, MCP server hub, multi-agent orchestration + visual orchestration canvas + TS SDK | M19–M20, M30 | Planned |
+| **v1.1** | Connectivity | A2A protocol, MCP server hub, multi-agent orchestration + visual orchestration canvas + TS SDK | M19–M20, M30 | Done |
 | **v1.2** | Marketplace | Community templates, ratings, one-click deploy | M21–M22 | Planned |
 | **v1.3** | Enterprise | Additional SDKs (ADK, CrewAI, Claude), model catalog, SSO, AgentOps + Full Code orchestration SDK | M24–M27, M31 | Planned |
 
@@ -2089,7 +2089,7 @@ Integrate with Langfuse (primary) and support MLflow as an alternative backend. 
 
 ---
 
-## v1.1 — "Connectivity" (Planned)
+## v1.1 — "Connectivity" (Done)
 
 > **Goal:** Agents can discover and call each other via A2A protocol. MCP servers become a managed hub. The platform enables multi-agent workflows.
 
@@ -2098,72 +2098,72 @@ Integrate with Langfuse (primary) and support MLflow as an alternative backend. 
 Implement the Google A2A specification for agent interoperability. Any deployed agent can advertise its capabilities and be invoked by other agents.
 
 #### 19.1 — A2A Server
-- [ ] A2A JSON-RPC 2.0 server endpoint on every deployed agent (`/.well-known/agent.json`)
-- [ ] Agent Card generation: auto-generate capability advertisement from `agent.yaml` (name, description, skills, input/output schemas)
-- [ ] A2A discovery endpoint: `GET /api/v1/a2a/agents` — list all A2A-capable agents
-- [ ] A2A invoke: `POST /api/v1/a2a/invoke` — call an agent by name, get structured response
-- [ ] A2A streaming: SSE support for long-running agent responses
-- [ ] A2A authentication: JWT-based inter-agent auth (agents get service tokens)
-- [ ] Backend: `a2a_agents` table (agent_id, agent_card_json, endpoint, status)
+- [x] A2A JSON-RPC 2.0 server endpoint on every deployed agent (`/.well-known/agent.json`)
+- [x] Agent Card generation: auto-generate capability advertisement from `agent.yaml` (name, description, skills, input/output schemas)
+- [x] A2A discovery endpoint: `GET /api/v1/a2a/agents` — list all A2A-capable agents
+- [x] A2A invoke: `POST /api/v1/a2a/invoke` — call an agent by name, get structured response
+- [x] A2A streaming: SSE support for long-running agent responses
+- [x] A2A authentication: JWT-based inter-agent auth (agents get service tokens)
+- [x] Backend: `a2a_agents` table (agent_id, agent_card_json, endpoint, status)
 
 #### 19.2 — A2A in Agent Config
-- [ ] `agent.yaml` `subagents:` field — declare agents this agent can call
-- [ ] Auto-generated `call_{agent_name}` tools from subagent declarations
-- [ ] Subagent resolution: validate that referenced agents exist in registry and are deployed
-- [ ] Subagent call tracing: A2A calls appear as spans in the trace waterfall
-- [ ] Example: `examples/a2a-orchestrator/` — supervisor agent that delegates to two sub-agents
+- [x] `agent.yaml` `subagents:` field — declare agents this agent can call
+- [x] Auto-generated `call_{agent_name}` tools from subagent declarations
+- [x] Subagent resolution: validate that referenced agents exist in registry and are deployed
+- [x] Subagent call tracing: A2A calls appear as spans in the trace waterfall
+- [x] Example: `examples/a2a-orchestrator/` — supervisor agent that delegates to two sub-agents
 
 #### 19.3 — A2A Dashboard
-- [ ] A2A Agents page: list all agents with A2A enabled, show Agent Cards
-- [ ] A2A topology graph: ReactFlow visualization of which agents call which
-- [ ] A2A call log: recent inter-agent calls with latency, status, input/output preview
-- [ ] Agent Card editor: customize the auto-generated Agent Card from dashboard
-- [ ] A2A test panel: invoke any A2A agent from the dashboard, see response inline
+- [x] A2A Agents page: list all agents with A2A enabled, show Agent Cards
+- [x] A2A topology graph: ReactFlow visualization of which agents call which
+- [x] A2A call log: recent inter-agent calls with latency, status, input/output preview
+- [x] Agent Card editor: customize the auto-generated Agent Card from dashboard
+- [x] A2A test panel: invoke any A2A agent from the dashboard, see response inline
 
 #### 19.4 — Multi-Agent Orchestration Patterns
-- [ ] Supervisor pattern: one agent routes requests to specialized sub-agents
-- [ ] Fan-out/fan-in: send request to N agents in parallel, aggregate responses
-- [ ] Chain pattern: sequential pipeline of agents (output of one → input of next)
-- [ ] Orchestration YAML schema: define multi-agent workflows in `agent.yaml`
-- [ ] Example: `examples/a2a-supervisor/` — supervisor + 2 workers (research + summarize)
+- [x] Supervisor pattern: one agent routes requests to specialized sub-agents
+- [x] Fan-out/fan-in: send request to N agents in parallel, aggregate responses
+- [x] Chain pattern: sequential pipeline of agents (output of one → input of next)
+- [x] Orchestration YAML schema: define multi-agent workflows in `agent.yaml`
+- [x] Example: `examples/a2a-supervisor/` — supervisor + 2 workers (research + summarize)
 
 ### M20: MCP Server Hub
 
 Elevate MCP from "tool connector" to a managed server hub with lifecycle management.
 
-- [ ] MCP server packaging: define MCP servers as registry resources (name, version, transport, tools)
-- [ ] MCP server deploy: deploy MCP servers alongside agents (Docker sidecar or standalone)
-- [ ] MCP server versioning: track versions, support rollback
-- [ ] MCP server sharing: teams can publish MCP servers for other teams to use
-- [ ] MCP compose: `agent.yaml` `mcp_servers:` field auto-starts required MCP servers at deploy time
-- [ ] MCP server metrics: request count, latency, error rate per server per tool
-- [ ] MCP server UI enhancements: "Try Tool" panel (invoke a tool with sample input, see output)
+- [x] MCP server packaging: define MCP servers as registry resources (name, version, transport, tools)
+- [x] MCP server deploy: deploy MCP servers alongside agents (Docker sidecar or standalone)
+- [x] MCP server versioning: track versions, support rollback
+- [x] MCP server sharing: teams can publish MCP servers for other teams to use
+- [x] MCP compose: `agent.yaml` `mcp_servers:` field auto-starts required MCP servers at deploy time
+- [x] MCP server metrics: request count, latency, error rate per server per tool
+- [x] MCP server UI enhancements: "Try Tool" panel (invoke a tool with sample input, see output)
 
 ### M30: Visual Orchestration Canvas + TypeScript SDK
 
 > The No Code tier for orchestration (visual canvas) and the Full Code tier for agent development in TypeScript.
 
 #### 30.1 — Visual Orchestration Canvas (No Code)
-- [ ] Orchestration canvas page: ReactFlow-based editor for multi-agent workflows
-- [ ] Agent nodes: drag agents from registry onto canvas, configure per-agent settings
-- [ ] Edge types: routing edges (intent-based), sequential edges (pipeline), parallel edges (fan-out)
-- [ ] Routing rule editor: click an edge → define routing conditions (intent match, field match, custom expression)
-- [ ] Shared state configuration: click canvas background → configure shared state backend
-- [ ] Strategy selector: dropdown to set overall strategy (router, sequential, parallel, hierarchical)
-- [ ] Canvas → generates valid `orchestration.yaml` (No Code → Low Code ejection)
-- [ ] "View YAML" tab: always shows the generated YAML alongside the canvas
-- [ ] Live preview: test the orchestration from the canvas (sends a message, shows agent routing in real-time)
-- [ ] Visual debugging: highlight active agent during execution, show message flow on edges
+- [x] Orchestration canvas page: ReactFlow-based editor for multi-agent workflows
+- [x] Agent nodes: drag agents from registry onto canvas, configure per-agent settings
+- [x] Edge types: routing edges (intent-based), sequential edges (pipeline), parallel edges (fan-out)
+- [x] Routing rule editor: click an edge → define routing conditions (intent match, field match, custom expression)
+- [x] Shared state configuration: click canvas background → configure shared state backend
+- [x] Strategy selector: dropdown to set overall strategy (router, sequential, parallel, hierarchical)
+- [x] Canvas → generates valid `orchestration.yaml` (No Code → Low Code ejection)
+- [x] "View YAML" tab: always shows the generated YAML alongside the canvas
+- [x] Live preview: test the orchestration from the canvas (sends a message, shows agent routing in real-time)
+- [x] Visual debugging: highlight active agent during execution, show message flow on edges
 
 #### 30.2 — TypeScript SDK (Agent Development)
-- [ ] `@agent-garden/sdk` npm package: TypeScript SDK for agent development
-- [ ] `Agent` class: define agents with model, tools, prompt, memory, guardrails (TypeScript types)
-- [ ] `Tool` class: define tools as TypeScript functions with Zod schema generation
-- [ ] `agent.toYaml()`: serialize to valid `agent.yaml`
-- [ ] `Agent.fromYaml()`: load existing YAML into SDK objects
-- [ ] `agent.deploy()`: deploy from TypeScript (wraps `garden deploy`)
-- [ ] `garden eject my-agent --sdk typescript`: generate TS SDK scaffold from YAML
-- [ ] Deno + Node.js runtime support
+- [x] `@agent-garden/sdk` npm package: TypeScript SDK for agent development
+- [x] `Agent` class: define agents with model, tools, prompt, memory, guardrails (TypeScript types)
+- [x] `Tool` class: define tools as TypeScript functions with Zod schema generation
+- [x] `agent.toYaml()`: serialize to valid `agent.yaml`
+- [x] `Agent.fromYaml()`: load existing YAML into SDK objects
+- [x] `agent.deploy()`: deploy from TypeScript (wraps `garden deploy`)
+- [x] `garden eject my-agent --sdk typescript`: generate TS SDK scaffold from YAML
+- [x] Deno + Node.js runtime support
 
 ---
 
