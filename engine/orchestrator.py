@@ -123,9 +123,9 @@ class Orchestrator:
 
         # Handle fallback on error
         if entry.status == "error":
-            agent_ref = self.config.agents.get(matched_agent)
-            if agent_ref and agent_ref.fallback:
-                fallback_entry = await self._call_agent(agent_ref.fallback, input_message)
+            agent_ref_or_none = self.config.agents.get(matched_agent)
+            if agent_ref_or_none and agent_ref_or_none.fallback:
+                fallback_entry = await self._call_agent(agent_ref_or_none.fallback, input_message)
                 fallback_entry.status = "fallback"
                 trace.append(fallback_entry)
                 entry = fallback_entry

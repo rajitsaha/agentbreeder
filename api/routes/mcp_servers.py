@@ -138,7 +138,7 @@ async def discover_mcp_server_tools(
 async def execute_mcp_tool(
     server_id: str,
     tool_name: str = Query(..., description="Name of the tool to execute"),
-    arguments: dict = None,
+    arguments: dict | None = None,
     db: AsyncSession = Depends(get_db),
 ) -> ApiResponse[dict]:
     """Execute a tool on an MCP server."""

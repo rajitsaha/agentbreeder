@@ -23,7 +23,7 @@ jobs:
           cache: pip
 
       - name: Install dependencies
-        run: pip install ruff mypy types-redis
+        run: pip install ruff mypy types-redis types-PyYAML pydantic
 
       - name: Ruff check
         run: ruff check .

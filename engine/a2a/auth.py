@@ -38,7 +38,7 @@ def create_service_token(
     if extra_claims:
         payload.update(extra_claims)
 
-    return jwt.encode(payload, _SECRET_KEY, algorithm=_ALGORITHM)
+    return str(jwt.encode(payload, _SECRET_KEY, algorithm=_ALGORITHM))
 
 
 def validate_service_token(token: str) -> dict[str, Any]:
@@ -46,7 +46,7 @@ def validate_service_token(token: str) -> dict[str, Any]:
 
     Raises jwt.InvalidTokenError on failure.
     """
-    payload = jwt.decode(token, _SECRET_KEY, algorithms=[_ALGORITHM])
+    payload: dict[str, Any] = jwt.decode(token, _SECRET_KEY, algorithms=[_ALGORITHM])
     if payload.get("type") != "a2a_service":
         raise InvalidTokenError("Not an A2A service token")
     return payload
