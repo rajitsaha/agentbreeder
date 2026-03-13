@@ -17,7 +17,7 @@
 | **v1.0** | GA | Eval framework, golden datasets, regression detection, CI gates, feedback loop + orchestration YAML | M18, M29 | Done |
 | **v1.1** | Connectivity | A2A protocol, MCP server hub, multi-agent orchestration + visual orchestration canvas + TS SDK | M19–M20, M30 | Done |
 | **v1.2** | Marketplace | Community templates, ratings, one-click deploy | M21–M22 | Done |
-| **v1.3** | Enterprise | Additional SDKs (ADK, CrewAI, Claude), model catalog, SSO, AgentOps + Full Code orchestration SDK | M24–M27, M31 | In Progress (M24, M26, M27 core, M31 Done) |
+| **v1.3** | Enterprise | Additional SDKs (ADK, CrewAI, Claude), model catalog, SSO, AgentOps + Full Code orchestration SDK | M24–M27, M31 | In Progress (M24, M26, M27 Done, M31 Done — M25 remaining) |
 
 ---
 
@@ -2438,8 +2438,8 @@ The "single pane of glass" for running agents in production. Consolidates observ
 - [x] 85%+ test coverage across all modules — 87% overall, 93%+ on new orchestration SDK
 - [x] Load testing: k6 scripts for all critical paths (`tests/load/agents_api.js`, `deploy_pipeline.js`, `orchestration_execute.js`)
 - [x] Performance benchmarks tracked per release (`benchmarks/benchmark_core.py` — pytest-benchmark)
-- [ ] Docs site (GitHub Pages or Mintlify) — deferred (needs content writing)
-- [ ] API stability: versioned API with deprecation policy — deferred (v2.0 planning)
+- [x] Docs site (MkDocs Material → GitHub Pages) — `mkdocs.yml`, `docs/index.md`, `.github/workflows/docs.yml`; install: `pip install agent-garden[docs]`
+- [x] API stability: versioned API with deprecation policy — `api/versioning.py` (`APIVersionMiddleware`, `deprecate_path()`), `/api/v2/` preview routes (`api/routes/v2/agents.py`), `docs/api-stability.md`
 
 ### M31: Full Code Orchestration SDK (Python + TypeScript)
 
@@ -2548,4 +2548,4 @@ These are intentionally deferred indefinitely:
 ---
 
 *Last updated: March 13, 2026*
-*Status: v0.1–v1.2 complete (M1–M23). v1.3 in progress — M24 (Model Gateway), M26 (AgentOps dashboard), M31 (Full Code Orchestration SDK — Python + TypeScript), and M27 core (87% test coverage, k6 load tests, pytest-benchmark) are done. Remaining: M25 (SSO/secrets management), M27 remainder (docs site, API deprecation policy).*
+*Status: v0.1–v1.2 complete (M1–M23). v1.3 in progress — M24 (Model Gateway), M26 (AgentOps dashboard), M27 (Production Hardening — fully complete: 87% coverage, k6 load tests, benchmarks, MkDocs docs site, API versioning middleware), and M31 (Full Code Orchestration SDK — Python + TypeScript) are done. Remaining: M25 (SSO/secrets management).*

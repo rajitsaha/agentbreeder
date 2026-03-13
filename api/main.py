@@ -34,6 +34,8 @@ from api.routes import (
     templates,
     tracing,
 )
+from api.routes.v2 import agents as agents_v2
+from api.versioning import APIVersionMiddleware
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -89,6 +91,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# API versioning headers + deprecation warnings
+app.add_middleware(APIVersionMiddleware)
+
 # Routes
 app.include_router(auth.router)
 app.include_router(agents.router)
@@ -114,6 +119,9 @@ app.include_router(templates.router)
 app.include_router(marketplace.router)
 app.include_router(agentops.router)
 app.include_router(gateway.router)
+
+# v2 routes (preview)
+app.include_router(agents_v2.router)
 
 
 @app.get("/health")

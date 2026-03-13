@@ -1,0 +1,88 @@
+site_name: Agent Garden
+site_description: "Define Once. Deploy Anywhere. Govern Automatically."
+site_url: https://open-agent-garden.github.io/agent-garden
+repo_url: https://github.com/open-agent-garden/agent-garden
+repo_name: open-agent-garden/agent-garden
+edit_uri: edit/main/docs/
+
+theme:
+  name: material
+  logo: assets/logo.png
+  favicon: assets/favicon.png
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: green
+      accent: light green
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: green
+      accent: light green
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - navigation.instant
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.code.annotate
+    - content.tabs.link
+    - toc.follow
+
+plugins:
+  - search
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - attr_list
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+
+nav:
+  - Home: index.md
+  - Getting Started:
+      - Quickstart: quickstart.md
+      - Local Development: local-development.md
+  - Reference:
+      - CLI Reference: cli-reference.md
+      - agent.yaml: agent-yaml.md
+      - orchestration.yaml: orchestration-yaml.md
+  - SDK:
+      - Full Code Orchestration SDK: orchestration-sdk.md
+  - API:
+      - API Stability & Versioning: api-stability.md
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/open-agent-garden/agent-garden
+  version:
+    provider: mike
+
+copyright: "Copyright &copy; 2026 Agent Garden Contributors — Apache License 2.0"

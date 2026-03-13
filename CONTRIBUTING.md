@@ -49,6 +49,11 @@ garden --help
 
 # Frontend (optional)
 cd dashboard && npm install && npm run dev
+
+# Docs site (optional)
+pip install -e ".[docs]"
+mkdocs serve          # preview at http://localhost:8001
+mkdocs build          # build static site to ./site/
 ```
 
 ---

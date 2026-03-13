@@ -50,6 +50,10 @@ dev = [
     "types-PyYAML>=6.0.0",
     "aiosqlite>=0.20.0",
 ]
+docs = [
+    "mkdocs-material>=9.5.0",
+    "mike>=2.0.0",
+]
 
 [project.scripts]
 garden = "cli.main:app"
@@ -57,7 +61,7 @@ garden = "cli.main:app"
 [project.urls]
 Homepage = "https://agent-garden.com"
 Repository = "https://github.com/open-agent-garden/agent-garden"
-Documentation = "https://github.com/open-agent-garden/agent-garden#readme"
+Documentation = "https://open-agent-garden.github.io/agent-garden"
 
 [tool.hatch.build.targets.wheel]
 packages = ["engine", "api", "cli", "sdk", "registry", "connectors"]
@@ -86,10 +90,12 @@ warn_required_dynamic_aliases = false
 [[tool.mypy.overrides]]
 module = [
     "api.routes.*",
+    "api.routes.v2.*",
     "api.services.*",
     "api.tasks.*",
     "api.main",
     "api.middleware.*",
+    "api.versioning",
 ]
 disable_error_code = ["no-any-return", "type-arg", "arg-type", "attr-defined", "no-untyped-def"]
 allow_untyped_decorators = true
