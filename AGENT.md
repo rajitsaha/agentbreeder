@@ -196,6 +196,38 @@ The example agent must: receive a message, call at least one tool, return a resp
 
 ---
 
+### `build:sdk-orchestration`
+**Purpose:** Extend the Full Code Orchestration SDK with a new strategy, router type, or advanced pattern.
+
+**Skill Prompt:**
+```
+You are extending the Agent Garden Full Code Orchestration SDK.
+
+Read these files first:
+- sdk/python/agenthub/orchestration.py (Python SDK — Orchestration, Pipeline, FanOut, Supervisor, Router classes)
+- sdk/typescript/src/orchestration.ts (TypeScript SDK — same API surface)
+- engine/orchestration_parser.py (YAML config models — OrchestrationConfig, strategies)
+- engine/orchestrator.py (runtime execution — _execute_* methods)
+- engine/schema/orchestration.schema.json (JSON Schema for validation)
+- tests/unit/test_sdk_orchestration.py (test patterns to follow)
+
+Task: [DESCRIPTION]
+
+Requirements:
+- Python SDK and TypeScript SDK must have matching API surfaces
+- New strategy names must be added to VALID_STRATEGIES and the JSON Schema enum
+- New subclasses follow the builder pattern (all methods return self)
+- YAML round-trip: to_yaml() + from_yaml() must be faithful (test this explicitly)
+- validate() must catch invalid configs before deploy
+- Engine execution: add _execute_<strategy>() in engine/orchestrator.py
+- Tests: follow test_sdk_orchestration.py — test builder, validate, yaml round-trip, deploy
+- TypeScript tests: add to sdk/typescript/tests/orchestration.test.ts
+```
+
+**MCP Tools:** `filesystem` (read existing SDK + engine), `sequential-thinking` (plan before coding)
+
+---
+
 ### `build:api-endpoint`
 **Purpose:** Implement a new REST API endpoint.
 

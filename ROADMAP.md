@@ -2547,5 +2547,5 @@ These are intentionally deferred indefinitely:
 
 ---
 
-*Last updated: March 12, 2026*
-*Status: v0.1 complete (M1–M5). v0.2 complete (M6–M7). v0.3 ~75% complete — M8 prompt builder done, M9 tool builder partial (auto-discovery done), M10 RAG builder done (in-memory; pgvector deferred to v0.4), M11 memory builder done (in-memory; real PostgreSQL v0.4), M12 agent builder done (visual + deploy), M13 examples done (LangGraph + OpenAI Agents), M23 Cloud Run deployer done. Git workflow + approval workflow done. Remaining: shared YAML interop items, tool sandbox, playground, schema-aware autocomplete.*
+*Last updated: March 13, 2026*
+*Status: v0.1–v1.2 complete (M1–M23). v1.3 in progress — M24 (Model Gateway), M26 (AgentOps dashboard), M31 (Full Code Orchestration SDK — Python + TypeScript), and M27 core (87% test coverage, k6 load tests, pytest-benchmark) are done. Remaining: M25 (SSO/secrets management), M27 remainder (docs site, API deprecation policy).*

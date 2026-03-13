@@ -73,9 +73,10 @@ Full standards are in [CLAUDE.md](CLAUDE.md). The essentials:
 
 ### Tests
 - Every feature needs tests: unit (minimum), integration (for API changes), E2E (for dashboard)
-- Coverage target: 80% on changed files
+- Coverage target: **85%+ on changed files** (project-wide baseline: 87%)
 - Test naming: `test_[unit]_[scenario]_[expected_result]`
 - Tests must run in < 100ms each (mock all external dependencies)
+- SDK changes also need TypeScript tests in `sdk/typescript/tests/`
 
 ---
 
@@ -153,6 +154,22 @@ See the `build:deployer` skill in [AGENT.md](AGENT.md) for a detailed prompt.
 8. Update README
 
 See the `build:runtime` skill in [AGENT.md](AGENT.md) for a detailed prompt.
+
+---
+
+## Adding an Orchestration Pattern
+
+The Full Code Orchestration SDK (`sdk/python/agenthub/orchestration.py` and `sdk/typescript/src/orchestration.ts`) supports six strategies. To add a new strategy or extend an existing class:
+
+1. Add the strategy name to `VALID_STRATEGIES` in `orchestration.py`
+2. Add it to the `OrchestrationStrategy` enum in `engine/orchestration_parser.py`
+3. Add it to the JSON Schema at `engine/schema/orchestration.schema.json`
+4. Implement execution logic in `engine/orchestrator.py` (`_execute_<strategy>` method)
+5. Add a subclass in the SDK (Python + TypeScript) if the strategy has a distinct builder API
+6. Write unit tests (see `tests/unit/test_sdk_orchestration.py` for the pattern)
+7. Add an example in `examples/orchestration/`
+
+The SDK builder, engine executor, and CLI/API all share the same `orchestration.yaml` format — changes to the schema flow through all three.
 
 ---
 

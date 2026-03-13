@@ -348,7 +348,7 @@ echo "hello" | garden chat my-agent --json  # JSON stdin/stdout
 
 ### `garden eject`
 
-Generate a Full Code SDK scaffold from an existing `agent.yaml` file. Enables tier mobility from Low Code (YAML) to Full Code (Python SDK) without losing any configuration.
+Generate a Full Code SDK scaffold from an existing `agent.yaml` or `orchestration.yaml` file. Enables tier mobility from Low Code (YAML) to Full Code (Python/TypeScript SDK) without losing any configuration.
 
 ```
 garden eject CONFIG_PATH [--sdk SDK] [--output PATH]
@@ -356,24 +356,121 @@ garden eject CONFIG_PATH [--sdk SDK] [--output PATH]
 
 | Argument / Option | Required | Default | Description |
 |-------------------|----------|---------|-------------|
-| `CONFIG_PATH` | Yes | — | Path to `agent.yaml` |
+| `CONFIG_PATH` | Yes | — | Path to `agent.yaml` or `orchestration.yaml` |
 | `--sdk` | No | `python` | Target SDK language: `python` or `typescript` |
-| `--output`, `-o` | No | `agents/<name>/agent_sdk.py` | Output file path |
+| `--output`, `-o` | No | auto | Output file path |
 
-The generated Python file recreates the YAML configuration as a builder-pattern SDK chain using `Agent`, `Tool`, `Model`, and `Memory` classes from the `agenthub` package. It includes commented-out scaffolding for middleware, event hooks, and custom routing — ready for extension.
+**Agent ejection** recreates the YAML as a builder-pattern `Agent(...)` chain using `Agent`, `Tool`, `Model`, and `Memory` from `agenthub`. Includes commented scaffolding for middleware, event hooks, and custom routing.
 
-**What it generates:**
-- Builder-pattern `Agent(...)` chain matching every field in the YAML
-- Model, prompt, tools, memory, guardrails, deploy, and tags configuration
+**Orchestration ejection** recreates `orchestration.yaml` as the appropriate SDK class (`Orchestration`, `Pipeline`, `FanOut`, or `Supervisor`) with all agents, routes, shared state, and deploy config preserved.
+
+**What it generates (agents):**
+- `Agent(...)` builder chain matching every field in the YAML
+- Model, prompt, tools, memory, guardrails, deploy, and tags
 - Commented middleware and hook examples
-- A `__main__` block that validates the agent and prints its YAML round-trip
+- `__main__` block that validates and prints YAML round-trip
+
+**What it generates (orchestrations):**
+- Correct subclass (`Pipeline`, `FanOut`, `Supervisor`, or `Orchestration`)
+- All agents, routing rules, fallbacks, shared state, supervisor config
+- Commented custom `Router` subclass scaffold for advanced routing logic
 
 **Examples:**
 ```bash
+# Agent ejection
 garden eject agent.yaml                          # Default: agents/<name>/agent_sdk.py
-garden eject agent.yaml --sdk python             # Explicit SDK target
-garden eject agent.yaml --sdk typescript          # TypeScript SDK output
+garden eject agent.yaml --sdk python             # Explicit Python SDK
+garden eject agent.yaml --sdk typescript         # TypeScript SDK
 garden eject agent.yaml -o src/my_agent.py       # Custom output path
+
+# Orchestration ejection
+garden eject orchestration.yaml                  # Default: orchestration_sdk.py
+garden eject orchestration.yaml --sdk typescript # TypeScript SDK
+```
+
+---
+
+### `garden orchestration`
+
+Manage multi-agent orchestration pipelines defined in `orchestration.yaml` or built with the Full Code Orchestration SDK.
+
+```
+garden orchestration SUBCOMMAND [OPTIONS]
+```
+
+#### `garden orchestration validate`
+
+Validate an `orchestration.yaml` file against the JSON Schema.
+
+```
+garden orchestration validate PATH [--json]
+```
+
+```bash
+garden orchestration validate orchestration.yaml
+garden orchestration validate pipelines/support.yaml --json
+```
+
+#### `garden orchestration deploy`
+
+Validate, register, and deploy an orchestration.
+
+```
+garden orchestration deploy PATH [--json]
+```
+
+```bash
+garden orchestration deploy orchestration.yaml
+garden orchestration deploy pipelines/research.yaml --json
+```
+
+#### `garden orchestration list`
+
+List registered orchestrations.
+
+```
+garden orchestration list [--team TEAM] [--status STATUS] [--json]
+```
+
+| Option | Description |
+|--------|-------------|
+| `--team` | Filter by team name |
+| `--status` | Filter by status: `deployed`, `draft`, `error` |
+
+```bash
+garden orchestration list
+garden orchestration list --team eng --json
+```
+
+#### `garden orchestration status`
+
+Show orchestration detail and agent graph.
+
+```
+garden orchestration status NAME [--json]
+```
+
+```bash
+garden orchestration status support-pipeline
+```
+
+#### `garden orchestration chat`
+
+Send messages interactively to a deployed orchestration.
+
+```
+garden orchestration chat NAME [--verbose] [--json]
+```
+
+| Option | Description |
+|--------|-------------|
+| `--verbose` | Show per-agent trace, token counts, latency |
+| `--json` | Read from stdin, write JSON per line (for CI) |
+
+```bash
+garden orchestration chat support-pipeline
+garden orchestration chat support-pipeline --verbose
+echo '{"message": "billing question"}' | garden orchestration chat support-pipeline --json
 ```
 
 ---
