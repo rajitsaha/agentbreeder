@@ -184,9 +184,7 @@ class Orchestration:
         """
         if agent_name not in self.config.agents:
             raise ValueError(f"Agent '{agent_name}' not found. Call add_agent() first.")
-        self.config.agents[agent_name].routes.append(
-            RouteRule(condition=condition, target=target)
-        )
+        self.config.agents[agent_name].routes.append(RouteRule(condition=condition, target=target))
         return self
 
     def with_shared_state(
@@ -242,9 +240,7 @@ class Orchestration:
             )
 
         if not re.match(r"^\d+\.\d+\.\d+$", self.config.version):
-            errors.append(
-                f"version must be semver (e.g., 1.0.0), got: {self.config.version!r}"
-            )
+            errors.append(f"version must be semver (e.g., 1.0.0), got: {self.config.version!r}")
 
         if self.config.strategy not in VALID_STRATEGIES:
             errors.append(
@@ -267,8 +263,7 @@ class Orchestration:
             sc = self.config.supervisor_config
             if not sc or not sc.merge_agent:
                 errors.append(
-                    "strategy 'fan_out_fan_in' requires "
-                    "with_supervisor(merge_agent=...) to be set"
+                    "strategy 'fan_out_fan_in' requires with_supervisor(merge_agent=...) to be set"
                 )
 
         # Validate route targets and fallbacks reference known agents
@@ -281,8 +276,7 @@ class Orchestration:
                     )
             if entry.fallback and entry.fallback not in self.config.agents:
                 errors.append(
-                    f"Fallback '{entry.fallback}' for agent '{agent_name}' "
-                    "is not a known agent"
+                    f"Fallback '{entry.fallback}' for agent '{agent_name}' is not a known agent"
                 )
 
         return errors
@@ -322,9 +316,7 @@ class Orchestration:
         same engine pipeline used by ``garden orchestration deploy``.
         """
         deploy_target = target or self.config.deploy.target
-        logger.info(
-            "Deploying orchestration '%s' to '%s'", self.config.name, deploy_target
-        )
+        logger.info("Deploying orchestration '%s' to '%s'", self.config.name, deploy_target)
         return {
             "orchestration": self.config.name,
             "version": self.config.version,
@@ -635,9 +627,7 @@ def _orchestration_to_yaml(orch: Orchestration) -> str:
     for agent_name, entry in orch.config.agents.items():
         a: dict[str, Any] = {"ref": entry.ref}
         if entry.routes:
-            a["routes"] = [
-                {"condition": r.condition, "target": r.target} for r in entry.routes
-            ]
+            a["routes"] = [{"condition": r.condition, "target": r.target} for r in entry.routes]
         if entry.fallback:
             a["fallback"] = entry.fallback
         agents_out[agent_name] = a

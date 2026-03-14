@@ -85,14 +85,14 @@ Run `garden deploy` and your agent is live on AWS or GCP — with RBAC, cost tra
 | Cloud targets | Local / Docker Compose | +Kubernetes | +GCP Cloud Run | +AWS ECS, Lambda |
 | Registry | Agents, Tools, Models | +Prompts, KBs, Semantic search | +RAG indexes, Memory configs | +Orchestrations |
 | Dashboard | Read-only browser | +Low-code builders (Prompt, Tool, MCP) | +Visual Agent Builder, Deploy dialog, RAG/Memory builders, Approvals | +Orchestration canvas |
-| Providers | - | LiteLLM gateway | +Provider abstraction (OpenAI, Ollama, fallback chains) | +Anthropic, Google |
+| Providers | - | LiteLLM gateway | +Provider abstraction (OpenAI, Anthropic, Google, Ollama, OpenRouter, fallback chains) | +More providers |
 | Governance | Auto-registration | +Basic RBAC | +Approval workflows, PR review, environment promotion | +Teams, cost budgets |
 | Git workflow | - | - | Git backend, PR creation + review | Mature |
 | Cost tracking | - | Basic | Per-team/agent/model | +Budgets, alerts |
 
 ### What's New in v0.3
 
-- **Provider abstraction layer** -- OpenAI + Ollama providers with automatic fallback chains (`engine/providers/`)
+- **Provider abstraction layer** -- OpenAI, Anthropic (Claude), Google (Gemini), Ollama, and OpenRouter providers with automatic fallback chains (`engine/providers/`, `connectors/openrouter/`)
 - **GCP Cloud Run deployer** -- `garden deploy --target cloud-run` for serverless container deployment
 - **OpenAI Agents runtime** -- first-class support for the OpenAI Agents SDK (`engine/runtimes/openai_agents.py`)
 - **Deploy from Dashboard** -- 8-step deploy pipeline dialog, no CLI required
@@ -133,8 +133,11 @@ Run `garden deploy` and your agent is live on AWS or GCP — with RBAC, cost tra
 | Provider | Status |
 |----------|--------|
 | OpenAI | v0.3 (`engine/providers/openai_provider.py`) |
+| Anthropic (Claude) | v0.3 (`engine/providers/anthropic_provider.py`) |
+| Google (Gemini) | v0.3 (`engine/providers/google_provider.py`) |
 | Ollama (local) | v0.3 (`engine/providers/ollama_provider.py`) |
 | LiteLLM gateway | v0.2 |
+| OpenRouter | v0.3 (`connectors/openrouter/`) |
 | Fallback chains | v0.3 |
 
 ---
@@ -214,10 +217,10 @@ agent-garden/
 │   ├── providers/          # Provider abstraction (OpenAI, Ollama, fallback chains)
 │   ├── runtimes/           # Framework-specific builders (LangGraph, OpenAI Agents)
 │   └── deployers/          # Cloud-specific deployers (Docker Compose, GCP Cloud Run)
-├── connectors/             # Integration plugins (LiteLLM, LangSmith, etc.)
+├── connectors/             # Integration plugins (LiteLLM, OpenRouter, MCP scanner)
 ├── registry/               # Catalog service (agents, tools, models, prompts)
 ├── dashboard/              # React + TypeScript + Tailwind UI
-├── templates/              # No-code agent templates (Seeds)
+├── examples/templates/     # No-code agent templates (Seeds)
 ├── deploy/                 # Docker Compose + Helm charts
 ├── tests/                  # Unit, integration, E2E tests
 └── examples/               # Working agent examples per framework

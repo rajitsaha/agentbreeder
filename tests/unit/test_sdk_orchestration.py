@@ -12,29 +12,21 @@ Tests cover:
 from __future__ import annotations
 
 import asyncio
-from unittest.mock import AsyncMock
 
 import pytest
 
 from sdk.python.agenthub.orchestration import (
-    AgentEntry,
     ClassifierRouter,
     FanOut,
     IntentRouter,
     KeywordRouter,
     Orchestration,
-    OrchestrationConfig,
     Pipeline,
-    RouteRule,
-    Router,
     RoundRobinRouter,
-    SharedStateConfig,
+    Router,
+    RouteRule,
     Supervisor,
-    SupervisorConfig,
-    _orchestration_to_yaml,
-    _yaml_to_orchestration,
 )
-
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -116,9 +108,7 @@ class TestOrchestrationBuilder:
 
     def test_tag(self):
         orch = (
-            Orchestration("test-orch")
-            .add_agent("a", ref="agents/a")
-            .tag("production", "support")
+            Orchestration("test-orch").add_agent("a", ref="agents/a").tag("production", "support")
         )
         assert "production" in orch.config.tags
         assert "support" in orch.config.tags
@@ -188,10 +178,7 @@ class TestOrchestrationValidation:
         assert any("at least one agent" in e for e in errors)
 
     def test_supervisor_strategy_without_supervisor_config(self):
-        orch = (
-            Orchestration("sup-orch", strategy="supervisor")
-            .add_agent("a", ref="agents/a")
-        )
+        orch = Orchestration("sup-orch", strategy="supervisor").add_agent("a", ref="agents/a")
         errors = orch.validate()
         assert any("supervisor" in e for e in errors)
 
@@ -205,9 +192,8 @@ class TestOrchestrationValidation:
         assert any("fan_out" in e or "merge_agent" in e for e in errors)
 
     def test_route_target_not_known_agent(self):
-        orch = (
-            Orchestration("route-test", strategy="router")
-            .add_agent("triage", ref="agents/triage")
+        orch = Orchestration("route-test", strategy="router").add_agent(
+            "triage", ref="agents/triage"
         )
         orch.config.agents["triage"].routes.append(
             RouteRule(condition="billing", target="nonexistent")
@@ -216,9 +202,8 @@ class TestOrchestrationValidation:
         assert any("nonexistent" in e for e in errors)
 
     def test_fallback_not_known_agent(self):
-        orch = (
-            Orchestration("fallback-test", strategy="router")
-            .add_agent("primary", ref="agents/primary")
+        orch = Orchestration("fallback-test", strategy="router").add_agent(
+            "primary", ref="agents/primary"
         )
         orch.config.agents["primary"].fallback = "ghost-agent"
         errors = orch.validate()
@@ -268,9 +253,7 @@ class TestPipeline:
 
     def test_pipeline_yaml_round_trip(self):
         pipeline = (
-            Pipeline("rt-pipeline", team="eng")
-            .step("a", ref="agents/a")
-            .step("b", ref="agents/b")
+            Pipeline("rt-pipeline", team="eng").step("a", ref="agents/a").step("b", ref="agents/b")
         )
         yaml_str = pipeline.to_yaml()
         restored = Orchestration.from_yaml(yaml_str)
@@ -362,10 +345,7 @@ class TestSupervisor:
         assert sc.max_iterations == 5
 
     def test_supervisor_validates_missing_supervisor_agent(self):
-        workflow = (
-            Supervisor("no-supervisor")
-            .worker("w1", ref="agents/w1")
-        )
+        workflow = Supervisor("no-supervisor").worker("w1", ref="agents/w1")
         errors = workflow.validate()
         assert any("with_supervisor_agent" in e for e in errors)
 
@@ -502,8 +482,7 @@ class TestClassifierRouter:
                 return "mystery"
 
         router = UnknownClassifier(label_to_agent={}, default="general")
-        result = asyncio.run(router.route("msg", {})
-        )
+        result = asyncio.run(router.route("msg", {}))
         assert result == "general"
 
     def test_base_classify_returns_default(self):

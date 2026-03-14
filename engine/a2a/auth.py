@@ -10,8 +10,8 @@ import os
 import time
 from typing import Any
 
-from jose import jwt
-from jose.exceptions import JWTError as InvalidTokenError
+import jwt
+from jwt.exceptions import PyJWTError as InvalidTokenError
 
 logger = logging.getLogger(__name__)
 

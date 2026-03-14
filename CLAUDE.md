@@ -36,6 +36,7 @@ agent-garden/
 │   ├── auth.py                 # Auth dependencies
 │   ├── config.py               # Settings (pydantic-settings)
 │   ├── database.py             # Async SQLAlchemy setup
+│   ├── versioning.py           # API versioning middleware + deprecation headers
 │   ├── middleware/              # RBAC middleware
 │   ├── routes/                 # REST endpoints
 │   │   ├── agents.py           # Agent CRUD
@@ -54,7 +55,15 @@ agent-garden/
 │   │   ├── orchestrations.py   # Orchestration management
 │   │   ├── evals.py            # Agent evaluation
 │   │   ├── playground.py       # Chat playground
-│   │   └── registry.py         # Cross-entity registry search
+│   │   ├── registry.py         # Cross-entity registry search
+│   │   ├── a2a.py              # Agent-to-agent (A2A) communication endpoints
+│   │   ├── agentops.py         # Fleet operations dashboard endpoints
+│   │   ├── gateway.py          # Model gateway status + proxy endpoints
+│   │   ├── marketplace.py      # Community marketplace browsing + publishing
+│   │   ├── mcp_servers.py      # MCP server registry endpoints
+│   │   ├── templates.py        # Agent template endpoints
+│   │   └── v2/
+│   │       └── agents.py       # API v2 agents endpoints
 │   ├── services/               # Business logic layer
 │   ├── models/                 # SQLAlchemy DB models + Pydantic schemas
 │   └── tasks/                  # Background tasks (provider health)
@@ -78,7 +87,9 @@ agent-garden/
 │       ├── eval.py             # garden eval
 │       ├── eject.py            # garden eject (tier mobility)
 │       ├── orchestration.py    # garden orchestration
-│       └── provider.py         # garden provider (subcommand)
+│       ├── provider.py         # garden provider (subcommand)
+│       ├── secret.py           # garden secret (manage secrets across backends)
+│       └── template.py         # garden template (manage agent templates)
 ├── sdk/
 │   └── python/                 # pip install agent-garden-sdk
 │       └── agenthub/           # SDK package (agent, deploy, model, tool, memory, mcp)
@@ -92,29 +103,47 @@ agent-garden/
 │   ├── providers/              # LLM provider abstraction
 │   │   ├── base.py             # Provider interface
 │   │   ├── openai_provider.py  # OpenAI provider
+│   │   ├── anthropic_provider.py # Anthropic (Claude) provider
+│   │   ├── google_provider.py  # Google (Gemini) provider
 │   │   ├── ollama_provider.py  # Ollama (local) provider
 │   │   ├── registry.py         # Provider registry + fallback chains
 │   │   └── models.py           # Provider data models
 │   ├── deployers/
 │   │   ├── base.py             # Abstract deployer interface
 │   │   ├── docker_compose.py   # Local Docker Compose deployer
-│   │   └── gcp_cloudrun.py     # GCP Cloud Run deployer
+│   │   ├── gcp_cloudrun.py     # GCP Cloud Run deployer
+│   │   └── mcp_sidecar.py      # MCP sidecar container injection
 │   ├── runtimes/               # Framework-specific container builders
 │   │   ├── base.py             # Runtime builder interface
 │   │   ├── langgraph.py        # LangGraph runtime
 │   │   ├── openai_agents.py    # OpenAI Agents runtime
 │   │   └── templates/          # Server templates per runtime
+│   ├── secrets/                # Pluggable secrets backend system
+│   │   ├── base.py             # Secrets backend interface
+│   │   ├── env_backend.py      # .env / environment variable backend
+│   │   ├── aws_backend.py      # AWS Secrets Manager backend
+│   │   ├── gcp_backend.py      # GCP Secret Manager backend
+│   │   └── vault_backend.py    # HashiCorp Vault backend
+│   ├── a2a/                    # Agent-to-agent (A2A) communication protocol
+│   │   ├── protocol.py         # JSON-RPC A2A protocol implementation
+│   │   ├── client.py           # A2A client for calling remote agents
+│   │   ├── server.py           # A2A server for exposing agents
+│   │   └── auth.py             # A2A authentication + agent cards
+│   ├── mcp/                    # MCP packaging utilities
+│   │   └── packager.py         # Package MCP servers for deployment
 │   └── schema/                 # JSON Schemas
 │       ├── agent.schema.json
 │       ├── orchestration.schema.json
 │       ├── prompt.schema.json
 │       ├── tool.schema.json
 │       ├── rag.schema.json
-│       └── memory.schema.json
+│       ├── memory.schema.json
+│       └── template.schema.json
 ├── connectors/                 # Integration plugins (pluggable)
 │   ├── base.py
 │   ├── litellm/                # LiteLLM gateway connector
-│   └── mcp_scanner/            # MCP server scanner
+│   ├── mcp_scanner/            # MCP server scanner
+│   └── openrouter/             # OpenRouter model gateway connector
 ├── registry/                   # Catalog service
 │   ├── agents.py
 │   ├── prompts.py
@@ -122,7 +151,9 @@ agent-garden/
 │   ├── models.py
 │   ├── providers.py
 │   ├── deploys.py
-│   └── mcp_servers.py
+│   ├── mcp_servers.py
+│   ├── a2a_agents.py           # A2A-enabled agent registry
+│   └── templates.py            # Agent template registry
 ├── dashboard/                  # React + TypeScript web UI
 │   ├── src/
 │   │   ├── components/
@@ -340,11 +371,11 @@ guardrails:
 
 # Deployment Configuration
 deploy:
-  cloud: aws                          # Required. One of: aws | gcp | kubernetes | local
+  cloud: aws                          # Required. One of: aws | gcp | local
+                                      #   (kubernetes support is planned, not yet implemented)
   runtime: ecs-fargate                # Optional. Defaults per cloud:
                                       #   aws → ecs-fargate
                                       #   gcp → cloud-run
-                                      #   kubernetes → deployment
                                       #   local → docker-compose
   region: us-east-1                   # Optional. Cloud-specific.
   scaling:
@@ -587,6 +618,28 @@ POST   /api/v1/tools/sandbox/execute  # Tool sandbox execution
 GET    /api/v1/prompts/test           # Test prompt with model
 GET    /api/v1/playground             # Chat playground
 GET    /api/v1/evals                  # Agent evaluation
+
+# Agent-to-Agent (A2A)
+GET/POST /api/v1/a2a/*               # A2A protocol, agent cards, inter-agent calls
+
+# Fleet Operations
+GET    /api/v1/agentops               # Fleet dashboard, multi-agent monitoring
+
+# Model Gateway
+GET    /api/v1/gateway                # Gateway status, provider health, model proxy
+
+# Marketplace
+GET    /api/v1/marketplace            # Browse community templates + agents
+POST   /api/v1/marketplace/publish    # Publish template to marketplace
+
+# MCP Servers
+GET/POST /api/v1/mcp_servers/*        # MCP server registry CRUD
+
+# Templates
+GET/POST /api/v1/templates/*          # Agent template management
+
+# API v2 (versioned endpoints — see api/versioning.py)
+GET    /api/v2/agents                 # v2 agents endpoint (enhanced filtering)
 ```
 
 All responses follow:
@@ -640,4 +693,4 @@ When reviewing AI-generated code, always verify:
 
 ---
 
-*Last updated: March 2026 — Agent Garden v0.1*
+*Last updated: March 2026 — Agent Garden v0.3*

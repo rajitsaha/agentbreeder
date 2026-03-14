@@ -13,7 +13,7 @@ Thank you for your interest in contributing to Agent Garden! We welcome contribu
 | Add a cloud deployer | Medium | Very High | `engine/deployers/` |
 | Add a framework runtime | Medium | Very High | `engine/runtimes/` |
 | Add a connector | Medium | High | `connectors/` |
-| Create an agent template (Seed) | Easy | Medium | `templates/` |
+| Create an agent template (Seed) | Easy | Medium | `examples/templates/` |
 | Improve documentation | Easy | High | `docs/` |
 | Suggest a feature | Easy | Medium | [GitHub Discussions](https://github.com/open-agent-garden/agent-garden/discussions) |
 
@@ -126,7 +126,7 @@ Before submitting a PR, verify:
 This is one of the highest-impact contributions. Each deployer is a self-contained module.
 
 1. Read the interface: `engine/deployers/base.py`
-2. Study the reference: `engine/deployers/aws_ecs.py`
+2. Study the reference: `engine/deployers/gcp_cloudrun.py`
 3. Create `engine/deployers/your_cloud.py` implementing:
    - `provision()` — create cloud infrastructure
    - `deploy()` — deploy the agent container
@@ -181,7 +181,7 @@ The SDK builder, engine executor, and CLI/API all share the same `orchestration.
 ## Adding a Connector
 
 1. Read the interface: `connectors/base.py`
-2. Study references: `connectors/litellm/` and `connectors/langsmith/`
+2. Study references: `connectors/litellm/` and `connectors/mcp_scanner/`
 3. Create `connectors/your_tool/connector.py`
 4. Include a `README.md` in your connector directory with setup instructions
 5. Write unit tests with mocked external API responses
