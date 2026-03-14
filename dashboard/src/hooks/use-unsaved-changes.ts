@@ -1,5 +1,4 @@
 import { useState, useCallback, useEffect } from "react";
-import { useBlocker } from "react-router-dom";
 
 interface UseUnsavedChangesReturn {
   /** Whether the form has unsaved changes. */
@@ -19,9 +18,7 @@ interface UseUnsavedChangesReturn {
 /**
  * Hook that tracks unsaved changes and warns before navigating away.
  *
- * Handles both:
- * - Browser navigation (tab close, URL bar) via `beforeunload`
- * - React Router navigation via `useBlocker`
+ * Handles browser navigation (tab close, URL bar) via `beforeunload`.
  *
  * Usage:
  * ```tsx
@@ -34,23 +31,6 @@ export function useUnsavedChanges(): UseUnsavedChangesReturn {
 
   const markDirty = useCallback(() => setIsDirty(true), []);
   const markClean = useCallback(() => setIsDirty(false), []);
-
-  // Block React Router navigation when dirty
-  const blocker = useBlocker(isDirty);
-
-  const isBlocked = blocker.state === "blocked";
-
-  const confirmNavigation = useCallback(() => {
-    if (blocker.state === "blocked") {
-      blocker.proceed();
-    }
-  }, [blocker]);
-
-  const cancelNavigation = useCallback(() => {
-    if (blocker.state === "blocked") {
-      blocker.reset();
-    }
-  }, [blocker]);
 
   // Browser beforeunload warning
   useEffect(() => {
@@ -68,8 +48,8 @@ export function useUnsavedChanges(): UseUnsavedChangesReturn {
     isDirty,
     markDirty,
     markClean,
-    isBlocked,
-    confirmNavigation,
-    cancelNavigation,
+    isBlocked: false,
+    confirmNavigation: () => {},
+    cancelNavigation: () => {},
   };
 }
