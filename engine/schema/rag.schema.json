@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "Agent Garden RAG Configuration",
-  "description": "Schema for rag.yaml — the RAG (vector index) definition file for Agent Garden",
+  "title": "AgentBreeder RAG Configuration",
+  "description": "Schema for rag.yaml — the RAG (vector index) definition file for AgentBreeder",
   "type": "object",
   "required": ["name", "version"],
   "additionalProperties": false,

@@ -12,7 +12,7 @@ class BaseConnector(ABC):
     """Abstract base class for all connectors.
 
     Connectors are integration plugins that discover external resources
-    (tools, models, etc.) and register them in the Agent Garden registry.
+    (tools, models, etc.) and register them in the AgentBreeder registry.
     """
 
     @property

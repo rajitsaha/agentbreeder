@@ -6,10 +6,10 @@ from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):  # type: ignore[misc,unused-ignore]
-    """Agent Garden configuration loaded from environment variables."""
+    """AgentBreeder configuration loaded from environment variables."""
 
     # Database
-    database_url: str = "postgresql+asyncpg://garden:garden@localhost:5432/agentgarden"
+    database_url: str = "postgresql+asyncpg://garden:garden@localhost:5432/agentbreeder"
 
     # Redis
     redis_url: str = "redis://localhost:6379"

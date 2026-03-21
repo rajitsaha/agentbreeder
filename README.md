@@ -1,13 +1,13 @@
-# Agent Garden
+# AgentBreeder
 
 **Define Once. Deploy Anywhere. Govern Automatically.**
 
-[![CI](https://github.com/open-agent-garden/agent-garden/actions/workflows/ci.yml/badge.svg)](https://github.com/open-agent-garden/agent-garden/actions/workflows/ci.yml)
-[![codecov](https://codecov.io/gh/open-agent-garden/agent-garden/graph/badge.svg)](https://codecov.io/gh/open-agent-garden/agent-garden)
+[![CI](https://github.com/open-agentbreeder/agentbreeder/actions/workflows/ci.yml/badge.svg)](https://github.com/open-agentbreeder/agentbreeder/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/open-agentbreeder/agentbreeder/graph/badge.svg)](https://codecov.io/gh/open-agentbreeder/agentbreeder)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
-Every team picks a different AI agent framework. Nobody knows what's already deployed. Nobody tracks the cost. Agent Garden fixes that — one open-source platform to build, deploy, govern, and discover all your AI agents.
+Every team picks a different AI agent framework. Nobody knows what's already deployed. Nobody tracks the cost. AgentBreeder fixes that — one open-source platform to build, deploy, govern, and discover all your AI agents.
 
 **Build agents your way — drag-and-drop, YAML, or code. Deploy and govern them all the same.**
 
@@ -23,7 +23,7 @@ Every team picks a different AI agent framework. Nobody knows what's already dep
 
 ## Three Ways to Build
 
-Agent Garden supports three builder tiers — No Code, Low Code, and Full Code — for both **individual agents** and **multi-agent orchestration**. All three tiers compile down to the same internal representation and share the same deploy pipeline, governance, and observability.
+AgentBreeder supports three builder tiers — No Code, Low Code, and Full Code — for both **individual agents** and **multi-agent orchestration**. All three tiers compile down to the same internal representation and share the same deploy pipeline, governance, and observability.
 
 ```
 No Code (UI)  ──→  agent.yaml  ──→  garden deploy  ──→  running agent
@@ -39,7 +39,7 @@ Full Code (SDK) ──→  agent.yaml + code  ──→  garden deploy  ──�
 
 **Tier mobility** is the key — start No Code, hit a wall, eject to YAML. Hit another wall, eject to Full Code. At every stage, the platform still manages deploy, governance, observability, and registry.
 
-## How Agent Garden Works
+## How AgentBreeder Works
 
 ```
 garden init  →  Write agent.yaml  →  garden deploy  →  Agent is live
@@ -154,8 +154,8 @@ Run `garden deploy` and your agent is live on AWS or GCP — with RBAC, cost tra
 
 ```bash
 # Clone the repo
-git clone https://github.com/open-agent-garden/agent-garden.git
-cd agent-garden
+git clone https://github.com/open-agentbreeder/agentbreeder.git
+cd agentbreeder
 
 # Set up Python environment
 python -m venv venv && source venv/bin/activate
@@ -179,7 +179,7 @@ Your agent is now running at `http://localhost:8080/agents/{name}/invoke` with a
 ## Architecture
 
 ```
-Developer                    Agent Garden Platform                     Cloud
+Developer                    AgentBreeder Platform                     Cloud
 
 agent.yaml  ──>  [ CLI ]  ──>  [ API Server ]  ──>  [ Engine ]  ──>  [ AWS / GCP / K8s ]
                                       |                  |
@@ -209,7 +209,7 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) for the full technical deep-dive.
 ## Project Structure
 
 ```
-agent-garden/
+agentbreeder/
 ├── api/                    # FastAPI backend (routes for agents, deploys, prompts, RAG, memory, git, sandbox)
 ├── cli/                    # CLI (Typer + Rich)
 ├── sdk/                    # Python & TypeScript SDKs
@@ -247,7 +247,7 @@ See [CLAUDE.md](CLAUDE.md) for the fully annotated project structure and coding 
 
 ## Contributing
 
-We welcome contributions! Agent Garden has a naturally pluggable architecture — every new deployer, runtime, connector, and template is a self-contained contribution.
+We welcome contributions! AgentBreeder has a naturally pluggable architecture — every new deployer, runtime, connector, and template is a self-contained contribution.
 
 **High-impact contribution areas:**
 - Add a cloud deployer (Azure, Oracle Cloud, Render, Fly.io)
@@ -262,15 +262,15 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) to get started.
 
 ## Community
 
-- [GitHub Discussions](https://github.com/open-agent-garden/agent-garden/discussions) — questions, ideas, show & tell
-- [GitHub Issues](https://github.com/open-agent-garden/agent-garden/issues) — bug reports and feature requests
+- [GitHub Discussions](https://github.com/open-agentbreeder/agentbreeder/discussions) — questions, ideas, show & tell
+- [GitHub Issues](https://github.com/open-agentbreeder/agentbreeder/issues) — bug reports and feature requests
 
 ---
 
 ## License
 
-Agent Garden is open source under the [Apache License 2.0](LICENSE).
+AgentBreeder is open source under the [Apache License 2.0](LICENSE).
 
 ---
 
-**Built with AI-assisted development from Day 1.** See [AGENT.md](AGENT.md) for how we use AI skills to build Agent Garden.
+**Built with AI-assisted development from Day 1.** See [AGENT.md](AGENT.md) for how we use AI skills to build AgentBreeder.

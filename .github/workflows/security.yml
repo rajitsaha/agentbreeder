@@ -117,14 +117,14 @@ jobs:
           context: .
           push: false
           load: true
-          tags: agent-garden-api:scan
+          tags: agentbreeder-api:scan
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
       - name: Scan API image with Trivy
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: agent-garden-api:scan
+          image-ref: agentbreeder-api:scan
           format: sarif
           output: trivy-results.sarif
           severity: CRITICAL,HIGH
@@ -140,14 +140,14 @@ jobs:
       - name: Fail on CRITICAL vulnerabilities
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: agent-garden-api:scan
+          image-ref: agentbreeder-api:scan
           format: table
           severity: CRITICAL
           exit-code: "1"
 
   # NOTE: dependency-review removed — requires GitHub Advanced Security
   # which is not available on this repository. Re-enable when GHAS is active.
-  # See: https://github.com/open-agent-garden/agent-garden/settings/security_analysis
+  # See: https://github.com/open-agentbreeder/agentbreeder/settings/security_analysis
 
   # ── Secret scanning (detect hardcoded secrets) ──────────────────────────────
   secret-scan:

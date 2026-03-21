@@ -1,4 +1,4 @@
-"""Advanced Agent Garden SDK example.
+"""Advanced AgentBreeder SDK example.
 
 Demonstrates middleware, event hooks, custom routing, dynamic tool selection,
 and agent state management.

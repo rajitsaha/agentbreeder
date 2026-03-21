@@ -1,5 +1,5 @@
 """
-Performance benchmarks for Agent Garden core paths.
+Performance benchmarks for AgentBreeder core paths.
 
 These are pytest-benchmark tests that track performance of the most
 critical synchronous operations across releases.

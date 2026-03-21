@@ -8,7 +8,7 @@ const MOCK_TEMPLATE = {
   framework: "langgraph",
   category: "support",
   tags: ["support", "starter"],
-  author: "agent-garden-team",
+  author: "agentbreeder-team",
   team: "default",
   status: "published",
   use_count: 200,

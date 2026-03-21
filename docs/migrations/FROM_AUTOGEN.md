@@ -1,4 +1,4 @@
-# Migrate from Microsoft AutoGen to Agent Garden
+# Migrate from Microsoft AutoGen to AgentBreeder
 
 > **Time to migrate:** ~30 minutes
 > **Difficulty:** Moderate
@@ -12,15 +12,15 @@
 - [ ] Your agent code uses `autogen-agentchat` (v0.2+) or `pyautogen`
 - [ ] Python 3.11+ is installed
 - [ ] Docker is installed and running
-- [ ] You have installed Agent Garden: `pip install agent-garden`
+- [ ] You have installed AgentBreeder: `pip install agentbreeder`
 
 ---
 
 ## The Big Picture
 
-AutoGen is designed around conversable agents and group chat patterns. Agent Garden does not replace AutoGen's conversation engine. It wraps your AutoGen code in a production container and adds governance, multi-cloud deploy, and org-wide discoverability.
+AutoGen is designed around conversable agents and group chat patterns. AgentBreeder does not replace AutoGen's conversation engine. It wraps your AutoGen code in a production container and adds governance, multi-cloud deploy, and org-wide discoverability.
 
-The main migration effort is structuring your AutoGen code so Agent Garden's server wrapper can call it. This usually means wrapping your `GroupChat` or `ConversableAgent` in a callable function.
+The main migration effort is structuring your AutoGen code so AgentBreeder's server wrapper can call it. This usually means wrapping your `GroupChat` or `ConversableAgent` in a callable function.
 
 ---
 
@@ -36,7 +36,7 @@ my-autogen-agents/
   # No deploy infrastructure -- you run it locally with python agent.py
 ```
 
-### After: AutoGen + Agent Garden
+### After: AutoGen + AgentBreeder
 
 ```
 my-autogen-agents/
@@ -51,7 +51,7 @@ my-autogen-agents/
 
 ### Step 1: Understand the entry point contract
 
-Agent Garden's server wrapper expects to call your agent with an input message and get a response. For AutoGen, this means wrapping your conversation flow in a function.
+AgentBreeder's server wrapper expects to call your agent with an input message and get a response. For AutoGen, this means wrapping your conversation flow in a function.
 
 **Before (typical AutoGen pattern):**
 
@@ -100,7 +100,7 @@ user_proxy = autogen.UserProxyAgent(
 
 
 class AutoGenAgent:
-    """Wrapper that makes AutoGen compatible with Agent Garden's server."""
+    """Wrapper that makes AutoGen compatible with AgentBreeder's server."""
 
     def __init__(self):
         self.assistant = assistant
@@ -120,7 +120,7 @@ class AutoGenAgent:
         return "No response generated."
 
 
-# Export for Agent Garden
+# Export for AgentBreeder
 agent = AutoGenAgent()
 ```
 
@@ -149,7 +149,7 @@ deploy:
     - OPENAI_API_KEY
 ```
 
-Note: Use `framework: custom` for AutoGen since Agent Garden does not have a dedicated AutoGen runtime (yet). The custom framework works with any Python agent that exposes an `invoke` method or a callable.
+Note: Use `framework: custom` for AutoGen since AgentBreeder does not have a dedicated AutoGen runtime (yet). The custom framework works with any Python agent that exposes an `invoke` method or a callable.
 
 ### Step 3: Create a simple server wrapper
 
@@ -212,9 +212,9 @@ curl -X POST http://localhost:8080/invoke \
 
 ---
 
-## Concept Mapping: AutoGen to Agent Garden
+## Concept Mapping: AutoGen to AgentBreeder
 
-| AutoGen Concept | Agent Garden Equivalent | Notes |
+| AutoGen Concept | AgentBreeder Equivalent | Notes |
 |----------------|------------------------|-------|
 | `AssistantAgent` | Individual agent in `agent.yaml` | Wrapped in a custom callable |
 | `UserProxyAgent` | Server wrapper handles the "user" role | AG server sends messages as the user |
@@ -224,13 +224,13 @@ curl -X POST http://localhost:8080/invoke \
 | `config_list` | `model.primary` + `deploy.secrets` | Declarative model config + secret refs |
 | `code_execution_config` | `deploy.env_vars` + custom Dockerfile | Sandboxed execution in container |
 | `human_input_mode` | `access.require_approval` | Deploy-level human-in-the-loop |
-| AutoGen Studio | Agent Garden Dashboard | Visual builder for agents |
+| AutoGen Studio | AgentBreeder Dashboard | Visual builder for agents |
 
 ---
 
 ## Mapping GroupChat to AG Orchestration
 
-AutoGen's `GroupChat` is its multi-agent coordination primitive. Here is how to map it to Agent Garden orchestration:
+AutoGen's `GroupChat` is its multi-agent coordination primitive. Here is how to map it to AgentBreeder orchestration:
 
 ### AutoGen GroupChat (Before)
 
@@ -274,7 +274,7 @@ manager = autogen.GroupChatManager(
 )
 ```
 
-### Agent Garden Orchestration (After)
+### AgentBreeder Orchestration (After)
 
 **Option A: Keep GroupChat inside one agent (simple)**
 
@@ -405,7 +405,7 @@ deploy:
 
 ## What You Gain
 
-| Feature | AutoGen Only | AutoGen + Agent Garden |
+| Feature | AutoGen Only | AutoGen + AgentBreeder |
 |---------|-------------|----------------------|
 | Multi-agent chat | GroupChat | GroupChat + AG orchestration |
 | Deploy | Manual (`python agent.py`) | `garden deploy agent.yaml` |
@@ -522,7 +522,7 @@ user_proxy = autogen.UserProxyAgent(
 
 
 class AutoGenAgent:
-    """Wrapper for Agent Garden compatibility."""
+    """Wrapper for AgentBreeder compatibility."""
 
     def __init__(self):
         self.assistant = assistant

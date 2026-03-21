@@ -1,4 +1,4 @@
-"""Agent Garden orchestration engine.
+"""AgentBreeder orchestration engine.
 
 Executes multi-agent orchestration strategies: router, sequential, parallel,
 hierarchical, supervisor, and fan_out_fan_in.

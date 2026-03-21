@@ -75,7 +75,7 @@ export default function HomePage() {
       <div className="mb-8">
         <h1 className="text-lg font-semibold tracking-tight">Overview</h1>
         <p className="mt-0.5 text-xs text-muted-foreground">
-          Agent Garden registry at a glance
+          AgentBreeder registry at a glance
         </p>
       </div>
 

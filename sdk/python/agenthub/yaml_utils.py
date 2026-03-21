@@ -1,4 +1,4 @@
-"""YAML serialization and deserialization for Agent Garden agents.
+"""YAML serialization and deserialization for AgentBreeder agents.
 
 Converts between Agent objects and valid agent.yaml content that matches
 the canonical spec documented in CLAUDE.md.

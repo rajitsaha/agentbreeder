@@ -1,4 +1,4 @@
-"""Memory configuration for Agent Garden agents.
+"""Memory configuration for AgentBreeder agents.
 
 Supports in-memory, PostgreSQL, and Redis backends with configurable
 buffer strategies.

@@ -40,7 +40,7 @@ Thumbs.db
 # Docker
 *.log
 
-# Agent Garden local state
+# AgentBreeder local state
 .garden/
 
 # Node (dashboard)

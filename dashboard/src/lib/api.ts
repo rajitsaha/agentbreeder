@@ -1,4 +1,4 @@
-/** API client for Agent Garden backend. */
+/** API client for AgentBreeder backend. */
 
 const BASE = "/api/v1";
 

@@ -8,7 +8,7 @@ description: "Template for building AI code review agents that analyze PRs and s
 category: code_review
 framework: custom
 tags: [code-review, github, pull-request, quality]
-author: agent-garden
+author: agentbreeder
 team: default
 
 parameters:

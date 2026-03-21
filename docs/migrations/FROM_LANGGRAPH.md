@@ -1,4 +1,4 @@
-# Migrate from LangGraph to Agent Garden
+# Migrate from LangGraph to AgentBreeder
 
 > **Time to migrate:** ~15 minutes
 > **Difficulty:** Easy
@@ -12,7 +12,7 @@
 - [ ] Your agent code is in a directory with `agent.py` and `requirements.txt` (or `pyproject.toml`)
 - [ ] Python 3.11+ is installed
 - [ ] Docker is installed and running (for local deploys)
-- [ ] You have installed Agent Garden: `pip install agent-garden`
+- [ ] You have installed AgentBreeder: `pip install agentbreeder`
 
 ---
 
@@ -22,7 +22,7 @@
 
 **After:** You write the same LangGraph code, add a 10-line YAML file, run `garden deploy`, and get a production-ready container with RBAC, cost tracking, health checks, and registry entry -- automatically.
 
-Your LangGraph graph, state, nodes, edges, and tools are unchanged. Agent Garden wraps your graph in a FastAPI server and handles everything else.
+Your LangGraph graph, state, nodes, edges, and tools are unchanged. AgentBreeder wraps your graph in a FastAPI server and handles everything else.
 
 ---
 
@@ -51,7 +51,7 @@ You had to:
 6. Remember to tell your team the agent exists
 7. Track costs in a spreadsheet
 
-### After: LangGraph + Agent Garden
+### After: LangGraph + AgentBreeder
 
 ```
 my-langgraph-agent/
@@ -69,7 +69,7 @@ You run `garden deploy agent.yaml` and get all of the above for free.
 
 ### Step 1: Verify your LangGraph agent structure
 
-Agent Garden looks for a compiled graph exported from `agent.py`. Your file should export a variable named `graph` or `app`:
+AgentBreeder looks for a compiled graph exported from `agent.py`. Your file should export a variable named `graph` or `app`:
 
 ```python
 # agent.py
@@ -88,7 +88,7 @@ builder.add_node("process", process)
 builder.set_entry_point("process")
 builder.set_finish_point("process")
 
-# Export as 'graph' -- Agent Garden looks for this variable
+# Export as 'graph' -- AgentBreeder looks for this variable
 graph = builder.compile()
 ```
 
@@ -96,7 +96,7 @@ If your graph variable is named something else (e.g., `workflow`, `chain`), rena
 
 ```python
 workflow = builder.compile()
-graph = workflow  # alias for Agent Garden
+graph = workflow  # alias for AgentBreeder
 ```
 
 ### Step 2: Verify your requirements.txt
@@ -110,7 +110,7 @@ langchain-openai>=0.2.0    # if using OpenAI
 langchain-anthropic>=0.3.0  # if using Anthropic
 ```
 
-Agent Garden will automatically add framework dependencies if they are missing (`langgraph`, `langchain-core`, `fastapi`, `uvicorn`, `httpx`, `pydantic`), but it is better to be explicit.
+AgentBreeder will automatically add framework dependencies if they are missing (`langgraph`, `langchain-core`, `fastapi`, `uvicorn`, `httpx`, `pydantic`), but it is better to be explicit.
 
 ### Step 3: Create agent.yaml
 
@@ -136,7 +136,7 @@ deploy:
   cloud: local
 ```
 
-That is the minimal config. Every field maps to something Agent Garden handles automatically.
+That is the minimal config. Every field maps to something AgentBreeder handles automatically.
 
 ### Step 4: Validate
 
@@ -152,7 +152,7 @@ This checks your YAML against the JSON Schema and verifies that your `agent.py` 
 garden deploy agent.yaml --target local
 ```
 
-Agent Garden will:
+AgentBreeder will:
 1. Parse and validate your `agent.yaml`
 2. Check RBAC permissions
 3. Resolve any registry references (tools, knowledge bases)
@@ -166,7 +166,7 @@ Agent Garden will:
 You will see output like:
 
 ```
-  Agent Garden
+  AgentBreeder
   Deploying agent.yaml -> local
 
     Parse & validate YAML
@@ -236,9 +236,9 @@ garden deploy agent.yaml --target gcp
 
 ---
 
-## Concept Mapping: LangGraph to Agent Garden
+## Concept Mapping: LangGraph to AgentBreeder
 
-| LangGraph Concept | Agent Garden Equivalent | Notes |
+| LangGraph Concept | AgentBreeder Equivalent | Notes |
 |-------------------|------------------------|-------|
 | `StateGraph` | Your `agent.py` (unchanged) | AG wraps it; does not replace it |
 | `graph.compile()` | Export as `graph` variable | AG server wrapper imports `graph` from `agent.py` |
@@ -256,7 +256,7 @@ garden deploy agent.yaml --target gcp
 
 ## Adding Governance Features
 
-Once migrated, you can incrementally add Agent Garden features:
+Once migrated, you can incrementally add AgentBreeder features:
 
 ### Guardrails
 
@@ -343,7 +343,7 @@ This chains agents: classifier output feeds into resolver, then responder. Each 
 
 ### "Missing agent.py" error
 
-Agent Garden expects a file named `agent.py` in the same directory as `agent.yaml`. If your main file is named differently:
+AgentBreeder expects a file named `agent.py` in the same directory as `agent.yaml`. If your main file is named differently:
 
 ```bash
 # Option 1: Rename it
@@ -381,7 +381,7 @@ The generated container exposes `/health` on port 8080. If your agent takes a lo
 
 ### "RBAC check failed"
 
-Every deploy requires a valid team. Make sure the `team` field in your `agent.yaml` matches a team registered in Agent Garden. For local development, the default `examples` team works:
+Every deploy requires a valid team. Make sure the `team` field in your `agent.yaml` matches a team registered in AgentBreeder. For local development, the default `examples` team works:
 
 ```yaml
 team: examples
@@ -403,7 +403,7 @@ deploy:
 
 ## Full Example
 
-Here is a complete, working LangGraph agent migrated to Agent Garden:
+Here is a complete, working LangGraph agent migrated to AgentBreeder:
 
 **agent.py:**
 
@@ -420,7 +420,7 @@ def respond(state: AgentState) -> AgentState:
     message = state.get("message", "")
     return {
         "message": message,
-        "response": f"Hello from Agent Garden! You said: {message}",
+        "response": f"Hello from AgentBreeder! You said: {message}",
     }
 
 builder = StateGraph(AgentState)
@@ -445,7 +445,7 @@ name: hello-world-agent
 version: 0.1.0
 description: "A simple hello world LangGraph agent"
 team: examples
-owner: dev@agent-garden.com
+owner: dev@agentbreeder.com
 tags: [example, langgraph, hello-world]
 
 framework: langgraph

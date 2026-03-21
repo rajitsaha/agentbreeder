@@ -87,7 +87,7 @@ class AWSSecretsManagerBackend(SecretsBackend):
             kwargs: dict = {
                 "Name": full_name,
                 "SecretString": secret_string,
-                "Description": f"Managed by Agent Garden (key: {name})",
+                "Description": f"Managed by AgentBreeder (key: {name})",
             }
             if aws_tags:
                 kwargs["Tags"] = aws_tags

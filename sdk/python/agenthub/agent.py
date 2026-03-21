@@ -1,4 +1,4 @@
-"""Core Agent class for the Agent Garden Full Code Python SDK.
+"""Core Agent class for the AgentBreeder Full Code Python SDK.
 
 Provides a builder-pattern API for defining agents programmatically.
 The resulting agent config can be serialized to valid agent.yaml,
@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class AgentConfig:
-    """Configuration for an Agent Garden agent."""
+    """Configuration for an AgentBreeder agent."""
 
     name: str
     version: str = "1.0.0"

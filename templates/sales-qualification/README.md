@@ -4,7 +4,7 @@ Lead qualification agent that integrates with your CRM, enriches company data, s
 
 ## Prerequisites
 
-- Agent Garden CLI installed (`pip install agent-garden`)
+- AgentBreeder CLI installed (`pip install agentbreeder`)
 - CRM API access (HubSpot, Salesforce, or Pipedrive)
 - Clearbit or Apollo API key (for company enrichment)
 - Anthropic API key (primary) and OpenAI API key (fallback)

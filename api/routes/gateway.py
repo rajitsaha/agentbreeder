@@ -1,7 +1,7 @@
 """Gateway API routes — model gateway management and proxying.
 
 Exposes gateway status, model catalog across providers, and request log
-for the Agent Garden model gateway (LiteLLM + direct providers).
+for the AgentBreeder model gateway (LiteLLM + direct providers).
 """
 
 from __future__ import annotations

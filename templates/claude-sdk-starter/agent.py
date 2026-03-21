@@ -4,10 +4,10 @@ Demonstrates:
 - Anthropic client setup
 - Tool definitions with JSON schema
 - Tool use loop (send message -> execute tools -> continue)
-- Agent Garden export pattern
+- AgentBreeder export pattern
 
 Export the agent config as `agent_config` and the handler as `handle_message`
-— Agent Garden's server wrapper looks for these.
+— AgentBreeder's server wrapper looks for these.
 """
 
 from __future__ import annotations

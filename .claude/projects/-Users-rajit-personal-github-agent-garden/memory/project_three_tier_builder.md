@@ -1,10 +1,10 @@
 ---
 name: Three-Tier Builder Model Decision
-description: Agent Garden supports No Code / Low Code / Full Code for both agent development and orchestration — decided 2026-03-12
+description: AgentBreeder supports No Code / Low Code / Full Code for both agent development and orchestration — decided 2026-03-12
 type: project
 ---
 
-Agent Garden uses a three-tier builder model for both individual agent development AND multi-agent orchestration:
+AgentBreeder uses a three-tier builder model for both individual agent development AND multi-agent orchestration:
 - **No Code** (visual UI, drag-and-drop) → generates YAML
 - **Low Code** (YAML in any IDE or dashboard editor) → is YAML
 - **Full Code** (Python/TS SDK) → generates YAML + bundles custom code

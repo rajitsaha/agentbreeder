@@ -1,7 +1,7 @@
 """LiteLLM Gateway Connector — discovers models from a LiteLLM proxy instance.
 
 Connects to a running LiteLLM proxy, reads available models,
-and registers them in the Agent Garden Model registry.
+and registers them in the AgentBreeder Model registry.
 
 Configuration:
     LITELLM_BASE_URL: Base URL of the LiteLLM proxy (default: http://localhost:4000)

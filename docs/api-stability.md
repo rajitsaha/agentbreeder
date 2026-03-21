@@ -1,6 +1,6 @@
 # API Stability & Versioning
 
-Agent Garden follows a versioned API with a clear deprecation policy. This page describes the version lifecycle, how to detect deprecated endpoints, and how to migrate when breaking changes land.
+AgentBreeder follows a versioned API with a clear deprecation policy. This page describes the version lifecycle, how to detect deprecated endpoints, and how to migrate when breaking changes land.
 
 ---
 
@@ -90,7 +90,7 @@ When a v1 endpoint is scheduled for removal:
   "error": "endpoint_removed",
   "message": "This endpoint was removed on 2027-06-01. Use /api/v2/agents instead.",
   "successor": "/api/v2/agents",
-  "docs": "https://open-agent-garden.github.io/agent-garden/api-stability/"
+  "docs": "https://open-agentbreeder.github.io/agentbreeder/api-stability/"
 }
 ```
 
@@ -165,13 +165,13 @@ If you use the official Python or TypeScript SDKs, they handle versioning automa
 
 | SDK version | API version |
 |-------------|-------------|
-| `agent-garden-sdk < 2.0` | v1 |
-| `agent-garden-sdk >= 2.0` | v2 |
-| `@agent-garden/sdk < 2.0` | v1 |
-| `@agent-garden/sdk >= 2.0` | v2 |
+| `agentbreeder-sdk < 2.0` | v1 |
+| `agentbreeder-sdk >= 2.0` | v2 |
+| `@agentbreeder/sdk < 2.0` | v1 |
+| `@agentbreeder/sdk >= 2.0` | v2 |
 
 ---
 
 ## Questions?
 
-Open an issue at [github.com/open-agent-garden/agent-garden](https://github.com/open-agent-garden/agent-garden/issues) or start a discussion at the Discussions tab.
+Open an issue at [github.com/open-agentbreeder/agentbreeder](https://github.com/open-agentbreeder/agentbreeder/issues) or start a discussion at the Discussions tab.

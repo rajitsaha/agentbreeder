@@ -1,4 +1,4 @@
-"""Full Code Orchestration SDK for Agent Garden.
+"""Full Code Orchestration SDK for AgentBreeder.
 
 Provides builder-pattern classes for defining multi-agent workflows
 programmatically. All classes serialize to valid orchestration.yaml

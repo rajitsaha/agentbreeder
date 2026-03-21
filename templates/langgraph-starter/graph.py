@@ -4,9 +4,9 @@ Demonstrates:
 - Typed state with TypedDict
 - Tool node for function calling
 - Conditional routing based on tool calls
-- Agent Garden server wrapper export pattern
+- AgentBreeder server wrapper export pattern
 
-Export the compiled graph as `graph` — Agent Garden's server wrapper looks for this.
+Export the compiled graph as `graph` — AgentBreeder's server wrapper looks for this.
 """
 
 from __future__ import annotations
@@ -179,5 +179,5 @@ builder.set_entry_point("agent")
 builder.add_conditional_edges("agent", should_use_tools, {"tools": "tools", "end": "__end__"})
 builder.add_edge("tools", "agent")
 
-# Export as 'graph' — the Agent Garden server wrapper looks for this
+# Export as 'graph' — the AgentBreeder server wrapper looks for this
 graph = builder.compile()

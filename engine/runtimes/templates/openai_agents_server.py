@@ -1,4 +1,4 @@
-"""Agent Garden server wrapper for OpenAI Agents SDK agents.
+"""AgentBreeder server wrapper for OpenAI Agents SDK agents.
 
 This file is copied into the agent container at build time.
 It wraps any OpenAI Agents SDK agent as a FastAPI server with /invoke and /health endpoints.
@@ -19,8 +19,8 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("garden.agent")
 
 app = FastAPI(
-    title="Agent Garden Agent",
-    description="Deployed by Agent Garden — OpenAI Agents SDK runtime",
+    title="AgentBreeder Agent",
+    description="Deployed by AgentBreeder — OpenAI Agents SDK runtime",
     version=os.getenv("AGENT_VERSION", "0.1.0"),
 )
 

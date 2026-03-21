@@ -1,4 +1,4 @@
-"""Validation utilities for Agent Garden agent configurations.
+"""Validation utilities for AgentBreeder agent configurations.
 
 Checks that the agent config is well-formed before serialization or
 deployment. Returns a list of human-readable error strings (empty = valid).

@@ -1,7 +1,7 @@
 {
-  "name": "@agent-garden/sdk",
+  "name": "@agentbreeder/sdk",
   "version": "0.1.0",
-  "description": "TypeScript SDK for Agent Garden — Define Once. Deploy Anywhere.",
+  "description": "TypeScript SDK for AgentBreeder — Define Once. Deploy Anywhere.",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -26,6 +26,6 @@
     "typescript": "^5.4.0",
     "vitest": "^1.6.0"
   },
-  "keywords": ["agent", "ai", "agent-garden", "a2a", "mcp"],
+  "keywords": ["agent", "ai", "agentbreeder", "a2a", "mcp"],
   "license": "Apache-2.0"
 }

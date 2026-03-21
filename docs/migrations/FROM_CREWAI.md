@@ -1,4 +1,4 @@
-# Migrate from CrewAI to Agent Garden
+# Migrate from CrewAI to AgentBreeder
 
 > **Time to migrate:** ~20 minutes
 > **Difficulty:** Easy
@@ -12,15 +12,15 @@
 - [ ] Your agent code is in a directory with `agent.py` and `requirements.txt`
 - [ ] Python 3.11+ is installed
 - [ ] Docker is installed and running
-- [ ] You have installed Agent Garden: `pip install agent-garden`
+- [ ] You have installed AgentBreeder: `pip install agentbreeder`
 
 ---
 
 ## The Big Picture
 
-CrewAI excels at multi-agent orchestration with its Crew, Agent, Task, and Process abstractions. Agent Garden does not replace any of that. It wraps your CrewAI code in a production-ready container with governance, multi-cloud deploy, and org-wide discoverability.
+CrewAI excels at multi-agent orchestration with its Crew, Agent, Task, and Process abstractions. AgentBreeder does not replace any of that. It wraps your CrewAI code in a production-ready container with governance, multi-cloud deploy, and org-wide discoverability.
 
-**Your CrewAI code runs as-is.** Agent Garden adds the deployment and governance layer.
+**Your CrewAI code runs as-is.** AgentBreeder adds the deployment and governance layer.
 
 ---
 
@@ -38,7 +38,7 @@ my-crew/
   deploy.sh           # you wrote this
 ```
 
-### After: CrewAI + Agent Garden
+### After: CrewAI + AgentBreeder
 
 ```
 my-crew/
@@ -54,7 +54,7 @@ my-crew/
 
 ### Step 1: Structure your CrewAI code
 
-Agent Garden expects your crew to be importable from `agent.py`. Your file should export a `crew` variable (a `Crew` instance) or an `agent` variable:
+AgentBreeder expects your crew to be importable from `agent.py`. Your file should export a `crew` variable (a `Crew` instance) or an `agent` variable:
 
 ```python
 # agent.py
@@ -89,7 +89,7 @@ write_task = Task(
     agent=writer,
 )
 
-# Export as 'crew' -- Agent Garden looks for this
+# Export as 'crew' -- AgentBreeder looks for this
 crew = Crew(
     agents=[researcher, writer],
     tasks=[research_task, write_task],
@@ -172,9 +172,9 @@ deploy:
 
 ---
 
-## Concept Mapping: CrewAI to Agent Garden
+## Concept Mapping: CrewAI to AgentBreeder
 
-| CrewAI Concept | Agent Garden Equivalent | Notes |
+| CrewAI Concept | AgentBreeder Equivalent | Notes |
 |---------------|------------------------|-------|
 | `Agent` | Individual agent in `agent.yaml` | Each CrewAI Agent can also be its own AG agent |
 | `Task` | Part of your crew logic (unchanged) | AG does not inspect task definitions |
@@ -189,13 +189,13 @@ deploy:
 
 ---
 
-## Mapping CrewAI Orchestration to Agent Garden
+## Mapping CrewAI Orchestration to AgentBreeder
 
-CrewAI has built-in multi-agent orchestration via `Process`. When you deploy a CrewAI crew to Agent Garden, the crew's internal orchestration works as-is. But you can also use Agent Garden's orchestration layer to coordinate multiple crews.
+CrewAI has built-in multi-agent orchestration via `Process`. When you deploy a CrewAI crew to AgentBreeder, the crew's internal orchestration works as-is. But you can also use AgentBreeder's orchestration layer to coordinate multiple crews.
 
 ### Option A: Single Crew as One Agent (Simple)
 
-Deploy your entire crew as a single Agent Garden agent. The crew handles its own internal orchestration:
+Deploy your entire crew as a single AgentBreeder agent. The crew handles its own internal orchestration:
 
 ```yaml
 # agent.yaml -- the entire crew is one AG agent
@@ -282,7 +282,7 @@ With LiteLLM gateway, you get unified access to 100+ models with a single API fo
 
 ## What You Gain
 
-| Feature | CrewAI Only | CrewAI + Agent Garden |
+| Feature | CrewAI Only | CrewAI + AgentBreeder |
 |---------|-------------|----------------------|
 | Multi-agent orchestration | Built-in (Crew) | Crew-level + AG-level orchestration |
 | Deploy | Manual | `garden deploy agent.yaml` |
@@ -309,7 +309,7 @@ With LiteLLM gateway, you get unified access to 100+ models with a single API fo
 
 ### "Missing agent.py" error
 
-Agent Garden expects `agent.py` in the same directory as `agent.yaml`. If your crew is defined in a different file:
+AgentBreeder expects `agent.py` in the same directory as `agent.yaml`. If your crew is defined in a different file:
 
 ```python
 # agent.py

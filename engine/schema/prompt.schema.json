@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "Agent Garden Prompt Configuration",
-  "description": "Schema for prompt.yaml — the prompt definition file for Agent Garden",
+  "title": "AgentBreeder Prompt Configuration",
+  "description": "Schema for prompt.yaml — the prompt definition file for AgentBreeder",
   "type": "object",
   "required": ["name", "version"],
   "additionalProperties": false,

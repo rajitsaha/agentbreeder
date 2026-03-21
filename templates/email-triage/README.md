@@ -4,7 +4,7 @@ Automated email processing agent that parses incoming emails, classifies them by
 
 ## Prerequisites
 
-- Agent Garden CLI installed (`pip install agent-garden`)
+- AgentBreeder CLI installed (`pip install agentbreeder`)
 - Email account with IMAP/SMTP access
 - Anthropic API key (primary) and OpenAI API key (fallback)
 

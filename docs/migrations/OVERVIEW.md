@@ -1,7 +1,7 @@
-# Migration Guides -- Agent Garden
+# Migration Guides -- AgentBreeder
 
-> Bring your existing AI agents to Agent Garden in minutes.
-> Your framework code stays the same. Agent Garden wraps it with governance, multi-cloud deploy, and org-wide discoverability.
+> Bring your existing AI agents to AgentBreeder in minutes.
+> Your framework code stays the same. AgentBreeder wraps it with governance, multi-cloud deploy, and org-wide discoverability.
 
 ---
 
@@ -9,7 +9,7 @@
 
 You already built an agent. It works. But now you need:
 
-| Challenge | Without Agent Garden | With Agent Garden |
+| Challenge | Without AgentBreeder | With AgentBreeder |
 |-----------|---------------------|-------------------|
 | **Deploy to production** | Write Dockerfiles, Terraform, CI/CD pipelines | `garden deploy agent.yaml` |
 | **Multi-cloud** | Rewrite infra per cloud provider | Change one line: `cloud: aws` or `cloud: gcp` |
@@ -21,7 +21,7 @@ You already built an agent. It works. But now you need:
 | **Model fallbacks** | Try/catch with hardcoded alternatives | `model: { primary: claude-sonnet-4, fallback: gpt-4o }` |
 | **Scaling** | Configure autoscaling per cloud | `scaling: { min: 1, max: 10, target_cpu: 70 }` |
 
-**What Agent Garden does NOT do:** It does not replace your framework. Your LangGraph graphs, CrewAI crews, OpenAI agents, and custom code run exactly as-is inside the container Agent Garden builds. Think of it as the deployment and governance layer that sits around your agent.
+**What AgentBreeder does NOT do:** It does not replace your framework. Your LangGraph graphs, CrewAI crews, OpenAI agents, and custom code run exactly as-is inside the container AgentBreeder builds. Think of it as the deployment and governance layer that sits around your agent.
 
 ---
 
@@ -69,7 +69,7 @@ deploy:
 ### Step 3: Deploy
 
 ```bash
-pip install agent-garden
+pip install agentbreeder
 garden deploy agent.yaml
 ```
 
@@ -77,9 +77,9 @@ That is the entire migration. Everything else -- RBAC, registry, cost tracking, 
 
 ---
 
-## Feature Comparison: What Agent Garden Adds
+## Feature Comparison: What AgentBreeder Adds
 
-| Feature | LangGraph | CrewAI | OpenAI Agents | AutoGen | Custom | Agent Garden |
+| Feature | LangGraph | CrewAI | OpenAI Agents | AutoGen | Custom | AgentBreeder |
 |---------|-----------|--------|---------------|---------|--------|--------------|
 | Agent logic / LLM calls | Native | Native | Native | Native | Native | Uses your framework |
 | Containerization | Manual | Manual | Manual | Manual | Manual | Automatic |
@@ -102,13 +102,13 @@ That is the entire migration. Everything else -- RBAC, registry, cost tracking, 
 
 ## What Stays the Same After Migration
 
-This is important: **Agent Garden does not modify your agent code.** Your framework-specific logic runs inside a container that AG builds and manages. Specifically:
+This is important: **AgentBreeder does not modify your agent code.** Your framework-specific logic runs inside a container that AG builds and manages. Specifically:
 
 - Your `agent.py` / `main.py` files are unchanged
 - Your `requirements.txt` / `pyproject.toml` are preserved (AG adds framework deps if missing)
 - Your LLM API calls go through the same providers
 - Your tools, prompts, and logic are identical
-- You can still run your agent locally without Agent Garden (just `python agent.py`)
+- You can still run your agent locally without AgentBreeder (just `python agent.py`)
 
 What AG adds is a server wrapper (`server.py`) that exposes your agent as an HTTP service with `/invoke` and `/health` endpoints, plus the deploy infrastructure.
 
@@ -117,7 +117,7 @@ What AG adds is a server wrapper (`server.py`) that exposes your agent as an HTT
 ## Architecture: How It Works
 
 ```
-                    Your Code              Agent Garden Adds
+                    Your Code              AgentBreeder Adds
                  +--------------+     +------------------------+
                  |  agent.py    |     |  server.py (wrapper)   |
                  |  tools.py    |     |  Dockerfile (generated)|
@@ -147,17 +147,17 @@ What AG adds is a server wrapper (`server.py`) that exposes your agent as an HTT
 **Q: Do I need to rewrite my agent?**
 No. Your agent code is unchanged. You add an `agent.yaml` file and run `garden deploy`.
 
-**Q: Can I still run my agent without Agent Garden?**
-Yes. Your `agent.py` still works standalone. Agent Garden is additive.
+**Q: Can I still run my agent without AgentBreeder?**
+Yes. Your `agent.py` still works standalone. AgentBreeder is additive.
 
 **Q: What if my framework isn't listed?**
 Use `framework: custom`. See [FROM_CUSTOM.md](./FROM_CUSTOM.md). Any Python agent that can be called via a function works.
 
-**Q: Does Agent Garden lock me in?**
-No. Your agent code has zero Agent Garden imports. The `agent.yaml` is a declarative config file. You can stop using AG at any time and deploy your container manually.
+**Q: Does AgentBreeder lock me in?**
+No. Your agent code has zero AgentBreeder imports. The `agent.yaml` is a declarative config file. You can stop using AG at any time and deploy your container manually.
 
 **Q: What about multi-agent systems?**
-Agent Garden has `orchestration.yaml` for defining multi-agent workflows (sequential, parallel, router, supervisor, fan-out/fan-in). Your framework's native orchestration (LangGraph subgraphs, CrewAI processes, OpenAI handoffs) also works as-is inside the container.
+AgentBreeder has `orchestration.yaml` for defining multi-agent workflows (sequential, parallel, router, supervisor, fan-out/fan-in). Your framework's native orchestration (LangGraph subgraphs, CrewAI processes, OpenAI handoffs) also works as-is inside the container.
 
 ---
 

@@ -767,7 +767,7 @@ class TestHealthAndMeta:
         assert resp.status_code == 200
         data = resp.json()
         assert data["status"] == "healthy"
-        assert data["service"] == "agent-garden-api"
+        assert data["service"] == "agentbreeder-api"
 
     def test_unknown_route_returns_404(self) -> None:
         """Requests to unknown routes should return 404/405."""

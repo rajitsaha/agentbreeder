@@ -1,4 +1,4 @@
-# ROADMAP.md — Agent Garden
+# ROADMAP.md — AgentBreeder
 
 > **Vision:** The enterprise one-stop shop for Agent Marketplace, Agent Evaluation, Agent Observability, Cost Monitoring, and AgentOps.
 >
@@ -23,7 +23,7 @@
 
 ## Three-Tier Builder Model — No Code / Low Code / Full Code
 
-> **Core principle:** Agent Garden supports three ways to build agents and orchestrations. All three tiers compile to the same internal representation and share the same deploy pipeline, governance, and observability. Users can move between tiers without losing work.
+> **Core principle:** AgentBreeder supports three ways to build agents and orchestrations. All three tiers compile to the same internal representation and share the same deploy pipeline, governance, and observability. Users can move between tiers without losing work.
 
 ### Why Three Tiers?
 
@@ -54,7 +54,7 @@ Without tier mobility, No Code tools become prisons. With it, they become on-ram
 - **Analogy**: Docker Compose for agents.
 
 #### Full Code (Python/TS SDK)
-- **Agent Development**: `from agent_garden import Agent, Tool, Memory` — define agents programmatically with full control over routing, tool selection, state management.
+- **Agent Development**: `from agentbreeder import Agent, Tool, Memory` — define agents programmatically with full control over routing, tool selection, state management.
 - **Agent Orchestration**: SDK for complex workflows that YAML can't express — dynamic agent spawning, stateful workflows, human-in-the-loop breakpoints, conditional branching based on runtime data.
 - **Output**: SDK generates `agent.yaml` + bundles custom code. The deploy pipeline consumes both.
 - **Who**: Senior engineers, researchers, teams that have outgrown YAML.
@@ -170,8 +170,8 @@ deploy:
 
 **Full Code Orchestration (Python SDK):**
 ```python
-from agent_garden import Orchestration, Router, Agent
-from agent_garden.routing import ClassifierRouter
+from agentbreeder import Orchestration, Router, Agent
+from agentbreeder.routing import ClassifierRouter
 
 # Custom routing logic that YAML can't express
 class SupportRouter(ClassifierRouter):
@@ -212,7 +212,7 @@ No other platform offers all three tiers + orchestration + deploy + governance i
 | Dify | Yes | Partial | No | Partial | Partial |
 | Flowise | Yes | No | Partial | Partial | No |
 | AWS Bedrock Agents | Partial | No | Yes | Partial | Yes (AWS only) |
-| **Agent Garden** | **Yes** | **Yes** | **Yes** | **Yes** | **Yes** |
+| **AgentBreeder** | **Yes** | **Yes** | **Yes** | **Yes** | **Yes** |
 
 ### Implementation Roadmap for Three Tiers
 
@@ -228,7 +228,7 @@ No other platform offers all three tiers + orchestration + deploy + governance i
 
 ## Distribution & Project Structure
 
-### How Users Install Agent Garden
+### How Users Install AgentBreeder
 
 Two packages: a **CLI tool** (what developers install) and a **platform server** (what runs the dashboard + API + registry).
 
@@ -237,17 +237,17 @@ Two packages: a **CLI tool** (what developers install) and a **platform server**
 │                     What to install                               │
 │                                                                   │
 │  Solo developer / getting started:                                │
-│    pip install agent-garden        ← CLI + SDK                    │
+│    pip install agentbreeder        ← CLI + SDK                    │
 │    garden init my-project          ← scaffold project             │
 │    garden dev                      ← run locally (Ollama)         │
 │                                                                   │
 │  Team / full platform:                                            │
-│    pip install agent-garden        ← CLI + SDK (on each machine)  │
+│    pip install agentbreeder        ← CLI + SDK (on each machine)  │
 │    docker compose up               ← platform server              │
 │    open http://localhost:3000      ← dashboard                    │
 │                                                                   │
 │  CI/CD / automation:                                              │
-│    pip install agent-garden        ← CLI only (no UI needed)      │
+│    pip install agentbreeder        ← CLI only (no UI needed)      │
 │    garden deploy --env production  ← deploy from pipeline         │
 └──────────────────────────────────────────────────────────────────┘
 ```
@@ -256,37 +256,37 @@ Two packages: a **CLI tool** (what developers install) and a **platform server**
 
 | Package | Registry | Installs | Contains |
 |---------|----------|----------|----------|
-| `agent-garden` | PyPI (`pip install agent-garden`) | `garden` CLI command | CLI, SDK, engine, runtimes, config parser, provider abstraction |
-| `@agent-garden/dashboard` | npm (`npm install @agent-garden/dashboard`) | Dashboard dev server | React SPA (only needed for dashboard development/customization) |
-| `agent-garden` | Docker Hub / GHCR | `docker pull agentgarden/server` | Full platform: API + dashboard + workers (all-in-one image) |
-| `agent-garden` | Helm chart | `helm install agent-garden` | Kubernetes deployment (API + dashboard + PostgreSQL + Redis) |
+| `agentbreeder` | PyPI (`pip install agentbreeder`) | `garden` CLI command | CLI, SDK, engine, runtimes, config parser, provider abstraction |
+| `@agentbreeder/dashboard` | npm (`npm install @agentbreeder/dashboard`) | Dashboard dev server | React SPA (only needed for dashboard development/customization) |
+| `agentbreeder` | Docker Hub / GHCR | `docker pull agentbreeder/server` | Full platform: API + dashboard + workers (all-in-one image) |
+| `agentbreeder` | Helm chart | `helm install agentbreeder` | Kubernetes deployment (API + dashboard + PostgreSQL + Redis) |
 
 **Typical install paths:**
 
 ```bash
 # Path 1: Developer — build agents locally
-pip install agent-garden
+pip install agentbreeder
 garden init my-agent-project
 cd my-agent-project
 garden dev                              # starts local sandbox
 
 # Path 2: Team — run the full platform
-git clone https://github.com/agent-garden/agent-garden
-cd agent-garden
+git clone https://github.com/agentbreeder/agentbreeder
+cd agentbreeder
 docker compose up -d                    # starts API + dashboard + DB + Redis
-pip install agent-garden                # install CLI on each dev machine
+pip install agentbreeder                # install CLI on each dev machine
 open http://localhost:3000              # dashboard
 
 # Path 3: Production — deploy platform to cloud
-helm install agent-garden deploy/helm/agent-garden \
+helm install agentbreeder deploy/helm/agentbreeder \
   --set database.url=postgresql://... \
   --set redis.url=redis://...
 ```
 
-#### `pip install agent-garden` — What It Includes
+#### `pip install agentbreeder` — What It Includes
 
 ```
-agent-garden (PyPI package)
+agentbreeder (PyPI package)
 ├── garden                  ← CLI binary (entry point)
 │   ├── garden init         ← scaffold new project
 │   ├── garden dev          ← local dev sandbox
@@ -296,19 +296,19 @@ agent-garden (PyPI package)
 │   ├── garden eval         ← run evaluations
 │   ├── garden submit       ← submit PR for review
 │   └── ...                 ← all other commands
-├── agent_garden.sdk        ← Python SDK for programmatic use
-│   ├── AgentGardenClient   ← API client
+├── agentbreeder.sdk        ← Python SDK for programmatic use
+│   ├── AgentBreederClient   ← API client
 │   ├── AgentConfig         ← Pydantic models
 │   └── deploy(), list()... ← SDK methods
-├── agent_garden.engine     ← config parser, runtimes, deployers
-└── agent_garden.providers  ← LLM provider abstraction
+├── agentbreeder.engine     ← config parser, runtimes, deployers
+└── agentbreeder.providers  ← LLM provider abstraction
 ```
 
 ```python
 # SDK usage (programmatic)
-from agent_garden import AgentGardenClient
+from agentbreeder import AgentBreederClient
 
-client = AgentGardenClient(base_url="http://localhost:8000")
+client = AgentBreederClient(base_url="http://localhost:8000")
 agents = client.agents.list()
 client.agents.deploy("my-agent", env="staging")
 ```
@@ -338,7 +338,7 @@ my-agent/
 ├── .env                    ← API keys (gitignored)
 ├── .env.example            ← API key placeholders (committed)
 ├── .gitignore              ← includes .env, __pycache__, .garden/
-├── .garden/                ← Agent Garden metadata (gitignored)
+├── .garden/                ← AgentBreeder metadata (gitignored)
 │   ├── state.json          ← local state (current branch, sandbox port, etc.)
 │   └── layout.json         ← visual builder node positions (UI-only metadata)
 └── README.md               ← auto-generated docs for this agent
@@ -497,7 +497,7 @@ Every field that references another resource uses a **URI-style prefix** to indi
 | Prefix | Source | Example | Resolves To |
 |--------|--------|---------|-------------|
 | `./` or `../` | Local file (relative path) | `./tools/search.yaml` | File on disk, relative to agent.yaml |
-| `registry://` | Agent Garden registry | `registry://tools/search@v1.2` | Versioned resource from the platform registry |
+| `registry://` | AgentBreeder registry | `registry://tools/search@v1.2` | Versioned resource from the platform registry |
 | `mcp://` | MCP server | `mcp://filesystem/read_file` | Tool from a running MCP server |
 | `agent://` | Another agent (A2A) | `agent://summarizer@v2.0` | Agent-to-agent call via A2A protocol |
 | (bare string) | Inline / shorthand | `prompt.md` | Local file in same directory (sugar for `./prompt.md`) |
@@ -613,7 +613,7 @@ subagents:
     as: summarize
 
   # Agent by direct URL
-  - ref: https://summarizer.myteam.agentgarden.cloud
+  - ref: https://summarizer.myteam.agentbreeder.cloud
     as: summarize
 
 # ── MCP Servers ───────────────────────────────────────────────────
@@ -1214,7 +1214,7 @@ Every resource (agent, prompt, tool, RAG index, memory config) is defined by a *
 3. **Round-trip fidelity:** Opening a YAML file in the UI and saving it without changes produces an identical file. No reordering keys, no stripping comments, no adding UI-only metadata into the YAML.
 
 ```
-Developer's editor                Agent Garden Dashboard
+Developer's editor                AgentBreeder Dashboard
 (Claude Code, Cursor,       ←→    (Visual Builder, YAML Editor,
  VS Code, vim, etc.)               Prompt Editor, etc.)
         |                                  |
@@ -1678,7 +1678,7 @@ garden clone <repo-url>           # clone external Git repo into platform
 
 #### 9.5 — Example MCP Server
 - [x] `examples/mcp-server/` — minimal MCP server (Python, stdio transport) with 2-3 example tools
-- [x] MCP server SDK helper: `from agent_garden.mcp import serve` one-liner to expose tools as MCP
+- [x] MCP server SDK helper: `from agentbreeder.mcp import serve` one-liner to expose tools as MCP
 - [x] Docker Compose includes the example MCP server alongside the platform (profiles: examples)
 
 ---
@@ -1985,7 +1985,7 @@ Integrate with Langfuse (primary) and support MLflow as an alternative backend. 
 **CLI:** `garden eject` command — see `cli/commands/eject.py`.
 
 #### 28.1 — Core SDK
-- [x] `agent_garden` Python package: `pip install agent-garden` includes the SDK
+- [x] `agentbreeder` Python package: `pip install agentbreeder` includes the SDK
 - [x] `Agent` class: define agents programmatically with model, tools, prompt, memory, guardrails
 - [x] `Tool` class: define tools as Python functions with automatic schema generation (from type hints)
 - [x] `Memory` class: configure memory backends programmatically
@@ -2051,7 +2051,7 @@ Integrate with Langfuse (primary) and support MLflow as an alternative backend. 
 - [ ] Link from agent detail → "Evaluations" tab (pre-filtered)
 
 #### 18.5 — CI/CD Integration
-- [x] GitHub Action: `agent-garden/eval-action` — run evals on PR, post results as PR comment
+- [x] GitHub Action: `agentbreeder/eval-action` — run evals on PR, post results as PR comment
 - [x] Quality gate: block merge if scores below configurable threshold
 - [x] Eval badge: embed score badge in README (like coverage badges)
 - [x] Scheduled evals: cron-based regression runs (daily/weekly)
@@ -2156,7 +2156,7 @@ Elevate MCP from "tool connector" to a managed server hub with lifecycle managem
 - [x] Visual debugging: highlight active agent during execution, show message flow on edges
 
 #### 30.2 — TypeScript SDK (Agent Development)
-- [x] `@agent-garden/sdk` npm package: TypeScript SDK for agent development
+- [x] `@agentbreeder/sdk` npm package: TypeScript SDK for agent development
 - [x] `Agent` class: define agents with model, tools, prompt, memory, guardrails (TypeScript types)
 - [x] `Tool` class: define tools as TypeScript functions with Zod schema generation
 - [x] `agent.toYaml()`: serialize to valid `agent.yaml`
@@ -2294,7 +2294,7 @@ model:
 
 **Tier 2: OpenRouter (v1.3)**
 - [ ] OpenRouter integration: route through OpenRouter API with single API key
-- [ ] Model mapping: map Agent Garden model names to OpenRouter model IDs
+- [ ] Model mapping: map AgentBreeder model names to OpenRouter model IDs
 - [ ] Cost pass-through: ingest OpenRouter cost data into cost dashboard
 - [ ] Use case: teams that want multi-provider access without running LiteLLM
 
@@ -2436,7 +2436,7 @@ The "single pane of glass" for running agents in production. Consolidates observ
 - [x] 85%+ test coverage across all modules — 87% overall, 93%+ on new orchestration SDK
 - [x] Load testing: k6 scripts for all critical paths (`tests/load/agents_api.js`, `deploy_pipeline.js`, `orchestration_execute.js`)
 - [x] Performance benchmarks tracked per release (`benchmarks/benchmark_core.py` — pytest-benchmark)
-- [x] Docs site (MkDocs Material → GitHub Pages) — `mkdocs.yml`, `docs/index.md`, `.github/workflows/docs.yml`; install: `pip install agent-garden[docs]`
+- [x] Docs site (MkDocs Material → GitHub Pages) — `mkdocs.yml`, `docs/index.md`, `.github/workflows/docs.yml`; install: `pip install agentbreeder[docs]`
 - [x] API stability: versioned API with deprecation policy — `api/versioning.py` (`APIVersionMiddleware`, `deprecate_path()`), `/api/v2/` preview routes (`api/routes/v2/agents.py`), `docs/api-stability.md`
 
 ### M31: Full Code Orchestration SDK (Python + TypeScript)
@@ -2503,7 +2503,7 @@ These are intentionally deferred indefinitely:
 | Cache | Redis | Rate limiting, task queue, session cache |
 | Container build | Docker | Universal; BuildKit for multi-platform |
 | Auth | JWT + bcrypt | Simple, stateless; OAuth2 providers added in v1.3 |
-| Distribution | `pip install agent-garden` (CLI+SDK), Docker image (platform), Helm chart (K8s) | pip for devs, Docker for teams, Helm for production |
+| Distribution | `pip install agentbreeder` (CLI+SDK), Docker image (platform), Helm chart (K8s) | pip for devs, Docker for teams, Helm for production |
 | Project structure | Single-agent (`agent.yaml` at root) or workspace (`garden.yaml` + `agents/`) | Scales from solo developer to multi-team |
 | Config format | YAML as source of truth (all resource types) | Human-readable; JSON Schema for validation; round-trip safe; IDE and UI interoperable |
 | Builder model | Three tiers: No Code (UI) → Low Code (YAML) → Full Code (SDK) | Matches how real teams work — PMs prototype in UI, engineers refine in YAML/code. Tier mobility prevents lock-in. All tiers compile to same internal format. |

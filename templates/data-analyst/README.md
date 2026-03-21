@@ -4,7 +4,7 @@ SQL-powered data analysis agent that queries databases, performs statistical ana
 
 ## Prerequisites
 
-- Agent Garden CLI installed (`pip install agent-garden`)
+- AgentBreeder CLI installed (`pip install agentbreeder`)
 - Database with read-only credentials (PostgreSQL, MySQL, or SQLite)
 - Anthropic API key (primary) and OpenAI API key (fallback)
 

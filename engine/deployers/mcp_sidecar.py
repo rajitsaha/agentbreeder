@@ -23,7 +23,7 @@ class McpSidecarDeployer:
         self,
         mcp_servers: list[McpServerRef],
         agent_name: str,
-        registry_prefix: str = "agent-garden",
+        registry_prefix: str = "agentbreeder",
     ) -> list[dict[str, Any]]:
         """Generate sidecar configurations for all MCP server refs.
 
@@ -50,8 +50,8 @@ class McpSidecarDeployer:
                 port=3000 + i,
             )
             sidecar["labels"] = {
-                "agent-garden.agent": agent_name,
-                "agent-garden.mcp-ref": mcp.ref,
+                "agentbreeder.agent": agent_name,
+                "agentbreeder.mcp-ref": mcp.ref,
             }
             sidecars.append(sidecar)
             logger.info(

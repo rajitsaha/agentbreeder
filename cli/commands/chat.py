@@ -98,7 +98,7 @@ def _run_interactive(
             f"  Environment: [dim]{env}[/dim]"
             + (f"\n  Model:       [dim]{model}[/dim]" if model else "")
             + "\n\n  [dim]Type your message and press Enter. Ctrl+C to quit.[/dim]",
-            title="Agent Garden Chat",
+            title="AgentBreeder Chat",
             border_style="blue",
         )
     )

@@ -1,4 +1,4 @@
-"""Unit tests for the Agent Garden Python SDK (M28)."""
+"""Unit tests for the AgentBreeder Python SDK (M28)."""
 
 from __future__ import annotations
 

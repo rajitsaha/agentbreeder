@@ -4,9 +4,9 @@ Demonstrates:
 - Defining agents with roles and backstories
 - Creating tasks with expected outputs
 - Sequential crew execution
-- Agent Garden export pattern
+- AgentBreeder export pattern
 
-Export the crew as `crew` — Agent Garden's server wrapper looks for this.
+Export the crew as `crew` — AgentBreeder's server wrapper looks for this.
 """
 
 from __future__ import annotations
@@ -103,7 +103,7 @@ writing_task = Task(
 
 # --- Build the crew ---
 
-# Export as 'crew' — the Agent Garden server wrapper looks for this
+# Export as 'crew' — the AgentBreeder server wrapper looks for this
 crew = Crew(
     agents=[researcher, writer],
     tasks=[research_task, writing_task],

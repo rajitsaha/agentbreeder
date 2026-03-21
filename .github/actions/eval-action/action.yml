@@ -1,4 +1,4 @@
-name: 'Agent Garden Eval'
+name: 'AgentBreeder Eval'
 description: 'Run agent evaluations and post results to PR'
 inputs:
   agent_name:
@@ -8,7 +8,7 @@ inputs:
     description: 'Evaluation dataset ID'
     required: true
   api_url:
-    description: 'Agent Garden API URL'
+    description: 'AgentBreeder API URL'
     default: 'http://localhost:8000'
   threshold:
     description: 'Minimum acceptable score (0.0-1.0)'
@@ -34,7 +34,7 @@ runs:
       with:
         python-version: '3.11'
 
-    - name: Install Agent Garden CLI
+    - name: Install AgentBreeder CLI
       shell: bash
       run: |
         pip install -e "${{ github.workspace }}" --quiet
@@ -130,7 +130,7 @@ runs:
             lines.append(f\"| {r['metric']} | {r['score']:.4f} | {threshold:.2f} | {s_icon} {r['status']} |\")
         lines.append('')
         lines.append('---')
-        lines.append('*Posted by [Agent Garden Eval](.github/actions/eval-action)*')
+        lines.append('*Posted by [AgentBreeder Eval](.github/actions/eval-action)*')
 
         print('\n'.join(lines))
         ")

@@ -21,7 +21,7 @@ def respond(state: AgentState) -> AgentState:
     message = state.get("message", "")
     return {
         "message": message,
-        "response": f"Hello from Agent Garden! You said: {message}",
+        "response": f"Hello from AgentBreeder! You said: {message}",
     }
 
 
@@ -31,5 +31,5 @@ builder.add_node("respond", respond)
 builder.set_entry_point("respond")
 builder.set_finish_point("respond")
 
-# Export as 'graph' — the Agent Garden server wrapper looks for this
+# Export as 'graph' — the AgentBreeder server wrapper looks for this
 graph = builder.compile()

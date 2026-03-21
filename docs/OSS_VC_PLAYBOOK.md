@@ -1,5 +1,5 @@
 # Open Source + VC Funding Playbook
-**How to Build a VC-Backed Company Around Agent Garden**
+**How to Build a VC-Backed Company Around AgentBreeder**
 
 ---
 
@@ -20,7 +20,7 @@
 - Community support (GitHub Issues, Discord)
 
 **Paid (proprietary or hosted):**
-- Managed cloud deployment platform ("Agent Garden Cloud")
+- Managed cloud deployment platform ("AgentBreeder Cloud")
 - Enterprise governance (SSO/SAML, compliance exports, approval workflows)
 - Premium observability (fleet analytics, anomaly detection, cost optimization)
 - Marketplace fees (15-20% on premium templates)
@@ -29,7 +29,7 @@
 ### Key Rule: The Free Tier Must Be Genuinely Valuable
 - Vercel's free tier: unlimited projects, 100GB bandwidth, preview deployments
 - Supabase's free tier: 2 projects, 500MB database, 50K monthly active users
-- Agent Garden's free tier: unlimited agents, unlimited frameworks, full local deployment, basic governance
+- AgentBreeder's free tier: unlimited agents, unlimited frameworks, full local deployment, basic governance
 - If the free tier is crippled, developers won't adopt and the flywheel never starts
 
 ---
@@ -56,7 +56,7 @@
 - **SSPL (Server Side Public License)**: Used by MongoDB, Elastic. Even more controversial. Not OSI-approved.
 - **Custom "fair source"**: Used by Dify, n8n. Confuses developers. Not truly open source.
 
-**For Agent Garden: Apache 2.0 for the core platform. Proprietary license for the cloud platform and enterprise features.**
+**For AgentBreeder: Apache 2.0 for the core platform. Proprietary license for the cloud platform and enterprise features.**
 
 ### Step 3: Copyright & IP Assignment
 - All contributors should sign a Contributor License Agreement (CLA)
@@ -65,7 +65,7 @@
 - This ensures the company owns the IP needed for patent filings and dual licensing
 
 ### Step 4: Trademark
-- Register "Agent Garden" as a trademark (USPTO, ~$250-350 per class)
+- Register "AgentBreeder" as a trademark (USPTO, ~$250-350 per class)
 - Trademarks protect the brand even though the code is open source
 - Red Hat, Docker, Kubernetes -- all have strong trademark protection
 - Include trademark guidelines in the repo (TRADEMARK.md)
@@ -74,9 +74,9 @@
 
 ## 3. VC Fundraising Process
 
-### Pre-Seed / Seed Stage (Where Agent Garden Is)
+### Pre-Seed / Seed Stage (Where AgentBreeder Is)
 **What VCs want to see:**
-- Working product (Agent Garden has this -- full platform built)
+- Working product (AgentBreeder has this -- full platform built)
 - Technical differentiation (12 innovations, 3 patent candidates)
 - Early traction signals (GitHub stars, downloads, community size)
 - Clear revenue model (open core + cloud + marketplace)
@@ -90,7 +90,7 @@
 - Instrument: SAFE (Simple Agreement for Future Equity) or priced round
 - Timeline: 12-18 months runway
 
-### Target Investors for Agent Garden
+### Target Investors for AgentBreeder
 **Tier 1 (AI/Developer Tool Specialists):**
 - a16z (invested in LangChain, GitHub, Hugging Face)
 - Benchmark (invested in LangChain)
@@ -165,7 +165,7 @@
 - 3 patent provisionals filed
 
 **Seed to Series A (+6 to +18 months):**
-- Agent Garden Cloud in production
+- AgentBreeder Cloud in production
 - 500+ paying customers
 - $1-3M ARR
 - 50+ enterprise accounts
@@ -208,7 +208,7 @@
 - **Monthly newsletter**: Highlights, stats, featured community projects
 
 ### Contributor Funnel
-1. **User** -- uses Agent Garden, files issues
+1. **User** -- uses AgentBreeder, files issues
 2. **Contributor** -- submits PRs (bug fixes, docs, templates)
 3. **Maintainer** -- reviews PRs, triages issues (trusted contributor promoted)
 4. **Core Team** -- employees or top maintainers with commit access
@@ -229,12 +229,12 @@
 Fear: AWS/GCP takes your open-source code and offers it as a managed service, undercutting you.
 Reality: This happened to MongoDB, Elastic, Redis, and they all adopted more restrictive licenses.
 
-**Agent Garden's defense strategy:**
+**AgentBreeder's defense strategy:**
 1. **Apache 2.0 for core** -- maximizes adoption and trust
 2. **Proprietary cloud platform** -- the managed hosting, enterprise features, and cloud UI are NOT open source
-3. **Speed** -- ship faster than cloud providers can copy. AWS Bedrock AgentCore exists but is AWS-only. Agent Garden's multi-cloud advantage is structural.
+3. **Speed** -- ship faster than cloud providers can copy. AWS Bedrock AgentCore exists but is AWS-only. AgentBreeder's multi-cloud advantage is structural.
 4. **Community** -- a thriving open-source community is a moat. Docker, Kubernetes, and Terraform all survived despite cloud provider competition because the community trusts the original project.
-5. **Brand/trademark** -- "Agent Garden" is trademarked. Nobody else can use the name for a competing service.
+5. **Brand/trademark** -- "AgentBreeder" is trademarked. Nobody else can use the name for a competing service.
 6. **Patents** -- defensive patents prevent cloud providers from blocking you. Patent pledge prevents community backlash.
 
 ### Revenue Segmentation
@@ -268,7 +268,7 @@ This bright line must be maintained even under revenue pressure. Crossing it des
 | 3 | Patent provisionals | File 3 provisional patents ($10-15K) |
 | 4 | Seed fundraising | Pitch 50-80 investors, target $2-5M |
 | 5 | Close seed | Hire first 3-5 engineers |
-| 6 | Cloud alpha | Agent Garden Cloud internal testing |
+| 6 | Cloud alpha | AgentBreeder Cloud internal testing |
 | 8 | Cloud beta | First 100 cloud users, $50K MRR |
 | 10 | Cloud GA | General availability, pricing tiers live |
 | 12 | Enterprise | First 10 enterprise contracts, $200K+ MRR |
@@ -283,7 +283,7 @@ This bright line must be maintained even under revenue pressure. Crossing it des
 |------|-------------|--------|------------|
 | AWS/GCP builds competing product | HIGH | MEDIUM | Multi-cloud is structural advantage; community moat |
 | Framework consolidation reduces need | MEDIUM | MEDIUM | Framework-agnostic means we benefit regardless of who wins |
-| Oracle Open Agent Spec becomes standard | LOW | HIGH | Contribute to the standard; Agent Garden becomes the best implementation |
+| Oracle Open Agent Spec becomes standard | LOW | HIGH | Contribute to the standard; AgentBreeder becomes the best implementation |
 | Slow enterprise adoption | MEDIUM | HIGH | Bottom-up developer adoption first; enterprise follows |
 | Open-source community doesn't grow | MEDIUM | HIGH | Active DevRel, fast response times, great DX |
 | Patent rejection | MEDIUM | LOW | Defensive publications protect innovations regardless |

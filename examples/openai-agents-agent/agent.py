@@ -62,7 +62,7 @@ def calculator(expression: str) -> str:
         return f"Error evaluating '{expression}': {e}"
 
 
-# Build the agent — exported as 'agent' for the Agent Garden server wrapper
+# Build the agent — exported as 'agent' for the AgentBreeder server wrapper
 agent = Agent(
     name="Research Assistant",
     instructions=(

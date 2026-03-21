@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # setup-branch-protection.sh
 #
-# Configures GitHub branch protection rules for agent-garden via the GitHub API.
+# Configures GitHub branch protection rules for agentbreeder via the GitHub API.
 # Run this ONCE after creating the repository. Requires gh CLI authenticated with
 # an account that has Admin access to the repository.
 #
@@ -16,7 +16,7 @@
 set -euo pipefail
 
 # ── Configuration ─────────────────────────────────────────────────────────────
-REPO="${1:-$(gh repo view --json nameWithOwner -q .nameWithOwner 2>/dev/null || echo "open-agent-garden/agent-garden")}"
+REPO="${1:-$(gh repo view --json nameWithOwner -q .nameWithOwner 2>/dev/null || echo "open-agentbreeder/agentbreeder")}"
 BRANCH="main"
 
 # Only this GitHub user can merge PRs into main.

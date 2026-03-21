@@ -1,5 +1,5 @@
 # Gitleaks configuration — ignore test fixtures and example placeholders
-title = "Agent Garden Gitleaks Config"
+title = "AgentBreeder Gitleaks Config"
 
 [allowlist]
 description = "Allow test fixtures, examples, and placeholder values"

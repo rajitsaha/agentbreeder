@@ -72,7 +72,7 @@ def eval_run(
             Panel(
                 f"[bold]Evaluating[/bold] [cyan]{agent_name}[/cyan] "
                 f"against dataset [dim]{dataset[:8]}...[/dim]",
-                title="Agent Garden Eval",
+                title="AgentBreeder Eval",
                 border_style="blue",
             )
         )

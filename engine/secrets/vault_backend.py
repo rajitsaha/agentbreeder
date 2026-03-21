@@ -36,7 +36,7 @@ def _client(addr: str, token: str):  # type: ignore[return]
 class VaultBackend(SecretsBackend):
     """Secrets stored in HashiCorp Vault KV v2 secrets engine.
 
-    Each Agent Garden secret is stored at:
+    Each AgentBreeder secret is stored at:
         {mount}/{prefix}{name}  (with data key "value")
     """
 

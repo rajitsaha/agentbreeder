@@ -728,7 +728,7 @@ class TestEjectCommand:
         from cli.commands.eject import _generate_typescript_sdk
 
         code = _generate_typescript_sdk(VALID_YAML)
-        assert "@agent-garden/sdk" in code
+        assert "@agentbreeder/sdk" in code
         assert "test-agent" in code
         assert "gpt-4o" in code
 

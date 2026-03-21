@@ -15,13 +15,13 @@ class TestHealthEndpoint:
         assert response.status_code == 200
         data = response.json()
         assert data["status"] == "healthy"
-        assert data["service"] == "agent-garden-api"
+        assert data["service"] == "agentbreeder-api"
         assert data["version"] == "0.1.0"
 
 
 class TestAPIConfig:
     def test_api_has_correct_title(self) -> None:
-        assert app.title == "Agent Garden API"
+        assert app.title == "AgentBreeder API"
 
     def test_api_has_agent_routes(self) -> None:
         routes = [r.path for r in app.routes]

@@ -1,8 +1,8 @@
-site_name: Agent Garden
+site_name: AgentBreeder
 site_description: "Define Once. Deploy Anywhere. Govern Automatically."
-site_url: https://open-agent-garden.github.io/agent-garden
-repo_url: https://github.com/open-agent-garden/agent-garden
-repo_name: open-agent-garden/agent-garden
+site_url: https://open-agentbreeder.github.io/agentbreeder
+repo_url: https://github.com/open-agentbreeder/agentbreeder
+repo_name: open-agentbreeder/agentbreeder
 edit_uri: edit/main/docs/
 
 theme:
@@ -81,8 +81,8 @@ nav:
 extra:
   social:
     - icon: fontawesome/brands/github
-      link: https://github.com/open-agent-garden/agent-garden
+      link: https://github.com/open-agentbreeder/agentbreeder
   version:
     provider: mike
 
-copyright: "Copyright &copy; 2026 Agent Garden Contributors — Apache License 2.0"
+copyright: "Copyright &copy; 2026 AgentBreeder Contributors — Apache License 2.0"

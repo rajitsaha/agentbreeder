@@ -1,8 +1,8 @@
 name: hello-world-agent
 version: 0.1.0
-description: "A simple hello world LangGraph agent for testing Agent Garden"
+description: "A simple hello world LangGraph agent for testing AgentBreeder"
 team: examples
-owner: dev@agent-garden.com
+owner: dev@agentbreeder.com
 tags: [example, langgraph, hello-world]
 
 framework: langgraph

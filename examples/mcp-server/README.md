@@ -1,6 +1,6 @@
 # Example MCP Server
 
-A minimal MCP server that demonstrates how to build tools for Agent Garden agents.
+A minimal MCP server that demonstrates how to build tools for AgentBreeder agents.
 
 ## Tools
 
@@ -8,7 +8,7 @@ A minimal MCP server that demonstrates how to build tools for Agent Garden agent
 |------|-------------|
 | `calculate` | Safely evaluate math expressions (no `eval`) |
 | `get_weather` | Return mock weather data for a city |
-| `search_docs` | Return mock search results from Agent Garden docs |
+| `search_docs` | Return mock search results from AgentBreeder docs |
 
 ## Install
 
@@ -23,7 +23,7 @@ pip install -r requirements.txt
 python server.py
 ```
 
-The server communicates over **stdio** (stdin/stdout) using the MCP protocol. It is designed to be launched by an MCP client (such as an Agent Garden agent), not called directly via HTTP.
+The server communicates over **stdio** (stdin/stdout) using the MCP protocol. It is designed to be launched by an MCP client (such as an AgentBreeder agent), not called directly via HTTP.
 
 ## Test Each Tool
 
@@ -49,7 +49,7 @@ echo '{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"get_weathe
 echo '{"jsonrpc":"2.0","id":4,"method":"tools/call","params":{"name":"search_docs","arguments":{"query":"deploy aws"}}}' | python server.py
 ```
 
-## Register with Agent Garden
+## Register with AgentBreeder
 
 Reference this MCP server in your `agent.yaml`:
 
@@ -72,4 +72,4 @@ garden register tool \
 
 ## Using the SDK Helper
 
-You can also build MCP servers using the Agent Garden SDK helper for an even more concise pattern. See `sdk/python/agenthub/mcp.py` for the decorator-based API.
+You can also build MCP servers using the AgentBreeder SDK helper for an even more concise pattern. See `sdk/python/agenthub/mcp.py` for the decorator-based API.

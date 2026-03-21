@@ -12,15 +12,15 @@
 - [ ] Your agent can accept a text input and return a text output
 - [ ] Python 3.11+ is installed
 - [ ] Docker is installed and running
-- [ ] You have installed Agent Garden: `pip install agent-garden`
+- [ ] You have installed AgentBreeder: `pip install agentbreeder`
 
 ---
 
 ## The Big Picture
 
-Agent Garden supports `framework: custom` for any Python agent that does not fit the built-in framework categories (LangGraph, CrewAI, OpenAI Agents, Claude SDK, Google ADK). This is the "bring your own agent" path.
+AgentBreeder supports `framework: custom` for any Python agent that does not fit the built-in framework categories (LangGraph, CrewAI, OpenAI Agents, Claude SDK, Google ADK). This is the "bring your own agent" path.
 
-**The contract is simple:** provide an `agent.py` that exports an `agent` object with an `invoke` method (or a callable), and a `server.py` that wraps it in a FastAPI app. Agent Garden handles the rest.
+**The contract is simple:** provide an `agent.py` that exports an `agent` object with an `invoke` method (or a callable), and a `server.py` that wraps it in a FastAPI app. AgentBreeder handles the rest.
 
 ---
 
@@ -36,7 +36,7 @@ my-agent/
   # Deployed however you currently deploy it
 ```
 
-### After: Your Custom Agent + Agent Garden
+### After: Your Custom Agent + AgentBreeder
 
 ```
 my-agent/
@@ -95,7 +95,7 @@ All three work. The server wrapper adapts to whichever pattern you use.
 
 ### Step 2: Create server.py
 
-This is the HTTP wrapper that Agent Garden's container will run. Adapt it to your agent's interface:
+This is the HTTP wrapper that AgentBreeder's container will run. Adapt it to your agent's interface:
 
 **For function-based agents:**
 
@@ -106,7 +106,7 @@ from pydantic import BaseModel
 
 from agent import run_agent
 
-app = FastAPI(title="Agent Garden Custom Agent")
+app = FastAPI(title="AgentBreeder Custom Agent")
 
 
 class InvokeRequest(BaseModel):
@@ -120,7 +120,7 @@ class InvokeResponse(BaseModel):
 
 @app.get("/health")
 async def health():
-    """Health check endpoint -- required by Agent Garden."""
+    """Health check endpoint -- required by AgentBreeder."""
     return {"status": "healthy"}
 
 
@@ -141,7 +141,7 @@ from pydantic import BaseModel
 
 from agent import agent
 
-app = FastAPI(title="Agent Garden Custom Agent")
+app = FastAPI(title="AgentBreeder Custom Agent")
 
 
 class InvokeRequest(BaseModel):
@@ -183,7 +183,7 @@ from pydantic import BaseModel
 
 from agent import agent
 
-app = FastAPI(title="Agent Garden Custom Agent")
+app = FastAPI(title="AgentBreeder Custom Agent")
 
 
 class InvokeRequest(BaseModel):
@@ -231,7 +231,7 @@ deploy:
 
 ### Step 4: Create or update Dockerfile (optional)
 
-For `framework: custom`, Agent Garden generates a basic Dockerfile. If you need custom system dependencies, create your own:
+For `framework: custom`, AgentBreeder generates a basic Dockerfile. If you need custom system dependencies, create your own:
 
 ```dockerfile
 FROM python:3.11-slim
@@ -262,7 +262,7 @@ HEALTHCHECK --interval=10s --timeout=5s --retries=3 \
 CMD ["uvicorn", "server:app", "--host", "0.0.0.0", "--port", "8080"]
 ```
 
-If you provide your own `Dockerfile`, Agent Garden uses it instead of generating one.
+If you provide your own `Dockerfile`, AgentBreeder uses it instead of generating one.
 
 ### Step 5: Update requirements.txt
 
@@ -300,7 +300,7 @@ curl -X POST http://localhost:8080/invoke \
 
 ## Adding Health Checks
 
-The `/health` endpoint is required. Agent Garden pings it to verify your container is running. You can add more sophisticated checks:
+The `/health` endpoint is required. AgentBreeder pings it to verify your container is running. You can add more sophisticated checks:
 
 ```python
 @app.get("/health")
@@ -329,7 +329,7 @@ async def health():
 
 ## Adding Logging Hooks
 
-Agent Garden collects logs from your container's stdout/stderr. Use structured logging for best results:
+AgentBreeder collects logs from your container's stdout/stderr. Use structured logging for best results:
 
 ```python
 import logging
@@ -370,7 +370,7 @@ garden logs my-custom-agent
 
 ## Adding OpenTelemetry Tracing
 
-For distributed tracing integration with Agent Garden's observability:
+For distributed tracing integration with AgentBreeder's observability:
 
 ```python
 # Add to server.py
@@ -591,7 +591,7 @@ async def invoke(request: InvokeRequest):
 
 ## What You Gain
 
-| Feature | Custom Agent Alone | + Agent Garden |
+| Feature | Custom Agent Alone | + AgentBreeder |
 |---------|-------------------|----------------|
 | Agent logic | Your code | Your code (unchanged) |
 | HTTP server | You build it | Template provided |

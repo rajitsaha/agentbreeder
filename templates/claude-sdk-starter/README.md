@@ -1,10 +1,10 @@
 # Claude SDK Starter
 
-Claude SDK agent with tool use and an async message handler. Use this as a starting point for building agents directly with the Anthropic Python SDK and Agent Garden.
+Claude SDK agent with tool use and an async message handler. Use this as a starting point for building agents directly with the Anthropic Python SDK and AgentBreeder.
 
 ## Prerequisites
 
-- Agent Garden CLI installed (`pip install agent-garden`)
+- AgentBreeder CLI installed (`pip install agentbreeder`)
 - Python 3.11+ with `anthropic` installed
 - Anthropic API key
 
@@ -45,7 +45,7 @@ Final Response
 
 ### Key Files
 
-- `agent.yaml` -- Agent Garden configuration
+- `agent.yaml` -- AgentBreeder configuration
 - `agent.py` -- Claude SDK agent with tool use loop (entry point)
 
 ### Tool Use Loop

@@ -1,12 +1,12 @@
 # Architecture
 
-> Agent Garden is a deployment platform. A developer writes `agent.yaml`, runs `garden deploy`, and the platform handles container building, infrastructure provisioning, governance, and registry registration.
+> AgentBreeder is a deployment platform. A developer writes `agent.yaml`, runs `garden deploy`, and the platform handles container building, infrastructure provisioning, governance, and registry registration.
 
 ---
 
 ## Three-Tier Builder Model
 
-Agent Garden supports three ways to build agents and orchestrations. All three tiers compile down to the same internal representation (`agent.yaml` + optional code) and share the same deploy pipeline, governance, and observability.
+AgentBreeder supports three ways to build agents and orchestrations. All three tiers compile down to the same internal representation (`agent.yaml` + optional code) and share the same deploy pipeline, governance, and observability.
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
@@ -42,7 +42,7 @@ Agent Garden supports three ways to build agents and orchestrations. All three t
 |------|-------------------|---------------------|------------|
 | **No Code** | Visual builder: pick model, tools, prompt, guardrails from registry. Generates `agent.yaml`. | Visual canvas: wire agents as nodes, define routing/handoff rules. Generates `orchestration.yaml`. | "View YAML" → opens in Low Code editor |
 | **Low Code** | Write `agent.yaml` in any IDE (Cursor, Claude Code, VS Code, vim) or the dashboard YAML editor | Write `orchestration.yaml` defining agent graph, routing strategy, shared state | "Eject to SDK" → generates Python/TS scaffold |
-| **Full Code** | Python/TS SDK: `from agent_garden import Agent, Tool, Memory` — full programmatic control, custom logic, dynamic tool selection | Python/TS SDK: define orchestration graphs, custom routing functions, state machines, human-in-the-loop breakpoints | N/A (maximum control) |
+| **Full Code** | Python/TS SDK: `from agentbreeder import Agent, Tool, Memory` — full programmatic control, custom logic, dynamic tool selection | Python/TS SDK: define orchestration graphs, custom routing functions, state machines, human-in-the-loop breakpoints | N/A (maximum control) |
 
 ### Compilation Model
 
@@ -86,7 +86,7 @@ No Code ──"View YAML"──→ Low Code ──"Eject to SDK"──→ Full C
 ## System Overview
 
 ```
-Developer                    Agent Garden Platform                     Cloud
+Developer                    AgentBreeder Platform                     Cloud
 
 agent.yaml  ──>  [ CLI ]  ──>  [ API Server ]  ──>  [ Engine ]  ──>  [ AWS / GCP / K8s ]
                                       |                  |
@@ -114,7 +114,7 @@ agent.yaml  ──>  [ CLI ]  ──>  [ API Server ]  ──>  [ Engine ]  ─�
 
 ## The Deploy Pipeline
 
-This is the core of Agent Garden. Every `garden deploy` executes these steps in order. Each step is atomic — if any step fails, the entire deploy rolls back.
+This is the core of AgentBreeder. Every `garden deploy` executes these steps in order. Each step is atomic — if any step fails, the entire deploy rolls back.
 
 ```
 1. Parse & Validate YAML
@@ -325,7 +325,7 @@ POST   /api/v1/lineage/sync/{agent}   # Sync agent dependencies from config
 
 ## Observability Layer (v0.4)
 
-Agent Garden provides built-in observability across three dimensions: tracing, cost tracking, and audit. These services are implemented as FastAPI route modules backed by dedicated service classes.
+AgentBreeder provides built-in observability across three dimensions: tracing, cost tracking, and audit. These services are implemented as FastAPI route modules backed by dedicated service classes.
 
 ### Tracing (`api/routes/tracing.py`, `api/services/tracing_service.py`)
 
@@ -394,7 +394,7 @@ The `garden eject` CLI command (`cli/commands/eject.py`) generates an SDK scaffo
 
 ## Design Principles
 
-1. **Governance is a side effect** — deploying through Agent Garden automatically creates RBAC records, cost attribution, audit entries, and registry listings. There is no separate governance setup.
+1. **Governance is a side effect** — deploying through AgentBreeder automatically creates RBAC records, cost attribution, audit entries, and registry listings. There is no separate governance setup.
 
 2. **Framework-agnostic** — no framework-specific logic outside `engine/runtimes/`. The rest of the system treats all frameworks identically.
 

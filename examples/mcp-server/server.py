@@ -1,4 +1,4 @@
-"""Example MCP server for Agent Garden.
+"""Example MCP server for AgentBreeder.
 
 A minimal MCP server (stdio transport) that exposes three tools:
 - calculate: evaluate a math expression safely
@@ -6,7 +6,7 @@ A minimal MCP server (stdio transport) that exposes three tools:
 - search_docs: return mock search results for a query
 
 This demonstrates the standard pattern for building MCP tool servers
-that integrate with Agent Garden's tool registry.
+that integrate with AgentBreeder's tool registry.
 
 Usage:
     python server.py
@@ -171,41 +171,41 @@ def get_weather(city: str) -> str:
 # Mock document corpus
 _MOCK_DOCS = [
     {
-        "title": "Getting Started with Agent Garden",
-        "snippet": "Install Agent Garden with pip install agent-garden-sdk. "
+        "title": "Getting Started with AgentBreeder",
+        "snippet": "Install AgentBreeder with pip install agentbreeder-sdk. "
         "Create an agent.yaml file and run garden deploy.",
-        "url": "https://docs.agentgarden.dev/getting-started",
+        "url": "https://docs.agentbreeder.dev/getting-started",
     },
     {
         "title": "Writing Custom MCP Servers",
         "snippet": "MCP servers expose tools over stdio or HTTP. "
         "Use the mcp Python package to build a server in minutes.",
-        "url": "https://docs.agentgarden.dev/mcp-servers",
+        "url": "https://docs.agentbreeder.dev/mcp-servers",
     },
     {
         "title": "Deploying to AWS ECS",
         "snippet": "Set deploy.cloud to 'aws' and deploy.runtime to 'ecs-fargate' "
-        "in your agent.yaml. Agent Garden handles the rest.",
-        "url": "https://docs.agentgarden.dev/deploy/aws-ecs",
+        "in your agent.yaml. AgentBreeder handles the rest.",
+        "url": "https://docs.agentbreeder.dev/deploy/aws-ecs",
     },
     {
         "title": "RBAC and Governance",
         "snippet": "Every deployment is governed by role-based access control. "
         "Teams, cost attribution, and audit trails are automatic.",
-        "url": "https://docs.agentgarden.dev/governance",
+        "url": "https://docs.agentbreeder.dev/governance",
     },
     {
         "title": "Multi-Agent Orchestration",
         "snippet": "Define orchestration.yaml to wire multiple agents together. "
         "Supports sequential, parallel, and router patterns.",
-        "url": "https://docs.agentgarden.dev/orchestration",
+        "url": "https://docs.agentbreeder.dev/orchestration",
     },
 ]
 
 
 @mcp.tool()
 def search_docs(query: str) -> str:
-    """Search the Agent Garden documentation (mock results for demonstration).
+    """Search the AgentBreeder documentation (mock results for demonstration).
 
     Args:
         query: Search query string (e.g. "deploy aws", "mcp server").

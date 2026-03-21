@@ -137,7 +137,7 @@ export default function LoginPage() {
               <Bot className="size-5 text-white/90" />
             </div>
             <span className="text-sm font-semibold tracking-tight text-white/90">
-              Agent Garden
+              AgentBreeder
             </span>
           </div>
 
@@ -190,7 +190,7 @@ export default function LoginPage() {
               <div className="flex size-7 items-center justify-center rounded-lg bg-foreground">
                 <Bot className="size-4 text-background" />
               </div>
-              <span className="text-sm font-semibold tracking-tight">Agent Garden</span>
+              <span className="text-sm font-semibold tracking-tight">AgentBreeder</span>
             </div>
 
             <h2 className="text-lg font-semibold tracking-tight">
@@ -198,8 +198,8 @@ export default function LoginPage() {
             </h2>
             <p className="mt-1 text-xs text-muted-foreground">
               {mode === "login"
-                ? "Sign in to your Agent Garden account"
-                : "Get started with Agent Garden"}
+                ? "Sign in to your AgentBreeder account"
+                : "Get started with AgentBreeder"}
             </p>
 
             {/* Error */}
@@ -331,7 +331,7 @@ export default function LoginPage() {
 
         {/* Footer */}
         <div className="flex h-10 items-center justify-center px-8 text-[10px] text-muted-foreground/40">
-          Agent Garden v0.1 &middot; Open Source
+          AgentBreeder v0.1 &middot; Open Source
         </div>
       </div>
 

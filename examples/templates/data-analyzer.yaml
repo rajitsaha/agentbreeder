@@ -8,7 +8,7 @@ description: "Template for building data analysis agents that query databases an
 category: data_analysis
 framework: openai_agents
 tags: [data, analysis, sql, insights, reporting]
-author: agent-garden
+author: agentbreeder
 team: default
 
 parameters:

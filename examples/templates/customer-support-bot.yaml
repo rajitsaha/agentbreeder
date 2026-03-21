@@ -8,7 +8,7 @@ description: "Template for building customer support agents with FAQ lookup and 
 category: customer_support
 framework: langgraph
 tags: [support, customer-service, faq, tickets]
-author: agent-garden
+author: agentbreeder
 team: default
 
 parameters:

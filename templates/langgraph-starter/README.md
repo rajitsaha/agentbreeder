@@ -1,10 +1,10 @@
 # LangGraph Starter
 
-Minimal LangGraph agent with tool-calling nodes, conditional routing, and typed state. Use this as a starting point for building LangGraph-based agents with Agent Garden.
+Minimal LangGraph agent with tool-calling nodes, conditional routing, and typed state. Use this as a starting point for building LangGraph-based agents with AgentBreeder.
 
 ## Prerequisites
 
-- Agent Garden CLI installed (`pip install agent-garden`)
+- AgentBreeder CLI installed (`pip install agentbreeder`)
 - Python 3.11+ with `langgraph` and `langchain-core` installed
 - Anthropic API key or OpenAI API key
 
@@ -38,7 +38,7 @@ Minimal LangGraph agent with tool-calling nodes, conditional routing, and typed 
 
 ### Key Files
 
-- `agent.yaml` -- Agent Garden configuration
+- `agent.yaml` -- AgentBreeder configuration
 - `graph.py` -- LangGraph graph definition (entry point)
 
 ### Graph Structure
@@ -75,4 +75,4 @@ def agent_node(state: AgentState) -> AgentState:
 garden eject --format python
 ```
 
-This generates a standalone Python project with no Agent Garden dependencies.
+This generates a standalone Python project with no AgentBreeder dependencies.

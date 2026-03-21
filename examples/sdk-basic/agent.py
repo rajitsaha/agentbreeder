@@ -1,4 +1,4 @@
-"""Basic Agent Garden SDK example.
+"""Basic AgentBreeder SDK example.
 
 Demonstrates the builder-pattern API for defining an agent, validating it,
 exporting to YAML, and saving to disk.

@@ -5,7 +5,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Have an idea? We'd love to hear it. For major features, consider opening a [Discussion](https://github.com/open-agent-garden/agent-garden/discussions) first.
+        Have an idea? We'd love to hear it. For major features, consider opening a [Discussion](https://github.com/open-agentbreeder/agentbreeder/discussions) first.
 
   - type: textarea
     id: problem

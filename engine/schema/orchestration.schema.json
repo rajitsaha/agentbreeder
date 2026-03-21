@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "Agent Garden Orchestration Configuration",
-  "description": "Schema for orchestration.yaml — the multi-agent orchestration definition file for Agent Garden",
+  "title": "AgentBreeder Orchestration Configuration",
+  "description": "Schema for orchestration.yaml — the multi-agent orchestration definition file for AgentBreeder",
   "type": "object",
   "required": ["name", "version", "strategy", "agents"],
   "additionalProperties": false,

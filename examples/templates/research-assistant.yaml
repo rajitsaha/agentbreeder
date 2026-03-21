@@ -8,7 +8,7 @@ description: "Template for building research agents that search, synthesize, and
 category: research
 framework: langgraph
 tags: [research, search, synthesis, summarization, rag]
-author: agent-garden
+author: agentbreeder
 team: default
 
 parameters:

@@ -49,7 +49,7 @@ def deploy(
         console.print(
             Panel(
                 f"[bold]Deploying[/bold] {config_path.name} → [cyan]{target}[/cyan]",
-                title="Agent Garden",
+                title="AgentBreeder",
                 border_style="blue",
             )
         )

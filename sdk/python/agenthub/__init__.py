@@ -1,4 +1,4 @@
-"""Agent Garden Python SDK — Full Code tier.
+"""AgentBreeder Python SDK — Full Code tier.
 
 Define, validate, serialize, and deploy agents and orchestrations programmatically.
 

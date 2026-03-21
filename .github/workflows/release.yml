@@ -18,9 +18,9 @@ jobs:
       postgres:
         image: postgres:16
         env:
-          POSTGRES_USER: agent_garden
-          POSTGRES_PASSWORD: agent_garden
-          POSTGRES_DB: agent_garden_test
+          POSTGRES_USER: agentbreeder
+          POSTGRES_PASSWORD: agentbreeder
+          POSTGRES_DB: agentbreeder_test
         ports:
           - 5432:5432
         options: >-
@@ -53,7 +53,7 @@ jobs:
 
       - name: Run unit tests
         env:
-          DATABASE_URL: postgresql://agent_garden:agent_garden@localhost:5432/agent_garden_test
+          DATABASE_URL: postgresql://agentbreeder:agentbreeder@localhost:5432/agentbreeder_test
           REDIS_URL: redis://localhost:6379
           SECRET_KEY: test-secret-key-for-ci
           GARDEN_ENV: test
@@ -169,7 +169,7 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          name: "Agent Garden v${{ steps.version.outputs.version }}"
+          name: "AgentBreeder v${{ steps.version.outputs.version }}"
           body: ${{ steps.changelog.outputs.notes }}
           files: dist/*
           draft: false
@@ -182,7 +182,7 @@ jobs:
     needs: github-release
     environment:
       name: pypi
-      url: https://pypi.org/project/agent-garden/
+      url: https://pypi.org/project/agentbreeder/
     permissions:
       id-token: write   # OIDC trusted publishing — no API key needed
     steps:

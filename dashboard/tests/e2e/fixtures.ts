@@ -121,7 +121,7 @@ export const MOCK_TEMPLATE = {
   tags: ["support", "starter"],
   star_count: 42,
   download_count: 200,
-  author: "agent-garden-team",
+  author: "agentbreeder-team",
   created_at: "2026-01-01T00:00:00Z",
 };
 

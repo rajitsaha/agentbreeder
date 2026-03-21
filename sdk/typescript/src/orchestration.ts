@@ -1,5 +1,5 @@
 /**
- * Full Code Orchestration SDK for Agent Garden.
+ * Full Code Orchestration SDK for AgentBreeder.
  *
  * Provides builder-pattern classes for defining multi-agent workflows:
  * - Orchestration: base class wrapping orchestration.yaml config
@@ -10,7 +10,7 @@
  *
  * @example
  * ```ts
- * import { Orchestration, Pipeline, FanOut, Supervisor, KeywordRouter } from "@agent-garden/sdk";
+ * import { Orchestration, Pipeline, FanOut, Supervisor, KeywordRouter } from "@agentbreeder/sdk";
  *
  * // Router-based
  * const support = new Orchestration("support-pipeline", "router", { team: "eng" })

@@ -9,7 +9,7 @@
  * Run:
  *   k6 run tests/load/agents_api.js
  *   k6 run --vus 50 --duration 60s tests/load/agents_api.js
- *   k6 run --env BASE_URL=https://staging.agentgarden.io tests/load/agents_api.js
+ *   k6 run --env BASE_URL=https://staging.agentbreeder.io tests/load/agents_api.js
  *
  * Thresholds (SLOs):
  *   p95 response time < 500ms

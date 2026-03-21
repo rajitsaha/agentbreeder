@@ -1,14 +1,14 @@
-# AGENT.md — Agent Garden AI Skills & Agent Roster
+# AGENT.md — AgentBreeder AI Skills & Agent Roster
 
 > This file defines the AI agent skills, MCP server configurations, and automated workflows
-> used to build, test, design, and ship Agent Garden. Every skill is a reusable capability
+> used to build, test, design, and ship AgentBreeder. Every skill is a reusable capability
 > that contributors and Claude can invoke during development.
 
 ---
 
 ## 🧠 Philosophy
 
-Agent Garden is built with AI-assisted development from Day 1. This means:
+AgentBreeder is built with AI-assisted development from Day 1. This means:
 - Every major task has a defined **skill** (a prompt + context + tools that reliably accomplishes it)
 - Skills are composable — complex tasks chain simpler skills
 - Skills are version-controlled here so they improve over time
@@ -40,9 +40,9 @@ Agent Garden is built with AI-assisted development from Day 1. This means:
 
 **Skill Prompt:**
 ```
-You are a senior UI/UX engineer working on Agent Garden's React + Tailwind dashboard.
+You are a senior UI/UX engineer working on AgentBreeder's React + Tailwind dashboard.
 
-Context: Agent Garden is a dark-mode-friendly developer tool dashboard. Style reference: Linear, Vercel, GitHub's design language. 
+Context: AgentBreeder is a dark-mode-friendly developer tool dashboard. Style reference: Linear, Vercel, GitHub's design language. 
 Font: Inter. Colors: slate-900 bg, blue-600 primary, green-500 success, red-500 error.
 
 Design a complete React component for: [COMPONENT_DESCRIPTION]
@@ -69,7 +69,7 @@ Do NOT write implementation code yet. Focus on the design spec.
 
 **Skill Prompt:**
 ```
-You are designing a page for the Agent Garden dashboard.
+You are designing a page for the AgentBreeder dashboard.
 
 Design system context:
 - Sidebar navigation (collapsible, 240px wide)
@@ -131,7 +131,7 @@ Output:
 
 **Skill Prompt:**
 ```
-You are implementing a new deployer for Agent Garden. Study the existing deployers first.
+You are implementing a new deployer for AgentBreeder. Study the existing deployers first.
 
 Read these files before starting:
 - engine/deployers/base.py (abstract interface)
@@ -166,7 +166,7 @@ Requirements:
 
 **Skill Prompt:**
 ```
-You are adding support for a new agent framework to Agent Garden.
+You are adding support for a new agent framework to AgentBreeder.
 
 Read these files first:
 - engine/runtimes/base.py (RuntimeBuilder interface)
@@ -201,7 +201,7 @@ The example agent must: receive a message, call at least one tool, return a resp
 
 **Skill Prompt:**
 ```
-You are extending the Agent Garden Full Code Orchestration SDK.
+You are extending the AgentBreeder Full Code Orchestration SDK.
 
 Read these files first:
 - sdk/python/agenthub/orchestration.py (Python SDK — Orchestration, Pipeline, FanOut, Supervisor, Router classes)
@@ -233,7 +233,7 @@ Requirements:
 
 **Skill Prompt:**
 ```
-You are implementing a new API endpoint for Agent Garden's FastAPI backend.
+You are implementing a new API endpoint for AgentBreeder's FastAPI backend.
 
 Conventions (read api/routes/agents.py for the pattern):
 - Router: APIRouter with prefix and tags
@@ -268,7 +268,7 @@ Implement:
 
 **Skill Prompt:**
 ```
-You are implementing a CLI command for the Agent Garden CLI (built with Typer + Rich).
+You are implementing a CLI command for the AgentBreeder CLI (built with Typer + Rich).
 
 Style guide (read cli/commands/deploy.py for the pattern):
 - Use Rich for ALL terminal output (no plain print())
@@ -304,7 +304,7 @@ Implement:
 
 **Skill Prompt:**
 ```
-You are building a new connector for Agent Garden's connector system.
+You are building a new connector for AgentBreeder's connector system.
 
 Read these files first:
 - connectors/base.py (BaseConnector interface)
@@ -333,7 +333,7 @@ Implement:
 
 **Skill Prompt:**
 ```
-You are writing an Alembic database migration for Agent Garden.
+You are writing an Alembic database migration for AgentBreeder.
 
 Rules:
 - Migrations must be reversible (always implement downgrade())
@@ -364,7 +364,7 @@ Provide:
 
 **Skill Prompt:**
 ```
-You are writing unit tests for Agent Garden using pytest.
+You are writing unit tests for AgentBreeder using pytest.
 
 Testing philosophy:
 - Test behavior, not implementation
@@ -398,7 +398,7 @@ Target: 100% branch coverage for the tested code.
 
 **Skill Prompt:**
 ```
-You are writing integration tests for Agent Garden's FastAPI endpoints.
+You are writing integration tests for AgentBreeder's FastAPI endpoints.
 
 Setup: Tests use a real PostgreSQL test database and Redis. Cloud APIs are mocked.
 Test client: FastAPI TestClient (synchronous) or httpx AsyncClient (async).
@@ -431,7 +431,7 @@ Also verify:
 
 **Skill Prompt:**
 ```
-You are writing Playwright E2E tests for the Agent Garden dashboard.
+You are writing Playwright E2E tests for the AgentBreeder dashboard.
 
 Setup:
 - Tests in tests/e2e/
@@ -466,7 +466,7 @@ Target flows for v0.1:
 
 **Skill Prompt:**
 ```
-You are performing a security review of new Agent Garden code.
+You are performing a security review of new AgentBreeder code.
 
 Check for:
 1. SQL injection (raw queries, string interpolation in queries)
@@ -498,7 +498,7 @@ Output:
 
 **Skill Prompt:**
 ```
-You are preparing the Agent Garden [VERSION] release.
+You are preparing the AgentBreeder [VERSION] release.
 
 Read:
 - ROADMAP.md (what was planned for this milestone?)
@@ -529,7 +529,7 @@ Tag format: v[MAJOR].[MINOR].[PATCH]
 
 **Skill Prompt:**
 ```
-You are building Docker images for Agent Garden.
+You are building Docker images for AgentBreeder.
 
 Current state: There is a single `Dockerfile` at the project root for the API. The dashboard builds via `npm run build`. Local dev uses `deploy/docker-compose.yml`.
 
@@ -549,7 +549,7 @@ For each image:
 5. Layer caching optimization (deps before code)
 6. .dockerignore to exclude dev files
 
-Build command: docker buildx build --platform linux/amd64,linux/arm64 -t agent-garden/[IMAGE]:[VERSION] .
+Build command: docker buildx build --platform linux/amd64,linux/arm64 -t agentbreeder/[IMAGE]:[VERSION] .
 ```
 
 **MCP Tools:** `docker`, `filesystem`
@@ -561,13 +561,13 @@ Build command: docker buildx build --platform linux/amd64,linux/arm64 -t agent-g
 
 **Skill Prompt:**
 ```
-You are creating or maintaining the Agent Garden Helm chart in deploy/helm/.
+You are creating or maintaining the AgentBreeder Helm chart in deploy/helm/.
 
 > **Status:** Helm chart does not exist yet. Currently, local deployment uses `deploy/docker-compose.yml`. This skill is for creating the initial chart or maintaining it once created.
 
 The chart should deploy: API server, Redis, PostgreSQL (or external), dashboard.
 
-Target chart structure: deploy/helm/agent-garden/
+Target chart structure: deploy/helm/agentbreeder/
 
 Task: [WHAT NEEDS TO CHANGE]
 
@@ -581,8 +581,8 @@ For any Helm work:
 7. Horizontal Pod Autoscaler template
 8. PodDisruptionBudget for HA deployments
 9. NetworkPolicy template (optional, disabled by default)
-10. Verify with: helm lint deploy/helm/agent-garden/
-            helm template agent-garden deploy/helm/agent-garden/ --debug
+10. Verify with: helm lint deploy/helm/agentbreeder/
+            helm template agentbreeder deploy/helm/agentbreeder/ --debug
 ```
 
 **MCP Tools:** `filesystem`, `docker`
@@ -596,7 +596,7 @@ For any Helm work:
 
 **Skill Prompt:**
 ```
-You are writing API documentation for Agent Garden.
+You are writing API documentation for AgentBreeder.
 
 Style: Developer-first, with curl examples for every endpoint.
 Format: OpenAPI 3.0 annotations in FastAPI route handlers.
@@ -627,7 +627,7 @@ Returns a job ID that can be polled for status.
 
 **Skill Prompt:**
 ```
-You are writing contributor documentation for Agent Garden.
+You are writing contributor documentation for AgentBreeder.
 
 Area: [e.g., "Adding a new cloud deployer" or "Creating an agent template"]
 
@@ -653,7 +653,7 @@ competent engineer who has never contributed to this project before.
 
 **Skill Prompt:**
 ```
-You are debugging a failed Agent Garden deployment.
+You are debugging a failed AgentBreeder deployment.
 
 Information available:
 - Deploy job ID: [ID]
@@ -685,7 +685,7 @@ Also check:
 
 **Skill Prompt:**
 ```
-You are investigating a performance issue in Agent Garden.
+You are investigating a performance issue in AgentBreeder.
 
 Symptom: [DESCRIPTION — e.g., "Registry search takes 3+ seconds for large orgs"]
 
@@ -776,7 +776,7 @@ Adds a complete new dashboard page. Chains:
 
 **Skill Prompt:**
 ```
-You are running the Agent Garden test suite before a release.
+You are running the AgentBreeder test suite before a release.
 
 Steps:
 1. Run all unit tests with coverage:
@@ -825,7 +825,7 @@ The gate PASSES only when:
 
 **Skill Prompt:**
 ```
-You are performing a pre-release security audit of the Agent Garden codebase.
+You are performing a pre-release security audit of the AgentBreeder codebase.
 
 Phase 1 — Automated Scanning:
 1. Check Python dependencies for known CVEs:
@@ -915,7 +915,7 @@ Output:
 
 **Skill Prompt:**
 ```
-You are preparing a release commit for Agent Garden.
+You are preparing a release commit for AgentBreeder.
 
 Steps:
 1. Pre-commit checks:
@@ -963,7 +963,7 @@ Output:
 
 **Skill Prompt:**
 ```
-You are performing the final pre-release verification for Agent Garden.
+You are performing the final pre-release verification for AgentBreeder.
 
 Checklist:
 1. Git status is clean (no uncommitted changes)
@@ -1017,7 +1017,7 @@ Output:
 
 ## 🛡️ Agent Safety Rules
 
-When any AI agent is working on Agent Garden code:
+When any AI agent is working on AgentBreeder code:
 
 1. **Never deploy to production** without explicit human confirmation
 2. **Never modify the database schema** without reviewing the migration in `postgres` MCP first
@@ -1035,4 +1035,4 @@ When any AI agent is working on Agent Garden code:
 
 ---
 
-*Last updated: March 2026 — Agent Garden v0.1*
+*Last updated: March 2026 — AgentBreeder v0.1*

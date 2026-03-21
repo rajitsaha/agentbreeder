@@ -1,6 +1,6 @@
 # CLI Reference
 
-Agent Garden's CLI is the primary interface for managing agents. All commands support `--json` output for scripting and CI.
+AgentBreeder's CLI is the primary interface for managing agents. All commands support `--json` output for scripting and CI.
 
 ## Global Usage
 

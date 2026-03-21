@@ -134,7 +134,7 @@ class TestGetArtifactRegistryImageUri:
     def test_default_repo_name(self) -> None:
         gcp = CloudRunConfig(project_id="proj", region="us-east1")
         uri = _get_artifact_registry_image_uri(gcp, "my-agent", "2.1.0")
-        assert uri == "us-east1-docker.pkg.dev/proj/agent-garden/my-agent:2.1.0"
+        assert uri == "us-east1-docker.pkg.dev/proj/agentbreeder/my-agent:2.1.0"
 
     def test_custom_repo_name(self) -> None:
         gcp = CloudRunConfig(

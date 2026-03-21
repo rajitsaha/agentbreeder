@@ -4,7 +4,7 @@ Multi-step research pipeline that searches the web, verifies sources, cross-refe
 
 ## Prerequisites
 
-- Agent Garden CLI installed (`pip install agent-garden`)
+- AgentBreeder CLI installed (`pip install agentbreeder`)
 - Tavily API key (or alternative search API)
 - Anthropic API key (primary) and OpenAI API key (fallback)
 

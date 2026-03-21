@@ -1,4 +1,4 @@
-"""Model configuration for Agent Garden agents.
+"""Model configuration for AgentBreeder agents.
 
 Provides dataclass-based config and convenience factory methods for
 popular model providers.

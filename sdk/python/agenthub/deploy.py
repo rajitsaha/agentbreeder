@@ -1,4 +1,4 @@
-"""Deploy and prompt configuration dataclasses for Agent Garden agents."""
+"""Deploy and prompt configuration dataclasses for AgentBreeder agents."""
 
 from __future__ import annotations
 

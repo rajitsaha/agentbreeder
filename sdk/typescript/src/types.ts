@@ -1,4 +1,4 @@
-/** Core types for Agent Garden TypeScript SDK. */
+/** Core types for AgentBreeder TypeScript SDK. */
 
 export type FrameworkType =
   | "langgraph"

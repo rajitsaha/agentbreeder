@@ -65,11 +65,11 @@ def generate_dockerfile(
 def build_image_tag(
     name: str,
     version: str,
-    registry_prefix: str = "agent-garden",
+    registry_prefix: str = "agentbreeder",
 ) -> str:
     """Generate a Docker image tag for an MCP server.
 
-    Returns: e.g. "agent-garden/mcp-zendesk:1.0.0"
+    Returns: e.g. "agentbreeder/mcp-zendesk:1.0.0"
     """
     slug = name.lower().replace(" ", "-")
     return f"{registry_prefix}/mcp-{slug}:{version}"

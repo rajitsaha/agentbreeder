@@ -4,7 +4,7 @@ Production multi-agent orchestration with triage routing, specialist agents, and
 
 ## Prerequisites
 
-- Agent Garden CLI installed (`pip install agent-garden`)
+- AgentBreeder CLI installed (`pip install agentbreeder`)
 - Redis (for shared state in production; optional for local dev)
 - Anthropic API key (primary) and OpenAI API key (fallback)
 

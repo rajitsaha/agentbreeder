@@ -2936,7 +2936,7 @@ class TestHealthEndpoint:
         assert resp.status_code == 200
         body = resp.json()
         assert body["status"] == "healthy"
-        assert body["service"] == "agent-garden-api"
+        assert body["service"] == "agentbreeder-api"
         assert "version" in body
 
 

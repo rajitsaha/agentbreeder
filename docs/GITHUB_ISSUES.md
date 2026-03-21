@@ -1,6 +1,6 @@
-# Agent Garden -- GitHub Issues for Build Recommendations
+# AgentBreeder -- GitHub Issues for Build Recommendations
 
-> This document contains GitHub issues to be created for Agent Garden's growth, technical build, legal/IP, and business tracks. Each issue includes title, labels, priority, description, acceptance criteria, and estimated effort.
+> This document contains GitHub issues to be created for AgentBreeder's growth, technical build, legal/IP, and business tracks. Each issue includes title, labels, priority, description, acceptance criteria, and estimated effort.
 
 ---
 
@@ -53,7 +53,7 @@ Each template must include:
 **Labels:** `marketing`, `launch`
 
 **Description:**
-Create two demo assets that show Agent Garden's end-to-end workflow:
+Create two demo assets that show AgentBreeder's end-to-end workflow:
 
 1. **Terminal GIF** (asciinema or VHS): A 60-second recording showing:
    - `garden up` starting the local platform
@@ -90,7 +90,7 @@ Guides to write:
 
 1. **Migrate from LangChain Deployment** -- Show how to wrap an existing LangChain/LangGraph agent in `agent.yaml`, replace custom deployment scripts with `garden deploy`, and gain governance automatically. Include before/after code comparison.
 
-2. **Deploy CrewAI Agents with Governance** -- Take a working CrewAI crew definition and show how Agent Garden adds RBAC, cost tracking, and audit trail without changing the crew logic. Emphasize what they gain vs. running CrewAI standalone.
+2. **Deploy CrewAI Agents with Governance** -- Take a working CrewAI crew definition and show how AgentBreeder adds RBAC, cost tracking, and audit trail without changing the crew logic. Emphasize what they gain vs. running CrewAI standalone.
 
 3. **Replace Custom Docker+Terraform with agent.yaml** -- For teams that built their own deployment pipeline. Show the lines-of-code reduction, the governance features they get for free, and the multi-cloud portability.
 
@@ -99,7 +99,7 @@ Guides to write:
 Each guide should include:
 - A realistic "before" scenario (with code)
 - Step-by-step migration process
-- "After" state showing Agent Garden benefits
+- "After" state showing AgentBreeder benefits
 - Common pitfalls and troubleshooting
 - Time estimate for migration
 
@@ -120,23 +120,23 @@ Each guide should include:
 **Labels:** `docs`, `seo`
 
 **Description:**
-Create honest, factual comparison pages for SEO and developer decision-making. These pages should acknowledge competitors' strengths while clearly articulating Agent Garden's differentiation.
+Create honest, factual comparison pages for SEO and developer decision-making. These pages should acknowledge competitors' strengths while clearly articulating AgentBreeder's differentiation.
 
 Comparisons to write:
 
-1. **Agent Garden vs LangChain** -- Focus on: deployment (LangChain has none built-in), governance (none), multi-framework support (LangChain is LangChain-only), registry/discovery.
+1. **AgentBreeder vs LangChain** -- Focus on: deployment (LangChain has none built-in), governance (none), multi-framework support (LangChain is LangChain-only), registry/discovery.
 
-2. **Agent Garden vs CrewAI** -- Focus on: deployment to production (CrewAI is dev-focused), governance, multi-cloud, MCP integration, registry.
+2. **AgentBreeder vs CrewAI** -- Focus on: deployment to production (CrewAI is dev-focused), governance, multi-cloud, MCP integration, registry.
 
-3. **Agent Garden vs DIY (Docker+Terraform)** -- Focus on: lines of code, time to deploy, governance out of the box, framework agnosticism, team collaboration.
+3. **AgentBreeder vs DIY (Docker+Terraform)** -- Focus on: lines of code, time to deploy, governance out of the box, framework agnosticism, team collaboration.
 
-4. **Agent Garden vs Vellum** -- Focus on: open source vs proprietary, framework freedom, self-hosted option, no vendor lock-in, full code access.
+4. **AgentBreeder vs Vellum** -- Focus on: open source vs proprietary, framework freedom, self-hosted option, no vendor lock-in, full code access.
 
 Each comparison page should include:
 - Feature matrix table
 - Honest assessment of when the competitor is a better fit
 - Code/config comparison where applicable
-- "When to choose Agent Garden" section
+- "When to choose AgentBreeder" section
 
 **Acceptance Criteria:**
 - [ ] Four comparison pages published in `docs/comparisons/`
@@ -158,7 +158,7 @@ Each comparison page should include:
 Redesign the README.md and (if applicable) the landing page to maximize conversion from visitor to first deploy. The current README is developer-oriented but does not sell the value proposition quickly enough.
 
 New structure:
-- **Hero section:** Animated terminal GIF (from Issue 2), one-liner tagline ("Define Once. Deploy Anywhere. Govern Automatically."), copy-pasteable get-started block (`pip install agent-garden && garden init --template customer-support && garden deploy`)
+- **Hero section:** Animated terminal GIF (from Issue 2), one-liner tagline ("Define Once. Deploy Anywhere. Govern Automatically."), copy-pasteable get-started block (`pip install agentbreeder && garden init --template customer-support && garden deploy`)
 - **Three-tier visual:** A clean graphic showing No Code / Low Code / Full Code tiers with arrows showing tier mobility
 - **Template gallery:** Grid of 6-8 featured templates with icons and one-line descriptions
 - **Feature highlights:** 4 panels -- Framework Agnostic, Multi-Cloud, Governance Built-In, Agent Registry
@@ -184,7 +184,7 @@ New structure:
 **Labels:** `community`, `launch`
 
 **Description:**
-Set up a Discord server as the primary community hub for Agent Garden users, contributors, and maintainers.
+Set up a Discord server as the primary community hub for AgentBreeder users, contributors, and maintainers.
 
 Required channels:
 - `#general` -- General discussion
@@ -224,9 +224,9 @@ Prepare a structured Hacker News Show HN launch to maximize visibility and engag
 Preparation steps:
 
 1. **Draft 3 title options** (pick the best one on launch day):
-   - "Show HN: Agent Garden -- Deploy AI agents to any cloud with one YAML file"
-   - "Show HN: Agent Garden -- Open-source platform for deploying and governing AI agents"
-   - "Show HN: Agent Garden -- Define once, deploy anywhere, govern automatically"
+   - "Show HN: AgentBreeder -- Deploy AI agents to any cloud with one YAML file"
+   - "Show HN: AgentBreeder -- Open-source platform for deploying and governing AI agents"
+   - "Show HN: AgentBreeder -- Define once, deploy anywhere, govern automatically"
 
 2. **Prepare FAQ document** for rapid comment response:
    - "How is this different from LangChain?" -- prepared answer
@@ -268,7 +268,7 @@ Schedule:
 - **Daily Twitter/X post** -- Mix of: feature tips, community highlights, memes/humor, thread deep dives, engagement questions.
 
 First month content plan:
-- Week 1: "Why We Built Agent Garden" (blog) + launch video (YouTube)
+- Week 1: "Why We Built AgentBreeder" (blog) + launch video (YouTube)
 - Week 2: "agent.yaml Deep Dive" (blog)
 - Week 3: "Building a Customer Support Agent in 5 Minutes" (blog) + template walkthrough (YouTube)
 - Week 4: "The Three-Tier Builder Model" (blog)
@@ -302,7 +302,7 @@ The runtime must:
 - Generate a working Dockerfile that installs `crewai` and dependencies
 - Produce a server entrypoint that exposes the crew as an HTTP endpoint
 - Support CrewAI's sequential and hierarchical process types
-- Handle tool injection from the Agent Garden tool registry into CrewAI's tool format
+- Handle tool injection from the AgentBreeder tool registry into CrewAI's tool format
 
 Reference the existing `engine/runtimes/langgraph.py` and `engine/runtimes/openai_agents.py` for implementation patterns.
 
@@ -333,7 +333,7 @@ The runtime must:
 - Parse Claude SDK-specific configuration from `agent.yaml` (model selection, tool definitions, system prompt)
 - Generate a Dockerfile that installs `anthropic` SDK
 - Produce a server entrypoint that wraps Claude's Messages API with tool use in an HTTP endpoint
-- Support Claude's native tool use format and convert Agent Garden tool registry entries to Claude tool schemas
+- Support Claude's native tool use format and convert AgentBreeder tool registry entries to Claude tool schemas
 - Handle streaming responses
 
 **Acceptance Criteria:**
@@ -361,7 +361,7 @@ The runtime must:
 - Parse Google ADK-specific configuration from `agent.yaml`
 - Generate a Dockerfile that installs `google-adk` and dependencies
 - Produce a server entrypoint compatible with ADK's agent serving patterns
-- Support ADK's tool integration and convert Agent Garden tool registry entries to ADK format
+- Support ADK's tool integration and convert AgentBreeder tool registry entries to ADK format
 - Handle Gemini model configuration and authentication
 
 **Acceptance Criteria:**
@@ -395,7 +395,7 @@ The deployer must:
 - Configure autoscaling based on `deploy.scaling` config
 - Set resource limits based on `deploy.resources` config
 - Support rollback on health check failure
-- Register the deployed endpoint in the Agent Garden registry
+- Register the deployed endpoint in the AgentBreeder registry
 
 Infrastructure provisioning should use Pulumi (Python) consistent with the project's IaC choice.
 
@@ -452,13 +452,13 @@ Consider integration with Google's Kubernetes Agent Sandbox (gVisor, WarmPools) 
 
 ---
 
-### Issue 14: Agent Garden Cloud Platform (Managed Service)
+### Issue 14: AgentBreeder Cloud Platform (Managed Service)
 
 **Priority:** P0
 **Labels:** `epic`, `cloud`, `revenue`
 
 **Description:**
-Build the managed deployment service that enables `garden deploy --target cloud`. This is the primary revenue driver for Agent Garden -- users get one-command deployment without managing their own cloud infrastructure.
+Build the managed deployment service that enables `garden deploy --target cloud`. This is the primary revenue driver for AgentBreeder -- users get one-command deployment without managing their own cloud infrastructure.
 
 Components:
 
@@ -471,7 +471,7 @@ Components:
    - Accept deploy requests from CLI
    - Provision isolated compute per agent (ECS Fargate or Cloud Run under the hood)
    - Manage networking, load balancing, TLS termination
-   - Provide `*.agentgarden.dev` subdomains for deployed agents
+   - Provide `*.agentbreeder.dev` subdomains for deployed agents
 
 3. **Usage metering and billing:**
    - Track compute hours, LLM API calls (if proxied), storage
@@ -487,7 +487,7 @@ Components:
 - [ ] User signup and login flow works (email + GitHub OAuth)
 - [ ] `garden login` authenticates CLI with cloud platform
 - [ ] `garden deploy --target cloud` deploys an agent to managed infrastructure
-- [ ] Deployed agent is accessible at `*.agentgarden.dev` with TLS
+- [ ] Deployed agent is accessible at `*.agentbreeder.dev` with TLS
 - [ ] Usage metering tracks compute hours accurately
 - [ ] Stripe billing integration processes payments
 - [ ] Free tier enforces 3-agent limit
@@ -504,7 +504,7 @@ Components:
 **Labels:** `enhancement`, `observability`
 
 **Description:**
-Adopt the OpenTelemetry GenAI Semantic Conventions in Agent Garden's tracing and observability layer. This ensures that traces from Agent Garden agents are interoperable with any OTel-compatible observability backend (Datadog, Honeycomb, Grafana, etc.).
+Adopt the OpenTelemetry GenAI Semantic Conventions in AgentBreeder's tracing and observability layer. This ensures that traces from AgentBreeder agents are interoperable with any OTel-compatible observability backend (Datadog, Honeycomb, Grafana, etc.).
 
 The implementation should:
 - Use the `gen_ai.*` semantic convention attributes for LLM calls (model, provider, token counts, latency)
@@ -536,7 +536,7 @@ Reference: https://opentelemetry.io/docs/specs/semconv/gen-ai/
 **Labels:** `enhancement`, `standards`
 
 **Description:**
-Automatically generate an `AGENTS.md` file (following the OpenAI AGENTS.md specification) for every agent deployed through Agent Garden. This file describes the agent's capabilities, tools, and interaction patterns in a standardized format that other AI systems can consume.
+Automatically generate an `AGENTS.md` file (following the OpenAI AGENTS.md specification) for every agent deployed through AgentBreeder. This file describes the agent's capabilities, tools, and interaction patterns in a standardized format that other AI systems can consume.
 
 The generator should:
 - Extract agent metadata from `agent.yaml` (name, description, capabilities, tools)
@@ -564,13 +564,13 @@ The generator should:
 **Labels:** `enhancement`, `registry`, `standards`
 
 **Description:**
-Use the Google A2A (Agent-to-Agent) Agent Card format as the standard discovery mechanism in Agent Garden's agent registry. Agent Cards provide a machine-readable description of an agent's capabilities, endpoint, and authentication requirements.
+Use the Google A2A (Agent-to-Agent) Agent Card format as the standard discovery mechanism in AgentBreeder's agent registry. Agent Cards provide a machine-readable description of an agent's capabilities, endpoint, and authentication requirements.
 
 The implementation should:
 - Generate an A2A Agent Card for every deployed agent based on `agent.yaml` metadata
 - Serve Agent Cards at the standard `/.well-known/agent.json` endpoint
 - Index Agent Cards in the registry for discovery via `garden search` and the registry API
-- Support both Agent Garden-internal and external A2A agents in the registry
+- Support both AgentBreeder-internal and external A2A agents in the registry
 - Enable inter-agent discovery (Agent A can find and call Agent B via registry)
 
 This builds on the existing A2A implementation in `engine/a2a/` and `api/routes/a2a.py`.
@@ -583,7 +583,7 @@ This builds on the existing A2A implementation in `engine/a2a/` and `api/routes/
 - [ ] External A2A agents can be registered in the registry
 - [ ] Agent-to-agent discovery works through the registry
 - [ ] Unit and integration tests
-- [ ] Documentation for A2A Agent Card format in Agent Garden
+- [ ] Documentation for A2A Agent Card format in AgentBreeder
 
 **Estimated Effort:** 1-2 weeks (1 engineer)
 
@@ -595,21 +595,21 @@ This builds on the existing A2A implementation in `engine/a2a/` and `api/routes/
 **Labels:** `enhancement`, `registry`, `standards`
 
 **Description:**
-Align Agent Garden's MCP server registry (`registry/mcp_servers.py`, `api/routes/mcp_servers.py`) with the official MCP Registry API specification being developed under AAIF (AI Alliance Infrastructure Foundation). As the MCP ecosystem matures, having a standards-compliant registry will enable interoperability with other MCP-aware platforms.
+Align AgentBreeder's MCP server registry (`registry/mcp_servers.py`, `api/routes/mcp_servers.py`) with the official MCP Registry API specification being developed under AAIF (AI Alliance Infrastructure Foundation). As the MCP ecosystem matures, having a standards-compliant registry will enable interoperability with other MCP-aware platforms.
 
 The implementation should:
 - Monitor the MCP Registry API specification as it evolves
 - Adapt the internal MCP server registry schema to match the standard
 - Expose a standards-compliant registry API endpoint
 - Support importing MCP servers from external registries
-- Support exporting Agent Garden MCP servers to external registries
+- Support exporting AgentBreeder MCP servers to external registries
 
 **Acceptance Criteria:**
 - [ ] MCP registry schema aligns with the latest MCP Registry API draft
 - [ ] Standards-compliant API endpoint exposed
 - [ ] Import from external MCP registries works
 - [ ] Export to external MCP registries works
-- [ ] Backward compatibility maintained with existing Agent Garden MCP server entries
+- [ ] Backward compatibility maintained with existing AgentBreeder MCP server entries
 - [ ] Unit tests for schema conversion
 - [ ] Documentation for MCP registry interoperability
 
@@ -623,14 +623,14 @@ The implementation should:
 **Labels:** `research`, `engine`, `cloud`
 
 **Description:**
-Research Google's Kubernetes Agent Sandbox technology (based on gVisor and WarmPools) for potential integration into Agent Garden's Kubernetes deployer (Issue 13). Agent sandboxing provides enhanced isolation for AI agents executing arbitrary code or tools, which is critical for enterprise security.
+Research Google's Kubernetes Agent Sandbox technology (based on gVisor and WarmPools) for potential integration into AgentBreeder's Kubernetes deployer (Issue 13). Agent sandboxing provides enhanced isolation for AI agents executing arbitrary code or tools, which is critical for enterprise security.
 
 Research areas:
 - gVisor integration with Kubernetes pods for agent isolation
 - WarmPool patterns for reducing cold start latency on sandboxed agents
 - Security implications for tool execution (file system, network, process isolation)
 - Performance overhead of gVisor vs standard container isolation
-- Compatibility with Agent Garden's sidecar pattern (Architecture Principle 3)
+- Compatibility with AgentBreeder's sidecar pattern (Architecture Principle 3)
 - Cost implications for enterprise deployments
 
 **Acceptance Criteria:**
@@ -656,7 +656,7 @@ Add SSO (Single Sign-On) and SAML 2.0 integration for enterprise customers. This
 The implementation should:
 - Support SAML 2.0 identity providers (Okta, Azure AD, OneLogin, Google Workspace)
 - Support OIDC (OpenID Connect) as an alternative to SAML
-- Map IdP groups/roles to Agent Garden teams and RBAC roles
+- Map IdP groups/roles to AgentBreeder teams and RBAC roles
 - Support Just-In-Time (JIT) user provisioning from IdP
 - Support SCIM 2.0 for user/group synchronization
 - Integrate with the existing JWT-based auth system (`api/auth.py`)
@@ -664,7 +664,7 @@ The implementation should:
 **Acceptance Criteria:**
 - [ ] SAML 2.0 SSO flow works with Okta (primary test IdP)
 - [ ] OIDC flow works with Azure AD
-- [ ] IdP groups map to Agent Garden teams
+- [ ] IdP groups map to AgentBreeder teams
 - [ ] JIT provisioning creates users on first login
 - [ ] SCIM endpoint for user/group sync
 - [ ] Admin UI for SSO configuration (upload metadata XML, configure mappings)
@@ -714,7 +714,7 @@ The implementation should:
 **Labels:** `enhancement`, `dashboard`
 
 **Description:**
-Build a comprehensive cost tracking dashboard in the web UI. Cost opacity is the #2 developer pain point with AI agents (after deployment complexity). Agent Garden's cost tracking is a key differentiator and must be surfaced prominently.
+Build a comprehensive cost tracking dashboard in the web UI. Cost opacity is the #2 developer pain point with AI agents (after deployment complexity). AgentBreeder's cost tracking is a key differentiator and must be surfaced prominently.
 
 The dashboard should show:
 - **Per-agent cost:** Total cost, cost trend (7d/30d/90d), cost per request
@@ -749,7 +749,7 @@ Data sources: the existing cost tracking in `api/routes/costs.py` and `api/servi
 **Labels:** `epic`, `marketplace`, `revenue`
 
 **Description:**
-Build the community marketplace for sharing and discovering agent templates. The marketplace enables a network effect: every template published makes Agent Garden more valuable for all users.
+Build the community marketplace for sharing and discovering agent templates. The marketplace enables a network effect: every template published makes AgentBreeder more valuable for all users.
 
 MVP features:
 
@@ -759,7 +759,7 @@ MVP features:
 
 3. **Installing:** `garden init --template marketplace:<author>/<name>` installs a marketplace template locally.
 
-4. **Featured templates:** Curated section of high-quality templates maintained by the Agent Garden team.
+4. **Featured templates:** Curated section of high-quality templates maintained by the AgentBreeder team.
 
 5. **Quality gates:** Published templates must pass `garden validate`, include a README, and include at least one test.
 
@@ -791,7 +791,7 @@ Future (not MVP): ratings/reviews, paid templates, verified publishers.
 **Labels:** `legal`, `ip`
 
 **Description:**
-File three provisional patent applications to protect Agent Garden's core innovations. Provisional patents establish a priority date and provide 12 months to file full utility patents. This is critical IP protection before public launch.
+File three provisional patent applications to protect AgentBreeder's core innovations. Provisional patents establish a priority date and provide 12 months to file full utility patents. This is critical IP protection before public launch.
 
 Patent applications:
 
@@ -831,7 +831,7 @@ Budget: $10,000-$16,000 (approximately $3,500-$5,500 per provisional, including 
 **Labels:** `legal`, `content`
 
 **Description:**
-Publish detailed technical blog posts for six innovations to establish publicly dated prior art. These posts serve as defensive publications -- if Agent Garden cannot or chooses not to patent an innovation, the blog post prevents others from patenting it.
+Publish detailed technical blog posts for six innovations to establish publicly dated prior art. These posts serve as defensive publications -- if AgentBreeder cannot or chooses not to patent an innovation, the blog post prevents others from patenting it.
 
 Blog posts to write:
 
@@ -841,7 +841,7 @@ Blog posts to write:
 
 3. **Multi-Cloud Deployer Abstraction** -- Architecture of the deployer interface and how a single `agent.yaml` deploys to Docker Compose, ECS Fargate, Cloud Run, or Kubernetes without changes.
 
-4. **Provider Fallback Chains** -- How Agent Garden implements model provider fallback (primary -> fallback -> gateway) with automatic failover, health checking, and cost-aware routing.
+4. **Provider Fallback Chains** -- How AgentBreeder implements model provider fallback (primary -> fallback -> gateway) with automatic failover, health checking, and cost-aware routing.
 
 5. **RFC 8594 API Versioning** -- Implementation of API versioning with deprecation headers following RFC 8594, enabling smooth API evolution without breaking clients.
 
@@ -854,7 +854,7 @@ Each post must include: publication date, detailed technical description, code e
 - [ ] Each post includes sufficient technical detail to serve as prior art
 - [ ] Each post includes code examples and/or architecture diagrams
 - [ ] Posts are archived on the Wayback Machine (archive.org) for permanence
-- [ ] Cross-linked from Agent Garden documentation
+- [ ] Cross-linked from AgentBreeder documentation
 - [ ] Publication dates are verifiable (platform timestamps)
 
 **Estimated Effort:** 2-3 weeks (1-2 engineers writing, 1 person reviewing)
@@ -867,13 +867,13 @@ Each post must include: publication date, detailed technical description, code e
 **Labels:** `legal`, `community`
 
 **Description:**
-Formalize Agent Garden's open-source licensing and contributor agreement before public launch. This must be done before accepting any external contributions.
+Formalize AgentBreeder's open-source licensing and contributor agreement before public launch. This must be done before accepting any external contributions.
 
 Steps:
 
 1. **Add Apache 2.0 LICENSE file** to the repository root. Apache 2.0 is chosen because it provides patent protection (contributors grant patent license), is permissive (enterprise-friendly), and is compatible with most other open-source licenses.
 
-2. **Set up CLA Assistant bot** (https://github.com/cla-assistant/cla-assistant or similar). The CLA ensures that all contributors grant Agent Garden sufficient rights to use their contributions, including the right to relicense under a commercial license for the enterprise product (open core model).
+2. **Set up CLA Assistant bot** (https://github.com/cla-assistant/cla-assistant or similar). The CLA ensures that all contributors grant AgentBreeder sufficient rights to use their contributions, including the right to relicense under a commercial license for the enterprise product (open core model).
 
 3. **Add CONTRIBUTING.md** with:
    - How to set up the development environment
@@ -903,11 +903,11 @@ Steps:
 **Labels:** `legal`
 
 **Description:**
-Register "Agent Garden" as a trademark with the United States Patent and Trademark Office (USPTO) to protect the brand name from unauthorized use by competitors.
+Register "AgentBreeder" as a trademark with the United States Patent and Trademark Office (USPTO) to protect the brand name from unauthorized use by competitors.
 
 Steps:
 
-1. **Trademark search:** Conduct a comprehensive search to ensure "Agent Garden" is not already registered or in use for similar goods/services (software, developer tools, AI platforms).
+1. **Trademark search:** Conduct a comprehensive search to ensure "AgentBreeder" is not already registered or in use for similar goods/services (software, developer tools, AI platforms).
 
 2. **File trademark application** in the relevant classes:
    - Class 9: Computer software for building, deploying, and managing AI agents
@@ -915,7 +915,7 @@ Steps:
 
 3. **Monitor application** through examination, publication, and registration phases.
 
-Consider also filing for the Agent Garden logo (design mark) once finalized.
+Consider also filing for the AgentBreeder logo (design mark) once finalized.
 
 **Acceptance Criteria:**
 - [ ] Trademark search completed with no blocking conflicts
@@ -939,7 +939,7 @@ Consider also filing for the Agent Garden logo (design mark) once finalized.
 **Labels:** `legal`, `business`
 
 **Description:**
-Incorporate Agent Garden as a Delaware C-Corporation. Delaware C-Corp is the standard structure for venture-backed startups due to well-established corporate law, investor familiarity, and flexibility for equity compensation.
+Incorporate AgentBreeder as a Delaware C-Corporation. Delaware C-Corp is the standard structure for venture-backed startups due to well-established corporate law, investor familiarity, and flexibility for equity compensation.
 
 Steps:
 
@@ -987,12 +987,12 @@ Data room contents:
 
 1. **Pitch deck** (15-20 slides):
    - Problem: AI agents are hard to deploy, impossible to govern
-   - Solution: Agent Garden -- define once, deploy anywhere, govern automatically
+   - Solution: AgentBreeder -- define once, deploy anywhere, govern automatically
    - Demo: screenshot or GIF of the deploy flow
    - Market: TAM/SAM/SOM for AI agent infrastructure
    - Traction: GitHub stars, users, agents deployed, template downloads
    - Business model: Open core (free OSS + paid cloud + enterprise)
-   - Competition: landscape with Agent Garden's positioning
+   - Competition: landscape with AgentBreeder's positioning
    - Team: founder backgrounds
    - Ask: amount, use of funds, milestones
 
@@ -1030,14 +1030,14 @@ Data room contents:
 **Labels:** `business`, `fundraising`
 
 **Description:**
-Apply to Y Combinator with Agent Garden. YC provides funding ($500K standard deal), mentorship, network access, and significant credibility for developer tool companies. The application should be submitted for the next available batch.
+Apply to Y Combinator with AgentBreeder. YC provides funding ($500K standard deal), mentorship, network access, and significant credibility for developer tool companies. The application should be submitted for the next available batch.
 
 Application preparation:
 
 1. **Application form:**
-   - Company description (clear, jargon-free explanation of Agent Garden)
+   - Company description (clear, jargon-free explanation of AgentBreeder)
    - Problem statement (why deploying and governing AI agents is painful today)
-   - Solution (how Agent Garden solves it, with specific examples)
+   - Solution (how AgentBreeder solves it, with specific examples)
    - Traction metrics (GitHub stars, users, agents deployed, growth rate)
    - Market size (AI agent infrastructure TAM)
    - Team (why this team is uniquely qualified)
@@ -1087,7 +1087,7 @@ Application preparation:
 | 11 | Implement Google ADK Runtime | P1 | Technical | 1-2 weeks |
 | 12 | AWS ECS Deployer | P0 | Technical | 2-3 weeks |
 | 13 | Kubernetes Deployer | P1 | Technical | 2-3 weeks |
-| 14 | Agent Garden Cloud Platform | P0 | Technical | 8-12 weeks |
+| 14 | AgentBreeder Cloud Platform | P0 | Technical | 8-12 weeks |
 | 15 | OTel GenAI Semantic Conventions | P1 | Technical | 1-2 weeks |
 | 16 | Auto-generate AGENTS.md | P2 | Technical | 3-5 days |
 | 17 | A2A Agent Cards for Registry | P1 | Technical | 1-2 weeks |

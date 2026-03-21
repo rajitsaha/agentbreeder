@@ -1,7 +1,7 @@
 """OpenRouter Connector — discovers models from the OpenRouter API.
 
 Connects to OpenRouter (https://openrouter.ai/api/v1), reads available
-models, and registers them in the Agent Garden Model registry.
+models, and registers them in the AgentBreeder Model registry.
 
 Configuration:
     OPENROUTER_API_KEY: API key for OpenRouter (required for full model list)

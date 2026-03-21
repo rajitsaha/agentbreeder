@@ -2439,7 +2439,7 @@ class TestEjectRemainingBranches:
             )
             assert out.exists()
             content = out.read_text()
-            assert "@agent-garden/sdk" in content
+            assert "@agentbreeder/sdk" in content
 
 
 # ================================================================

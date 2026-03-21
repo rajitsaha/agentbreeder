@@ -1,10 +1,10 @@
 # CrewAI Starter
 
-Sequential CrewAI crew with a researcher and writer agent. Use this as a starting point for building multi-agent CrewAI workflows with Agent Garden.
+Sequential CrewAI crew with a researcher and writer agent. Use this as a starting point for building multi-agent CrewAI workflows with AgentBreeder.
 
 ## Prerequisites
 
-- Agent Garden CLI installed (`pip install agent-garden`)
+- AgentBreeder CLI installed (`pip install agentbreeder`)
 - Python 3.11+ with `crewai` installed
 - Anthropic API key or OpenAI API key
 
@@ -43,7 +43,7 @@ Final Article
 
 ### Key Files
 
-- `agent.yaml` -- Agent Garden configuration
+- `agent.yaml` -- AgentBreeder configuration
 - `crew.py` -- CrewAI crew definition (entry point)
 
 ### Crew Structure

@@ -1,11 +1,11 @@
 # SDK Basic Example
 
-Demonstrates the Agent Garden Python SDK builder-pattern API.
+Demonstrates the AgentBreeder Python SDK builder-pattern API.
 
 ## Usage
 
 ```bash
-pip install agent-garden-sdk  # or: pip install -e sdk/python/
+pip install agentbreeder-sdk  # or: pip install -e sdk/python/
 python agent.py
 ```
 

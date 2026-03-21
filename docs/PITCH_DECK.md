@@ -1,4 +1,4 @@
-# Agent Garden --- Investor Pitch Deck
+# AgentBreeder --- Investor Pitch Deck
 
 **The Vercel for AI Agents**
 
@@ -8,7 +8,7 @@
 
 ## Slide 1: Title
 
-### Agent Garden
+### AgentBreeder
 
 **The Vercel for AI Agents**
 
@@ -149,13 +149,13 @@ This is how you serve the entire organization --- from the PM who wants to proto
 
 ```bash
 $ garden up
-Starting Agent Garden...
+Starting AgentBreeder...
   PostgreSQL    .... running (port 5432)
   Redis         .... running (port 6379)
   API Server    .... running (port 8000)
   Dashboard     .... running (port 3000)
 
-Agent Garden is ready at http://localhost:3000
+AgentBreeder is ready at http://localhost:3000
 ```
 
 **Step 2:** Scaffold from a template
@@ -190,7 +190,7 @@ The dashboard shows: agent status, real-time cost tracking, full audit trail, co
 The AI agent market is exploding: **$7.6B (2025) --> $52.6B (2030) --> $183B (2033)**. That's a **46.3% CAGR** over 8 years. We are at the very beginning.
 
 **2. Standards are converging**
-MCP (Model Context Protocol) has **97M+ npm downloads** and is now under the Linux Foundation alongside A2A (Agent-to-Agent). Agent Garden supports both protocols natively. The standardization wave is creating the opportunity for a deployment layer.
+MCP (Model Context Protocol) has **97M+ npm downloads** and is now under the Linux Foundation alongside A2A (Agent-to-Agent). AgentBreeder supports both protocols natively. The standardization wave is creating the opportunity for a deployment layer.
 
 **3. Enterprise urgency**
 **85% of organizations** are already using AI agents in some capacity. **40% plan to embed agents in customer-facing applications by end of 2026** (Gartner). But governance tools do not exist. Every enterprise is building this internally, poorly, from scratch.
@@ -199,7 +199,7 @@ MCP (Model Context Protocol) has **97M+ npm downloads** and is now under the Lin
 15+ agent frameworks, zero deployment solutions. Developers are exhausted from re-inventing deployment for every framework. They want a `garden deploy` that just works.
 
 **5. The "Kubernetes moment" for AI agents**
-Just as Kubernetes standardized container orchestration (and created a $7B+ ecosystem), the AI agent deployment layer needs a standard. Agent Garden is that standard.
+Just as Kubernetes standardized container orchestration (and created a $7B+ ecosystem), the AI agent deployment layer needs a standard. AgentBreeder is that standard.
 
 ---
 
@@ -235,7 +235,7 @@ Total AI agent market by 2033
 
 ### Nobody does what we do.
 
-| Capability | Agent Garden | LangChain/LangSmith | Dify | Vertex AI Agent Builder | AWS Bedrock Agents |
+| Capability | AgentBreeder | LangChain/LangSmith | Dify | Vertex AI Agent Builder | AWS Bedrock Agents |
 |---|---|---|---|---|---|
 | **Framework-agnostic** | 6 frameworks | Own framework only | Own framework only | GCP SDK only | AWS SDK only |
 | **Multi-cloud** | AWS + GCP (K8s planned) | None | Self-hosted only | GCP only | AWS only |
@@ -246,7 +246,7 @@ Total AI agent market by 2033
 | **Open source** | Apache 2.0 | Partial (MIT core) | Custom license | Proprietary | Proprietary |
 | **One-command deploy** | `garden deploy` | No | No | No | No |
 
-**Our moat**: Agent Garden is the only platform that is simultaneously framework-agnostic, multi-cloud, and governance-first. Competitors optimize for one axis. We optimize for the intersection --- which is exactly what enterprises need.
+**Our moat**: AgentBreeder is the only platform that is simultaneously framework-agnostic, multi-cloud, and governance-first. Competitors optimize for one axis. We optimize for the intersection --- which is exactly what enterprises need.
 
 ---
 
@@ -267,7 +267,7 @@ Total AI agent market by 2033
 
 | Revenue Stream | Pricing | Margin | Scale Driver |
 |---|---|---|---|
-| **Agent Garden Cloud** | $49/agent/mo (Pro), $29/seat/mo (Team) | ~80% | Agent count grows with adoption |
+| **AgentBreeder Cloud** | $49/agent/mo (Pro), $29/seat/mo (Team) | ~80% | Agent count grows with adoption |
 | **Enterprise licenses** | $50K-500K/yr | ~90% | Land-and-expand within orgs |
 | **Marketplace fees** | 15-20% of template sales | ~95% | Community-created supply |
 | **Professional services** | $250-500/hr | ~60% | Migration + onboarding |
@@ -290,13 +290,13 @@ Total AI agent market by 2033
 
 - Launch on Hacker News, Reddit r/MachineLearning, Dev.to, Twitter/X
 - Ship 20+ agent templates (customer support, RAG, code review, data analysis...)
-- Publish migration guides: "Move your LangGraph/CrewAI agent to Agent Garden in 5 minutes"
-- Launch Discord community, weekly "Agent Garden Live" streams
+- Publish migration guides: "Move your LangGraph/CrewAI agent to AgentBreeder in 5 minutes"
+- Launch Discord community, weekly "AgentBreeder Live" streams
 - **Target: 5,000 GitHub stars, 1,000 active CLI users**
 
 **Phase 2: Cloud Platform (Months 4-6)**
 
-- Launch Agent Garden Cloud: `garden deploy --target cloud`
+- Launch AgentBreeder Cloud: `garden deploy --target cloud`
 - Free tier (3 agents), Pro ($49/agent/mo), Team ($29/seat/mo)
 - Target YC companies, Techstars, and startup accelerators
 - Partnership with LLM providers (Anthropic, OpenAI) for co-marketing
@@ -307,7 +307,7 @@ Total AI agent market by 2033
 - Ship SSO/SAML, compliance exports (SOC2, HIPAA), private marketplace
 - Cloud provider partnerships (AWS Partner Network, Google Cloud Partner)
 - Hire 2-3 enterprise AEs
-- Launch Agent Garden Marketplace for community templates
+- Launch AgentBreeder Marketplace for community templates
 - **Target: 50 enterprise accounts, $3M ARR run rate**
 
 ---
@@ -332,7 +332,7 @@ Total AI agent market by 2033
 |---|---|---|
 | Public open-source launch | Q2 2026 | In progress |
 | First 100 community contributors | Q2 2026 | Planned |
-| Agent Garden Cloud beta | Q3 2026 | Planned |
+| AgentBreeder Cloud beta | Q3 2026 | Planned |
 | Kubernetes deployer | Q3 2026 | Planned |
 | Marketplace launch | Q4 2026 | Planned |
 | 10,000 GitHub stars | Q4 2026 | Planned |
@@ -357,8 +357,8 @@ Total AI agent market by 2033
 
 Apache 2.0 license with patent grant creates community trust while maintaining IP protection. The open-source adoption IS the moat:
 
-- **Network effects**: the more agents deployed on Agent Garden, the more valuable the registry, marketplace, and MCP ecosystem become
-- **Switching costs**: once teams build their agent fleet on Agent Garden (YAML configs, registry entries, governance policies), migration cost is high --- like Terraform
+- **Network effects**: the more agents deployed on AgentBreeder, the more valuable the registry, marketplace, and MCP ecosystem become
+- **Switching costs**: once teams build their agent fleet on AgentBreeder (YAML configs, registry entries, governance policies), migration cost is high --- like Terraform
 - **Community supply**: marketplace templates, MCP servers, and framework runtimes contributed by the community create supply-side lock-in
 - **Data moat**: fleet-wide analytics across thousands of agents creates proprietary insights no competitor can replicate
 
@@ -398,7 +398,7 @@ Apache 2.0 license with patent grant creates community trust while maintaining I
 **What this round gets us to:**
 
 - Public open-source launch with 10,000+ GitHub stars
-- Agent Garden Cloud in production with paying customers
+- AgentBreeder Cloud in production with paying customers
 - 500+ paying users across Pro and Team tiers
 - $1M+ ARR run rate
 - 50+ enterprise pipeline deals
@@ -424,7 +424,7 @@ The platform is built. The market is exploding. Standards (MCP, A2A) are converg
 | **Databricks** | Open-source data + AI | **$62B** | $2.4B+ ARR | ~25x |
 | **Confluent** | Open core (Kafka) | **$9B** (peak) | $800M+ ARR | ~11x |
 
-**The pattern is clear:** open-source developer infrastructure companies that become the default in their category achieve $5-60B+ outcomes. Agent Garden is positioned to be the default for AI agent deployment --- a market that is 10x larger than any of the above at the same stage.
+**The pattern is clear:** open-source developer infrastructure companies that become the default in their category achieve $5-60B+ outcomes. AgentBreeder is positioned to be the default for AI agent deployment --- a market that is 10x larger than any of the above at the same stage.
 
 ---
 
@@ -482,22 +482,22 @@ Developers                    Dashboard Users               Enterprise Admins
 | Terraform | 42k+ | $6.4B (HashiCorp acq.) | Open core + enterprise governance = massive exit |
 | Kubernetes | 112k+ | Created $7B+ ecosystem | Open standard becomes the platform everything else builds on |
 
-### Why open source is the ONLY viable strategy for Agent Garden
+### Why open source is the ONLY viable strategy for AgentBreeder
 
 1. **Trust**: enterprises will not hand their agent deployment pipeline to a closed-source vendor. The blast radius is too high. Open source means they can audit, fork, and self-host.
 
-2. **Distribution**: a `pip install agent-garden` and a GitHub star costs us nothing. Paid marketing to reach 10,000 developers costs millions. Open source is the most efficient GTM in developer tools.
+2. **Distribution**: a `pip install agentbreeder` and a GitHub star costs us nothing. Paid marketing to reach 10,000 developers costs millions. Open source is the most efficient GTM in developer tools.
 
-3. **Community supply**: every MCP server, agent template, and framework runtime contributed by the community makes Agent Garden more valuable for everyone. This flywheel cannot be replicated by a closed-source product.
+3. **Community supply**: every MCP server, agent template, and framework runtime contributed by the community makes AgentBreeder more valuable for everyone. This flywheel cannot be replicated by a closed-source product.
 
 4. **Talent signal**: the best engineers want to work on open-source projects. Our GitHub becomes our recruiting pipeline.
 
-5. **Standard-setting**: the deployment layer for AI agents will be an open standard or it will not exist. Proprietary deployment tools will balkanize the market. Agent Garden, as an open standard, can unify it.
+5. **Standard-setting**: the deployment layer for AI agents will be an open standard or it will not exist. Proprietary deployment tools will balkanize the market. AgentBreeder, as an open standard, can unify it.
 
 **The playbook**: free core drives mass adoption --> cloud platform captures convenience revenue --> enterprise licenses capture governance revenue --> marketplace captures ecosystem revenue.
 
 ---
 
-*Agent Garden --- Define Once. Deploy Anywhere. Govern Automatically.*
+*AgentBreeder --- Define Once. Deploy Anywhere. Govern Automatically.*
 
 *For questions or to schedule a deeper technical demo, contact: [CONTACT EMAIL]*

@@ -52,7 +52,7 @@ class TestBuildImageTag:
         from engine.mcp.packager import build_image_tag
 
         tag = build_image_tag("zendesk", "1.0.0")
-        assert tag == "agent-garden/mcp-zendesk:1.0.0"
+        assert tag == "agentbreeder/mcp-zendesk:1.0.0"
 
     def test_custom_registry(self):
         from engine.mcp.packager import build_image_tag
@@ -64,13 +64,13 @@ class TestBuildImageTag:
         from engine.mcp.packager import build_image_tag
 
         tag = build_image_tag("My Server", "1.0.0")
-        assert tag == "agent-garden/mcp-my-server:1.0.0"
+        assert tag == "agentbreeder/mcp-my-server:1.0.0"
 
     def test_name_uppercase(self):
         from engine.mcp.packager import build_image_tag
 
         tag = build_image_tag("ZENDESK", "1.0.0")
-        assert tag == "agent-garden/mcp-zendesk:1.0.0"
+        assert tag == "agentbreeder/mcp-zendesk:1.0.0"
 
 
 class TestGenerateSidecarConfig:
@@ -79,9 +79,9 @@ class TestGenerateSidecarConfig:
     def test_basic_config(self):
         from engine.mcp.packager import generate_sidecar_config
 
-        config = generate_sidecar_config("zendesk", "agent-garden/mcp-zendesk:1.0.0")
+        config = generate_sidecar_config("zendesk", "agentbreeder/mcp-zendesk:1.0.0")
         assert config["name"] == "mcp-zendesk"
-        assert config["image"] == "agent-garden/mcp-zendesk:1.0.0"
+        assert config["image"] == "agentbreeder/mcp-zendesk:1.0.0"
         assert config["transport"] == "stdio"
         assert config["port"] == 3000
         assert config["environment"]["MCP_TRANSPORT"] == "stdio"
@@ -119,8 +119,8 @@ class TestMcpSidecarDeployer:
         assert sidecars[0]["name"] == "mcp-zendesk"
         assert sidecars[0]["transport"] == "sse"
         assert sidecars[0]["port"] == 3000
-        assert sidecars[0]["labels"]["agent-garden.agent"] == "my-agent"
-        assert sidecars[0]["labels"]["agent-garden.mcp-ref"] == "mcp/zendesk"
+        assert sidecars[0]["labels"]["agentbreeder.agent"] == "my-agent"
+        assert sidecars[0]["labels"]["agentbreeder.mcp-ref"] == "mcp/zendesk"
         assert sidecars[1]["name"] == "mcp-slack"
         assert sidecars[1]["port"] == 3001
 
@@ -149,10 +149,10 @@ class TestMcpSidecarDeployer:
         sidecars = [
             {
                 "name": "mcp-zendesk",
-                "image": "agent-garden/mcp-zendesk:1.0.0",
+                "image": "agentbreeder/mcp-zendesk:1.0.0",
                 "environment": {"MCP_TRANSPORT": "sse"},
                 "port": 3000,
-                "labels": {"agent-garden.agent": "my-agent"},
+                "labels": {"agentbreeder.agent": "my-agent"},
             },
         ]
 
@@ -160,7 +160,7 @@ class TestMcpSidecarDeployer:
         assert "api" in result["services"]
         assert "mcp-zendesk" in result["services"]
         svc = result["services"]["mcp-zendesk"]
-        assert svc["image"] == "agent-garden/mcp-zendesk:1.0.0"
+        assert svc["image"] == "agentbreeder/mcp-zendesk:1.0.0"
         assert svc["ports"] == ["3000:3000"]
         assert svc["restart"] == "unless-stopped"
 

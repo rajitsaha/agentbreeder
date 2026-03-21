@@ -255,7 +255,7 @@ async def set_api_key(team_id: str, body: TeamApiKeyCreate) -> ApiResponse[TeamA
             team_id,
             provider=body.provider,
             api_key=body.api_key,
-            created_by="admin@agent-garden.local",  # TODO: get from auth
+            created_by="admin@agentbreeder.local",  # TODO: get from auth
         )
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e)) from None

@@ -4,9 +4,9 @@ Demonstrates:
 - Agent creation with system instructions
 - @function_tool decorator for tool definitions
 - Guardrail integration
-- Agent Garden export pattern
+- AgentBreeder export pattern
 
-Export the agent as `agent` — Agent Garden's server wrapper looks for this.
+Export the agent as `agent` — AgentBreeder's server wrapper looks for this.
 """
 
 from __future__ import annotations
@@ -52,7 +52,7 @@ def search_knowledge(query: str) -> str:
     )
 
 
-# Build the agent — exported as 'agent' for the Agent Garden server wrapper
+# Build the agent — exported as 'agent' for the AgentBreeder server wrapper
 agent = Agent(
     name="OpenAI Agents Starter",
     instructions=(

@@ -1,4 +1,4 @@
-"""SQLAlchemy database models for the Agent Garden registry."""
+"""SQLAlchemy database models for the AgentBreeder registry."""
 
 from __future__ import annotations
 
@@ -40,7 +40,7 @@ class Base(DeclarativeBase):  # type: ignore[misc]
 
 
 class User(Base):
-    """A user account for the Agent Garden platform."""
+    """A user account for the AgentBreeder platform."""
 
     __tablename__ = "users"
 

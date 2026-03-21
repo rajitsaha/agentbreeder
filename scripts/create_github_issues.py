@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Create GitHub Issues for Agent Garden from docs/GITHUB_ISSUES.md.
+Create GitHub Issues for AgentBreeder from docs/GITHUB_ISSUES.md.
 
 Usage:
     GH_TOKEN=ghp_xxx python scripts/create_github_issues.py --dry-run
@@ -36,7 +36,7 @@ except ImportError:
     sys.exit(1)
 
 
-REPO = "open-agent-garden/agent-garden"
+REPO = "open-agentbreeder/agentbreeder"
 API_BASE = f"https://api.github.com/repos/{REPO}"
 
 # Label definitions: name -> color (hex without #)
@@ -387,7 +387,7 @@ def create_issue(
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Create GitHub issues for Agent Garden from docs/GITHUB_ISSUES.md"
+        description="Create GitHub issues for AgentBreeder from docs/GITHUB_ISSUES.md"
     )
     parser.add_argument(
         "--dry-run",

@@ -4,7 +4,7 @@ test.describe("Dashboard Shell", () => {
   test("renders sidebar with navigation links", async ({ authedPage: page }) => {
     await page.goto("/");
     // Sidebar brand
-    await expect(page.getByText("Agent Garden", { exact: true })).toBeVisible();
+    await expect(page.getByText("AgentBreeder", { exact: true })).toBeVisible();
     // Nav links
     await expect(page.locator('aside a[href="/agents"]')).toBeVisible();
     await expect(page.locator('aside a[href="/tools"]')).toBeVisible();

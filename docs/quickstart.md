@@ -1,6 +1,6 @@
 # Quickstart Guide
 
-Get Agent Garden running locally in under 10 minutes.
+Get AgentBreeder running locally in under 10 minutes.
 
 ---
 
@@ -16,8 +16,8 @@ Get Agent Garden running locally in under 10 minutes.
 ## 1. Clone & Install
 
 ```bash
-git clone git@github.com:open-agent-garden/agent-garden.git
-cd agent-garden
+git clone git@github.com:open-agentbreeder/agentbreeder.git
+cd agentbreeder
 
 # Python
 python -m venv venv && source venv/bin/activate
@@ -48,11 +48,11 @@ A default admin account is created on first startup:
 
 | Field    | Value                        |
 |----------|------------------------------|
-| Email    | `admin@agent-garden.local`   |
+| Email    | `admin@agentbreeder.local`   |
 | Password | `plant`                      |
 | Name     | Gardner                      |
 | Role     | Admin                        |
-| Team     | Agent Garden Platform        |
+| Team     | AgentBreeder Platform        |
 
 > **Change the default password** in production. This account is for local development only.
 
@@ -83,7 +83,7 @@ garden deploy --target cloud-run --region us-central1
 
 ### Local models with Ollama
 
-For local development without cloud API keys, Agent Garden supports [Ollama](https://ollama.com) via the provider abstraction layer. Set your model to an Ollama-hosted model and the engine routes requests locally:
+For local development without cloud API keys, AgentBreeder supports [Ollama](https://ollama.com) via the provider abstraction layer. Set your model to an Ollama-hosted model and the engine routes requests locally:
 
 ```yaml
 model:

@@ -2,7 +2,7 @@ name: research-assistant
 version: 0.1.0
 description: "A research assistant agent built with the OpenAI Agents SDK"
 team: examples
-owner: dev@agent-garden.com
+owner: dev@agentbreeder.com
 tags: [example, openai-agents, research, tools]
 
 framework: openai_agents

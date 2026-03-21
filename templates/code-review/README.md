@@ -4,7 +4,7 @@ Automated PR review agent that integrates with GitHub to provide thorough, actio
 
 ## Prerequisites
 
-- Agent Garden CLI installed (`pip install agent-garden`)
+- AgentBreeder CLI installed (`pip install agentbreeder`)
 - GitHub personal access token or GitHub App with `repo` and `pull_requests` scopes
 - Anthropic API key (primary) and OpenAI API key (fallback)
 

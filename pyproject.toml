@@ -3,13 +3,13 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "agent-garden"
+name = "agentbreeder"
 version = "0.1.0"
 description = "Define Once. Deploy Anywhere. Govern Automatically."
 readme = "README.md"
 license = "Apache-2.0"
 requires-python = ">=3.11"
-authors = [{ name = "Agent Garden Contributors" }]
+authors = [{ name = "AgentBreeder Contributors" }]
 keywords = ["ai", "agents", "deployment", "governance", "mlops"]
 classifiers = [
     "Development Status :: 3 - Alpha",
@@ -59,9 +59,9 @@ docs = [
 garden = "cli.main:app"
 
 [project.urls]
-Homepage = "https://agent-garden.com"
-Repository = "https://github.com/open-agent-garden/agent-garden"
-Documentation = "https://open-agent-garden.github.io/agent-garden"
+Homepage = "https://agentbreeder.com"
+Repository = "https://github.com/open-agentbreeder/agentbreeder"
+Documentation = "https://open-agentbreeder.github.io/agentbreeder"
 
 [tool.hatch.build.targets.wheel]
 packages = ["engine", "api", "cli", "sdk", "registry", "connectors"]

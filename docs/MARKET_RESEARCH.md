@@ -1,8 +1,8 @@
-# Agent Garden: Market Research & Competitive Analysis Report
+# AgentBreeder: Market Research & Competitive Analysis Report
 
 **Date:** March 2026
 **Classification:** Internal — Do not publish to public repositories
-**Prepared by:** Agent Garden Strategy Team
+**Prepared by:** AgentBreeder Strategy Team
 **Version:** 1.0
 
 > **Note:** This document contains competitive pricing strategy and financial projections.
@@ -23,9 +23,9 @@ The AI agent market is undergoing a seismic shift from experimental chatbots to 
 
 **The core insight:** The market has dozens of tools to *build* agents and a handful of cloud platforms to *run* them — but **no product that combines framework-agnostic deployment, automatic governance, multi-cloud support, a shared organizational registry, and three-tier builder accessibility** into a single open-source platform.
 
-Agent Garden occupies this gap. Our thesis: **governance should be a side effect of deploying, not extra configuration.** A developer writes one `agent.yaml`, runs `garden deploy`, and their agent is live — with RBAC, cost tracking, audit trail, and org-wide discoverability automatic and requiring zero extra work.
+AgentBreeder occupies this gap. Our thesis: **governance should be a side effect of deploying, not extra configuration.** A developer writes one `agent.yaml`, runs `garden deploy`, and their agent is live — with RBAC, cost tracking, audit trail, and org-wide discoverability automatic and requiring zero extra work.
 
-This document provides a comprehensive analysis of the competitive landscape, Agent Garden's technical differentiation, market opportunity, growth strategy, business model, patent opportunities, and key risks.
+This document provides a comprehensive analysis of the competitive landscape, AgentBreeder's technical differentiation, market opportunity, growth strategy, business model, patent opportunities, and key risks.
 
 ---
 
@@ -33,7 +33,7 @@ This document provides a comprehensive analysis of the competitive landscape, Ag
 
 ### 1A. Agent Frameworks
 
-These are the libraries and SDKs developers use to *build* agents. They are potential integration targets for Agent Garden, not direct competitors — but their ecosystems shape developer expectations.
+These are the libraries and SDKs developers use to *build* agents. They are potential integration targets for AgentBreeder, not direct competitors — but their ecosystems shape developer expectations.
 
 | Framework | Owner | GitHub Stars | Monthly Downloads | Strengths | Weaknesses | Relationship to AG |
 |-----------|-------|-------------|-------------------|-----------|------------|-------------------|
@@ -50,15 +50,15 @@ These are the libraries and SDKs developers use to *build* agents. They are pote
 | **Haystack** | deepset | 18.9k | 2.4M | Strong RAG pipeline support; production-tested; good documentation | More RAG-focused than agent-focused; heavier setup; limited orchestration | **Integration target** for RAG subsystem. |
 | **DSPy** | Stanford NLP | 32k | 5.2M | Novel prompt optimization; programmatic LLM control; academic rigor; strong research community | Steep learning curve; research-oriented; not production-deployment focused | **Complementary.** AG could integrate DSPy-optimized prompts. |
 
-**Key Insight:** Every framework helps developers *build* agents, but **none of them deploy agents to production with governance.** This is Agent Garden's primary value proposition — we are the deployment and governance layer that sits on top of any framework.
+**Key Insight:** Every framework helps developers *build* agents, but **none of them deploy agents to production with governance.** This is AgentBreeder's primary value proposition — we are the deployment and governance layer that sits on top of any framework.
 
-**Market Signal:** LangChain's pivot from "chain" abstractions to LangGraph (graph-based orchestration) and their $25M raise for LangSmith (observability) confirms that the market is moving from "build" to "operate." But LangSmith only observes LangChain agents — Agent Garden observes and governs *all* agents.
+**Market Signal:** LangChain's pivot from "chain" abstractions to LangGraph (graph-based orchestration) and their $25M raise for LangSmith (observability) confirms that the market is moving from "build" to "operate." But LangSmith only observes LangChain agents — AgentBreeder observes and governs *all* agents.
 
 ---
 
 ### 1B. Agent Platforms & Marketplaces
 
-These are products that provide visual interfaces for building agents, or cloud platforms with agent deployment capabilities. They are Agent Garden's most direct competitors.
+These are products that provide visual interfaces for building agents, or cloud platforms with agent deployment capabilities. They are AgentBreeder's most direct competitors.
 
 #### Visual / Low-Code Agent Builders
 
@@ -74,7 +74,7 @@ These are products that provide visual interfaces for building agents, or cloud 
 
 #### Enterprise Competitor: Vellum
 
-| Dimension | Vellum | Agent Garden |
+| Dimension | Vellum | AgentBreeder |
 |-----------|--------|-------------|
 | **Positioning** | "Development platform for production AI applications" | "Define Once. Deploy Anywhere. Govern Automatically." |
 | **Builder** | Visual workflow + prompt engineering | Three-tier: No Code + Low Code (YAML) + Full Code (SDK) |
@@ -86,7 +86,7 @@ These are products that provide visual interfaces for building agents, or cloud 
 | **Pricing** | Usage-based, opaque | Transparent tiers ($0 / $49 / $29 / custom) |
 | **Threat Level** | **HIGH** — closest enterprise competitor | — |
 
-Vellum is the closest direct competitor. Their strength is polish and enterprise sales. Agent Garden's advantages are open source, multi-cloud, framework-native runtimes, and automatic governance.
+Vellum is the closest direct competitor. Their strength is polish and enterprise sales. AgentBreeder's advantages are open source, multi-cloud, framework-native runtimes, and automatic governance.
 
 #### Enterprise Agent Platforms
 
@@ -103,13 +103,13 @@ Vellum is the closest direct competitor. Their strength is polish and enterprise
 | **Azure AI Foundry** | Microsoft | 10k+ customers (announced Build 2025) | Azure ecosystem; Copilot Studio integration; enterprise compliance; Teams integration | **Azure lock-in**; confusing product naming (Studio → Foundry); limited open-source model support | **HIGH** for Azure-native orgs. AG differentiates via vendor neutrality. |
 | **OpenAI GPT Store** | OpenAI | 3M+ published GPTs | Massive distribution; simple creation; ChatGPT user base | No real deployment; no governance; no enterprise features; OpenAI models only; revenue share issues | **Low.** Different product category (consumer marketplace vs. enterprise platform). |
 
-**Key Insight:** Visual builders (Dify, n8n, Langflow) help build agents but do not deploy them to production with governance. Cloud platforms (Vertex, Bedrock, Azure) deploy agents but lock you into one cloud and one model ecosystem. **Agent Garden is the only platform that combines framework-agnostic building (three tiers), multi-cloud deployment, and automatic governance.**
+**Key Insight:** Visual builders (Dify, n8n, Langflow) help build agents but do not deploy them to production with governance. Cloud platforms (Vertex, Bedrock, Azure) deploy agents but lock you into one cloud and one model ecosystem. **AgentBreeder is the only platform that combines framework-agnostic building (three tiers), multi-cloud deployment, and automatic governance.**
 
 ---
 
 ### 1C. Infrastructure & Model Gateways
 
-These products handle the model routing and observability layer. They are complementary to Agent Garden, not competitive.
+These products handle the model routing and observability layer. They are complementary to AgentBreeder, not competitive.
 
 | Product | GitHub Stars / Scale | Funding | Role | Relationship to AG |
 |---------|---------------------|---------|------|-------------------|
@@ -118,13 +118,13 @@ These products handle the model routing and observability layer. They are comple
 | **Portkey** | 12k+ stars | $15M Series A (2025) | AI gateway; guardrails; caching; observability; enterprise focus | **Complementary.** Potential integration target for enterprise gateway features. |
 | **Helicone** | 8k+ stars | $5M seed | LLM observability; cost tracking; prompt management; open source | **Complementary.** Overlaps with AG's built-in cost tracking but more focused. |
 
-**Key Insight:** The model gateway layer is maturing and commoditizing. Agent Garden integrates with these tools rather than competing — our value is above the gateway layer (deployment + governance + registry).
+**Key Insight:** The model gateway layer is maturing and commoditizing. AgentBreeder integrates with these tools rather than competing — our value is above the gateway layer (deployment + governance + registry).
 
 ---
 
 ### 1D. Standards & Protocols
 
-The agent ecosystem is converging on a three-layer protocol stack. Agent Garden's standards alignment is a key differentiator.
+The agent ecosystem is converging on a three-layer protocol stack. AgentBreeder's standards alignment is a key differentiator.
 
 | Standard | Status (March 2026) | Adoption | Description | AG Alignment |
 |----------|---------------------|----------|-------------|-------------|
@@ -140,11 +140,11 @@ Layer 2: MCP                     → Agent-to-tool / agent-to-data
 Layer 1: WebMCP                  → Agent-to-web interaction
 ```
 
-Agent Garden is positioned at the intersection of all three layers, providing the deployment and governance substrate that makes these protocols usable in production.
+AgentBreeder is positioned at the intersection of all three layers, providing the deployment and governance substrate that makes these protocols usable in production.
 
 ---
 
-## 2. Agent Garden's 12 Technical Innovations
+## 2. AgentBreeder's 12 Technical Innovations
 
 ### Innovation 1: Declarative `agent.yaml`
 
@@ -168,7 +168,7 @@ Agent Garden is positioned at the intersection of all three layers, providing th
 
 ### Innovation 2: Three-Tier Builder with Bidirectional Ejection
 
-**Description:** Agent Garden supports three ways to build agents, all compiling to the same internal representation:
+**Description:** AgentBreeder supports three ways to build agents, all compiling to the same internal representation:
 
 1. **No Code:** Visual drag-and-drop UI with ReactFlow canvas — for PMs, analysts, citizen builders
 2. **Low Code:** YAML configuration (`agent.yaml`) in any IDE or dashboard editor — for ML engineers, DevOps
@@ -180,7 +180,7 @@ Agent Garden is positioned at the intersection of all three layers, providing th
 - **Dify/n8n/Langflow:** Visual only. No YAML export. No code ejection. Once you outgrow the UI, you start over.
 - **LangGraph/CrewAI:** Code only. No visual builder. Inaccessible to non-developers.
 - **Vertex AI Agent Builder:** Visual + some code. No YAML intermediate. No self-hosted option.
-- **Agent Garden:** All three tiers with lossless transitions between them. The deploy pipeline is tier-unaware.
+- **AgentBreeder:** All three tiers with lossless transitions between them. The deploy pipeline is tier-unaware.
 
 ---
 
@@ -188,7 +188,7 @@ Agent Garden is positioned at the intersection of all three layers, providing th
 
 **Description:** Every `garden deploy` automatically enforces RBAC, writes an audit log entry, registers the agent in the org-wide registry, and attributes cost to the deploying team. There is no `--skip-governance` flag. Governance is architecturally non-bypassable.
 
-**What makes it unique:** In every competing platform, governance is an add-on that teams configure *after* deployment (if at all). In Agent Garden, governance is a **side effect of the deploy pipeline itself** — it happens automatically because the pipeline cannot complete without it.
+**What makes it unique:** In every competing platform, governance is an add-on that teams configure *after* deployment (if at all). In AgentBreeder, governance is a **side effect of the deploy pipeline itself** — it happens automatically because the pipeline cannot complete without it.
 
 **The deploy pipeline enforces governance at four points:**
 ```
@@ -201,13 +201,13 @@ Parse YAML → [RBAC CHECK] → Resolve Deps → Build Container → Provision I
 - **Bedrock Agents:** IAM-based (separate configuration, not automatic)
 - **Vertex AI:** IAM-based (separate configuration, not automatic)
 - **CrewAI Enterprise:** Governance roadmapped but not shipped
-- **Agent Garden:** Governance is architecturally embedded. Cannot be skipped.
+- **AgentBreeder:** Governance is architecturally embedded. Cannot be skipped.
 
 ---
 
 ### Innovation 4: Automatic Subagent-to-Tool Synthesis via A2A
 
-**Description:** When an agent is registered with A2A capabilities, Agent Garden automatically generates an MCP-compatible tool interface for it. Other agents can call it as a tool without knowing it's a separate agent. The A2A protocol handles the communication; AG handles the synthesis.
+**Description:** When an agent is registered with A2A capabilities, AgentBreeder automatically generates an MCP-compatible tool interface for it. Other agents can call it as a tool without knowing it's a separate agent. The A2A protocol handles the communication; AG handles the synthesis.
 
 **What makes it unique:** No other platform automatically converts inter-agent communication into the tool-calling interface that LLMs understand natively. This eliminates the need for developers to manually wire agent-to-agent calls.
 
@@ -215,26 +215,26 @@ Parse YAML → [RBAC CHECK] → Resolve Deps → Build Container → Provision I
 - **AutoGen:** Multi-agent communication but requires manual wiring and shared runtime
 - **CrewAI:** Role-based delegation but within a single CrewAI process
 - **LangGraph:** Subgraph composition but requires LangGraph on both sides
-- **Agent Garden:** Framework-agnostic, protocol-based, automatic synthesis
+- **AgentBreeder:** Framework-agnostic, protocol-based, automatic synthesis
 
 ---
 
 ### Innovation 5: MCP Sidecar Injection
 
-**Description:** When an agent's `agent.yaml` references MCP server tools, Agent Garden automatically packages each MCP server as a sidecar container and injects it alongside the agent container at deploy time. The agent communicates with its MCP servers over localhost — no external networking, no manual Docker configuration.
+**Description:** When an agent's `agent.yaml` references MCP server tools, AgentBreeder automatically packages each MCP server as a sidecar container and injects it alongside the agent container at deploy time. The agent communicates with its MCP servers over localhost — no external networking, no manual Docker configuration.
 
 **What makes it unique:** MCP servers typically require manual setup (install, configure, run). AG automates the entire lifecycle: discover (via `garden scan`), declare (in `agent.yaml`), package (as container), inject (as sidecar), and manage (health checks, restarts).
 
 **Competitive comparison:**
 - **MCP ecosystem:** Requires manual server setup and management
 - **Kubernetes sidecars:** Generic container injection, not MCP-aware
-- **Agent Garden:** MCP-native sidecar injection with automatic discovery and health management
+- **AgentBreeder:** MCP-native sidecar injection with automatic discovery and health management
 
 ---
 
 ### Innovation 6: `secret://` URI Resolution
 
-**Description:** Agent Garden introduces a `secret://` URI scheme that resolves secrets at deploy time from pluggable backends (environment variables, AWS Secrets Manager, GCP Secret Manager, HashiCorp Vault). Secrets are never stored in `agent.yaml` or source control.
+**Description:** AgentBreeder introduces a `secret://` URI scheme that resolves secrets at deploy time from pluggable backends (environment variables, AWS Secrets Manager, GCP Secret Manager, HashiCorp Vault). Secrets are never stored in `agent.yaml` or source control.
 
 **What makes it unique:** The resolution is backend-agnostic and deploy-time — the same `agent.yaml` works across environments by changing only the secrets backend configuration. This is simpler than Kubernetes secrets, AWS Secrets Manager SDKs, or Vault client libraries.
 
@@ -249,13 +249,13 @@ secrets:
 - **Kubernetes:** Requires separate Secret objects, RBAC, and volume mounts
 - **AWS/GCP:** Requires SDK integration in application code
 - **Vault:** Requires Vault agent sidecar or SDK integration
-- **Agent Garden:** Declarative URI, resolved automatically at deploy time, backend-pluggable
+- **AgentBreeder:** Declarative URI, resolved automatically at deploy time, backend-pluggable
 
 ---
 
 ### Innovation 7: Multi-Strategy Orchestration Engine
 
-**Description:** Agent Garden supports seven orchestration patterns for multi-agent systems, all declarable in `orchestration.yaml` or configurable via the visual canvas:
+**Description:** AgentBreeder supports seven orchestration patterns for multi-agent systems, all declarable in `orchestration.yaml` or configurable via the visual canvas:
 
 | Pattern | Description | Use Case |
 |---------|-------------|----------|
@@ -273,7 +273,7 @@ secrets:
 - **LangGraph:** Graph-based orchestration but LangChain-only
 - **CrewAI:** Sequential and hierarchical only
 - **AutoGen:** Conversation-based (no declarative patterns)
-- **Agent Garden:** Seven patterns, declarative, framework-agnostic, governed
+- **AgentBreeder:** Seven patterns, declarative, framework-agnostic, governed
 
 ---
 
@@ -292,13 +292,13 @@ Step fails → Revert infrastructure → Restore previous container → Update r
 **Competitive comparison:**
 - **Cloud platforms (Bedrock, Vertex):** Deploy their own framework only; no rollback
 - **Kubernetes:** Generic rollback but not agent-aware
-- **Agent Garden:** Agent-aware atomic rollback with audit trail
+- **AgentBreeder:** Agent-aware atomic rollback with audit trail
 
 ---
 
 ### Innovation 9: Multi-Cloud Deployers
 
-**Description:** Agent Garden deploys to AWS (ECS Fargate, Lambda, EKS) and GCP (Cloud Run, GKE) as equal first-class targets, plus local Docker Compose for development. The deployer is selected by a single field in `agent.yaml`:
+**Description:** AgentBreeder deploys to AWS (ECS Fargate, Lambda, EKS) and GCP (Cloud Run, GKE) as equal first-class targets, plus local Docker Compose for development. The deployer is selected by a single field in `agent.yaml`:
 
 ```yaml
 deploy:
@@ -313,13 +313,13 @@ deploy:
 - **Bedrock:** AWS only
 - **Azure AI Foundry:** Azure only
 - **Pulumi/Terraform:** Multi-cloud infrastructure but not agent-aware
-- **Agent Garden:** Multi-cloud, agent-aware, governance-consistent
+- **AgentBreeder:** Multi-cloud, agent-aware, governance-consistent
 
 ---
 
 ### Innovation 10: Provider Fallback Chains
 
-**Description:** Agent Garden supports automatic model provider fallback. If the primary model provider is unavailable, the system automatically routes to the configured fallback — with no code changes and no downtime.
+**Description:** AgentBreeder supports automatic model provider fallback. If the primary model provider is unavailable, the system automatically routes to the configured fallback — with no code changes and no downtime.
 
 ```yaml
 model:
@@ -334,13 +334,13 @@ model:
 - **OpenAI Agents SDK:** OpenAI models only, no fallback
 - **Bedrock:** Bedrock models only, manual failover
 - **LiteLLM:** Supports fallback at the gateway level (AG integrates this)
-- **Agent Garden:** Declarative fallback in `agent.yaml`, logged and audited
+- **AgentBreeder:** Declarative fallback in `agent.yaml`, logged and audited
 
 ---
 
 ### Innovation 11: API Versioning with RFC 8594
 
-**Description:** Agent Garden implements API versioning with RFC 8594 (Deprecation HTTP Header) and RFC 8288 (Link header for successor versions). This provides a standards-compliant migration path for API consumers.
+**Description:** AgentBreeder implements API versioning with RFC 8594 (Deprecation HTTP Header) and RFC 8288 (Link header for successor versions). This provides a standards-compliant migration path for API consumers.
 
 **Response headers for deprecated endpoints:**
 ```http
@@ -354,13 +354,13 @@ Link: </api/v2/agents>; rel="successor-version"
 **Competitive comparison:**
 - **Most platforms:** URL-based versioning with manual migration guides
 - **Stripe:** Versioned headers (good but proprietary approach)
-- **Agent Garden:** RFC 8594 + RFC 8288 compliant, machine-readable, automated
+- **AgentBreeder:** RFC 8594 + RFC 8288 compliant, machine-readable, automated
 
 ---
 
 ### Innovation 12: Org-Wide Shared Registry
 
-**Description:** Agent Garden maintains a shared registry of agents, prompts, tools, MCP servers, models, knowledge bases, and templates. Every entity is versioned, discoverable, and reusable across the organization.
+**Description:** AgentBreeder maintains a shared registry of agents, prompts, tools, MCP servers, models, knowledge bases, and templates. Every entity is versioned, discoverable, and reusable across the organization.
 
 **Registry entities:**
 ```
@@ -374,13 +374,13 @@ Agents → Prompts → Tools → MCP Servers → Models → Knowledge Bases → 
 - **LangSmith Hub:** Prompts only, LangChain-only
 - **OpenAI GPT Store:** Consumer marketplace, no enterprise features
 - **Bedrock:** Model catalog only, no cross-entity registry
-- **Agent Garden:** Full cross-entity registry with dependency tracking, versioning, and governance
+- **AgentBreeder:** Full cross-entity registry with dependency tracking, versioning, and governance
 
 ---
 
 ## 3. Competitive Moat — Feature Comparison Matrix
 
-| Capability | Agent Garden | LangChain/LangSmith | CrewAI | Dify | Vertex AI Agent Builder | AWS Bedrock Agents | Azure AI Foundry | Vellum |
+| Capability | AgentBreeder | LangChain/LangSmith | CrewAI | Dify | Vertex AI Agent Builder | AWS Bedrock Agents | Azure AI Foundry | Vellum |
 |-----------|-------------|---------------------|--------|------|------------------------|-------------------|-----------------|--------|
 | **Framework-Agnostic** | Yes (8+ frameworks) | No (LangChain only) | No (CrewAI only) | Partial (own format) | No (ADK/Vertex) | No (Bedrock) | No (Azure) | Partial |
 | **Multi-Cloud Deploy** | AWS + GCP + Local | No | No | Docker only | GCP only | AWS only | Azure only | Managed only |
@@ -427,9 +427,9 @@ The developer tooling market has a proven pattern:
 | Databases | PostgreSQL | **Supabase** ($2B valuation) | Backend-as-a-service |
 | Containers | Docker | **Kubernetes** ($8B+ ecosystem) | Container orchestration |
 | Serverless | AWS Lambda | **Serverless Framework** → acquired | Serverless tooling |
-| AI Agents | LangGraph / CrewAI / etc. | **??? (Agent Garden)** | Agent deployment platform |
+| AI Agents | LangGraph / CrewAI / etc. | **??? (AgentBreeder)** | Agent deployment platform |
 
-The "build" layer for AI agents is crowded. The "deploy + govern" layer is **wide open.** Agent Garden occupies the position that Vercel occupies for web apps — the developer-experience layer between the framework and the cloud.
+The "build" layer for AI agents is crowded. The "deploy + govern" layer is **wide open.** AgentBreeder occupies the position that Vercel occupies for web apps — the developer-experience layer between the framework and the cloud.
 
 ### The $40B Infrastructure Layer Opportunity
 
@@ -444,7 +444,7 @@ Analysis of enterprise AI spending reveals that **40-50% of total agent costs** 
 | Development tooling | 10-15% | $5-8B | $18-27B |
 | Integration & custom work | 15-20% | $8-10B | $27-37B |
 
-Agent Garden targets the deployment, governance, and tooling layers — a combined **$40-80B opportunity by 2033**.
+AgentBreeder targets the deployment, governance, and tooling layers — a combined **$40-80B opportunity by 2033**.
 
 ### Demand Signals
 
@@ -472,7 +472,7 @@ Getting an agent from "works on my laptop" to "running in production" requires e
 
 > *"I spent 3 weeks getting a LangGraph agent into production on AWS. The LangGraph part took 2 days. The other 19 days were Docker, ECS, IAM, secrets, load balancing, and monitoring."* — Senior ML Engineer, Series B startup (Reddit r/LangChain)
 
-**Agent Garden's answer:** `garden deploy --target aws` — one command, zero infrastructure expertise required.
+**AgentBreeder's answer:** `garden deploy --target aws` — one command, zero infrastructure expertise required.
 
 ---
 
@@ -484,7 +484,7 @@ AI agent costs are notoriously unpredictable. A single agent can cost $30-800/mo
 
 > *"Our monthly OpenAI bill went from $2K to $47K in one quarter. We had no idea which agents were responsible."* — VP Engineering, Fortune 500 (Forrester interview)
 
-**Agent Garden's answer:** Automatic per-agent, per-team, per-model cost attribution with real-time dashboards and budget alerts.
+**AgentBreeder's answer:** Automatic per-agent, per-team, per-model cost attribution with real-time dashboards and budget alerts.
 
 ---
 
@@ -496,7 +496,7 @@ Every framework has its own tool interface, its own memory abstraction, its own 
 
 > *"We built 15 custom tools for our LangChain agents. When we wanted to try CrewAI, we had to rewrite all of them."* — Staff Engineer, AI startup
 
-**Agent Garden's answer:** MCP as the universal tool interface. Build a tool once as an MCP server; use it in any framework via AG's sidecar injection.
+**AgentBreeder's answer:** MCP as the universal tool interface. Build a tool once as an MCP server; use it in any framework via AG's sidecar injection.
 
 ---
 
@@ -514,7 +514,7 @@ Organizations consistently report success in agent pilots but failure in scaling
 | Primary blocker: deployment complexity | 58% | Gartner, 2025 |
 | Primary blocker: cost unpredictability | 51% | Forrester, 2025 |
 
-**Agent Garden's answer:** Governance is automatic. Deployment is one command. Cost tracking is built in. The pilot-to-production gap closes because the production requirements are satisfied by default.
+**AgentBreeder's answer:** Governance is automatic. Deployment is one command. Cost tracking is built in. The pilot-to-production gap closes because the production requirements are satisfied by default.
 
 ---
 
@@ -526,7 +526,7 @@ Enterprise AI governance requirements include: access control (who can deploy/ca
 
 > *"Our CISO won't approve any AI agent for production until we can show a complete audit trail and access control. None of the frameworks provide this."* — Head of AI Platform, Global Bank
 
-**Agent Garden's answer:** RBAC, audit logging, registry tracking, and cost attribution are non-optional side effects of every deployment. The CISO's requirements are met by default.
+**AgentBreeder's answer:** RBAC, audit logging, registry tracking, and cost attribution are non-optional side effects of every deployment. The CISO's requirements are met by default.
 
 ---
 
@@ -544,7 +544,7 @@ AI agents introduce novel security vectors that traditional security tools don't
 | Data exfiltration via tool calls | 8% of agents tested | Anthropic Safety Research, 2025 |
 | No secrets rotation in production | 62% of deployments | HashiCorp State of Cloud Security, 2025 |
 
-**Agent Garden's answer:** Built-in guardrails (PII detection, content filtering, hallucination checks), `secret://` URI resolution (no secrets in code), MCP sandboxing (tool isolation), and RBAC (permission enforcement).
+**AgentBreeder's answer:** Built-in guardrails (PII detection, content filtering, hallucination checks), `secret://` URI resolution (no secrets in code), MCP sandboxing (tool isolation), and RBAC (permission enforcement).
 
 ---
 
@@ -556,19 +556,19 @@ AI agents introduce novel security vectors that traditional security tools don't
 |---|-----------|-------------|---------------|
 | 1 | **Open-Source Release Preparation** | Polish README, contributing guide, architecture docs, quickstart tutorial. Ensure `garden deploy --target local` works flawlessly in < 5 minutes. | Time-to-first-deploy < 5 min |
 | 2 | **Example Agent Library** | Create 10+ example agents across all supported frameworks: LangGraph customer support, CrewAI research team, OpenAI coding assistant, Claude document analyzer, etc. | 10+ examples in `examples/` |
-| 3 | **Developer Documentation Site** | Launch docs.agentgarden.dev with quickstart, tutorials, API reference, CLI reference, `agent.yaml` specification, and architecture guide. | 95%+ API coverage |
-| 4 | **Community Infrastructure** | Set up Discord server, GitHub Discussions, X/Twitter account, blog (blog.agentgarden.dev). Seed with 5+ technical blog posts. | Infrastructure live |
+| 3 | **Developer Documentation Site** | Launch docs.agentbreeder.dev with quickstart, tutorials, API reference, CLI reference, `agent.yaml` specification, and architecture guide. | 95%+ API coverage |
+| 4 | **Community Infrastructure** | Set up Discord server, GitHub Discussions, X/Twitter account, blog (blog.agentbreeder.dev). Seed with 5+ technical blog posts. | Infrastructure live |
 | 5 | **Early Adopter Program** | Recruit 20-50 developers from AI framework communities for private beta. Collect feedback and testimonials. | 20+ beta users |
 
 ### Phase 2: Launch (Weeks 5-6) — Maximum Visibility
 
 | # | Initiative | Description | Target Metric |
 |---|-----------|-------------|---------------|
-| 1 | **Hacker News Launch** | "Show HN: Agent Garden — Define Once. Deploy Anywhere. Govern Automatically." Post at 6am PT Tuesday. Prepare team for 48-hour engagement sprint. | Top 10 on HN front page |
+| 1 | **Hacker News Launch** | "Show HN: AgentBreeder — Define Once. Deploy Anywhere. Govern Automatically." Post at 6am PT Tuesday. Prepare team for 48-hour engagement sprint. | Top 10 on HN front page |
 | 2 | **Channel Blitz** | Simultaneous posts on: Reddit (r/MachineLearning, r/LangChain, r/LocalLLaMA, r/SideProject), Product Hunt, X/Twitter, LinkedIn, Dev.to, Hashnode. Each post tailored to the audience. | 10k+ GitHub stars in first week |
 | 3 | **"One YAML, Any Cloud" Challenge** | A public challenge: deploy the same agent to AWS, GCP, and local Docker by changing only the `deploy.cloud` field. Video demonstration + developer live stream. | Viral social proof |
 | 4 | **Framework Community Engagement** | Post in LangChain, CrewAI, OpenAI, and Anthropic community channels/forums with framework-specific tutorials: "Deploy your LangGraph agent to AWS in 60 seconds." | Framework community awareness |
-| 5 | **Launch Blog Post** | Technical deep-dive: "Why We Built Agent Garden: The Missing Layer in the AI Agent Stack." Architecture, design decisions, benchmarks. | 50k+ reads |
+| 5 | **Launch Blog Post** | Technical deep-dive: "Why We Built AgentBreeder: The Missing Layer in the AI Agent Stack." Architecture, design decisions, benchmarks. | 50k+ reads |
 
 ### Phase 3: Growth Engine (Weeks 7-26) — Sustained Momentum
 
@@ -576,7 +576,7 @@ AI agents introduce novel security vectors that traditional security tools don't
 |---|-----------|-------------|---------------|
 | 1 | **Weekly Technical Content** | Publish 2 blog posts/week: one tutorial ("Deploy a CrewAI Research Team to GCP in 5 Minutes"), one thought leadership ("Why Agent Governance Will Be a $15B Market"). | 100k monthly blog visitors by month 6 |
 | 2 | **Framework Partnerships** | Formal partnerships with LangChain, CrewAI, Anthropic, and OpenAI for co-marketing, documentation cross-links, and conference co-presentations. | 3+ formal partnerships |
-| 3 | **Community Marketplace** | Launch the Agent Garden Marketplace: share agent templates, MCP servers, prompts, and tools. Gamify contributions with badges and leaderboards. | 500+ marketplace items by month 6 |
+| 3 | **Community Marketplace** | Launch the AgentBreeder Marketplace: share agent templates, MCP servers, prompts, and tools. Gamify contributions with badges and leaderboards. | 500+ marketplace items by month 6 |
 | 4 | **Conference Circuit** | Present at: AI Engineer World's Fair, PyCon, KubeCon, re:Invent (AWS), Google Cloud Next. Submit CFPs for all major AI and DevOps conferences. | 5+ conference presentations |
 | 5 | **Y Combinator Targeting** | If pursuing venture funding, apply to YC with narrative: "Vercel for AI agents. Open-source. $183B market by 2033. 10k+ GitHub stars. Growing 30% MoM." | YC interview/acceptance |
 | 6 | **SEO & Developer Marketing** | Target keywords: "deploy AI agent to production," "AI agent governance," "multi-agent orchestration platform," "AI agent deployment tool." Create landing pages for each framework. | Top 3 Google ranking for 10+ target keywords |
@@ -587,7 +587,7 @@ AI agents introduce novel security vectors that traditional security tools don't
 | # | Initiative | Description | Target Metric |
 |---|-----------|-------------|---------------|
 | 1 | **Enterprise Features** | Ship: SSO/SAML, advanced RBAC (per-field permissions), compliance dashboards, SLA management, private registry, dedicated support. | Enterprise tier launch |
-| 2 | **Managed Cloud Platform** | Launch cloud.agentgarden.dev: fully managed Agent Garden with built-in compute, one-click deployment, and usage-based billing. | $100k MRR by month 12 |
+| 2 | **Managed Cloud Platform** | Launch cloud.agentbreeder.dev: fully managed AgentBreeder with built-in compute, one-click deployment, and usage-based billing. | $100k MRR by month 12 |
 | 3 | **Cloud Provider Partnerships** | Become an AWS Partner Network member, Google Cloud Partner, and Azure Marketplace listing. Enable one-click deployment from each cloud marketplace. | Listed on 2+ cloud marketplaces |
 | 4 | **Enterprise Sales Team** | Hire 3-5 enterprise AEs. Target: Fortune 500 AI platform teams, financial services (governance-heavy), healthcare (compliance-heavy), and tech companies (scale-heavy). | 10+ enterprise customers |
 | 5 | **SOC 2 Type II Certification** | Achieve SOC 2 Type II certification for the managed cloud platform. This is table stakes for enterprise sales. | SOC 2 certified |
@@ -602,7 +602,7 @@ AI agents introduce novel security vectors that traditional security tools don't
 | Revenue Stream | Description | Margin | Timeline |
 |---------------|-------------|--------|----------|
 | **Open Core** | Core platform is open source (MIT). Enterprise features (SSO, advanced RBAC, compliance, SLA) require paid license. | 90%+ | Month 7+ |
-| **Managed Cloud** | Fully hosted Agent Garden at cloud.agentgarden.dev. Usage-based billing for compute, deployments, and registry storage. | 70-80% | Month 9+ |
+| **Managed Cloud** | Fully hosted AgentBreeder at cloud.agentbreeder.dev. Usage-based billing for compute, deployments, and registry storage. | 70-80% | Month 9+ |
 | **Marketplace Fees** | 15% transaction fee on paid marketplace items (premium templates, enterprise MCP servers, certified agents). | 95% | Month 10+ |
 | **Support & Services** | Enterprise support tiers, implementation services, training. | 50-60% | Month 7+ |
 
@@ -637,7 +637,7 @@ AI agents introduce novel security vectors that traditional security tools don't
 | **GitLab** | Open core DevOps platform | $8B | Same pattern: open-core platform with tiered pricing |
 | **Databricks** | Open source Spark → managed platform | $62B | Aspirational: open-source data platform → enterprise juggernaut |
 
-**Pattern validation:** Every successful open-core developer tool follows the same playbook: (1) build a large open-source community, (2) offer a managed cloud for convenience, (3) add enterprise features behind a paywall. Agent Garden follows this proven model.
+**Pattern validation:** Every successful open-core developer tool follows the same playbook: (1) build a large open-source community, (2) offer a managed cloud for convenience, (3) add enterprise features behind a paywall. AgentBreeder follows this proven model.
 
 ---
 
@@ -927,4 +927,4 @@ For the following innovations, we recommend **defensive publication** rather tha
 
 *This document is confidential and intended for internal strategic planning. Market data is sourced from publicly available reports and verified to the extent possible as of March 2026. Projections are estimates and subject to market conditions.*
 
-*Prepared for the Agent Garden Board of Directors.*
+*Prepared for the AgentBreeder Board of Directors.*

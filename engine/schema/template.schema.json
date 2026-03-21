@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://agent-garden.com/schemas/template.schema.json",
-  "title": "Agent Garden Template",
+  "$id": "https://agentbreeder.com/schemas/template.schema.json",
+  "title": "AgentBreeder Template",
   "description": "Schema for parameterized agent configuration templates.",
   "type": "object",
   "required": ["name", "framework", "config_template"],

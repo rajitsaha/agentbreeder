@@ -1,6 +1,6 @@
 # Local Development Guide
 
-This guide covers setting up Agent Garden for local development and contributing.
+This guide covers setting up AgentBreeder for local development and contributing.
 
 ## Prerequisites
 
@@ -16,8 +16,8 @@ This guide covers setting up Agent Garden for local development and contributing
 ### 1. Clone and install
 
 ```bash
-git clone https://github.com/open-agent-garden/agent-garden.git
-cd agent-garden
+git clone https://github.com/open-agentbreeder/agentbreeder.git
+cd agentbreeder
 
 # Python environment
 python -m venv venv
@@ -88,8 +88,8 @@ docker compose -f deploy/docker-compose.yml up -d
 | Redis | localhost:6379 |
 
 Default credentials for local dev:
-- **DB:** `garden` / `garden` / database `agentgarden`
-- **App login:** `admin@agent-garden.local` / `plant`
+- **DB:** `garden` / `garden` / database `agentbreeder`
+- **App login:** `admin@agentbreeder.local` / `plant`
 
 ## Running Tests
 
@@ -176,7 +176,7 @@ alembic history
 ## Project Layout
 
 ```
-agent-garden/
+agentbreeder/
 ├── api/                    # FastAPI backend
 │   ├── main.py             # App entry, middleware, routers
 │   ├── routes/             # REST endpoints
@@ -257,7 +257,7 @@ Key variables in `.env`:
 
 ```bash
 # Required
-DATABASE_URL=postgresql+asyncpg://garden:garden@localhost:5432/agentgarden
+DATABASE_URL=postgresql+asyncpg://garden:garden@localhost:5432/agentbreeder
 REDIS_URL=redis://localhost:6379
 SECRET_KEY=dev-secret-key
 GARDEN_ENV=development

@@ -102,8 +102,8 @@ class GitService:
         if not git_dir.exists():
             await self._run("init", "-b", "main", check=True)
             # Configure user identity for commits (needed in CI / temp repos)
-            await self._run("config", "user.email", "garden@agent-garden.dev")
-            await self._run("config", "user.name", "Agent Garden")
+            await self._run("config", "user.email", "garden@agentbreeder.dev")
+            await self._run("config", "user.name", "AgentBreeder")
             # Create initial empty commit so main exists
             await self._run("commit", "--allow-empty", "-m", "Initial commit")
             logger.info("Initialised git repository at %s", self.repo_root)

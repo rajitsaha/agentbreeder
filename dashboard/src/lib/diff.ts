@@ -1,6 +1,6 @@
 /**
  * Simple LCS-based line diff algorithm.
- * No external dependencies — self-contained for Agent Garden.
+ * No external dependencies — self-contained for AgentBreeder.
  */
 
 export type DiffLineType = "added" | "removed" | "unchanged";

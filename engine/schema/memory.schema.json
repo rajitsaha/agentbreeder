@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "Agent Garden Memory Configuration",
-  "description": "Schema for memory.yaml — the memory backend definition file for Agent Garden",
+  "title": "AgentBreeder Memory Configuration",
+  "description": "Schema for memory.yaml — the memory backend definition file for AgentBreeder",
   "type": "object",
   "required": ["name", "version"],
   "additionalProperties": false,

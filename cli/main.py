@@ -1,4 +1,4 @@
-"""Agent Garden CLI — the developer interface.
+"""AgentBreeder CLI — the developer interface.
 
 Usage:
     garden deploy ./agent.yaml --target local
@@ -39,7 +39,7 @@ from cli.commands import (
 
 app = typer.Typer(
     name="garden",
-    help="Agent Garden — Define Once. Deploy Anywhere. Govern Automatically.",
+    help="AgentBreeder — Define Once. Deploy Anywhere. Govern Automatically.",
     no_args_is_help=True,
     rich_markup_mode="rich",
 )

@@ -1,5 +1,5 @@
 {
-  "$schema": "https://agent-garden.com/schemas/template-registry.json",
+  "$schema": "https://agentbreeder.com/schemas/template-registry.json",
   "version": "1.0.0",
   "templates": [
     {

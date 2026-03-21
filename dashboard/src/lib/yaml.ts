@@ -1,6 +1,6 @@
 /**
  * JSON-to-YAML converter and YAML syntax highlighter.
- * No external dependencies — hand-rolled for Agent Garden.
+ * No external dependencies — hand-rolled for AgentBreeder.
  */
 
 // ---------------------------------------------------------------------------

@@ -1,10 +1,10 @@
 # OpenAI Agents Starter
 
-Minimal OpenAI Agents SDK agent with function tools and structured instructions. Use this as a starting point for building agents with the OpenAI Agents SDK and Agent Garden.
+Minimal OpenAI Agents SDK agent with function tools and structured instructions. Use this as a starting point for building agents with the OpenAI Agents SDK and AgentBreeder.
 
 ## Prerequisites
 
-- Agent Garden CLI installed (`pip install agent-garden`)
+- AgentBreeder CLI installed (`pip install agentbreeder`)
 - Python 3.11+ with `openai-agents` installed
 - OpenAI API key
 
@@ -43,7 +43,7 @@ Response
 
 ### Key Files
 
-- `agent.yaml` -- Agent Garden configuration
+- `agent.yaml` -- AgentBreeder configuration
 - `agent.py` -- OpenAI Agents SDK agent definition (entry point)
 
 ## Customization

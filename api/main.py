@@ -1,4 +1,4 @@
-"""Agent Garden API server."""
+"""AgentBreeder API server."""
 
 from __future__ import annotations
 
@@ -49,19 +49,19 @@ async def _seed_default_admin() -> None:
 
     async with async_session() as db:
         try:
-            existing = await get_user_by_email(db, "admin@agent-garden.local")
+            existing = await get_user_by_email(db, "admin@agentbreeder.local")
             if existing:
                 return
             await create_user(
                 db,
-                email="admin@agent-garden.local",
+                email="admin@agentbreeder.local",
                 name="Gardner",
                 password="plant",
-                team="Agent Garden Platform",
+                team="AgentBreeder Platform",
                 role=UserRole.admin,
             )
             await db.commit()
-            logger.info("Default admin user created (admin@agent-garden.local / plant)")
+            logger.info("Default admin user created (admin@agentbreeder.local / plant)")
         except Exception as e:
             logger.debug("Skipping admin seed: %s", e)
 
@@ -69,14 +69,14 @@ async def _seed_default_admin() -> None:
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Startup and shutdown events."""
-    logger.info("Agent Garden API starting up")
+    logger.info("AgentBreeder API starting up")
     await _seed_default_admin()
     yield
-    logger.info("Agent Garden API shutting down")
+    logger.info("AgentBreeder API shutting down")
 
 
 app = FastAPI(
-    title="Agent Garden API",
+    title="AgentBreeder API",
     description="Define Once. Deploy Anywhere. Govern Automatically.",
     version="0.1.0",
     lifespan=lifespan,
@@ -126,4 +126,4 @@ app.include_router(agents_v2.router)
 
 @app.get("/health")
 async def health() -> dict:
-    return {"status": "healthy", "service": "agent-garden-api", "version": "0.1.0"}
+    return {"status": "healthy", "service": "agentbreeder-api", "version": "0.1.0"}

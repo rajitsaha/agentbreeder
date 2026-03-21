@@ -1,4 +1,4 @@
-"""Agent Garden configuration parser.
+"""AgentBreeder configuration parser.
 
 Parses and validates agent.yaml files into typed AgentConfig objects.
 This is the foundation of the deploy pipeline — everything depends on it.

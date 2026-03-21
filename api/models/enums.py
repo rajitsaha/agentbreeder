@@ -1,4 +1,4 @@
-"""Database enums for Agent Garden."""
+"""Database enums for AgentBreeder."""
 
 from __future__ import annotations
 

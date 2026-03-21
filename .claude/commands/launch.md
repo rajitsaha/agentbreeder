@@ -1,4 +1,4 @@
-# /launch — Pre-flight Pipeline (agent-garden)
+# /launch — Pre-flight Pipeline (agentbreeder)
 
 Extends the base `/launch` with a Docker build + smoke test phase before the standard pipeline.
 
@@ -6,14 +6,14 @@ Extends the base `/launch` with a Docker build + smoke test phase before the sta
 
 ---
 
-## Phase 0 — Docker Build & Smoke Test (agent-garden specific)
+## Phase 0 — Docker Build & Smoke Test (agentbreeder specific)
 
 ### 0a. Build images
 ```bash
 PROJECT_ROOT=$(git rev-parse --show-toplevel)
 cd "$PROJECT_ROOT"
-docker build -t agent-garden-api:local .
-docker build -t agent-garden-dashboard:local ./dashboard
+docker build -t agentbreeder-api:local .
+docker build -t agentbreeder-dashboard:local ./dashboard
 ```
 
 Fix any build errors (Python/dependency issues for API, TypeScript errors for dashboard). Iterate until both succeed.
@@ -90,7 +90,7 @@ Run `/commit`. Use `Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>`.
 
 ## Phase 6 — Push (invoke `/push`)
 
-Run `/push`. Remote: `git@github-oag:open-agent-garden/agent-garden.git`.
+Run `/push`. Remote: `git@github-oag:open-agentbreeder/agentbreeder.git`.
 
 ---
 

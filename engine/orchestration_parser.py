@@ -1,4 +1,4 @@
-"""Agent Garden orchestration configuration parser.
+"""AgentBreeder orchestration configuration parser.
 
 Parses and validates orchestration.yaml files into typed OrchestrationConfig objects.
 This enables multi-agent orchestration — routing, sequencing, parallelism, and hierarchy.

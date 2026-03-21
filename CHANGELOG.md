@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to Agent Garden are documented here.
+All notable changes to AgentBreeder are documented here.
 
 This project follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
@@ -33,7 +33,7 @@ This project follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) an
 - Orchestration builder page (`dashboard/src/pages/orchestration-builder.tsx`)
 
 #### TypeScript SDK (M30)
-- `@agent-garden/sdk` npm package (`sdk/typescript/`)
+- `@agentbreeder/sdk` npm package (`sdk/typescript/`)
 - Agent, Tool, Model, Orchestration, and Deploy classes with full TypeScript types
 - `toYaml()` / `fromYaml()` serialization
 - Unit tests for agent and orchestration SDK
@@ -91,7 +91,7 @@ This project follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) an
 - Observability stack: distributed tracing, OpenTelemetry integration
 - Teams and RBAC enforcement
 - Cost tracking and audit/lineage trail
-- Python SDK (`agent-garden-sdk`)
+- Python SDK (`agentbreeder-sdk`)
 - Visual playground (No Code builder)
 - Git CLI workflow (`garden submit`, `garden review`, `garden publish`)
 - YAML schemas for `agent.yaml`, `orchestration.yaml`, `prompt.yaml`, `tool.yaml`, `rag.yaml`, `memory.yaml`
@@ -113,5 +113,5 @@ This project follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) an
 
 ---
 
-[Unreleased]: https://github.com/open-agent-garden/agent-garden/compare/v1.0.0...HEAD
-[1.0.0]: https://github.com/open-agent-garden/agent-garden/releases/tag/v1.0.0
+[Unreleased]: https://github.com/open-agentbreeder/agentbreeder/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/open-agentbreeder/agentbreeder/releases/tag/v1.0.0

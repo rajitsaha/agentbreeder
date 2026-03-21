@@ -67,7 +67,7 @@ class ApiKeyData(BaseModel):
 
 def _get_fernet_key() -> bytes:
     """Derive a 32-byte Fernet key from SECRET_KEY env var."""
-    secret = os.environ.get("SECRET_KEY", "agent-garden-dev-secret-key-change-me")
+    secret = os.environ.get("SECRET_KEY", "agentbreeder-dev-secret-key-change-me")
     # Derive a URL-safe base64-encoded 32-byte key from the secret
     raw = hashlib.sha256(secret.encode()).digest()
     return base64.urlsafe_b64encode(raw)

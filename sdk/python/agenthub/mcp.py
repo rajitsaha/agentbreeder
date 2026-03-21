@@ -1,4 +1,4 @@
-"""Agent Garden MCP helper — build MCP tool servers with minimal boilerplate.
+"""AgentBreeder MCP helper — build MCP tool servers with minimal boilerplate.
 
 Provides a decorator-based API for exposing Python functions as MCP tools.
 Type hints are automatically converted to JSON Schema input definitions.
@@ -96,7 +96,7 @@ class MCPServe:
     the function's type hints. The tool description comes from the docstring.
     """
 
-    def __init__(self, name: str = "agent-garden-tools", version: str = "1.0.0") -> None:
+    def __init__(self, name: str = "agentbreeder-tools", version: str = "1.0.0") -> None:
         self._server = FastMCP(name=name, version=version)
         self._tools: list[str] = []
 

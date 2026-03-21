@@ -29,7 +29,7 @@ def _get_client() -> httpx.Client:
 def _handle_connection_error(json_output: bool) -> None:
     """Handle API connection errors."""
     msg = (
-        f"Cannot connect to Agent Garden API at {API_BASE}.\n"
+        f"Cannot connect to AgentBreeder API at {API_BASE}.\n"
         "  Ensure the server is running: uvicorn api.main:app --port 8000"
     )
     if json_output:
@@ -107,7 +107,7 @@ def publish(
 
     Finds the most recent approved PR for the given resource, merges the
     branch into main, optionally tags with a semver version, and publishes
-    to the Agent Garden registry.
+    to the AgentBreeder registry.
 
     Examples:
         garden publish agent my-agent
@@ -119,7 +119,7 @@ def publish(
             Panel(
                 f"[bold]Publishing[/bold] {resource_type}/[cyan]{name}[/cyan]"
                 + (f" as [green]v{version}[/green]" if version else ""),
-                title="Agent Garden",
+                title="AgentBreeder",
                 border_style="blue",
             )
         )

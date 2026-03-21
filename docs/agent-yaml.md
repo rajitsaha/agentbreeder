@@ -1,6 +1,6 @@
 # agent.yaml Reference
 
-The `agent.yaml` file is the canonical configuration for an Agent Garden agent. It defines everything needed to build, deploy, and govern an agent.
+The `agent.yaml` file is the canonical configuration for an AgentBreeder agent. It defines everything needed to build, deploy, and govern an agent.
 
 ## Minimal Example
 

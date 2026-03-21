@@ -4,7 +4,7 @@ Conversational Slack bot with channel-aware responses, thread management, knowle
 
 ## Prerequisites
 
-- Agent Garden CLI installed (`pip install agent-garden`)
+- AgentBreeder CLI installed (`pip install agentbreeder`)
 - Slack app created at [api.slack.com](https://api.slack.com/apps) with Bot Token and App Token
 - Anthropic API key (primary) and OpenAI API key (fallback)
 

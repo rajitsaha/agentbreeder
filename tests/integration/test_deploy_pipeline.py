@@ -1,4 +1,4 @@
-"""Integration tests for the Agent Garden deploy pipeline.
+"""Integration tests for the AgentBreeder deploy pipeline.
 
 Tests multi-component integration (parse -> validate -> resolve -> build -> deploy -> register)
 with mocked external services (Docker, cloud providers) but real internal logic.

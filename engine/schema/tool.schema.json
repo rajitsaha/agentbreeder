@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "Agent Garden Tool Configuration",
-  "description": "Schema for tool.yaml — the tool definition file for Agent Garden",
+  "title": "AgentBreeder Tool Configuration",
+  "description": "Schema for tool.yaml — the tool definition file for AgentBreeder",
   "type": "object",
   "required": ["name", "version", "description", "type"],
   "additionalProperties": false,

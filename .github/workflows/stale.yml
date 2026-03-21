@@ -28,7 +28,7 @@ jobs:
             - Comment with a status update
             - Remove the `stale` label
 
-            Thank you for your contributions to Agent Garden!
+            Thank you for your contributions to AgentBreeder!
           close-issue-message: >
             This issue has been closed due to inactivity. If you believe it's still relevant,
             please open a new issue with updated context.
@@ -46,7 +46,7 @@ jobs:
             - Remove the `stale` label
             - Comment with a status update
 
-            Thank you for your contribution to Agent Garden!
+            Thank you for your contribution to AgentBreeder!
           close-pr-message: >
             This PR has been closed due to inactivity. Feel free to reopen if you resume work on it.
 

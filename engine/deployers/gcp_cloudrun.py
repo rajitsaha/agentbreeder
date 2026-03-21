@@ -92,7 +92,7 @@ def _get_artifact_registry_image_uri(
 
     Format: {region}-docker.pkg.dev/{project}/{repo}/{image}:{tag}
     """
-    repo = gcp_config.artifact_registry_repo or "agent-garden"
+    repo = gcp_config.artifact_registry_repo or "agentbreeder"
     return (
         f"{gcp_config.region}-docker.pkg.dev/{gcp_config.project_id}/{repo}/{agent_name}:{version}"
     )
@@ -258,7 +258,7 @@ class GCPCloudRunDeployer(BaseDeployer):
 
     async def _ensure_artifact_registry_repo(self, gcp: CloudRunConfig) -> None:
         """Create the Artifact Registry docker repository if it doesn't exist."""
-        repo_name = gcp.artifact_registry_repo or "agent-garden"
+        repo_name = gcp.artifact_registry_repo or "agentbreeder"
 
         try:
             ar_client = self._get_ar_client()
@@ -282,7 +282,7 @@ class GCPCloudRunDeployer(BaseDeployer):
                         repository_id=repo_name,
                         repository=Repository(
                             format_=Repository.Format.DOCKER,
-                            description=f"Agent Garden container images ({gcp.project_id})",
+                            description=f"AgentBreeder container images ({gcp.project_id})",
                         ),
                     )
                 )
@@ -429,7 +429,7 @@ class GCPCloudRunDeployer(BaseDeployer):
                 template=RevisionTemplate(template_dict),
                 ingress=ingress,
                 labels={
-                    "managed-by": "agent-garden",
+                    "managed-by": "agentbreeder",
                     "agent-name": config.name,
                     "agent-version": config.version.replace(".", "-"),
                     "team": config.team,

@@ -1,14 +1,14 @@
-# Agent Garden
+# AgentBreeder
 
 **Define Once. Deploy Anywhere. Govern Automatically.**
 
-Agent Garden is an open-source platform for building, deploying, and governing enterprise AI agents. Write one `agent.yaml`, run `garden deploy`, and your agent is live on AWS or GCP — with RBAC, cost tracking, audit trail, and org-wide discoverability automatic.
+AgentBreeder is an open-source platform for building, deploying, and governing enterprise AI agents. Write one `agent.yaml`, run `garden deploy`, and your agent is live on AWS or GCP — with RBAC, cost tracking, audit trail, and org-wide discoverability automatic.
 
 ---
 
-## Why Agent Garden?
+## Why AgentBreeder?
 
-| Challenge | Without Agent Garden | With Agent Garden |
+| Challenge | Without AgentBreeder | With AgentBreeder |
 |-----------|---------------------|------------------|
 | Framework fragmentation | Each team uses a different framework | One deploy pipeline, any framework |
 | Cloud sprawl | Agents manually deployed to ad-hoc infra | One command, any cloud |
@@ -20,7 +20,7 @@ Agent Garden is an open-source platform for building, deploying, and governing e
 
 ## Three Builder Tiers
 
-Agent Garden supports three ways to build agents and orchestrations. All three compile to the same internal format and share the same deploy pipeline.
+AgentBreeder supports three ways to build agents and orchestrations. All three compile to the same internal format and share the same deploy pipeline.
 
 === "No Code (Visual UI)"
 
@@ -80,7 +80,7 @@ Agent Garden supports three ways to build agents and orchestrations. All three c
 
 ```bash
 # Install
-pip install agent-garden
+pip install agentbreeder
 
 # Create an agent
 garden init

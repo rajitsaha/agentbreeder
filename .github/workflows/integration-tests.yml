@@ -20,9 +20,9 @@ jobs:
       postgres:
         image: postgres:16
         env:
-          POSTGRES_USER: agent_garden
-          POSTGRES_PASSWORD: agent_garden
-          POSTGRES_DB: agent_garden_test
+          POSTGRES_USER: agentbreeder
+          POSTGRES_PASSWORD: agentbreeder
+          POSTGRES_DB: agentbreeder_test
         ports:
           - 5432:5432
         options: >-
@@ -54,12 +54,12 @@ jobs:
 
       - name: Run database migrations
         env:
-          DATABASE_URL: postgresql+asyncpg://agent_garden:agent_garden@localhost:5432/agent_garden_test
+          DATABASE_URL: postgresql+asyncpg://agentbreeder:agentbreeder@localhost:5432/agentbreeder_test
         run: alembic upgrade head
 
       - name: Run integration tests
         env:
-          DATABASE_URL: postgresql+asyncpg://agent_garden:agent_garden@localhost:5432/agent_garden_test
+          DATABASE_URL: postgresql+asyncpg://agentbreeder:agentbreeder@localhost:5432/agentbreeder_test
           REDIS_URL: redis://localhost:6379
           SECRET_KEY: test-secret-key-for-ci
           GARDEN_ENV: test

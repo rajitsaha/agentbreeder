@@ -4,10 +4,10 @@ Production-ready tier-1 customer support agent with Zendesk integration, RAG-pow
 
 ## Prerequisites
 
-- Agent Garden CLI installed (`pip install agent-garden`)
+- AgentBreeder CLI installed (`pip install agentbreeder`)
 - Zendesk account with API access
 - Anthropic API key (primary model) and OpenAI API key (fallback)
-- Product documentation indexed in Agent Garden knowledge base
+- Product documentation indexed in AgentBreeder knowledge base
 
 ## Quick Start
 

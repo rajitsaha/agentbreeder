@@ -1,4 +1,4 @@
-# Migrate from OpenAI Agents SDK to Agent Garden
+# Migrate from OpenAI Agents SDK to AgentBreeder
 
 > **Time to migrate:** ~15 minutes
 > **Difficulty:** Easy
@@ -12,15 +12,15 @@
 - [ ] Your agent code is in `agent.py` or `main.py` with `requirements.txt`
 - [ ] Python 3.11+ is installed
 - [ ] Docker is installed and running
-- [ ] You have installed Agent Garden: `pip install agent-garden`
+- [ ] You have installed AgentBreeder: `pip install agentbreeder`
 
 ---
 
 ## The Big Picture
 
-The OpenAI Agents SDK gives you a clean API for building agents with `Agent`, `Runner`, `function_tool`, and `Handoff`. Agent Garden does not replace any of that. It wraps your agent in a production container and adds everything you need for enterprise deployment: RBAC, cost tracking, health checks, model fallbacks, and org-wide discoverability.
+The OpenAI Agents SDK gives you a clean API for building agents with `Agent`, `Runner`, `function_tool`, and `Handoff`. AgentBreeder does not replace any of that. It wraps your agent in a production container and adds everything you need for enterprise deployment: RBAC, cost tracking, health checks, model fallbacks, and org-wide discoverability.
 
-**Key insight:** Your agent's simplicity is preserved. Agent Garden adds zero imports to your code.
+**Key insight:** Your agent's simplicity is preserved. AgentBreeder adds zero imports to your code.
 
 ---
 
@@ -36,7 +36,7 @@ my-agent/
   fly.toml            # or render.yaml, or ECS task def...
 ```
 
-### After: OpenAI Agents SDK + Agent Garden
+### After: OpenAI Agents SDK + AgentBreeder
 
 ```
 my-agent/
@@ -51,7 +51,7 @@ my-agent/
 
 ### Step 1: Verify your agent structure
 
-Agent Garden accepts either `agent.py` or `main.py`. Your file should export an `agent` variable -- an `openai.agents.Agent` instance:
+AgentBreeder accepts either `agent.py` or `main.py`. Your file should export an `agent` variable -- an `openai.agents.Agent` instance:
 
 ```python
 # agent.py
@@ -73,7 +73,7 @@ The variable must be named `agent`. If yours is named differently, add an alias:
 
 ```python
 my_bot = Agent(name="My Bot", ...)
-agent = my_bot  # alias for Agent Garden
+agent = my_bot  # alias for AgentBreeder
 ```
 
 ### Step 2: Create agent.yaml
@@ -147,9 +147,9 @@ garden deploy agent.yaml --target aws
 
 ---
 
-## Concept Mapping: OpenAI Agents SDK to Agent Garden
+## Concept Mapping: OpenAI Agents SDK to AgentBreeder
 
-| OpenAI Agents Concept | Agent Garden Equivalent | Notes |
+| OpenAI Agents Concept | AgentBreeder Equivalent | Notes |
 |----------------------|------------------------|-------|
 | `Agent(name, instructions, tools)` | Export as `agent` in `agent.py` | AG wraps it; does not replace it |
 | `Runner.run(agent, input)` | `POST /invoke` on deployed container | AG server wrapper calls Runner |
@@ -166,11 +166,11 @@ garden deploy agent.yaml --target aws
 
 ## Handling Handoffs
 
-The OpenAI Agents SDK has a `Handoff` mechanism for transferring control between agents. There are two ways to handle this with Agent Garden:
+The OpenAI Agents SDK has a `Handoff` mechanism for transferring control between agents. There are two ways to handle this with AgentBreeder:
 
 ### Option A: Keep Handoffs in Your Code (Simple)
 
-If your handoff agents are all defined in the same `agent.py`, they work as-is. Agent Garden deploys the entire file as one unit:
+If your handoff agents are all defined in the same `agent.py`, they work as-is. AgentBreeder deploys the entire file as one unit:
 
 ```python
 # agent.py
@@ -252,7 +252,7 @@ Benefits of Option B:
 
 ## Preserving the Simple OpenAI API
 
-One of the OpenAI Agents SDK's strengths is its simplicity. Agent Garden preserves that completely:
+One of the OpenAI Agents SDK's strengths is its simplicity. AgentBreeder preserves that completely:
 
 **Your code before AG:**
 
@@ -281,7 +281,7 @@ print(result.final_output)
 # Exactly the same file. Zero changes.
 ```
 
-The only addition is `agent.yaml` next to it. You can still run `python agent.py` for local testing without any Agent Garden dependency.
+The only addition is `agent.yaml` next to it. You can still run `python agent.py` for local testing without any AgentBreeder dependency.
 
 ---
 
@@ -296,7 +296,7 @@ model:
   gateway: litellm
 ```
 
-With LiteLLM gateway, Agent Garden can transparently fall back to a non-OpenAI model. Your OpenAI Agents SDK code does not need to change -- the gateway translates the API.
+With LiteLLM gateway, AgentBreeder can transparently fall back to a non-OpenAI model. Your OpenAI Agents SDK code does not need to change -- the gateway translates the API.
 
 ### Guardrails
 
@@ -342,7 +342,7 @@ knowledge_bases:
 
 ## What You Gain
 
-| Feature | OpenAI Agents SDK Only | + Agent Garden |
+| Feature | OpenAI Agents SDK Only | + AgentBreeder |
 |---------|----------------------|----------------|
 | Agent definition | `Agent()` | Same (unchanged) |
 | Tool definition | `@function_tool` | Same (unchanged) |
@@ -374,7 +374,7 @@ knowledge_bases:
 
 ### "Missing agent.py or main.py"
 
-Agent Garden accepts either filename. If your entry point is something else:
+AgentBreeder accepts either filename. If your entry point is something else:
 
 ```python
 # agent.py
@@ -491,7 +491,7 @@ name: research-assistant
 version: 0.1.0
 description: "A research assistant agent built with the OpenAI Agents SDK"
 team: examples
-owner: dev@agent-garden.com
+owner: dev@agentbreeder.com
 tags: [example, openai-agents, research, tools]
 
 framework: openai_agents

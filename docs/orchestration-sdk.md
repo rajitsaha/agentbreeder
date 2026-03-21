@@ -1,6 +1,6 @@
 # Full Code Orchestration SDK
 
-The Full Code Orchestration SDK is the third tier of Agent Garden's Three-Tier Builder Model. It lets you define complex multi-agent workflows programmatically — for cases that `orchestration.yaml` can't express.
+The Full Code Orchestration SDK is the third tier of AgentBreeder's Three-Tier Builder Model. It lets you define complex multi-agent workflows programmatically — for cases that `orchestration.yaml` can't express.
 
 ```
 No Code (Canvas)  ──→  orchestration.yaml  ──→  Python/TypeScript SDK
@@ -10,7 +10,7 @@ No Code (Canvas)  ──→  orchestration.yaml  ──→  Python/TypeScript SD
 ```
 
 **Available as:** `from agenthub import Orchestration, Pipeline, FanOut, Supervisor`
-**TypeScript:** `import { Orchestration, Pipeline, FanOut, Supervisor } from "@agent-garden/sdk"`
+**TypeScript:** `import { Orchestration, Pipeline, FanOut, Supervisor } from "@agentbreeder/sdk"`
 
 ---
 
@@ -252,7 +252,7 @@ assert loaded.config.name == "research"
 The TypeScript SDK has an identical API surface with TypeScript-native types:
 
 ```typescript
-import { Orchestration, Pipeline, FanOut, Supervisor, KeywordRouter } from "@agent-garden/sdk";
+import { Orchestration, Pipeline, FanOut, Supervisor, KeywordRouter } from "@agentbreeder/sdk";
 
 const support = new Orchestration("support-pipeline", "router", { team: "eng" })
   .addAgent("triage",  "agents/triage")

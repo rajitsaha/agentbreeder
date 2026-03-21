@@ -4,8 +4,8 @@ RAG-based document question-answering agent that searches over indexed documents
 
 ## Prerequisites
 
-- Agent Garden CLI installed (`pip install agent-garden`)
-- Documents indexed in an Agent Garden knowledge base
+- AgentBreeder CLI installed (`pip install agentbreeder`)
+- Documents indexed in an AgentBreeder knowledge base
 - Anthropic API key (primary) and OpenAI API key (fallback + embeddings)
 
 ## Quick Start

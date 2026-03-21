@@ -1,13 +1,13 @@
-# CLAUDE.md — Agent Garden AI Development Guide
+# CLAUDE.md — AgentBreeder AI Development Guide
 
-> This file instructs Claude (and any AI coding assistant) how to work on the Agent Garden codebase.
+> This file instructs Claude (and any AI coding assistant) how to work on the AgentBreeder codebase.
 > Keep this file updated as the project evolves. It is the single source of truth for AI-assisted development.
 
 ---
 
-## 🧠 What is Agent Garden?
+## 🧠 What is AgentBreeder?
 
-Agent Garden is an **open-source platform** for building, deploying, and governing enterprise AI agents.
+AgentBreeder is an **open-source platform** for building, deploying, and governing enterprise AI agents.
 
 **Core tagline:** Define Once. Deploy Anywhere. Govern Automatically.
 
@@ -30,7 +30,7 @@ Agent Garden is an **open-source platform** for building, deploying, and governi
 ## 📁 Project Structure
 
 ```
-agent-garden/
+agentbreeder/
 ├── api/                        # FastAPI backend server
 │   ├── main.py                 # App entry, middleware, routers
 │   ├── auth.py                 # Auth dependencies
@@ -91,7 +91,7 @@ agent-garden/
 │       ├── secret.py           # garden secret (manage secrets across backends)
 │       └── template.py         # garden template (manage agent templates)
 ├── sdk/
-│   └── python/                 # pip install agent-garden-sdk
+│   └── python/                 # pip install agentbreeder-sdk
 │       └── agenthub/           # SDK package (agent, deploy, model, tool, memory, mcp)
 ├── engine/                     # Core deployment pipeline
 │   ├── config_parser.py        # YAML parsing + JSON Schema validation
@@ -187,8 +187,8 @@ agent-garden/
 | Database | PostgreSQL + SQLAlchemy | Alembic for migrations |
 | Cache / Queue | Redis | Task queue + rate limiting |
 | CLI | Python, Typer | Rich for terminal output |
-| Python SDK | Python 3.11+ | pip install agent-garden-sdk |
-| TypeScript SDK | TypeScript 5.0+ | npm install @agent-garden/sdk |
+| Python SDK | Python 3.11+ | pip install agentbreeder-sdk |
+| TypeScript SDK | TypeScript 5.0+ | npm install @agentbreeder/sdk |
 | Frontend | React 18, TypeScript, Tailwind CSS | Vite build tool |
 | Container Build | Docker | BuildKit for multi-platform |
 | IaC | Pulumi (Python) | Cloud resource provisioning |
@@ -252,7 +252,7 @@ Registry entries are created/updated only by:
 Never write directly to registry tables from application code. Always go through `registry/` services.
 
 ### 6. Three-Tier Builder Model (No Code / Low Code / Full Code)
-Agent Garden supports three builder tiers for both individual agent development and multi-agent orchestration. All three compile to the same internal representation (`agent.yaml` + optional code) and share the same deploy pipeline.
+AgentBreeder supports three builder tiers for both individual agent development and multi-agent orchestration. All three compile to the same internal representation (`agent.yaml` + optional code) and share the same deploy pipeline.
 
 ```
 No Code (UI)    ──→ generates agent.yaml      ──→ deploy pipeline
@@ -405,7 +405,7 @@ access:
 
 ## 🔌 MCP Servers in Use
 
-Agent Garden uses MCP servers for development tooling. These are configured in `.mcp.json` at the repo root.
+AgentBreeder uses MCP servers for development tooling. These are configured in `.mcp.json` at the repo root.
 
 ### Active MCP Servers
 
@@ -414,7 +414,7 @@ Agent Garden uses MCP servers for development tooling. These are configured in `
   "mcpServers": {
     "filesystem": {
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-filesystem", "/path/to/agent-garden"],
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "/path/to/agentbreeder"],
       "description": "Read/write project files directly"
     },
     "github": {
@@ -425,7 +425,7 @@ Agent Garden uses MCP servers for development tooling. These are configured in `
     },
     "postgres": {
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-postgres", "postgresql://garden:garden@localhost:5432/agentgarden"],
+      "args": ["-y", "@modelcontextprotocol/server-postgres", "postgresql://garden:garden@localhost:5432/agentbreeder"],
       "description": "Query registry database directly during development"
     },
     "docker": {
@@ -657,7 +657,7 @@ All responses follow:
 
 ```bash
 # Required
-DATABASE_URL=postgresql+asyncpg://garden:garden@localhost:5432/agentgarden
+DATABASE_URL=postgresql+asyncpg://garden:garden@localhost:5432/agentbreeder
 REDIS_URL=redis://localhost:6379
 SECRET_KEY=<random-256-bit-key>
 GARDEN_ENV=development
@@ -693,4 +693,4 @@ When reviewing AI-generated code, always verify:
 
 ---
 
-*Last updated: March 2026 — Agent Garden v0.3*
+*Last updated: March 2026 — AgentBreeder v0.3*

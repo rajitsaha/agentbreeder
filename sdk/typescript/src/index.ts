@@ -1,4 +1,4 @@
-/** Agent Garden TypeScript SDK entry point. */
+/** AgentBreeder TypeScript SDK entry point. */
 
 export { Agent } from "./agent";
 export type { AgentOptions } from "./agent";

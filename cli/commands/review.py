@@ -66,7 +66,7 @@ def _status_badge(status: str) -> str:
 def _handle_connection_error(json_output: bool) -> None:
     """Handle API connection errors."""
     msg = (
-        f"Cannot connect to Agent Garden API at {API_BASE}.\n"
+        f"Cannot connect to AgentBreeder API at {API_BASE}.\n"
         "  Ensure the server is running: uvicorn api.main:app --port 8000"
     )
     if json_output:

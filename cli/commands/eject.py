@@ -172,7 +172,7 @@ def _generate_typescript_sdk(yaml_content: str) -> str:
         " * Edit this file to add custom logic, then deploy with: npx ts-node agent.ts",
         " */",
         "",
-        'import { Agent, Tool } from "@agent-garden/sdk";',
+        'import { Agent, Tool } from "@agentbreeder/sdk";',
         "",
     ]
 

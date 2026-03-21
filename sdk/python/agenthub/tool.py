@@ -1,4 +1,4 @@
-"""Tool definition for Agent Garden agents.
+"""Tool definition for AgentBreeder agents.
 
 Supports creating tools from Python functions (with automatic schema
 generation from type hints) or from registry references.

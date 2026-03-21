@@ -1,6 +1,6 @@
-# Load Tests — Agent Garden
+# Load Tests — AgentBreeder
 
-k6 load test scripts for the critical paths in Agent Garden. These enforce production SLOs:
+k6 load test scripts for the critical paths in AgentBreeder. These enforce production SLOs:
 
 | Script | Endpoint(s) | p95 SLO | Error SLO |
 |--------|------------|---------|-----------|
@@ -30,7 +30,7 @@ k6 run tests/load/deploy_pipeline.js
 k6 run tests/load/orchestration_execute.js
 
 # Against staging
-k6 run --env BASE_URL=https://staging.agentgarden.io \
+k6 run --env BASE_URL=https://staging.agentbreeder.io \
         --env AUTH_TOKEN=$STAGING_TOKEN \
         tests/load/agents_api.js
 

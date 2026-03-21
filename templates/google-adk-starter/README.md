@@ -1,10 +1,10 @@
 # Google ADK Starter
 
-Google Agent Development Kit (ADK) starter agent with function declarations, Gemini model, and tool calling. Use this as a starting point for building agents with Google's ADK and Agent Garden.
+Google Agent Development Kit (ADK) starter agent with function declarations, Gemini model, and tool calling. Use this as a starting point for building agents with Google's ADK and AgentBreeder.
 
 ## Prerequisites
 
-- Agent Garden CLI installed (`pip install agent-garden`)
+- AgentBreeder CLI installed (`pip install agentbreeder`)
 - Python 3.11+ with `google-generativeai` installed
 - Google API key or service account
 
@@ -45,7 +45,7 @@ Final Response
 
 ### Key Files
 
-- `agent.yaml` -- Agent Garden configuration
+- `agent.yaml` -- AgentBreeder configuration
 - `agent.py` -- Google ADK agent with function calling (entry point)
 
 ## Customization

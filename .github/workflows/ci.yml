@@ -60,9 +60,9 @@ jobs:
       postgres:
         image: postgres:16
         env:
-          POSTGRES_USER: agent_garden
-          POSTGRES_PASSWORD: agent_garden
-          POSTGRES_DB: agent_garden_test
+          POSTGRES_USER: agentbreeder
+          POSTGRES_PASSWORD: agentbreeder
+          POSTGRES_DB: agentbreeder_test
         ports:
           - 5432:5432
         options: >-
@@ -92,12 +92,12 @@ jobs:
 
       - name: Configure git identity for tests
         run: |
-          git config --global user.email "ci@agent-garden.dev"
-          git config --global user.name "Agent Garden CI"
+          git config --global user.email "ci@agentbreeder.dev"
+          git config --global user.name "AgentBreeder CI"
 
       - name: Run unit tests with coverage
         env:
-          DATABASE_URL: postgresql+asyncpg://agent_garden:agent_garden@localhost:5432/agent_garden_test
+          DATABASE_URL: postgresql+asyncpg://agentbreeder:agentbreeder@localhost:5432/agentbreeder_test
           REDIS_URL: redis://localhost:6379
           SECRET_KEY: test-secret-key-for-ci
           GARDEN_ENV: test
@@ -184,7 +184,7 @@ jobs:
         with:
           context: .
           push: false
-          tags: agent-garden-api:ci
+          tags: agentbreeder-api:ci
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -193,6 +193,6 @@ jobs:
         with:
           context: ./dashboard
           push: false
-          tags: agent-garden-dashboard:ci
+          tags: agentbreeder-dashboard:ci
           cache-from: type=gha
           cache-to: type=gha,mode=max

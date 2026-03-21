@@ -1,4 +1,4 @@
-"""garden down — stop the Agent Garden platform."""
+"""garden down — stop the AgentBreeder platform."""
 
 from __future__ import annotations
 
@@ -25,7 +25,7 @@ def down(
         help="Output as JSON",
     ),
 ) -> None:
-    """Stop Agent Garden and all its services.
+    """Stop AgentBreeder and all its services.
 
     Use --clean to also remove database volumes (full reset).
     """
@@ -34,7 +34,7 @@ def down(
         console.print(
             Panel(
                 "[bold red]Could not find docker-compose.yml[/bold red]\n\n"
-                "Run this command from the Agent Garden repository root.",
+                "Run this command from the AgentBreeder repository root.",
                 border_style="red",
             )
         )
@@ -80,7 +80,7 @@ def down(
         sys.stdout.write(json.dumps({"status": "stopped", "clean": clean}) + "\n")
     else:
         console.print()
-        msg = "[bold]Agent Garden stopped.[/bold]"
+        msg = "[bold]AgentBreeder stopped.[/bold]"
         if clean:
             msg += "\n[dim]Volumes removed — database data has been deleted.[/dim]"
         else:

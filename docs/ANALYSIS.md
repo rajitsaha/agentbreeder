@@ -1,6 +1,6 @@
-# Agent Garden — Honest Architectural Assessment
+# AgentBreeder — Honest Architectural Assessment
 
-> An unbiased evaluation of whether Agent Garden delivers real value by v1.0.
+> An unbiased evaluation of whether AgentBreeder delivers real value by v1.0.
 > Written March 2026.
 
 ---
@@ -38,7 +38,7 @@ What enterprises actually need:
 What enterprises will ask:
 - "Does it integrate with our existing infra?" — Cloud Run + Docker is a start, but ECS/EKS/Databricks are table stakes for many orgs
 - "What's the vendor lock-in story?" — Open source + standard formats (YAML, OCI containers) is the right answer
-- "How does this compare to Dify/Langflow/Flowise?" — Those are visual builders; Agent Garden is a platform with Git-native workflow
+- "How does this compare to Dify/Langflow/Flowise?" — Those are visual builders; AgentBreeder is a platform with Git-native workflow
 
 Missing for enterprise v1.0:
 - SSO/SAML integration
@@ -75,7 +75,7 @@ The AI agent space in early 2026:
 - Evaluation is the hardest unsolved problem — LLM-as-judge is better than nothing but not great
 - Fine-tuning and RLHF for agents is still research-grade
 
-What Agent Garden gets right:
+What AgentBreeder gets right:
 - Betting on MCP as the tool integration standard
 - Supporting A2A early (first-mover advantage)
 - Framework-agnostic approach (the winning SDK hasn't been decided yet)
@@ -90,7 +90,7 @@ What could go wrong:
 
 ## Competitive Landscape
 
-| Platform | Type | Strength | Agent Garden Differentiator |
+| Platform | Type | Strength | AgentBreeder Differentiator |
 |----------|------|----------|-----------------------------|
 | Dify | Visual builder | Drag-and-drop workflows | Git-native, code-first, YAML round-trip |
 | Langflow | Visual builder | LangChain ecosystem | Framework-agnostic, not locked to LangChain |
@@ -98,7 +98,7 @@ What could go wrong:
 | CrewAI Platform | Framework platform | CrewAI-native | Supports all SDKs, not just CrewAI |
 | LangSmith | Observability | Deep LangChain tracing | Full lifecycle (build + deploy + observe) |
 | Braintrust | Evaluation | Eval-focused | Broader scope (eval is one feature, not the product) |
-| Langfuse | Observability (OSS) | Open source tracing | Complementary — Agent Garden can integrate Langfuse |
+| Langfuse | Observability (OSS) | Open source tracing | Complementary — AgentBreeder can integrate Langfuse |
 | AWS Bedrock Agents | Cloud-managed | AWS-native | Multi-cloud, open source, no vendor lock-in |
 | Google Vertex AI Agent Builder | Cloud-managed | GCP-native | Framework-agnostic, self-hosted option |
 
@@ -167,7 +167,7 @@ For v1.0, nail these three things:
 
 Everything else (visual builders, A2A, fine-tuning, marketplace) can come in v1.x releases once the core is proven.
 
-The honest answer: **Yes, Agent Garden has real value at v1.0** — but only if it focuses. The temptation to build everything will be the biggest risk.
+The honest answer: **Yes, AgentBreeder has real value at v1.0** — but only if it focuses. The temptation to build everything will be the biggest risk.
 
 ---
 

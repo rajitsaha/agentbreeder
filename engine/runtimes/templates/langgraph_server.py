@@ -1,4 +1,4 @@
-"""Agent Garden server wrapper for LangGraph agents.
+"""AgentBreeder server wrapper for LangGraph agents.
 
 This file is copied into the agent container at build time.
 It wraps any LangGraph agent as a FastAPI server with /invoke and /health endpoints.
@@ -19,8 +19,8 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("garden.agent")
 
 app = FastAPI(
-    title="Agent Garden Agent",
-    description="Deployed by Agent Garden",
+    title="AgentBreeder Agent",
+    description="Deployed by AgentBreeder",
     version=os.getenv("AGENT_VERSION", "0.1.0"),
 )
 

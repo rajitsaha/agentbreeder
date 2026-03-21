@@ -1,6 +1,6 @@
 # OpenAI Agents SDK Example — Research Assistant
 
-A research assistant agent built with the [OpenAI Agents SDK](https://github.com/openai/openai-agents-python), deployed via Agent Garden.
+A research assistant agent built with the [OpenAI Agents SDK](https://github.com/openai/openai-agents-python), deployed via AgentBreeder.
 
 ## What it does
 
@@ -21,7 +21,7 @@ pip install openai-agents openai
 python agent.py
 ```
 
-## Deploy with Agent Garden
+## Deploy with AgentBreeder
 
 ```bash
 garden deploy examples/openai-agents-agent/
@@ -31,6 +31,6 @@ garden deploy examples/openai-agents-agent/
 
 | File | Purpose |
 |------|---------|
-| `agent.yaml` | Agent Garden configuration |
+| `agent.yaml` | AgentBreeder configuration |
 | `agent.py` | Agent definition with tools |
 | `requirements.txt` | Python dependencies |
