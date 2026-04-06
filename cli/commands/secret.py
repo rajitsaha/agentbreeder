@@ -243,7 +243,9 @@ def secret_rotate(
 def secret_migrate(
     from_backend: str = typer.Option(..., "--from", help="Source backend (env, aws, gcp, vault)"),
     to_backend: str = typer.Option(..., "--to", help="Target backend (aws, gcp, vault)"),
-    prefix: str = typer.Option("agentbreeder/", "--prefix", help="Prefix for secrets in cloud backend"),
+    prefix: str = typer.Option(
+        "agentbreeder/", "--prefix", help="Prefix for secrets in cloud backend"
+    ),
     include: list[str] = typer.Option([], "--include", "-i", help="Only migrate these keys"),
     exclude: list[str] = typer.Option([], "--exclude", "-e", help="Skip these keys"),
     dry_run: bool = typer.Option(False, "--dry-run", help="Preview without writing"),

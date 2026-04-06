@@ -90,7 +90,7 @@ When a v1 endpoint is scheduled for removal:
   "error": "endpoint_removed",
   "message": "This endpoint was removed on 2027-06-01. Use /api/v2/agents instead.",
   "successor": "/api/v2/agents",
-  "docs": "https://open-agentbreeder.github.io/agentbreeder/api-stability/"
+  "docs": "https://open-agent-garden.github.io/agentbreeder/api-stability/"
 }
 ```
 
@@ -174,4 +174,4 @@ If you use the official Python or TypeScript SDKs, they handle versioning automa
 
 ## Questions?
 
-Open an issue at [github.com/open-agentbreeder/agentbreeder](https://github.com/open-agentbreeder/agentbreeder/issues) or start a discussion at the Discussions tab.
+Open an issue at [github.com/open-agent-garden/agentbreeder](https://github.com/open-agent-garden/agentbreeder/issues) or start a discussion at the Discussions tab.

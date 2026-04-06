@@ -71,9 +71,9 @@ mcp_servers:
     transport: sse
 
 deploy:
-  cloud: aws
-  runtime: ecs-fargate
-  region: us-east-1
+  cloud: gcp             # local | gcp (AWS and Kubernetes support planned)
+  target: cloud-run
+  region: us-central1
   scaling:
     min: 1
     max: 10
@@ -117,14 +117,14 @@ access:
 
 One of:
 
-| Value | Framework |
-|-------|-----------|
-| `langgraph` | LangGraph (v0.1+) |
-| `crewai` | CrewAI (v0.2) |
-| `claude_sdk` | Anthropic Claude SDK (v0.2) |
-| `openai_agents` | OpenAI Agents SDK (v0.2) |
-| `google_adk` | Google Agent Development Kit (v0.2) |
-| `custom` | Any Python/TS agent (v0.2) |
+| Value | Framework | Runtime |
+|-------|-----------|---------|
+| `langgraph` | LangGraph | ✅ Implemented |
+| `openai_agents` | OpenAI Agents SDK | ✅ Implemented |
+| `crewai` | CrewAI | 🔲 Planned |
+| `claude_sdk` | Anthropic Claude SDK | 🔲 Planned |
+| `google_adk` | Google Agent Development Kit | 🔲 Planned |
+| `custom` | Any Python/TS agent | 🔲 Planned |
 
 ---
 

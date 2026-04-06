@@ -217,7 +217,8 @@ def review_list(
     console.print(table)
     console.print()
     console.print(
-        f"  [dim]{len(prs)} result(s). View details: [bold]agentbreeder review show <pr-id>[/bold][/dim]"
+        f"  [dim]{len(prs)} result(s). View details: "
+        "[bold]agentbreeder review show <pr-id>[/bold][/dim]"
     )
     console.print()
 

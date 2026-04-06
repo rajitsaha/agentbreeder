@@ -40,7 +40,9 @@ def _list_agents(team: str | None = None, json_output: bool = False) -> None:
         if json_output:
             console.print("[]")
         else:
-            console.print("[dim]No agents registered yet. Deploy one with: agentbreeder deploy[/dim]")
+            console.print(
+                "[dim]No agents registered yet. Deploy one with: agentbreeder deploy[/dim]"
+            )
         return
 
     registry = json.loads(registry_file.read_text())

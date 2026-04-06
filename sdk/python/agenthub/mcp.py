@@ -96,8 +96,8 @@ class MCPServe:
     the function's type hints. The tool description comes from the docstring.
     """
 
-    def __init__(self, name: str = "agentbreeder-tools", version: str = "1.0.0") -> None:
-        self._server = FastMCP(name=name, version=version)
+    def __init__(self, name: str = "agentbreeder-tools") -> None:
+        self._server = FastMCP(name=name)
         self._tools: list[str] = []
 
     def tool(self) -> Callable[[Callable[..., Any]], Callable[..., Any]]:

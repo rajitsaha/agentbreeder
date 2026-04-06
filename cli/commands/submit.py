@@ -163,7 +163,8 @@ def submit(
     )
     console.print()
     console.print(
-        f"  [dim]Next steps: ask a reviewer to run [bold]agentbreeder review show {pr_id}[/bold][/dim]"
+        f"  [dim]Next steps: ask a reviewer to run "
+        f"[bold]agentbreeder review show {pr_id}[/bold][/dim]"
     )
     console.print()
 

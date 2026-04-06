@@ -60,7 +60,7 @@ agentbreeder deploy CONFIG_PATH [--target TARGET] [--json]
 | Argument / Option | Required | Default | Description |
 |-------------------|----------|---------|-------------|
 | `CONFIG_PATH` | Yes | — | Path to `agent.yaml` |
-| `--target`, `-t` | No | `local` | Deploy target: `local`, `kubernetes`, `aws`, `gcp` |
+| `--target`, `-t` | No | `local` | Deploy target: `local`, `cloud-run` |
 
 The deploy pipeline executes 8 atomic steps:
 1. Parse & validate YAML
@@ -76,10 +76,10 @@ If any step fails, the entire deploy rolls back.
 
 **Examples:**
 ```bash
-agentbreeder deploy ./agent.yaml                    # Deploy locally
-agentbreeder deploy ./agent.yaml --target local     # Same as above
-agentbreeder deploy ./agent.yaml -t kubernetes      # Deploy to K8s
-agentbreeder deploy ./agent.yaml --json             # JSON output
+agentbreeder deploy ./agent.yaml                          # Deploy locally
+agentbreeder deploy ./agent.yaml --target local           # Same as above
+agentbreeder deploy ./agent.yaml --target cloud-run       # Deploy to GCP Cloud Run
+agentbreeder deploy ./agent.yaml --json                   # JSON output
 ```
 
 ---

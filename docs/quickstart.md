@@ -16,7 +16,7 @@ Get AgentBreeder running locally in under 10 minutes.
 ## 1. Clone & Install
 
 ```bash
-git clone git@github.com:open-agentbreeder/agentbreeder.git
+git clone git@github.com:open-agent-garden/agentbreeder.git
 cd agentbreeder
 
 # Python
@@ -49,12 +49,11 @@ A default admin account is created on first startup:
 | Field    | Value                        |
 |----------|------------------------------|
 | Email    | `admin@agentbreeder.local`   |
-| Password | `plant`                      |
-| Name     | Gardner                      |
+| Password | `changeme`                   |
 | Role     | Admin                        |
 | Team     | AgentBreeder Platform        |
 
-> **Change the default password** in production. This account is for local development only.
+> **Change the default password** before exposing this to a network. This account is for local development only.
 
 ## 4. Create Your First Agent
 

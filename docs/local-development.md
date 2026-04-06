@@ -16,7 +16,7 @@ This guide covers setting up AgentBreeder for local development and contributing
 ### 1. Clone and install
 
 ```bash
-git clone https://github.com/open-agentbreeder/agentbreeder.git
+git clone https://github.com/open-agent-garden/agentbreeder.git
 cd agentbreeder
 
 # Python environment
@@ -89,7 +89,7 @@ docker compose -f deploy/docker-compose.yml up -d
 
 Default credentials for local dev:
 - **DB:** `agentbreeder` / `agentbreeder` / database `agentbreeder`
-- **App login:** `admin@agentbreeder.local` / `plant`
+- **App login:** `admin@agentbreeder.local` / `changeme`
 
 ## Running Tests
 
@@ -260,7 +260,7 @@ Key variables in `.env`:
 DATABASE_URL=postgresql+asyncpg://agentbreeder:agentbreeder@localhost:5432/agentbreeder
 REDIS_URL=redis://localhost:6379
 SECRET_KEY=dev-secret-key
-GARDEN_ENV=development
+AGENTBREEDER_ENV=development
 
 # Auth
 JWT_SECRET_KEY=dev-jwt-secret

@@ -40,7 +40,7 @@ AgentBreeder supports three ways to build agents and orchestrations. All three c
     model:
       primary: claude-sonnet-4
     deploy:
-      cloud: aws
+      cloud: local          # or: gcp
     ```
 
     **Who:** ML engineers, DevOps, developers comfortable with config files.
@@ -67,8 +67,8 @@ AgentBreeder supports three ways to build agents and orchestrations. All three c
 
 ## Key Features
 
-- **Framework-agnostic** — LangGraph, CrewAI, Claude SDK, OpenAI Agents, Google ADK, Custom
-- **Multi-cloud first** — AWS ECS/Fargate/EKS and GCP Cloud Run as equal first-class targets
+- **Framework-agnostic** — LangGraph and OpenAI Agents implemented; CrewAI, Claude SDK, Google ADK planned
+- **Multi-cloud** — GCP Cloud Run and local Docker Compose implemented; AWS ECS and Kubernetes planned
 - **Governance as a side effect** — RBAC, cost attribution, audit trail, and registry registration happen automatically on every `agentbreeder deploy`
 - **Shared org registry** — agents, prompts, tools/MCP servers, models, knowledge bases all in one place
 - **Tier mobility** — start No Code, eject to YAML, eject to SDK — no lock-in at any level
@@ -101,14 +101,14 @@ See the [Quickstart guide](quickstart.md) for the full setup.
 
 ## Supported Stack
 
-| Layer | Options |
-|-------|---------|
-| Frameworks | LangGraph, CrewAI, Claude SDK, OpenAI Agents, Google ADK, Custom |
-| Cloud targets | AWS ECS Fargate, GCP Cloud Run, Kubernetes, Local Docker |
-| LLM providers | Anthropic, OpenAI, Google, Ollama, LiteLLM, OpenRouter |
-| Shared state backends | Redis, PostgreSQL, In-Memory |
-| Auth | JWT + OAuth2, RBAC |
-| Observability | OpenTelemetry, distributed tracing, cost monitoring |
+| Layer | Implemented | Planned |
+|-------|-------------|---------|
+| Frameworks | LangGraph, OpenAI Agents SDK | CrewAI, Claude SDK, Google ADK, Custom |
+| Cloud targets | GCP Cloud Run, Local Docker Compose | AWS ECS Fargate, Kubernetes |
+| LLM providers | Anthropic, OpenAI, Google, Ollama, LiteLLM, OpenRouter | — |
+| Secrets backends | env, AWS Secrets Manager, GCP Secret Manager, HashiCorp Vault | — |
+| Auth | JWT + OAuth2, RBAC | SSO / SAML |
+| Observability | OpenTelemetry, distributed tracing, cost monitoring | — |
 
 ---
 
@@ -116,6 +116,7 @@ See the [Quickstart guide](quickstart.md) for the full setup.
 
 | Section | Description |
 |---------|-------------|
+| [Overview](OVERVIEW.md) | Executive overview — why it exists, org benefits, M&A use case |
 | [Quickstart](quickstart.md) | Get running in under 10 minutes |
 | [CLI Reference](cli-reference.md) | All `agentbreeder` commands |
 | [agent.yaml](agent-yaml.md) | Full agent configuration reference |
