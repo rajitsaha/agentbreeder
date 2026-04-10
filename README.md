@@ -200,6 +200,43 @@ pipeline.deploy()
 
 ---
 
+## Install
+
+### PyPI (recommended)
+
+```bash
+# Full CLI + API server
+pip install agentbreeder
+
+# Lightweight SDK only
+pip install agentbreeder-sdk
+```
+
+### Homebrew (macOS / Linux)
+
+```bash
+brew tap open-agent-garden/agentbreeder
+brew install agentbreeder
+```
+
+### Docker
+
+```bash
+# API server
+docker pull agentbreeder/api
+docker run -p 8000:8000 agentbreeder/api
+
+# Dashboard
+docker pull agentbreeder/dashboard
+docker run -p 80:80 agentbreeder/dashboard
+
+# CLI (for CI/CD pipelines)
+docker pull agentbreeder/cli
+docker run agentbreeder/cli deploy agent.yaml --target gcp
+```
+
+---
+
 ## Quick Start
 
 **Prerequisites:** Python 3.11+, Docker, Git
