@@ -36,7 +36,7 @@ except ImportError:
     sys.exit(1)
 
 
-REPO = "open-agentbreeder/agentbreeder"
+REPO = "open-agent-garden/agentbreeder"
 API_BASE = f"https://api.github.com/repos/{REPO}"
 
 # Label definitions: name -> color (hex without #)

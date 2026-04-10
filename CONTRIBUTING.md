@@ -8,14 +8,14 @@ Thank you for your interest in contributing to AgentBreeder! We welcome contribu
 
 | Contribution | Difficulty | Impact | Where |
 |-------------|:----------:|:------:|-------|
-| Report a bug | Easy | High | [GitHub Issues](https://github.com/open-agentbreeder/agentbreeder/issues) |
-| Fix a `good first issue` | Easy | Medium | [Issues labeled `good first issue`](https://github.com/open-agentbreeder/agentbreeder/issues?q=label%3A%22good+first+issue%22) |
+| Report a bug | Easy | High | [GitHub Issues](https://github.com/open-agent-garden/agentbreeder/issues) |
+| Fix a `good first issue` | Easy | Medium | [Issues labeled `good first issue`](https://github.com/open-agent-garden/agentbreeder/issues?q=label%3A%22good+first+issue%22) |
 | Add a cloud deployer | Medium | Very High | `engine/deployers/` |
 | Add a framework runtime | Medium | Very High | `engine/runtimes/` |
 | Add a connector | Medium | High | `connectors/` |
 | Create an agent template (Seed) | Easy | Medium | `examples/templates/` |
 | Improve documentation | Easy | High | `docs/` |
-| Suggest a feature | Easy | Medium | [GitHub Discussions](https://github.com/open-agentbreeder/agentbreeder/discussions) |
+| Suggest a feature | Easy | Medium | [GitHub Discussions](https://github.com/open-agent-garden/agentbreeder/discussions) |
 
 ---
 

@@ -13,7 +13,7 @@
 
 To report a vulnerability:
 
-1. Use [GitHub's private vulnerability reporting](https://github.com/open-agentbreeder/agentbreeder/security/advisories/new)
+1. Use [GitHub's private vulnerability reporting](https://github.com/open-agent-garden/agentbreeder/security/advisories/new)
 2. Or email: **security@agentbreeder.com**
 
 ### What to include
