@@ -1,103 +1,107 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
-         <loc>https://open-agentbreeder.github.io/agentbreeder/</loc>
+         <loc>https://open-agent-garden.github.io/agentbreeder/</loc>
          <lastmod>2026-04-10</lastmod>
     </url>
     <url>
-         <loc>https://open-agentbreeder.github.io/agentbreeder/ANALYSIS/</loc>
+         <loc>https://open-agent-garden.github.io/agentbreeder/ANALYSIS/</loc>
          <lastmod>2026-04-10</lastmod>
     </url>
     <url>
-         <loc>https://open-agentbreeder.github.io/agentbreeder/GITHUB_ISSUES/</loc>
+         <loc>https://open-agent-garden.github.io/agentbreeder/GITHUB_ISSUES/</loc>
          <lastmod>2026-04-10</lastmod>
     </url>
     <url>
-         <loc>https://open-agentbreeder.github.io/agentbreeder/GTM_STRATEGY/</loc>
+         <loc>https://open-agent-garden.github.io/agentbreeder/GTM_STRATEGY/</loc>
          <lastmod>2026-04-10</lastmod>
     </url>
     <url>
-         <loc>https://open-agentbreeder.github.io/agentbreeder/MARKET_RESEARCH/</loc>
+         <loc>https://open-agent-garden.github.io/agentbreeder/MARKET_RESEARCH/</loc>
          <lastmod>2026-04-10</lastmod>
     </url>
     <url>
-         <loc>https://open-agentbreeder.github.io/agentbreeder/OSS_VC_PLAYBOOK/</loc>
+         <loc>https://open-agent-garden.github.io/agentbreeder/OSS_VC_PLAYBOOK/</loc>
          <lastmod>2026-04-10</lastmod>
     </url>
     <url>
-         <loc>https://open-agentbreeder.github.io/agentbreeder/OVERVIEW/</loc>
+         <loc>https://open-agent-garden.github.io/agentbreeder/OVERVIEW/</loc>
          <lastmod>2026-04-10</lastmod>
     </url>
     <url>
-         <loc>https://open-agentbreeder.github.io/agentbreeder/PITCH_DECK/</loc>
+         <loc>https://open-agent-garden.github.io/agentbreeder/PITCH_DECK/</loc>
          <lastmod>2026-04-10</lastmod>
     </url>
     <url>
-         <loc>https://open-agentbreeder.github.io/agentbreeder/agent-yaml/</loc>
+         <loc>https://open-agent-garden.github.io/agentbreeder/agent-yaml/</loc>
          <lastmod>2026-04-10</lastmod>
     </url>
     <url>
-         <loc>https://open-agentbreeder.github.io/agentbreeder/api-stability/</loc>
+         <loc>https://open-agent-garden.github.io/agentbreeder/api-stability/</loc>
          <lastmod>2026-04-10</lastmod>
     </url>
     <url>
-         <loc>https://open-agentbreeder.github.io/agentbreeder/cli-reference/</loc>
+         <loc>https://open-agent-garden.github.io/agentbreeder/cli-reference/</loc>
          <lastmod>2026-04-10</lastmod>
     </url>
     <url>
-         <loc>https://open-agentbreeder.github.io/agentbreeder/local-development/</loc>
+         <loc>https://open-agent-garden.github.io/agentbreeder/local-development/</loc>
          <lastmod>2026-04-10</lastmod>
     </url>
     <url>
-         <loc>https://open-agentbreeder.github.io/agentbreeder/orchestration-sdk/</loc>
+         <loc>https://open-agent-garden.github.io/agentbreeder/orchestration-sdk/</loc>
          <lastmod>2026-04-10</lastmod>
     </url>
     <url>
-         <loc>https://open-agentbreeder.github.io/agentbreeder/orchestration-yaml/</loc>
+         <loc>https://open-agent-garden.github.io/agentbreeder/orchestration-yaml/</loc>
          <lastmod>2026-04-10</lastmod>
     </url>
     <url>
-         <loc>https://open-agentbreeder.github.io/agentbreeder/quickstart/</loc>
+         <loc>https://open-agent-garden.github.io/agentbreeder/quickstart/</loc>
          <lastmod>2026-04-10</lastmod>
     </url>
     <url>
-         <loc>https://open-agentbreeder.github.io/agentbreeder/content/linkedin-article-agent-revenue-stack/</loc>
+         <loc>https://open-agent-garden.github.io/agentbreeder/content/linkedin-article-agent-revenue-stack/</loc>
          <lastmod>2026-04-10</lastmod>
     </url>
     <url>
-         <loc>https://open-agentbreeder.github.io/agentbreeder/content/linkedin-post-agentbreeder-launch/</loc>
+         <loc>https://open-agent-garden.github.io/agentbreeder/content/linkedin-post-agentbreeder-launch/</loc>
          <lastmod>2026-04-10</lastmod>
     </url>
     <url>
-         <loc>https://open-agentbreeder.github.io/agentbreeder/migrations/FROM_AUTOGEN/</loc>
+         <loc>https://open-agent-garden.github.io/agentbreeder/migrations/FROM_AUTOGEN/</loc>
          <lastmod>2026-04-10</lastmod>
     </url>
     <url>
-         <loc>https://open-agentbreeder.github.io/agentbreeder/migrations/FROM_CREWAI/</loc>
+         <loc>https://open-agent-garden.github.io/agentbreeder/migrations/FROM_CREWAI/</loc>
          <lastmod>2026-04-10</lastmod>
     </url>
     <url>
-         <loc>https://open-agentbreeder.github.io/agentbreeder/migrations/FROM_CUSTOM/</loc>
+         <loc>https://open-agent-garden.github.io/agentbreeder/migrations/FROM_CUSTOM/</loc>
          <lastmod>2026-04-10</lastmod>
     </url>
     <url>
-         <loc>https://open-agentbreeder.github.io/agentbreeder/migrations/FROM_LANGGRAPH/</loc>
+         <loc>https://open-agent-garden.github.io/agentbreeder/migrations/FROM_LANGGRAPH/</loc>
          <lastmod>2026-04-10</lastmod>
     </url>
     <url>
-         <loc>https://open-agentbreeder.github.io/agentbreeder/migrations/FROM_OPENAI_AGENTS/</loc>
+         <loc>https://open-agent-garden.github.io/agentbreeder/migrations/FROM_OPENAI_AGENTS/</loc>
          <lastmod>2026-04-10</lastmod>
     </url>
     <url>
-         <loc>https://open-agentbreeder.github.io/agentbreeder/migrations/OVERVIEW/</loc>
+         <loc>https://open-agent-garden.github.io/agentbreeder/migrations/OVERVIEW/</loc>
          <lastmod>2026-04-10</lastmod>
     </url>
     <url>
-         <loc>https://open-agentbreeder.github.io/agentbreeder/superpowers/specs/2026-04-10-agent-build-skill-design/</loc>
+         <loc>https://open-agent-garden.github.io/agentbreeder/superpowers/plans/2026-04-10-installable-package/</loc>
          <lastmod>2026-04-10</lastmod>
     </url>
     <url>
-         <loc>https://open-agentbreeder.github.io/agentbreeder/superpowers/specs/2026-04-10-installable-package-design/</loc>
+         <loc>https://open-agent-garden.github.io/agentbreeder/superpowers/specs/2026-04-10-agent-build-skill-design/</loc>
+         <lastmod>2026-04-10</lastmod>
+    </url>
+    <url>
+         <loc>https://open-agent-garden.github.io/agentbreeder/superpowers/specs/2026-04-10-installable-package-design/</loc>
          <lastmod>2026-04-10</lastmod>
     </url>
 </urlset>
