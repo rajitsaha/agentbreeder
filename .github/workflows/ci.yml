@@ -176,6 +176,20 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Build SDK package
+        run: |
+          pip install build
+          cd sdk/python && python -m build
+
+      - name: Build CLI package
+        run: |
+          pip install build
+          python -m build
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -194,5 +208,14 @@ jobs:
           context: ./dashboard
           push: false
           tags: agentbreeder-dashboard:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build CLI image
+        uses: docker/build-push-action@v6
+        with:
+          file: ./Dockerfile.cli
+          push: false
+          tags: agentbreeder-cli:ci
           cache-from: type=gha
           cache-to: type=gha,mode=max
