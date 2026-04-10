@@ -1,0 +1,3801 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Define Once. Deploy Anywhere. Govern Automatically.">
+      
+      
+      
+        <link rel="canonical" href="https://open-agent-garden.github.io/agentbreeder/how-to/">
+      
+      
+        <link rel="prev" href="../quickstart/">
+      
+      
+        <link rel="next" href="../local-development/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>How-To Guide - AgentBreeder</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="green" data-md-color-accent="light-green">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#how-to-guide" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden>
+        
+      </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="AgentBreeder" class="md-header__button md-logo" aria-label="AgentBreeder" data-md-component="logo">
+      
+  <img src="../assets/logo.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            AgentBreeder
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              How-To Guide
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="green" data-md-color-accent="light-green"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="green" data-md-color-accent="light-green"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/open-agent-garden/agentbreeder" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    open-agent-garden/agentbreeder
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../quickstart/" class="md-tabs__link">
+          
+  
+  
+  Getting Started
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../cli-reference/" class="md-tabs__link">
+          
+  
+  
+  Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../orchestration-sdk/" class="md-tabs__link">
+          
+  
+  
+  SDK
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../api-stability/" class="md-tabs__link">
+          
+  
+  
+  API
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="AgentBreeder" class="md-nav__button md-logo" aria-label="AgentBreeder" data-md-component="logo">
+      
+  <img src="../assets/logo.png" alt="logo">
+
+    </a>
+    AgentBreeder
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/open-agent-garden/agentbreeder" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    open-agent-garden/agentbreeder
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Getting Started
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quickstart
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    How-To Guide
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    How-To Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#install-agentbreeder" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Install AgentBreeder
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Install AgentBreeder">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#option-1-pypi-recommended" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Option 1: PyPI (recommended)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#option-2-homebrew-macos-linux" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Option 2: Homebrew (macOS / Linux)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#option-3-docker-for-cicd-pipelines" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Option 3: Docker (for CI/CD pipelines)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#option-4-sdk-only-for-programmatic-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Option 4: SDK only (for programmatic use)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#option-5-from-source-for-contributors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Option 5: From source (for contributors)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#build-your-first-agent" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Build Your First Agent
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Build Your First Agent">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#step-1-scaffold" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 1: Scaffold
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-2-review-the-generated-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 2: Review the generated files
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-3-customize" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 3: Customize
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-4-validate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 4: Validate
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-5-deploy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 5: Deploy
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-6-test" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 6: Test
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#deploy-to-different-targets" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deploy to Different Targets
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Deploy to Different Targets">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#local-docker-compose" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Local (Docker Compose)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gcp-cloud-run" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GCP Cloud Run
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#aws-ecs-fargate-planned" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AWS ECS Fargate (planned)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#use-different-frameworks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Use Different Frameworks
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Use Different Frameworks">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#langgraph" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        LangGraph
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#openai-agents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        OpenAI Agents
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#claude-sdk" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Claude SDK
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#custom-bring-your-own" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Custom (bring your own)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#use-local-models-with-ollama" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Use Local Models with Ollama
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Use Local Models with Ollama">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#step-1-install-and-start-ollama" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 1: Install and start Ollama
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-2-configure-your-agent" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 2: Configure your agent
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-3-deploy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 3: Deploy
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#configure-llm-providers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configure LLM Providers
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Configure LLM Providers">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#add-a-provider" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Add a provider
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#list-providers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        List providers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#use-fallback-chains" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Use fallback chains
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#use-litellm-gateway" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Use LiteLLM gateway
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#manage-secrets" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Manage Secrets
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Manage Secrets">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#environment-variables-default" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Environment variables (default)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#aws-secrets-manager" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AWS Secrets Manager
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gcp-secret-manager" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GCP Secret Manager
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hashicorp-vault" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        HashiCorp Vault
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#orchestrate-multiple-agents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Orchestrate Multiple Agents
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Orchestrate Multiple Agents">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#strategy-overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Strategy overview
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-router-pipeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example: Router pipeline
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-sequential-pipeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example: Sequential pipeline
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#programmatic-orchestration-full-code-sdk" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Programmatic orchestration (Full Code SDK)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#use-the-python-sdk" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Use the Python SDK
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Use the Python SDK">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#install" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Install
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#define-an-agent" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Define an agent
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#export-to-yaml" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Export to YAML
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#load-from-yaml" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Load from YAML
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deploy-programmatically" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deploy programmatically
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#migrate-from-another-framework" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Migrate from Another Framework
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Migrate from Another Framework">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#from-langgraph" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        From LangGraph
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#from-openai-agents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        From OpenAI Agents
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#from-crewai" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        From CrewAI
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#from-autogen" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        From AutoGen
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#from-custom-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        From custom code
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#eject-from-yaml-to-full-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Eject from YAML to Full Code
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#use-mcp-servers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Use MCP Servers
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Use MCP Servers">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#reference-mcp-servers-from-the-registry" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reference MCP servers from the registry
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#discover-available-mcp-servers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Discover available MCP servers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#register-a-custom-mcp-server" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Register a custom MCP server
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#manage-teams-and-rbac" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Manage Teams and RBAC
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Manage Teams and RBAC">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#configure-access-in-agentyaml" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configure access in agent.yaml
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-happens-at-deploy-time" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What happens at deploy time
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#track-costs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Track Costs
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Track Costs">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#view-costs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        View costs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#how-cost-tracking-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How cost tracking works
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#use-the-git-workflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Use the Git Workflow
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Use the Git Workflow">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#submit-a-change-for-review" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Submit a change for review
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#review-submissions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Review submissions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#publish-approved-changes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Publish approved changes
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#run-evaluations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Run Evaluations
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#use-agent-templates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Use Agent Templates
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#teardown-a-deployed-agent" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Teardown a Deployed Agent
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#use-agentbreeder-in-cicd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Use AgentBreeder in CI/CD
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Use AgentBreeder in CI/CD">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#github-actions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GitHub Actions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gitlab-ci" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GitLab CI
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#run-the-platform-with-docker-compose" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Run the Platform with Docker Compose
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#troubleshooting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Troubleshooting
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Troubleshooting">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#agentbreeder-command-not-found" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        "agentbreeder: command not found"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#validation-failed-unknown-framework" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        "Validation failed: unknown framework"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rbac-check-failed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        "RBAC check failed"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#container-build-failed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        "Container build failed"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deploy-rolled-back" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        "Deploy rolled back"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dashboard-wont-start" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dashboard won't start
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../local-development/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Local Development
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cli-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../agent-yaml/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    agent.yaml
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../orchestration-yaml/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    orchestration.yaml
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SDK
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    SDK
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../orchestration-sdk/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Full Code Orchestration SDK
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api-stability/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Stability & Versioning
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#install-agentbreeder" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Install AgentBreeder
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Install AgentBreeder">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#option-1-pypi-recommended" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Option 1: PyPI (recommended)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#option-2-homebrew-macos-linux" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Option 2: Homebrew (macOS / Linux)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#option-3-docker-for-cicd-pipelines" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Option 3: Docker (for CI/CD pipelines)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#option-4-sdk-only-for-programmatic-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Option 4: SDK only (for programmatic use)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#option-5-from-source-for-contributors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Option 5: From source (for contributors)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#build-your-first-agent" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Build Your First Agent
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Build Your First Agent">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#step-1-scaffold" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 1: Scaffold
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-2-review-the-generated-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 2: Review the generated files
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-3-customize" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 3: Customize
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-4-validate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 4: Validate
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-5-deploy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 5: Deploy
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-6-test" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 6: Test
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#deploy-to-different-targets" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deploy to Different Targets
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Deploy to Different Targets">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#local-docker-compose" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Local (Docker Compose)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gcp-cloud-run" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GCP Cloud Run
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#aws-ecs-fargate-planned" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AWS ECS Fargate (planned)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#use-different-frameworks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Use Different Frameworks
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Use Different Frameworks">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#langgraph" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        LangGraph
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#openai-agents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        OpenAI Agents
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#claude-sdk" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Claude SDK
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#custom-bring-your-own" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Custom (bring your own)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#use-local-models-with-ollama" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Use Local Models with Ollama
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Use Local Models with Ollama">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#step-1-install-and-start-ollama" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 1: Install and start Ollama
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-2-configure-your-agent" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 2: Configure your agent
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-3-deploy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 3: Deploy
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#configure-llm-providers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configure LLM Providers
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Configure LLM Providers">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#add-a-provider" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Add a provider
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#list-providers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        List providers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#use-fallback-chains" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Use fallback chains
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#use-litellm-gateway" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Use LiteLLM gateway
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#manage-secrets" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Manage Secrets
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Manage Secrets">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#environment-variables-default" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Environment variables (default)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#aws-secrets-manager" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AWS Secrets Manager
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gcp-secret-manager" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GCP Secret Manager
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hashicorp-vault" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        HashiCorp Vault
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#orchestrate-multiple-agents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Orchestrate Multiple Agents
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Orchestrate Multiple Agents">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#strategy-overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Strategy overview
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-router-pipeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example: Router pipeline
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-sequential-pipeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example: Sequential pipeline
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#programmatic-orchestration-full-code-sdk" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Programmatic orchestration (Full Code SDK)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#use-the-python-sdk" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Use the Python SDK
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Use the Python SDK">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#install" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Install
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#define-an-agent" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Define an agent
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#export-to-yaml" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Export to YAML
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#load-from-yaml" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Load from YAML
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deploy-programmatically" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deploy programmatically
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#migrate-from-another-framework" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Migrate from Another Framework
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Migrate from Another Framework">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#from-langgraph" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        From LangGraph
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#from-openai-agents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        From OpenAI Agents
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#from-crewai" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        From CrewAI
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#from-autogen" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        From AutoGen
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#from-custom-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        From custom code
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#eject-from-yaml-to-full-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Eject from YAML to Full Code
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#use-mcp-servers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Use MCP Servers
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Use MCP Servers">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#reference-mcp-servers-from-the-registry" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reference MCP servers from the registry
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#discover-available-mcp-servers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Discover available MCP servers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#register-a-custom-mcp-server" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Register a custom MCP server
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#manage-teams-and-rbac" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Manage Teams and RBAC
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Manage Teams and RBAC">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#configure-access-in-agentyaml" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configure access in agent.yaml
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-happens-at-deploy-time" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What happens at deploy time
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#track-costs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Track Costs
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Track Costs">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#view-costs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        View costs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#how-cost-tracking-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How cost tracking works
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#use-the-git-workflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Use the Git Workflow
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Use the Git Workflow">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#submit-a-change-for-review" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Submit a change for review
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#review-submissions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Review submissions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#publish-approved-changes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Publish approved changes
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#run-evaluations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Run Evaluations
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#use-agent-templates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Use Agent Templates
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#teardown-a-deployed-agent" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Teardown a Deployed Agent
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#use-agentbreeder-in-cicd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Use AgentBreeder in CI/CD
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Use AgentBreeder in CI/CD">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#github-actions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GitHub Actions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gitlab-ci" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GitLab CI
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#run-the-platform-with-docker-compose" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Run the Platform with Docker Compose
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#troubleshooting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Troubleshooting
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Troubleshooting">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#agentbreeder-command-not-found" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        "agentbreeder: command not found"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#validation-failed-unknown-framework" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        "Validation failed: unknown framework"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rbac-check-failed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        "RBAC check failed"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#container-build-failed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        "Container build failed"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deploy-rolled-back" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        "Deploy rolled back"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dashboard-wont-start" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dashboard won't start
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="how-to-guide">How-To Guide<a class="headerlink" href="#how-to-guide" title="Permanent link">&para;</a></h1>
+<p>Practical recipes for common AgentBreeder workflows. Each section is self-contained — jump to what you need.</p>
+<hr />
+<h2 id="install-agentbreeder">Install AgentBreeder<a class="headerlink" href="#install-agentbreeder" title="Permanent link">&para;</a></h2>
+<h3 id="option-1-pypi-recommended">Option 1: PyPI (recommended)<a class="headerlink" href="#option-1-pypi-recommended" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1"># Full CLI + API server + engine</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>pip<span class="w"> </span>install<span class="w"> </span>agentbreeder
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="c1"># Verify</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>agentbreeder<span class="w"> </span>--help
+</code></pre></div>
+<h3 id="option-2-homebrew-macos-linux">Option 2: Homebrew (macOS / Linux)<a class="headerlink" href="#option-2-homebrew-macos-linux" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>brew<span class="w"> </span>tap<span class="w"> </span>open-agent-garden/agentbreeder
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>brew<span class="w"> </span>install<span class="w"> </span>agentbreeder
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="c1"># Verify</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>agentbreeder<span class="w"> </span>--help
+</code></pre></div>
+<h3 id="option-3-docker-for-cicd-pipelines">Option 3: Docker (for CI/CD pipelines)<a class="headerlink" href="#option-3-docker-for-cicd-pipelines" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># CLI image — use in CI/CD, no Python needed</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>docker<span class="w"> </span>pull<span class="w"> </span>rajits/agentbreeder-cli
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>docker<span class="w"> </span>run<span class="w"> </span>rajits/agentbreeder-cli<span class="w"> </span>--help
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="c1"># API server — run the platform</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>docker<span class="w"> </span>pull<span class="w"> </span>rajits/agentbreeder-api
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>docker<span class="w"> </span>run<span class="w"> </span>-p<span class="w"> </span><span class="m">8000</span>:8000<span class="w"> </span>rajits/agentbreeder-api
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="c1"># Dashboard — visual agent builder</span>
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>docker<span class="w"> </span>pull<span class="w"> </span>rajits/agentbreeder-dashboard
+<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>docker<span class="w"> </span>run<span class="w"> </span>-p<span class="w"> </span><span class="m">3001</span>:3001<span class="w"> </span>rajits/agentbreeder-dashboard
+</code></pre></div>
+<h3 id="option-4-sdk-only-for-programmatic-use">Option 4: SDK only (for programmatic use)<a class="headerlink" href="#option-4-sdk-only-for-programmatic-use" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1"># Lightweight SDK — no CLI, no server, just the Python API</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>pip<span class="w"> </span>install<span class="w"> </span>agentbreeder-sdk
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">agenthub</span><span class="w"> </span><span class="kn">import</span> <span class="n">Agent</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="n">agent</span> <span class="o">=</span> <span class="n">Agent</span><span class="p">(</span><span class="s2">&quot;my-agent&quot;</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="s2">&quot;1.0.0&quot;</span><span class="p">,</span> <span class="n">team</span><span class="o">=</span><span class="s2">&quot;eng&quot;</span><span class="p">)</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="nb">print</span><span class="p">(</span><span class="n">agent</span><span class="o">.</span><span class="n">to_yaml</span><span class="p">())</span>
+</code></pre></div>
+<h3 id="option-5-from-source-for-contributors">Option 5: From source (for contributors)<a class="headerlink" href="#option-5-from-source-for-contributors" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/open-agent-garden/agentbreeder.git
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="nb">cd</span><span class="w"> </span>agentbreeder
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>python<span class="w"> </span>-m<span class="w"> </span>venv<span class="w"> </span>venv<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nb">source</span><span class="w"> </span>venv/bin/activate
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;.[dev]&quot;</span>
+</code></pre></div>
+<hr />
+<h2 id="build-your-first-agent">Build Your First Agent<a class="headerlink" href="#build-your-first-agent" title="Permanent link">&para;</a></h2>
+<h3 id="step-1-scaffold">Step 1: Scaffold<a class="headerlink" href="#step-1-scaffold" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>agentbreeder<span class="w"> </span>init
+</code></pre></div>
+<p>The wizard asks 5 questions and generates a ready-to-run project:</p>
+<table>
+<thead>
+<tr>
+<th>Question</th>
+<th>Example</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Framework</td>
+<td>LangGraph</td>
+<td>Choose from 6 frameworks</td>
+</tr>
+<tr>
+<td>Cloud target</td>
+<td>Local</td>
+<td>Where to deploy</td>
+</tr>
+<tr>
+<td>Agent name</td>
+<td><code>support-agent</code></td>
+<td>Lowercase, hyphens allowed</td>
+</tr>
+<tr>
+<td>Team</td>
+<td><code>engineering</code></td>
+<td>Your team for RBAC and cost tracking</td>
+</tr>
+<tr>
+<td>Owner email</td>
+<td><code>alice@company.com</code></td>
+<td>Who is responsible</td>
+</tr>
+</tbody>
+</table>
+<h3 id="step-2-review-the-generated-files">Step 2: Review the generated files<a class="headerlink" href="#step-2-review-the-generated-files" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="nb">cd</span><span class="w"> </span>support-agent
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>cat<span class="w"> </span>agent.yaml
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">support-agent</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.1.0</span>
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;support-agent</span><span class="nv"> </span><span class="s">—</span><span class="nv"> </span><span class="s">powered</span><span class="nv"> </span><span class="s">by</span><span class="nv"> </span><span class="s">langgraph&quot;</span>
+<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="nt">team</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">engineering</span>
+<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="nt">owner</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">alice@company.com</span>
+<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a><span class="nt">tags</span><span class="p">:</span>
+<a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">langgraph</span>
+<a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">generated</span>
+<a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a>
+<a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a><span class="nt">framework</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">langgraph</span>
+<a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a>
+<a id="__codelineno-8-12" name="__codelineno-8-12" href="#__codelineno-8-12"></a><span class="nt">model</span><span class="p">:</span>
+<a id="__codelineno-8-13" name="__codelineno-8-13" href="#__codelineno-8-13"></a><span class="w">  </span><span class="nt">primary</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gpt-4o</span>
+<a id="__codelineno-8-14" name="__codelineno-8-14" href="#__codelineno-8-14"></a>
+<a id="__codelineno-8-15" name="__codelineno-8-15" href="#__codelineno-8-15"></a><span class="nt">deploy</span><span class="p">:</span>
+<a id="__codelineno-8-16" name="__codelineno-8-16" href="#__codelineno-8-16"></a><span class="w">  </span><span class="nt">cloud</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">local</span>
+</code></pre></div>
+<h3 id="step-3-customize">Step 3: Customize<a class="headerlink" href="#step-3-customize" title="Permanent link">&para;</a></h3>
+<p>Edit <code>agent.yaml</code> to match your needs:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">support-agent</span>
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1.0.0</span>
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Handles</span><span class="nv"> </span><span class="s">tier-1</span><span class="nv"> </span><span class="s">customer</span><span class="nv"> </span><span class="s">support</span><span class="nv"> </span><span class="s">tickets&quot;</span>
+<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="nt">team</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">customer-success</span>
+<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="nt">owner</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">alice@company.com</span>
+<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>
+<a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a><span class="nt">framework</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">langgraph</span>
+<a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a>
+<a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a><span class="nt">model</span><span class="p">:</span>
+<a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a><span class="w">  </span><span class="nt">primary</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">claude-sonnet-4</span><span class="w">       </span><span class="c1"># Change the model</span>
+<a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a><span class="w">  </span><span class="nt">fallback</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gpt-4o</span><span class="w">               </span><span class="c1"># Add a fallback</span>
+<a id="__codelineno-9-12" name="__codelineno-9-12" href="#__codelineno-9-12"></a>
+<a id="__codelineno-9-13" name="__codelineno-9-13" href="#__codelineno-9-13"></a><span class="nt">tools</span><span class="p">:</span><span class="w">                            </span><span class="c1"># Add tools from the registry</span>
+<a id="__codelineno-9-14" name="__codelineno-9-14" href="#__codelineno-9-14"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">ref</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tools/zendesk-mcp</span>
+<a id="__codelineno-9-15" name="__codelineno-9-15" href="#__codelineno-9-15"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">ref</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tools/order-lookup</span>
+<a id="__codelineno-9-16" name="__codelineno-9-16" href="#__codelineno-9-16"></a>
+<a id="__codelineno-9-17" name="__codelineno-9-17" href="#__codelineno-9-17"></a><span class="nt">prompts</span><span class="p">:</span>
+<a id="__codelineno-9-18" name="__codelineno-9-18" href="#__codelineno-9-18"></a><span class="w">  </span><span class="nt">system</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;You</span><span class="nv"> </span><span class="s">are</span><span class="nv"> </span><span class="s">a</span><span class="nv"> </span><span class="s">helpful</span><span class="nv"> </span><span class="s">customer</span><span class="nv"> </span><span class="s">support</span><span class="nv"> </span><span class="s">agent</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">Acme</span><span class="nv"> </span><span class="s">Corp.&quot;</span>
+<a id="__codelineno-9-19" name="__codelineno-9-19" href="#__codelineno-9-19"></a>
+<a id="__codelineno-9-20" name="__codelineno-9-20" href="#__codelineno-9-20"></a><span class="nt">guardrails</span><span class="p">:</span>
+<a id="__codelineno-9-21" name="__codelineno-9-21" href="#__codelineno-9-21"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pii_detection</span><span class="w">                 </span><span class="c1"># Strip PII from outputs</span>
+<a id="__codelineno-9-22" name="__codelineno-9-22" href="#__codelineno-9-22"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">content_filter</span><span class="w">                </span><span class="c1"># Block harmful content</span>
+<a id="__codelineno-9-23" name="__codelineno-9-23" href="#__codelineno-9-23"></a>
+<a id="__codelineno-9-24" name="__codelineno-9-24" href="#__codelineno-9-24"></a><span class="nt">deploy</span><span class="p">:</span>
+<a id="__codelineno-9-25" name="__codelineno-9-25" href="#__codelineno-9-25"></a><span class="w">  </span><span class="nt">cloud</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">local</span>
+<a id="__codelineno-9-26" name="__codelineno-9-26" href="#__codelineno-9-26"></a><span class="w">  </span><span class="nt">scaling</span><span class="p">:</span>
+<a id="__codelineno-9-27" name="__codelineno-9-27" href="#__codelineno-9-27"></a><span class="w">    </span><span class="nt">min</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
+<a id="__codelineno-9-28" name="__codelineno-9-28" href="#__codelineno-9-28"></a><span class="w">    </span><span class="nt">max</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span>
+</code></pre></div>
+<h3 id="step-4-validate">Step 4: Validate<a class="headerlink" href="#step-4-validate" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>agentbreeder<span class="w"> </span>validate<span class="w"> </span>agent.yaml
+</code></pre></div>
+<h3 id="step-5-deploy">Step 5: Deploy<a class="headerlink" href="#step-5-deploy" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>agentbreeder<span class="w"> </span>deploy<span class="w"> </span>agent.yaml<span class="w"> </span>--target<span class="w"> </span><span class="nb">local</span>
+</code></pre></div>
+<h3 id="step-6-test">Step 6: Test<a class="headerlink" href="#step-6-test" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="c1"># Interactive chat</span>
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>agentbreeder<span class="w"> </span>chat<span class="w"> </span>support-agent
+<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>
+<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="c1"># Check status</span>
+<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a>agentbreeder<span class="w"> </span>status
+<a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a>
+<a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a><span class="c1"># View logs</span>
+<a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a>agentbreeder<span class="w"> </span>logs<span class="w"> </span>support-agent<span class="w"> </span>--follow
+</code></pre></div>
+<hr />
+<h2 id="deploy-to-different-targets">Deploy to Different Targets<a class="headerlink" href="#deploy-to-different-targets" title="Permanent link">&para;</a></h2>
+<h3 id="local-docker-compose">Local (Docker Compose)<a class="headerlink" href="#local-docker-compose" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>agentbreeder<span class="w"> </span>deploy<span class="w"> </span>agent.yaml<span class="w"> </span>--target<span class="w"> </span><span class="nb">local</span>
+</code></pre></div>
+<p>No cloud credentials needed. Starts a Docker Compose stack on your machine.</p>
+<h3 id="gcp-cloud-run">GCP Cloud Run<a class="headerlink" href="#gcp-cloud-run" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="c1"># Prerequisites: gcloud CLI authenticated, project set</span>
+<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>gcloud<span class="w"> </span>auth<span class="w"> </span>login
+<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>gcloud<span class="w"> </span>config<span class="w"> </span><span class="nb">set</span><span class="w"> </span>project<span class="w"> </span>my-project
+<a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a>
+<a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a><span class="c1"># Deploy</span>
+<a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a>agentbreeder<span class="w"> </span>deploy<span class="w"> </span>agent.yaml<span class="w"> </span>--target<span class="w"> </span>cloud-run<span class="w"> </span>--region<span class="w"> </span>us-central1
+</code></pre></div>
+<p>Your <code>agent.yaml</code> should specify GCP:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="nt">deploy</span><span class="p">:</span>
+<a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="w">  </span><span class="nt">cloud</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gcp</span>
+<a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a><span class="w">  </span><span class="nt">region</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">us-central1</span>
+<a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a><span class="w">  </span><span class="nt">scaling</span><span class="p">:</span>
+<a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a><span class="w">    </span><span class="nt">min</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0</span><span class="w">        </span><span class="c1"># Scale to zero when idle</span>
+<a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a><span class="w">    </span><span class="nt">max</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10</span>
+<a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a><span class="w">  </span><span class="nt">secrets</span><span class="p">:</span>
+<a id="__codelineno-15-8" name="__codelineno-15-8" href="#__codelineno-15-8"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">OPENAI_API_KEY</span><span class="w">    </span><span class="c1"># Must exist in GCP Secret Manager</span>
+</code></pre></div>
+<h3 id="aws-ecs-fargate-planned">AWS ECS Fargate (planned)<a class="headerlink" href="#aws-ecs-fargate-planned" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="c1"># Coming soon</span>
+<a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>agentbreeder<span class="w"> </span>deploy<span class="w"> </span>agent.yaml<span class="w"> </span>--target<span class="w"> </span>aws<span class="w"> </span>--region<span class="w"> </span>us-east-1
+</code></pre></div>
+<hr />
+<h2 id="use-different-frameworks">Use Different Frameworks<a class="headerlink" href="#use-different-frameworks" title="Permanent link">&para;</a></h2>
+<p>AgentBreeder is framework-agnostic. Your <code>agent.yaml</code> specifies which framework to use, and the engine builds the right container.</p>
+<h3 id="langgraph">LangGraph<a class="headerlink" href="#langgraph" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="nt">framework</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">langgraph</span>
+<a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a>
+<a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a><span class="nt">model</span><span class="p">:</span>
+<a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a><span class="w">  </span><span class="nt">primary</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gpt-4o</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="c1"># agent.py</span>
+<a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">langgraph.graph</span><span class="w"> </span><span class="kn">import</span> <span class="n">StateGraph</span><span class="p">,</span> <span class="n">START</span><span class="p">,</span> <span class="n">END</span>
+<a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a>
+<a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a><span class="k">class</span><span class="w"> </span><span class="nc">State</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">):</span>
+<a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a>    <span class="n">messages</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="nb">list</span><span class="p">,</span> <span class="n">add_messages</span><span class="p">]</span>
+<a id="__codelineno-18-6" name="__codelineno-18-6" href="#__codelineno-18-6"></a>
+<a id="__codelineno-18-7" name="__codelineno-18-7" href="#__codelineno-18-7"></a><span class="n">graph</span> <span class="o">=</span> <span class="n">StateGraph</span><span class="p">(</span><span class="n">State</span><span class="p">)</span>
+<a id="__codelineno-18-8" name="__codelineno-18-8" href="#__codelineno-18-8"></a><span class="n">graph</span><span class="o">.</span><span class="n">add_node</span><span class="p">(</span><span class="s2">&quot;chatbot&quot;</span><span class="p">,</span> <span class="n">chatbot</span><span class="p">)</span>
+<a id="__codelineno-18-9" name="__codelineno-18-9" href="#__codelineno-18-9"></a><span class="n">graph</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">START</span><span class="p">,</span> <span class="s2">&quot;chatbot&quot;</span><span class="p">)</span>
+<a id="__codelineno-18-10" name="__codelineno-18-10" href="#__codelineno-18-10"></a><span class="n">graph</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="s2">&quot;chatbot&quot;</span><span class="p">,</span> <span class="n">END</span><span class="p">)</span>
+<a id="__codelineno-18-11" name="__codelineno-18-11" href="#__codelineno-18-11"></a><span class="n">app</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">compile</span><span class="p">()</span>
+</code></pre></div>
+<h3 id="openai-agents">OpenAI Agents<a class="headerlink" href="#openai-agents" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="nt">framework</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">openai_agents</span>
+<a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a>
+<a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a><span class="nt">model</span><span class="p">:</span>
+<a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a><span class="w">  </span><span class="nt">primary</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gpt-4o</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a><span class="c1"># agent.py</span>
+<a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">agents</span><span class="w"> </span><span class="kn">import</span> <span class="n">Agent</span><span class="p">,</span> <span class="n">Runner</span>
+<a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a>
+<a id="__codelineno-20-4" name="__codelineno-20-4" href="#__codelineno-20-4"></a><span class="n">agent</span> <span class="o">=</span> <span class="n">Agent</span><span class="p">(</span>
+<a id="__codelineno-20-5" name="__codelineno-20-5" href="#__codelineno-20-5"></a>    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;support-agent&quot;</span><span class="p">,</span>
+<a id="__codelineno-20-6" name="__codelineno-20-6" href="#__codelineno-20-6"></a>    <span class="n">instructions</span><span class="o">=</span><span class="s2">&quot;You are a helpful assistant.&quot;</span><span class="p">,</span>
+<a id="__codelineno-20-7" name="__codelineno-20-7" href="#__codelineno-20-7"></a><span class="p">)</span>
+<a id="__codelineno-20-8" name="__codelineno-20-8" href="#__codelineno-20-8"></a>
+<a id="__codelineno-20-9" name="__codelineno-20-9" href="#__codelineno-20-9"></a><span class="n">result</span> <span class="o">=</span> <span class="n">Runner</span><span class="o">.</span><span class="n">run_sync</span><span class="p">(</span><span class="n">agent</span><span class="p">,</span> <span class="s2">&quot;Hello!&quot;</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="claude-sdk">Claude SDK<a class="headerlink" href="#claude-sdk" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a><span class="nt">framework</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">claude_sdk</span>
+<a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a>
+<a id="__codelineno-21-3" name="__codelineno-21-3" href="#__codelineno-21-3"></a><span class="nt">model</span><span class="p">:</span>
+<a id="__codelineno-21-4" name="__codelineno-21-4" href="#__codelineno-21-4"></a><span class="w">  </span><span class="nt">primary</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">claude-sonnet-4-20250514</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a><span class="c1"># agent.py</span>
+<a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">anthropic</span>
+<a id="__codelineno-22-3" name="__codelineno-22-3" href="#__codelineno-22-3"></a>
+<a id="__codelineno-22-4" name="__codelineno-22-4" href="#__codelineno-22-4"></a><span class="n">client</span> <span class="o">=</span> <span class="n">anthropic</span><span class="o">.</span><span class="n">Anthropic</span><span class="p">()</span>
+<a id="__codelineno-22-5" name="__codelineno-22-5" href="#__codelineno-22-5"></a><span class="n">message</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">messages</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
+<a id="__codelineno-22-6" name="__codelineno-22-6" href="#__codelineno-22-6"></a>    <span class="n">model</span><span class="o">=</span><span class="s2">&quot;claude-sonnet-4-20250514&quot;</span><span class="p">,</span>
+<a id="__codelineno-22-7" name="__codelineno-22-7" href="#__codelineno-22-7"></a>    <span class="n">max_tokens</span><span class="o">=</span><span class="mi">1024</span><span class="p">,</span>
+<a id="__codelineno-22-8" name="__codelineno-22-8" href="#__codelineno-22-8"></a>    <span class="n">messages</span><span class="o">=</span><span class="p">[{</span><span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;user&quot;</span><span class="p">,</span> <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="s2">&quot;Hello!&quot;</span><span class="p">}],</span>
+<a id="__codelineno-22-9" name="__codelineno-22-9" href="#__codelineno-22-9"></a><span class="p">)</span>
+</code></pre></div>
+<h3 id="custom-bring-your-own">Custom (bring your own)<a class="headerlink" href="#custom-bring-your-own" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a><span class="nt">framework</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">custom</span>
+<a id="__codelineno-23-2" name="__codelineno-23-2" href="#__codelineno-23-2"></a>
+<a id="__codelineno-23-3" name="__codelineno-23-3" href="#__codelineno-23-3"></a><span class="nt">model</span><span class="p">:</span>
+<a id="__codelineno-23-4" name="__codelineno-23-4" href="#__codelineno-23-4"></a><span class="w">  </span><span class="nt">primary</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">any-model</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a><span class="c1"># agent.py — whatever you want</span>
+<a id="__codelineno-24-2" name="__codelineno-24-2" href="#__codelineno-24-2"></a><span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="n">user_message</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<a id="__codelineno-24-3" name="__codelineno-24-3" href="#__codelineno-24-3"></a>    <span class="c1"># Your custom agent logic here</span>
+<a id="__codelineno-24-4" name="__codelineno-24-4" href="#__codelineno-24-4"></a>    <span class="k">return</span> <span class="s2">&quot;response&quot;</span>
+</code></pre></div>
+<hr />
+<h2 id="use-local-models-with-ollama">Use Local Models with Ollama<a class="headerlink" href="#use-local-models-with-ollama" title="Permanent link">&para;</a></h2>
+<p>No cloud API keys required. Run everything locally.</p>
+<h3 id="step-1-install-and-start-ollama">Step 1: Install and start Ollama<a class="headerlink" href="#step-1-install-and-start-ollama" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a><span class="c1"># macOS</span>
+<a id="__codelineno-25-2" name="__codelineno-25-2" href="#__codelineno-25-2"></a>brew<span class="w"> </span>install<span class="w"> </span>ollama
+<a id="__codelineno-25-3" name="__codelineno-25-3" href="#__codelineno-25-3"></a>
+<a id="__codelineno-25-4" name="__codelineno-25-4" href="#__codelineno-25-4"></a><span class="c1"># Start the server</span>
+<a id="__codelineno-25-5" name="__codelineno-25-5" href="#__codelineno-25-5"></a>ollama<span class="w"> </span>serve<span class="w"> </span><span class="p">&amp;</span>
+<a id="__codelineno-25-6" name="__codelineno-25-6" href="#__codelineno-25-6"></a>
+<a id="__codelineno-25-7" name="__codelineno-25-7" href="#__codelineno-25-7"></a><span class="c1"># Pull a model</span>
+<a id="__codelineno-25-8" name="__codelineno-25-8" href="#__codelineno-25-8"></a>ollama<span class="w"> </span>pull<span class="w"> </span>llama3
+</code></pre></div>
+<h3 id="step-2-configure-your-agent">Step 2: Configure your agent<a class="headerlink" href="#step-2-configure-your-agent" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a><span class="c1"># agent.yaml</span>
+<a id="__codelineno-26-2" name="__codelineno-26-2" href="#__codelineno-26-2"></a><span class="nt">model</span><span class="p">:</span>
+<a id="__codelineno-26-3" name="__codelineno-26-3" href="#__codelineno-26-3"></a><span class="w">  </span><span class="nt">primary</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ollama/llama3</span>
+<a id="__codelineno-26-4" name="__codelineno-26-4" href="#__codelineno-26-4"></a><span class="w">  </span><span class="nt">gateway</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ollama</span>
+</code></pre></div>
+<h3 id="step-3-deploy">Step 3: Deploy<a class="headerlink" href="#step-3-deploy" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a>agentbreeder<span class="w"> </span>deploy<span class="w"> </span>agent.yaml<span class="w"> </span>--target<span class="w"> </span><span class="nb">local</span>
+</code></pre></div>
+<p>The engine routes all LLM calls through your local Ollama instance. No data leaves your machine.</p>
+<hr />
+<h2 id="configure-llm-providers">Configure LLM Providers<a class="headerlink" href="#configure-llm-providers" title="Permanent link">&para;</a></h2>
+<h3 id="add-a-provider">Add a provider<a class="headerlink" href="#add-a-provider" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-28-1" name="__codelineno-28-1" href="#__codelineno-28-1"></a><span class="c1"># Add OpenAI</span>
+<a id="__codelineno-28-2" name="__codelineno-28-2" href="#__codelineno-28-2"></a>agentbreeder<span class="w"> </span>provider<span class="w"> </span>add<span class="w"> </span>openai<span class="w"> </span>--api-key<span class="w"> </span>sk-...
+<a id="__codelineno-28-3" name="__codelineno-28-3" href="#__codelineno-28-3"></a>
+<a id="__codelineno-28-4" name="__codelineno-28-4" href="#__codelineno-28-4"></a><span class="c1"># Add Anthropic</span>
+<a id="__codelineno-28-5" name="__codelineno-28-5" href="#__codelineno-28-5"></a>agentbreeder<span class="w"> </span>provider<span class="w"> </span>add<span class="w"> </span>anthropic<span class="w"> </span>--api-key<span class="w"> </span>sk-ant-...
+<a id="__codelineno-28-6" name="__codelineno-28-6" href="#__codelineno-28-6"></a>
+<a id="__codelineno-28-7" name="__codelineno-28-7" href="#__codelineno-28-7"></a><span class="c1"># Add Google</span>
+<a id="__codelineno-28-8" name="__codelineno-28-8" href="#__codelineno-28-8"></a>agentbreeder<span class="w"> </span>provider<span class="w"> </span>add<span class="w"> </span>google<span class="w"> </span>--credentials-file<span class="w"> </span>sa.json
+<a id="__codelineno-28-9" name="__codelineno-28-9" href="#__codelineno-28-9"></a>
+<a id="__codelineno-28-10" name="__codelineno-28-10" href="#__codelineno-28-10"></a><span class="c1"># Add Ollama (local)</span>
+<a id="__codelineno-28-11" name="__codelineno-28-11" href="#__codelineno-28-11"></a>agentbreeder<span class="w"> </span>provider<span class="w"> </span>add<span class="w"> </span>ollama<span class="w"> </span>--base-url<span class="w"> </span>http://localhost:11434
+</code></pre></div>
+<h3 id="list-providers">List providers<a class="headerlink" href="#list-providers" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-29-1" name="__codelineno-29-1" href="#__codelineno-29-1"></a>agentbreeder<span class="w"> </span>provider<span class="w"> </span>list
+</code></pre></div>
+<h3 id="use-fallback-chains">Use fallback chains<a class="headerlink" href="#use-fallback-chains" title="Permanent link">&para;</a></h3>
+<p>If the primary model is unavailable, AgentBreeder automatically falls back:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-30-1" name="__codelineno-30-1" href="#__codelineno-30-1"></a><span class="nt">model</span><span class="p">:</span>
+<a id="__codelineno-30-2" name="__codelineno-30-2" href="#__codelineno-30-2"></a><span class="w">  </span><span class="nt">primary</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">claude-sonnet-4</span><span class="w">        </span><span class="c1"># Try this first</span>
+<a id="__codelineno-30-3" name="__codelineno-30-3" href="#__codelineno-30-3"></a><span class="w">  </span><span class="nt">fallback</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gpt-4o</span><span class="w">               </span><span class="c1"># Fall back to this</span>
+<a id="__codelineno-30-4" name="__codelineno-30-4" href="#__codelineno-30-4"></a><span class="w">  </span><span class="nt">gateway</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">litellm</span><span class="w">               </span><span class="c1"># Route through LiteLLM for 100+ models</span>
+</code></pre></div>
+<h3 id="use-litellm-gateway">Use LiteLLM gateway<a class="headerlink" href="#use-litellm-gateway" title="Permanent link">&para;</a></h3>
+<p>Route all model calls through <a href="https://docs.litellm.ai/">LiteLLM</a> for unified access to 100+ models:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-31-1" name="__codelineno-31-1" href="#__codelineno-31-1"></a><span class="nt">model</span><span class="p">:</span>
+<a id="__codelineno-31-2" name="__codelineno-31-2" href="#__codelineno-31-2"></a><span class="w">  </span><span class="nt">primary</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">claude-sonnet-4</span>
+<a id="__codelineno-31-3" name="__codelineno-31-3" href="#__codelineno-31-3"></a><span class="w">  </span><span class="nt">gateway</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">litellm</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-32-1" name="__codelineno-32-1" href="#__codelineno-32-1"></a><span class="c1"># Start LiteLLM proxy</span>
+<a id="__codelineno-32-2" name="__codelineno-32-2" href="#__codelineno-32-2"></a>litellm<span class="w"> </span>--model<span class="w"> </span>claude-sonnet-4
+<a id="__codelineno-32-3" name="__codelineno-32-3" href="#__codelineno-32-3"></a>
+<a id="__codelineno-32-4" name="__codelineno-32-4" href="#__codelineno-32-4"></a><span class="c1"># Or set the base URL</span>
+<a id="__codelineno-32-5" name="__codelineno-32-5" href="#__codelineno-32-5"></a><span class="nb">export</span><span class="w"> </span><span class="nv">LITELLM_BASE_URL</span><span class="o">=</span>http://localhost:4000
+</code></pre></div>
+<hr />
+<h2 id="manage-secrets">Manage Secrets<a class="headerlink" href="#manage-secrets" title="Permanent link">&para;</a></h2>
+<p>AgentBreeder supports four secrets backends. Your agents reference secrets by name — the backend handles storage.</p>
+<h3 id="environment-variables-default">Environment variables (default)<a class="headerlink" href="#environment-variables-default" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-33-1" name="__codelineno-33-1" href="#__codelineno-33-1"></a><span class="c1"># .env file</span>
+<a id="__codelineno-33-2" name="__codelineno-33-2" href="#__codelineno-33-2"></a><span class="nv">OPENAI_API_KEY</span><span class="o">=</span>sk-...
+<a id="__codelineno-33-3" name="__codelineno-33-3" href="#__codelineno-33-3"></a><span class="nv">ANTHROPIC_API_KEY</span><span class="o">=</span>sk-ant-...
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-34-1" name="__codelineno-34-1" href="#__codelineno-34-1"></a><span class="c1"># agent.yaml</span>
+<a id="__codelineno-34-2" name="__codelineno-34-2" href="#__codelineno-34-2"></a><span class="nt">deploy</span><span class="p">:</span>
+<a id="__codelineno-34-3" name="__codelineno-34-3" href="#__codelineno-34-3"></a><span class="w">  </span><span class="nt">secrets</span><span class="p">:</span>
+<a id="__codelineno-34-4" name="__codelineno-34-4" href="#__codelineno-34-4"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">OPENAI_API_KEY</span>
+<a id="__codelineno-34-5" name="__codelineno-34-5" href="#__codelineno-34-5"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ANTHROPIC_API_KEY</span>
+</code></pre></div>
+<h3 id="aws-secrets-manager">AWS Secrets Manager<a class="headerlink" href="#aws-secrets-manager" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-35-1" name="__codelineno-35-1" href="#__codelineno-35-1"></a><span class="c1"># Store a secret</span>
+<a id="__codelineno-35-2" name="__codelineno-35-2" href="#__codelineno-35-2"></a>agentbreeder<span class="w"> </span>secret<span class="w"> </span><span class="nb">set</span><span class="w"> </span>OPENAI_API_KEY<span class="w"> </span>--backend<span class="w"> </span>aws<span class="w"> </span>--value<span class="w"> </span>sk-...
+<a id="__codelineno-35-3" name="__codelineno-35-3" href="#__codelineno-35-3"></a>
+<a id="__codelineno-35-4" name="__codelineno-35-4" href="#__codelineno-35-4"></a><span class="c1"># List secrets</span>
+<a id="__codelineno-35-5" name="__codelineno-35-5" href="#__codelineno-35-5"></a>agentbreeder<span class="w"> </span>secret<span class="w"> </span>list<span class="w"> </span>--backend<span class="w"> </span>aws
+</code></pre></div>
+<h3 id="gcp-secret-manager">GCP Secret Manager<a class="headerlink" href="#gcp-secret-manager" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-36-1" name="__codelineno-36-1" href="#__codelineno-36-1"></a>agentbreeder<span class="w"> </span>secret<span class="w"> </span><span class="nb">set</span><span class="w"> </span>OPENAI_API_KEY<span class="w"> </span>--backend<span class="w"> </span>gcp<span class="w"> </span>--value<span class="w"> </span>sk-...
+</code></pre></div>
+<h3 id="hashicorp-vault">HashiCorp Vault<a class="headerlink" href="#hashicorp-vault" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-37-1" name="__codelineno-37-1" href="#__codelineno-37-1"></a>agentbreeder<span class="w"> </span>secret<span class="w"> </span><span class="nb">set</span><span class="w"> </span>OPENAI_API_KEY<span class="w"> </span>--backend<span class="w"> </span>vault<span class="w"> </span>--value<span class="w"> </span>sk-...
+</code></pre></div>
+<hr />
+<h2 id="orchestrate-multiple-agents">Orchestrate Multiple Agents<a class="headerlink" href="#orchestrate-multiple-agents" title="Permanent link">&para;</a></h2>
+<p>Build multi-agent pipelines with 6 strategies.</p>
+<h3 id="strategy-overview">Strategy overview<a class="headerlink" href="#strategy-overview" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Strategy</th>
+<th>Use case</th>
+<th>How it works</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>router</code></td>
+<td>Triage + routing</td>
+<td>One agent classifies, routes to specialists</td>
+</tr>
+<tr>
+<td><code>sequential</code></td>
+<td>Pipeline</td>
+<td>Agents execute in order, passing state</td>
+</tr>
+<tr>
+<td><code>parallel</code></td>
+<td>Fan-out</td>
+<td>Multiple agents run simultaneously</td>
+</tr>
+<tr>
+<td><code>hierarchical</code></td>
+<td>Management</td>
+<td>Manager delegates to worker agents</td>
+</tr>
+<tr>
+<td><code>supervisor</code></td>
+<td>Quality control</td>
+<td>Supervisor reviews and corrects</td>
+</tr>
+<tr>
+<td><code>fan_out_fan_in</code></td>
+<td>Map-reduce</td>
+<td>Fan out to workers, aggregate results</td>
+</tr>
+</tbody>
+</table>
+<h3 id="example-router-pipeline">Example: Router pipeline<a class="headerlink" href="#example-router-pipeline" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-38-1" name="__codelineno-38-1" href="#__codelineno-38-1"></a><span class="c1"># orchestration.yaml</span>
+<a id="__codelineno-38-2" name="__codelineno-38-2" href="#__codelineno-38-2"></a><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">support-pipeline</span>
+<a id="__codelineno-38-3" name="__codelineno-38-3" href="#__codelineno-38-3"></a><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;1.0.0&quot;</span>
+<a id="__codelineno-38-4" name="__codelineno-38-4" href="#__codelineno-38-4"></a><span class="nt">team</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">customer-success</span>
+<a id="__codelineno-38-5" name="__codelineno-38-5" href="#__codelineno-38-5"></a><span class="nt">strategy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">router</span>
+<a id="__codelineno-38-6" name="__codelineno-38-6" href="#__codelineno-38-6"></a>
+<a id="__codelineno-38-7" name="__codelineno-38-7" href="#__codelineno-38-7"></a><span class="nt">agents</span><span class="p">:</span>
+<a id="__codelineno-38-8" name="__codelineno-38-8" href="#__codelineno-38-8"></a><span class="w">  </span><span class="nt">triage</span><span class="p">:</span>
+<a id="__codelineno-38-9" name="__codelineno-38-9" href="#__codelineno-38-9"></a><span class="w">    </span><span class="nt">ref</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">agents/triage-agent</span>
+<a id="__codelineno-38-10" name="__codelineno-38-10" href="#__codelineno-38-10"></a><span class="w">    </span><span class="nt">routes</span><span class="p">:</span>
+<a id="__codelineno-38-11" name="__codelineno-38-11" href="#__codelineno-38-11"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">condition</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">billing</span>
+<a id="__codelineno-38-12" name="__codelineno-38-12" href="#__codelineno-38-12"></a><span class="w">        </span><span class="nt">target</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">billing</span>
+<a id="__codelineno-38-13" name="__codelineno-38-13" href="#__codelineno-38-13"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">condition</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">technical</span>
+<a id="__codelineno-38-14" name="__codelineno-38-14" href="#__codelineno-38-14"></a><span class="w">        </span><span class="nt">target</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">technical</span>
+<a id="__codelineno-38-15" name="__codelineno-38-15" href="#__codelineno-38-15"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">condition</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">default</span>
+<a id="__codelineno-38-16" name="__codelineno-38-16" href="#__codelineno-38-16"></a><span class="w">        </span><span class="nt">target</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">general</span>
+<a id="__codelineno-38-17" name="__codelineno-38-17" href="#__codelineno-38-17"></a><span class="w">  </span><span class="nt">billing</span><span class="p">:</span>
+<a id="__codelineno-38-18" name="__codelineno-38-18" href="#__codelineno-38-18"></a><span class="w">    </span><span class="nt">ref</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">agents/billing-agent</span>
+<a id="__codelineno-38-19" name="__codelineno-38-19" href="#__codelineno-38-19"></a><span class="w">  </span><span class="nt">technical</span><span class="p">:</span>
+<a id="__codelineno-38-20" name="__codelineno-38-20" href="#__codelineno-38-20"></a><span class="w">    </span><span class="nt">ref</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">agents/technical-agent</span>
+<a id="__codelineno-38-21" name="__codelineno-38-21" href="#__codelineno-38-21"></a><span class="w">  </span><span class="nt">general</span><span class="p">:</span>
+<a id="__codelineno-38-22" name="__codelineno-38-22" href="#__codelineno-38-22"></a><span class="w">    </span><span class="nt">ref</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">agents/general-agent</span>
+<a id="__codelineno-38-23" name="__codelineno-38-23" href="#__codelineno-38-23"></a>
+<a id="__codelineno-38-24" name="__codelineno-38-24" href="#__codelineno-38-24"></a><span class="nt">shared_state</span><span class="p">:</span>
+<a id="__codelineno-38-25" name="__codelineno-38-25" href="#__codelineno-38-25"></a><span class="w">  </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">session_context</span>
+<a id="__codelineno-38-26" name="__codelineno-38-26" href="#__codelineno-38-26"></a><span class="w">  </span><span class="nt">backend</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">redis</span>
+<a id="__codelineno-38-27" name="__codelineno-38-27" href="#__codelineno-38-27"></a>
+<a id="__codelineno-38-28" name="__codelineno-38-28" href="#__codelineno-38-28"></a><span class="nt">deploy</span><span class="p">:</span>
+<a id="__codelineno-38-29" name="__codelineno-38-29" href="#__codelineno-38-29"></a><span class="w">  </span><span class="nt">target</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">local</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-39-1" name="__codelineno-39-1" href="#__codelineno-39-1"></a><span class="c1"># Validate</span>
+<a id="__codelineno-39-2" name="__codelineno-39-2" href="#__codelineno-39-2"></a>agentbreeder<span class="w"> </span>orchestration<span class="w"> </span>validate<span class="w"> </span>orchestration.yaml
+<a id="__codelineno-39-3" name="__codelineno-39-3" href="#__codelineno-39-3"></a>
+<a id="__codelineno-39-4" name="__codelineno-39-4" href="#__codelineno-39-4"></a><span class="c1"># Deploy</span>
+<a id="__codelineno-39-5" name="__codelineno-39-5" href="#__codelineno-39-5"></a>agentbreeder<span class="w"> </span>orchestration<span class="w"> </span>deploy<span class="w"> </span>orchestration.yaml
+<a id="__codelineno-39-6" name="__codelineno-39-6" href="#__codelineno-39-6"></a>
+<a id="__codelineno-39-7" name="__codelineno-39-7" href="#__codelineno-39-7"></a><span class="c1"># Chat with the pipeline</span>
+<a id="__codelineno-39-8" name="__codelineno-39-8" href="#__codelineno-39-8"></a>agentbreeder<span class="w"> </span>orchestration<span class="w"> </span>chat<span class="w"> </span>support-pipeline
+</code></pre></div>
+<h3 id="example-sequential-pipeline">Example: Sequential pipeline<a class="headerlink" href="#example-sequential-pipeline" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-40-1" name="__codelineno-40-1" href="#__codelineno-40-1"></a><span class="nt">strategy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sequential</span>
+<a id="__codelineno-40-2" name="__codelineno-40-2" href="#__codelineno-40-2"></a>
+<a id="__codelineno-40-3" name="__codelineno-40-3" href="#__codelineno-40-3"></a><span class="nt">agents</span><span class="p">:</span>
+<a id="__codelineno-40-4" name="__codelineno-40-4" href="#__codelineno-40-4"></a><span class="w">  </span><span class="nt">researcher</span><span class="p">:</span>
+<a id="__codelineno-40-5" name="__codelineno-40-5" href="#__codelineno-40-5"></a><span class="w">    </span><span class="nt">ref</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">agents/researcher</span>
+<a id="__codelineno-40-6" name="__codelineno-40-6" href="#__codelineno-40-6"></a><span class="w">    </span><span class="nt">order</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
+<a id="__codelineno-40-7" name="__codelineno-40-7" href="#__codelineno-40-7"></a><span class="w">  </span><span class="nt">writer</span><span class="p">:</span>
+<a id="__codelineno-40-8" name="__codelineno-40-8" href="#__codelineno-40-8"></a><span class="w">    </span><span class="nt">ref</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">agents/writer</span>
+<a id="__codelineno-40-9" name="__codelineno-40-9" href="#__codelineno-40-9"></a><span class="w">    </span><span class="nt">order</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2</span>
+<a id="__codelineno-40-10" name="__codelineno-40-10" href="#__codelineno-40-10"></a><span class="w">  </span><span class="nt">editor</span><span class="p">:</span>
+<a id="__codelineno-40-11" name="__codelineno-40-11" href="#__codelineno-40-11"></a><span class="w">    </span><span class="nt">ref</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">agents/editor</span>
+<a id="__codelineno-40-12" name="__codelineno-40-12" href="#__codelineno-40-12"></a><span class="w">    </span><span class="nt">order</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3</span>
+</code></pre></div>
+<h3 id="programmatic-orchestration-full-code-sdk">Programmatic orchestration (Full Code SDK)<a class="headerlink" href="#programmatic-orchestration-full-code-sdk" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-41-1" name="__codelineno-41-1" href="#__codelineno-41-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">agenthub</span><span class="w"> </span><span class="kn">import</span> <span class="n">Orchestration</span>
+<a id="__codelineno-41-2" name="__codelineno-41-2" href="#__codelineno-41-2"></a>
+<a id="__codelineno-41-3" name="__codelineno-41-3" href="#__codelineno-41-3"></a><span class="n">pipeline</span> <span class="o">=</span> <span class="p">(</span>
+<a id="__codelineno-41-4" name="__codelineno-41-4" href="#__codelineno-41-4"></a>    <span class="n">Orchestration</span><span class="p">(</span><span class="s2">&quot;support-pipeline&quot;</span><span class="p">,</span> <span class="n">strategy</span><span class="o">=</span><span class="s2">&quot;router&quot;</span><span class="p">,</span> <span class="n">team</span><span class="o">=</span><span class="s2">&quot;eng&quot;</span><span class="p">)</span>
+<a id="__codelineno-41-5" name="__codelineno-41-5" href="#__codelineno-41-5"></a>    <span class="o">.</span><span class="n">add_agent</span><span class="p">(</span><span class="s2">&quot;triage&quot;</span><span class="p">,</span>  <span class="n">ref</span><span class="o">=</span><span class="s2">&quot;agents/triage-agent&quot;</span><span class="p">)</span>
+<a id="__codelineno-41-6" name="__codelineno-41-6" href="#__codelineno-41-6"></a>    <span class="o">.</span><span class="n">add_agent</span><span class="p">(</span><span class="s2">&quot;billing&quot;</span><span class="p">,</span> <span class="n">ref</span><span class="o">=</span><span class="s2">&quot;agents/billing-agent&quot;</span><span class="p">)</span>
+<a id="__codelineno-41-7" name="__codelineno-41-7" href="#__codelineno-41-7"></a>    <span class="o">.</span><span class="n">add_agent</span><span class="p">(</span><span class="s2">&quot;general&quot;</span><span class="p">,</span> <span class="n">ref</span><span class="o">=</span><span class="s2">&quot;agents/general-agent&quot;</span><span class="p">)</span>
+<a id="__codelineno-41-8" name="__codelineno-41-8" href="#__codelineno-41-8"></a>    <span class="o">.</span><span class="n">with_route</span><span class="p">(</span><span class="s2">&quot;triage&quot;</span><span class="p">,</span> <span class="n">condition</span><span class="o">=</span><span class="s2">&quot;billing&quot;</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="s2">&quot;billing&quot;</span><span class="p">)</span>
+<a id="__codelineno-41-9" name="__codelineno-41-9" href="#__codelineno-41-9"></a>    <span class="o">.</span><span class="n">with_route</span><span class="p">(</span><span class="s2">&quot;triage&quot;</span><span class="p">,</span> <span class="n">condition</span><span class="o">=</span><span class="s2">&quot;default&quot;</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="s2">&quot;general&quot;</span><span class="p">)</span>
+<a id="__codelineno-41-10" name="__codelineno-41-10" href="#__codelineno-41-10"></a>    <span class="o">.</span><span class="n">with_shared_state</span><span class="p">(</span><span class="n">state_type</span><span class="o">=</span><span class="s2">&quot;session_context&quot;</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="s2">&quot;redis&quot;</span><span class="p">)</span>
+<a id="__codelineno-41-11" name="__codelineno-41-11" href="#__codelineno-41-11"></a><span class="p">)</span>
+<a id="__codelineno-41-12" name="__codelineno-41-12" href="#__codelineno-41-12"></a><span class="n">pipeline</span><span class="o">.</span><span class="n">deploy</span><span class="p">()</span>
+</code></pre></div>
+<hr />
+<h2 id="use-the-python-sdk">Use the Python SDK<a class="headerlink" href="#use-the-python-sdk" title="Permanent link">&para;</a></h2>
+<p>The SDK is for programmatic agent definitions — the "Full Code" tier.</p>
+<h3 id="install">Install<a class="headerlink" href="#install" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-42-1" name="__codelineno-42-1" href="#__codelineno-42-1"></a>pip<span class="w"> </span>install<span class="w"> </span>agentbreeder-sdk
+</code></pre></div>
+<h3 id="define-an-agent">Define an agent<a class="headerlink" href="#define-an-agent" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-43-1" name="__codelineno-43-1" href="#__codelineno-43-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">agenthub</span><span class="w"> </span><span class="kn">import</span> <span class="n">Agent</span>
+<a id="__codelineno-43-2" name="__codelineno-43-2" href="#__codelineno-43-2"></a>
+<a id="__codelineno-43-3" name="__codelineno-43-3" href="#__codelineno-43-3"></a><span class="n">agent</span> <span class="o">=</span> <span class="p">(</span>
+<a id="__codelineno-43-4" name="__codelineno-43-4" href="#__codelineno-43-4"></a>    <span class="n">Agent</span><span class="p">(</span><span class="s2">&quot;support-agent&quot;</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="s2">&quot;1.0.0&quot;</span><span class="p">,</span> <span class="n">team</span><span class="o">=</span><span class="s2">&quot;engineering&quot;</span><span class="p">)</span>
+<a id="__codelineno-43-5" name="__codelineno-43-5" href="#__codelineno-43-5"></a>    <span class="o">.</span><span class="n">with_model</span><span class="p">(</span><span class="n">primary</span><span class="o">=</span><span class="s2">&quot;claude-sonnet-4&quot;</span><span class="p">,</span> <span class="n">fallback</span><span class="o">=</span><span class="s2">&quot;gpt-4o&quot;</span><span class="p">)</span>
+<a id="__codelineno-43-6" name="__codelineno-43-6" href="#__codelineno-43-6"></a>    <span class="o">.</span><span class="n">with_tools</span><span class="p">([</span><span class="s2">&quot;tools/zendesk-mcp&quot;</span><span class="p">,</span> <span class="s2">&quot;tools/order-lookup&quot;</span><span class="p">])</span>
+<a id="__codelineno-43-7" name="__codelineno-43-7" href="#__codelineno-43-7"></a>    <span class="o">.</span><span class="n">with_prompt</span><span class="p">(</span><span class="n">system</span><span class="o">=</span><span class="s2">&quot;You are a helpful customer support agent.&quot;</span><span class="p">)</span>
+<a id="__codelineno-43-8" name="__codelineno-43-8" href="#__codelineno-43-8"></a>    <span class="o">.</span><span class="n">with_deploy</span><span class="p">(</span><span class="n">cloud</span><span class="o">=</span><span class="s2">&quot;gcp&quot;</span><span class="p">,</span> <span class="n">min_scale</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">max_scale</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<a id="__codelineno-43-9" name="__codelineno-43-9" href="#__codelineno-43-9"></a><span class="p">)</span>
+</code></pre></div>
+<h3 id="export-to-yaml">Export to YAML<a class="headerlink" href="#export-to-yaml" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-44-1" name="__codelineno-44-1" href="#__codelineno-44-1"></a><span class="c1"># Generate agent.yaml</span>
+<a id="__codelineno-44-2" name="__codelineno-44-2" href="#__codelineno-44-2"></a><span class="n">yaml_str</span> <span class="o">=</span> <span class="n">agent</span><span class="o">.</span><span class="n">to_yaml</span><span class="p">()</span>
+<a id="__codelineno-44-3" name="__codelineno-44-3" href="#__codelineno-44-3"></a><span class="nb">print</span><span class="p">(</span><span class="n">yaml_str</span><span class="p">)</span>
+<a id="__codelineno-44-4" name="__codelineno-44-4" href="#__codelineno-44-4"></a>
+<a id="__codelineno-44-5" name="__codelineno-44-5" href="#__codelineno-44-5"></a><span class="c1"># Save to file</span>
+<a id="__codelineno-44-6" name="__codelineno-44-6" href="#__codelineno-44-6"></a><span class="n">agent</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s2">&quot;agent.yaml&quot;</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="load-from-yaml">Load from YAML<a class="headerlink" href="#load-from-yaml" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-45-1" name="__codelineno-45-1" href="#__codelineno-45-1"></a><span class="n">agent</span> <span class="o">=</span> <span class="n">Agent</span><span class="o">.</span><span class="n">from_yaml_file</span><span class="p">(</span><span class="s2">&quot;agent.yaml&quot;</span><span class="p">)</span>
+<a id="__codelineno-45-2" name="__codelineno-45-2" href="#__codelineno-45-2"></a><span class="nb">print</span><span class="p">(</span><span class="n">agent</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>   <span class="c1"># support-agent</span>
+<a id="__codelineno-45-3" name="__codelineno-45-3" href="#__codelineno-45-3"></a><span class="nb">print</span><span class="p">(</span><span class="n">agent</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">team</span><span class="p">)</span>   <span class="c1"># engineering</span>
+</code></pre></div>
+<h3 id="deploy-programmatically">Deploy programmatically<a class="headerlink" href="#deploy-programmatically" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-46-1" name="__codelineno-46-1" href="#__codelineno-46-1"></a><span class="n">agent</span><span class="o">.</span><span class="n">deploy</span><span class="p">()</span>
+</code></pre></div>
+<hr />
+<h2 id="migrate-from-another-framework">Migrate from Another Framework<a class="headerlink" href="#migrate-from-another-framework" title="Permanent link">&para;</a></h2>
+<p>Already have agents built with another framework? Wrap them in <code>agent.yaml</code> without rewriting your code.</p>
+<h3 id="from-langgraph">From LangGraph<a class="headerlink" href="#from-langgraph" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-47-1" name="__codelineno-47-1" href="#__codelineno-47-1"></a><span class="nt">framework</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">langgraph</span>
+</code></pre></div>
+<p>Your existing <code>agent.py</code> with <code>StateGraph</code> works as-is. See <a href="../migrations/FROM_LANGGRAPH/">full migration guide</a>.</p>
+<h3 id="from-openai-agents">From OpenAI Agents<a class="headerlink" href="#from-openai-agents" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-48-1" name="__codelineno-48-1" href="#__codelineno-48-1"></a><span class="nt">framework</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">openai_agents</span>
+</code></pre></div>
+<p>Your existing <code>Agent</code> + <code>Runner</code> code works as-is. See <a href="../migrations/FROM_OPENAI_AGENTS/">full migration guide</a>.</p>
+<h3 id="from-crewai">From CrewAI<a class="headerlink" href="#from-crewai" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-49-1" name="__codelineno-49-1" href="#__codelineno-49-1"></a><span class="nt">framework</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">crewai</span>
+</code></pre></div>
+<p>See <a href="../migrations/FROM_CREWAI/">full migration guide</a>.</p>
+<h3 id="from-autogen">From AutoGen<a class="headerlink" href="#from-autogen" title="Permanent link">&para;</a></h3>
+<p>See <a href="../migrations/FROM_AUTOGEN/">full migration guide</a>.</p>
+<h3 id="from-custom-code">From custom code<a class="headerlink" href="#from-custom-code" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-50-1" name="__codelineno-50-1" href="#__codelineno-50-1"></a><span class="nt">framework</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">custom</span>
+</code></pre></div>
+<p>See <a href="../migrations/FROM_CUSTOM/">full migration guide</a>.</p>
+<hr />
+<h2 id="eject-from-yaml-to-full-code">Eject from YAML to Full Code<a class="headerlink" href="#eject-from-yaml-to-full-code" title="Permanent link">&para;</a></h2>
+<p>Start with YAML config, eject to SDK code when you need more control.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-51-1" name="__codelineno-51-1" href="#__codelineno-51-1"></a><span class="c1"># Generate Python SDK code from your agent.yaml</span>
+<a id="__codelineno-51-2" name="__codelineno-51-2" href="#__codelineno-51-2"></a>agentbreeder<span class="w"> </span>eject<span class="w"> </span>agent.yaml<span class="w"> </span>--language<span class="w"> </span>python
+<a id="__codelineno-51-3" name="__codelineno-51-3" href="#__codelineno-51-3"></a>
+<a id="__codelineno-51-4" name="__codelineno-51-4" href="#__codelineno-51-4"></a><span class="c1"># Generate TypeScript SDK code</span>
+<a id="__codelineno-51-5" name="__codelineno-51-5" href="#__codelineno-51-5"></a>agentbreeder<span class="w"> </span>eject<span class="w"> </span>agent.yaml<span class="w"> </span>--language<span class="w"> </span>typescript
+</code></pre></div>
+<p>This creates an <code>agent.py</code> (or <code>agent.ts</code>) that uses the SDK and can be customized freely. Your original <code>agent.yaml</code> is preserved.</p>
+<p><strong>Tier mobility:</strong> No Code (visual builder) → Low Code (YAML) → Full Code (SDK). Move freely between tiers — no lock-in at any level.</p>
+<hr />
+<h2 id="use-mcp-servers">Use MCP Servers<a class="headerlink" href="#use-mcp-servers" title="Permanent link">&para;</a></h2>
+<p>AgentBreeder has native MCP (Model Context Protocol) support. MCP servers are injected as sidecar containers alongside your agent.</p>
+<h3 id="reference-mcp-servers-from-the-registry">Reference MCP servers from the registry<a class="headerlink" href="#reference-mcp-servers-from-the-registry" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-52-1" name="__codelineno-52-1" href="#__codelineno-52-1"></a><span class="c1"># agent.yaml</span>
+<a id="__codelineno-52-2" name="__codelineno-52-2" href="#__codelineno-52-2"></a><span class="nt">tools</span><span class="p">:</span>
+<a id="__codelineno-52-3" name="__codelineno-52-3" href="#__codelineno-52-3"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">ref</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tools/zendesk-mcp</span><span class="w">       </span><span class="c1"># MCP server from org registry</span>
+<a id="__codelineno-52-4" name="__codelineno-52-4" href="#__codelineno-52-4"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">ref</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tools/slack-mcp</span>
+</code></pre></div>
+<h3 id="discover-available-mcp-servers">Discover available MCP servers<a class="headerlink" href="#discover-available-mcp-servers" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-53-1" name="__codelineno-53-1" href="#__codelineno-53-1"></a><span class="c1"># Scan for MCP servers on your network</span>
+<a id="__codelineno-53-2" name="__codelineno-53-2" href="#__codelineno-53-2"></a>agentbreeder<span class="w"> </span>scan
+<a id="__codelineno-53-3" name="__codelineno-53-3" href="#__codelineno-53-3"></a>
+<a id="__codelineno-53-4" name="__codelineno-53-4" href="#__codelineno-53-4"></a><span class="c1"># List registered MCP servers</span>
+<a id="__codelineno-53-5" name="__codelineno-53-5" href="#__codelineno-53-5"></a>agentbreeder<span class="w"> </span>list<span class="w"> </span>tools
+</code></pre></div>
+<h3 id="register-a-custom-mcp-server">Register a custom MCP server<a class="headerlink" href="#register-a-custom-mcp-server" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-54-1" name="__codelineno-54-1" href="#__codelineno-54-1"></a>agentbreeder<span class="w"> </span>submit<span class="w"> </span>tools/my-custom-mcp<span class="w"> </span>--type<span class="w"> </span>mcp
+</code></pre></div>
+<hr />
+<h2 id="manage-teams-and-rbac">Manage Teams and RBAC<a class="headerlink" href="#manage-teams-and-rbac" title="Permanent link">&para;</a></h2>
+<p>Every deploy is governed by RBAC. Agents belong to teams, and teams control who can deploy what.</p>
+<h3 id="configure-access-in-agentyaml">Configure access in agent.yaml<a class="headerlink" href="#configure-access-in-agentyaml" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-55-1" name="__codelineno-55-1" href="#__codelineno-55-1"></a><span class="c1"># agent.yaml</span>
+<a id="__codelineno-55-2" name="__codelineno-55-2" href="#__codelineno-55-2"></a><span class="nt">team</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">customer-success</span><span class="w">            </span><span class="c1"># Required — who owns this agent</span>
+<a id="__codelineno-55-3" name="__codelineno-55-3" href="#__codelineno-55-3"></a><span class="nt">owner</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">alice@company.com</span><span class="w">          </span><span class="c1"># Required — individual responsible</span>
+<a id="__codelineno-55-4" name="__codelineno-55-4" href="#__codelineno-55-4"></a>
+<a id="__codelineno-55-5" name="__codelineno-55-5" href="#__codelineno-55-5"></a><span class="nt">access</span><span class="p">:</span>
+<a id="__codelineno-55-6" name="__codelineno-55-6" href="#__codelineno-55-6"></a><span class="w">  </span><span class="nt">visibility</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">team</span><span class="w">                </span><span class="c1"># public | team | private</span>
+<a id="__codelineno-55-7" name="__codelineno-55-7" href="#__codelineno-55-7"></a><span class="w">  </span><span class="nt">allowed_callers</span><span class="p">:</span><span class="w">                </span><span class="c1"># Who can invoke this agent</span>
+<a id="__codelineno-55-8" name="__codelineno-55-8" href="#__codelineno-55-8"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">team:engineering</span>
+<a id="__codelineno-55-9" name="__codelineno-55-9" href="#__codelineno-55-9"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">team:customer-success</span>
+<a id="__codelineno-55-10" name="__codelineno-55-10" href="#__codelineno-55-10"></a><span class="w">  </span><span class="nt">require_approval</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span><span class="w">         </span><span class="c1"># If true, deploys need admin approval</span>
+</code></pre></div>
+<h3 id="what-happens-at-deploy-time">What happens at deploy time<a class="headerlink" href="#what-happens-at-deploy-time" title="Permanent link">&para;</a></h3>
+<ol>
+<li>AgentBreeder checks if the deploying user belongs to the agent's team</li>
+<li>If <code>require_approval: true</code>, the deploy is queued for admin review</li>
+<li>Cost is attributed to the team</li>
+<li>An audit entry is written with who, what, when, where</li>
+</ol>
+<p>There is no way to bypass this. Governance is structural.</p>
+<hr />
+<h2 id="track-costs">Track Costs<a class="headerlink" href="#track-costs" title="Permanent link">&para;</a></h2>
+<p>Every deploy tracks cost attribution automatically.</p>
+<h3 id="view-costs">View costs<a class="headerlink" href="#view-costs" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-56-1" name="__codelineno-56-1" href="#__codelineno-56-1"></a><span class="c1"># Costs by team</span>
+<a id="__codelineno-56-2" name="__codelineno-56-2" href="#__codelineno-56-2"></a>agentbreeder<span class="w"> </span>list<span class="w"> </span>costs<span class="w"> </span>--group-by<span class="w"> </span>team
+<a id="__codelineno-56-3" name="__codelineno-56-3" href="#__codelineno-56-3"></a>
+<a id="__codelineno-56-4" name="__codelineno-56-4" href="#__codelineno-56-4"></a><span class="c1"># Costs by agent</span>
+<a id="__codelineno-56-5" name="__codelineno-56-5" href="#__codelineno-56-5"></a>agentbreeder<span class="w"> </span>list<span class="w"> </span>costs<span class="w"> </span>--group-by<span class="w"> </span>agent
+<a id="__codelineno-56-6" name="__codelineno-56-6" href="#__codelineno-56-6"></a>
+<a id="__codelineno-56-7" name="__codelineno-56-7" href="#__codelineno-56-7"></a><span class="c1"># Costs by model</span>
+<a id="__codelineno-56-8" name="__codelineno-56-8" href="#__codelineno-56-8"></a>agentbreeder<span class="w"> </span>list<span class="w"> </span>costs<span class="w"> </span>--group-by<span class="w"> </span>model
+</code></pre></div>
+<h3 id="how-cost-tracking-works">How cost tracking works<a class="headerlink" href="#how-cost-tracking-works" title="Permanent link">&para;</a></h3>
+<p>Every LLM call made by a deployed agent is logged with:</p>
+<ul>
+<li>Token count (input + output)</li>
+<li>Model used (including fallback)</li>
+<li>Team and agent attribution</li>
+<li>Timestamp</li>
+</ul>
+<p>No configuration needed — this happens automatically for every deployed agent.</p>
+<hr />
+<h2 id="use-the-git-workflow">Use the Git Workflow<a class="headerlink" href="#use-the-git-workflow" title="Permanent link">&para;</a></h2>
+<p>AgentBreeder has a built-in review workflow for changes to agents, tools, and prompts.</p>
+<h3 id="submit-a-change-for-review">Submit a change for review<a class="headerlink" href="#submit-a-change-for-review" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-57-1" name="__codelineno-57-1" href="#__codelineno-57-1"></a><span class="c1"># Create a PR for your agent changes</span>
+<a id="__codelineno-57-2" name="__codelineno-57-2" href="#__codelineno-57-2"></a>agentbreeder<span class="w"> </span>submit<span class="w"> </span>agent.yaml<span class="w"> </span>--title<span class="w"> </span><span class="s2">&quot;Update support agent prompt&quot;</span>
+</code></pre></div>
+<h3 id="review-submissions">Review submissions<a class="headerlink" href="#review-submissions" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-58-1" name="__codelineno-58-1" href="#__codelineno-58-1"></a><span class="c1"># List pending reviews</span>
+<a id="__codelineno-58-2" name="__codelineno-58-2" href="#__codelineno-58-2"></a>agentbreeder<span class="w"> </span>review<span class="w"> </span>list
+<a id="__codelineno-58-3" name="__codelineno-58-3" href="#__codelineno-58-3"></a>
+<a id="__codelineno-58-4" name="__codelineno-58-4" href="#__codelineno-58-4"></a><span class="c1"># Show a specific PR</span>
+<a id="__codelineno-58-5" name="__codelineno-58-5" href="#__codelineno-58-5"></a>agentbreeder<span class="w"> </span>review<span class="w"> </span>show<span class="w"> </span><span class="m">42</span>
+<a id="__codelineno-58-6" name="__codelineno-58-6" href="#__codelineno-58-6"></a>
+<a id="__codelineno-58-7" name="__codelineno-58-7" href="#__codelineno-58-7"></a><span class="c1"># Approve</span>
+<a id="__codelineno-58-8" name="__codelineno-58-8" href="#__codelineno-58-8"></a>agentbreeder<span class="w"> </span>review<span class="w"> </span>approve<span class="w"> </span><span class="m">42</span>
+<a id="__codelineno-58-9" name="__codelineno-58-9" href="#__codelineno-58-9"></a>
+<a id="__codelineno-58-10" name="__codelineno-58-10" href="#__codelineno-58-10"></a><span class="c1"># Reject with feedback</span>
+<a id="__codelineno-58-11" name="__codelineno-58-11" href="#__codelineno-58-11"></a>agentbreeder<span class="w"> </span>review<span class="w"> </span>reject<span class="w"> </span><span class="m">42</span><span class="w"> </span>--comment<span class="w"> </span><span class="s2">&quot;Needs guardrails for PII&quot;</span>
+</code></pre></div>
+<h3 id="publish-approved-changes">Publish approved changes<a class="headerlink" href="#publish-approved-changes" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-59-1" name="__codelineno-59-1" href="#__codelineno-59-1"></a>agentbreeder<span class="w"> </span>publish<span class="w"> </span><span class="m">42</span>
+</code></pre></div>
+<p>This merges the PR, bumps the version, and updates the registry.</p>
+<hr />
+<h2 id="run-evaluations">Run Evaluations<a class="headerlink" href="#run-evaluations" title="Permanent link">&para;</a></h2>
+<p>Test your agents against golden datasets before deploying to production.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-60-1" name="__codelineno-60-1" href="#__codelineno-60-1"></a><span class="c1"># Run evals</span>
+<a id="__codelineno-60-2" name="__codelineno-60-2" href="#__codelineno-60-2"></a>agentbreeder<span class="w"> </span><span class="nb">eval</span><span class="w"> </span>run<span class="w"> </span>--agent<span class="w"> </span>support-agent<span class="w"> </span>--dataset<span class="w"> </span>golden-test-cases.json
+<a id="__codelineno-60-3" name="__codelineno-60-3" href="#__codelineno-60-3"></a>
+<a id="__codelineno-60-4" name="__codelineno-60-4" href="#__codelineno-60-4"></a><span class="c1"># View results</span>
+<a id="__codelineno-60-5" name="__codelineno-60-5" href="#__codelineno-60-5"></a>agentbreeder<span class="w"> </span><span class="nb">eval</span><span class="w"> </span>results<span class="w"> </span>--agent<span class="w"> </span>support-agent
+</code></pre></div>
+<hr />
+<h2 id="use-agent-templates">Use Agent Templates<a class="headerlink" href="#use-agent-templates" title="Permanent link">&para;</a></h2>
+<p>Start from pre-built templates instead of blank scaffolds.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-61-1" name="__codelineno-61-1" href="#__codelineno-61-1"></a><span class="c1"># List available templates</span>
+<a id="__codelineno-61-2" name="__codelineno-61-2" href="#__codelineno-61-2"></a>agentbreeder<span class="w"> </span>template<span class="w"> </span>list
+<a id="__codelineno-61-3" name="__codelineno-61-3" href="#__codelineno-61-3"></a>
+<a id="__codelineno-61-4" name="__codelineno-61-4" href="#__codelineno-61-4"></a><span class="c1"># Create from a template</span>
+<a id="__codelineno-61-5" name="__codelineno-61-5" href="#__codelineno-61-5"></a>agentbreeder<span class="w"> </span>template<span class="w"> </span>use<span class="w"> </span>customer-support<span class="w"> </span>--name<span class="w"> </span>my-support-agent
+<a id="__codelineno-61-6" name="__codelineno-61-6" href="#__codelineno-61-6"></a>
+<a id="__codelineno-61-7" name="__codelineno-61-7" href="#__codelineno-61-7"></a><span class="c1"># Publish your agent as a template</span>
+<a id="__codelineno-61-8" name="__codelineno-61-8" href="#__codelineno-61-8"></a>agentbreeder<span class="w"> </span>template<span class="w"> </span>create<span class="w"> </span>--from<span class="w"> </span>agent.yaml<span class="w"> </span>--name<span class="w"> </span><span class="s2">&quot;My Template&quot;</span>
+</code></pre></div>
+<hr />
+<h2 id="teardown-a-deployed-agent">Teardown a Deployed Agent<a class="headerlink" href="#teardown-a-deployed-agent" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-62-1" name="__codelineno-62-1" href="#__codelineno-62-1"></a><span class="c1"># Remove with confirmation prompt</span>
+<a id="__codelineno-62-2" name="__codelineno-62-2" href="#__codelineno-62-2"></a>agentbreeder<span class="w"> </span>teardown<span class="w"> </span>support-agent
+<a id="__codelineno-62-3" name="__codelineno-62-3" href="#__codelineno-62-3"></a>
+<a id="__codelineno-62-4" name="__codelineno-62-4" href="#__codelineno-62-4"></a><span class="c1"># Force remove (no confirmation)</span>
+<a id="__codelineno-62-5" name="__codelineno-62-5" href="#__codelineno-62-5"></a>agentbreeder<span class="w"> </span>teardown<span class="w"> </span>support-agent<span class="w"> </span>--force
+</code></pre></div>
+<p>This stops the agent, removes the container, and archives the registry entry. The audit log is preserved.</p>
+<hr />
+<h2 id="use-agentbreeder-in-cicd">Use AgentBreeder in CI/CD<a class="headerlink" href="#use-agentbreeder-in-cicd" title="Permanent link">&para;</a></h2>
+<h3 id="github-actions">GitHub Actions<a class="headerlink" href="#github-actions" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-63-1" name="__codelineno-63-1" href="#__codelineno-63-1"></a><span class="c1"># .github/workflows/deploy-agent.yml</span>
+<a id="__codelineno-63-2" name="__codelineno-63-2" href="#__codelineno-63-2"></a><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Deploy Agent</span>
+<a id="__codelineno-63-3" name="__codelineno-63-3" href="#__codelineno-63-3"></a><span class="nt">on</span><span class="p">:</span>
+<a id="__codelineno-63-4" name="__codelineno-63-4" href="#__codelineno-63-4"></a><span class="w">  </span><span class="nt">push</span><span class="p">:</span>
+<a id="__codelineno-63-5" name="__codelineno-63-5" href="#__codelineno-63-5"></a><span class="w">    </span><span class="nt">paths</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&#39;agents/support-agent/**&#39;</span><span class="p p-Indicator">]</span>
+<a id="__codelineno-63-6" name="__codelineno-63-6" href="#__codelineno-63-6"></a>
+<a id="__codelineno-63-7" name="__codelineno-63-7" href="#__codelineno-63-7"></a><span class="nt">jobs</span><span class="p">:</span>
+<a id="__codelineno-63-8" name="__codelineno-63-8" href="#__codelineno-63-8"></a><span class="w">  </span><span class="nt">deploy</span><span class="p">:</span>
+<a id="__codelineno-63-9" name="__codelineno-63-9" href="#__codelineno-63-9"></a><span class="w">    </span><span class="nt">runs-on</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ubuntu-latest</span>
+<a id="__codelineno-63-10" name="__codelineno-63-10" href="#__codelineno-63-10"></a><span class="w">    </span><span class="nt">steps</span><span class="p">:</span>
+<a id="__codelineno-63-11" name="__codelineno-63-11" href="#__codelineno-63-11"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">actions/checkout@v4</span>
+<a id="__codelineno-63-12" name="__codelineno-63-12" href="#__codelineno-63-12"></a>
+<a id="__codelineno-63-13" name="__codelineno-63-13" href="#__codelineno-63-13"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Validate</span>
+<a id="__codelineno-63-14" name="__codelineno-63-14" href="#__codelineno-63-14"></a><span class="w">        </span><span class="nt">run</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span>
+<a id="__codelineno-63-15" name="__codelineno-63-15" href="#__codelineno-63-15"></a><span class="w">          </span><span class="no">docker run --rm -v $PWD:/work -w /work \</span>
+<a id="__codelineno-63-16" name="__codelineno-63-16" href="#__codelineno-63-16"></a><span class="w">            </span><span class="no">rajits/agentbreeder-cli validate agents/support-agent/agent.yaml</span>
+<a id="__codelineno-63-17" name="__codelineno-63-17" href="#__codelineno-63-17"></a>
+<a id="__codelineno-63-18" name="__codelineno-63-18" href="#__codelineno-63-18"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Deploy</span>
+<a id="__codelineno-63-19" name="__codelineno-63-19" href="#__codelineno-63-19"></a><span class="w">        </span><span class="nt">run</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span>
+<a id="__codelineno-63-20" name="__codelineno-63-20" href="#__codelineno-63-20"></a><span class="w">          </span><span class="no">docker run --rm -v $PWD:/work -w /work \</span>
+<a id="__codelineno-63-21" name="__codelineno-63-21" href="#__codelineno-63-21"></a><span class="w">            </span><span class="no">-e GOOGLE_APPLICATION_CREDENTIALS=/work/sa.json \</span>
+<a id="__codelineno-63-22" name="__codelineno-63-22" href="#__codelineno-63-22"></a><span class="w">            </span><span class="no">rajits/agentbreeder-cli deploy agents/support-agent/agent.yaml --target cloud-run</span>
+</code></pre></div>
+<h3 id="gitlab-ci">GitLab CI<a class="headerlink" href="#gitlab-ci" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-64-1" name="__codelineno-64-1" href="#__codelineno-64-1"></a><span class="c1"># .gitlab-ci.yml</span>
+<a id="__codelineno-64-2" name="__codelineno-64-2" href="#__codelineno-64-2"></a><span class="nt">deploy-agent</span><span class="p">:</span>
+<a id="__codelineno-64-3" name="__codelineno-64-3" href="#__codelineno-64-3"></a><span class="w">  </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">rajits/agentbreeder-cli:latest</span>
+<a id="__codelineno-64-4" name="__codelineno-64-4" href="#__codelineno-64-4"></a><span class="w">  </span><span class="nt">script</span><span class="p">:</span>
+<a id="__codelineno-64-5" name="__codelineno-64-5" href="#__codelineno-64-5"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">agentbreeder validate agents/support-agent/agent.yaml</span>
+<a id="__codelineno-64-6" name="__codelineno-64-6" href="#__codelineno-64-6"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">agentbreeder deploy agents/support-agent/agent.yaml --target cloud-run</span>
+</code></pre></div>
+<hr />
+<h2 id="run-the-platform-with-docker-compose">Run the Platform with Docker Compose<a class="headerlink" href="#run-the-platform-with-docker-compose" title="Permanent link">&para;</a></h2>
+<p>Run the full AgentBreeder stack (API + Dashboard + Database) with Docker:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-65-1" name="__codelineno-65-1" href="#__codelineno-65-1"></a><span class="c1"># Using pre-built images</span>
+<a id="__codelineno-65-2" name="__codelineno-65-2" href="#__codelineno-65-2"></a>docker<span class="w"> </span>compose<span class="w"> </span>-f<span class="w"> </span>deploy/docker-compose.yml<span class="w"> </span>up<span class="w"> </span>-d
+</code></pre></div>
+<p>Or create a custom compose file:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-66-1" name="__codelineno-66-1" href="#__codelineno-66-1"></a><span class="c1"># docker-compose.yml</span>
+<a id="__codelineno-66-2" name="__codelineno-66-2" href="#__codelineno-66-2"></a><span class="nt">services</span><span class="p">:</span>
+<a id="__codelineno-66-3" name="__codelineno-66-3" href="#__codelineno-66-3"></a><span class="w">  </span><span class="nt">api</span><span class="p">:</span>
+<a id="__codelineno-66-4" name="__codelineno-66-4" href="#__codelineno-66-4"></a><span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">rajits/agentbreeder-api:latest</span>
+<a id="__codelineno-66-5" name="__codelineno-66-5" href="#__codelineno-66-5"></a><span class="w">    </span><span class="nt">ports</span><span class="p">:</span>
+<a id="__codelineno-66-6" name="__codelineno-66-6" href="#__codelineno-66-6"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;8000:8000&quot;</span>
+<a id="__codelineno-66-7" name="__codelineno-66-7" href="#__codelineno-66-7"></a><span class="w">    </span><span class="nt">environment</span><span class="p">:</span>
+<a id="__codelineno-66-8" name="__codelineno-66-8" href="#__codelineno-66-8"></a><span class="w">      </span><span class="nt">DATABASE_URL</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">postgresql+asyncpg://agentbreeder:agentbreeder@db:5432/agentbreeder</span>
+<a id="__codelineno-66-9" name="__codelineno-66-9" href="#__codelineno-66-9"></a><span class="w">      </span><span class="nt">REDIS_URL</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">redis://redis:6379</span>
+<a id="__codelineno-66-10" name="__codelineno-66-10" href="#__codelineno-66-10"></a><span class="w">      </span><span class="nt">SECRET_KEY</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">change-me-in-production</span>
+<a id="__codelineno-66-11" name="__codelineno-66-11" href="#__codelineno-66-11"></a><span class="w">    </span><span class="nt">depends_on</span><span class="p">:</span>
+<a id="__codelineno-66-12" name="__codelineno-66-12" href="#__codelineno-66-12"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">db</span>
+<a id="__codelineno-66-13" name="__codelineno-66-13" href="#__codelineno-66-13"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">redis</span>
+<a id="__codelineno-66-14" name="__codelineno-66-14" href="#__codelineno-66-14"></a>
+<a id="__codelineno-66-15" name="__codelineno-66-15" href="#__codelineno-66-15"></a><span class="w">  </span><span class="nt">dashboard</span><span class="p">:</span>
+<a id="__codelineno-66-16" name="__codelineno-66-16" href="#__codelineno-66-16"></a><span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">rajits/agentbreeder-dashboard:latest</span>
+<a id="__codelineno-66-17" name="__codelineno-66-17" href="#__codelineno-66-17"></a><span class="w">    </span><span class="nt">ports</span><span class="p">:</span>
+<a id="__codelineno-66-18" name="__codelineno-66-18" href="#__codelineno-66-18"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;3001:3001&quot;</span>
+<a id="__codelineno-66-19" name="__codelineno-66-19" href="#__codelineno-66-19"></a><span class="w">    </span><span class="nt">depends_on</span><span class="p">:</span>
+<a id="__codelineno-66-20" name="__codelineno-66-20" href="#__codelineno-66-20"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">api</span>
+<a id="__codelineno-66-21" name="__codelineno-66-21" href="#__codelineno-66-21"></a>
+<a id="__codelineno-66-22" name="__codelineno-66-22" href="#__codelineno-66-22"></a><span class="w">  </span><span class="nt">db</span><span class="p">:</span>
+<a id="__codelineno-66-23" name="__codelineno-66-23" href="#__codelineno-66-23"></a><span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">postgres:16</span>
+<a id="__codelineno-66-24" name="__codelineno-66-24" href="#__codelineno-66-24"></a><span class="w">    </span><span class="nt">environment</span><span class="p">:</span>
+<a id="__codelineno-66-25" name="__codelineno-66-25" href="#__codelineno-66-25"></a><span class="w">      </span><span class="nt">POSTGRES_USER</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">agentbreeder</span>
+<a id="__codelineno-66-26" name="__codelineno-66-26" href="#__codelineno-66-26"></a><span class="w">      </span><span class="nt">POSTGRES_PASSWORD</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">agentbreeder</span>
+<a id="__codelineno-66-27" name="__codelineno-66-27" href="#__codelineno-66-27"></a><span class="w">      </span><span class="nt">POSTGRES_DB</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">agentbreeder</span>
+<a id="__codelineno-66-28" name="__codelineno-66-28" href="#__codelineno-66-28"></a><span class="w">    </span><span class="nt">volumes</span><span class="p">:</span>
+<a id="__codelineno-66-29" name="__codelineno-66-29" href="#__codelineno-66-29"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pgdata:/var/lib/postgresql/data</span>
+<a id="__codelineno-66-30" name="__codelineno-66-30" href="#__codelineno-66-30"></a>
+<a id="__codelineno-66-31" name="__codelineno-66-31" href="#__codelineno-66-31"></a><span class="w">  </span><span class="nt">redis</span><span class="p">:</span>
+<a id="__codelineno-66-32" name="__codelineno-66-32" href="#__codelineno-66-32"></a><span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">redis:7</span>
+<a id="__codelineno-66-33" name="__codelineno-66-33" href="#__codelineno-66-33"></a>
+<a id="__codelineno-66-34" name="__codelineno-66-34" href="#__codelineno-66-34"></a><span class="nt">volumes</span><span class="p">:</span>
+<a id="__codelineno-66-35" name="__codelineno-66-35" href="#__codelineno-66-35"></a><span class="w">  </span><span class="nt">pgdata</span><span class="p">:</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-67-1" name="__codelineno-67-1" href="#__codelineno-67-1"></a>docker<span class="w"> </span>compose<span class="w"> </span>up<span class="w"> </span>-d
+<a id="__codelineno-67-2" name="__codelineno-67-2" href="#__codelineno-67-2"></a>
+<a id="__codelineno-67-3" name="__codelineno-67-3" href="#__codelineno-67-3"></a><span class="c1"># Dashboard: http://localhost:3001</span>
+<a id="__codelineno-67-4" name="__codelineno-67-4" href="#__codelineno-67-4"></a><span class="c1"># API:       http://localhost:8000</span>
+<a id="__codelineno-67-5" name="__codelineno-67-5" href="#__codelineno-67-5"></a><span class="c1"># API Docs:  http://localhost:8000/docs</span>
+</code></pre></div>
+<hr />
+<h2 id="troubleshooting">Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permanent link">&para;</a></h2>
+<h3 id="agentbreeder-command-not-found">"agentbreeder: command not found"<a class="headerlink" href="#agentbreeder-command-not-found" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-68-1" name="__codelineno-68-1" href="#__codelineno-68-1"></a><span class="c1"># Check if it&#39;s installed</span>
+<a id="__codelineno-68-2" name="__codelineno-68-2" href="#__codelineno-68-2"></a>pip<span class="w"> </span>show<span class="w"> </span>agentbreeder
+<a id="__codelineno-68-3" name="__codelineno-68-3" href="#__codelineno-68-3"></a>
+<a id="__codelineno-68-4" name="__codelineno-68-4" href="#__codelineno-68-4"></a><span class="c1"># If installed but not in PATH, use python -m</span>
+<a id="__codelineno-68-5" name="__codelineno-68-5" href="#__codelineno-68-5"></a>python<span class="w"> </span>-m<span class="w"> </span>cli.main<span class="w"> </span>--help
+<a id="__codelineno-68-6" name="__codelineno-68-6" href="#__codelineno-68-6"></a>
+<a id="__codelineno-68-7" name="__codelineno-68-7" href="#__codelineno-68-7"></a><span class="c1"># Or reinstall</span>
+<a id="__codelineno-68-8" name="__codelineno-68-8" href="#__codelineno-68-8"></a>pip<span class="w"> </span>install<span class="w"> </span>agentbreeder
+</code></pre></div>
+<h3 id="validation-failed-unknown-framework">"Validation failed: unknown framework"<a class="headerlink" href="#validation-failed-unknown-framework" title="Permanent link">&para;</a></h3>
+<p>Supported frameworks: <code>langgraph</code>, <code>openai_agents</code>, <code>claude_sdk</code>, <code>crewai</code>, <code>google_adk</code>, <code>custom</code></p>
+<p>Check your <code>agent.yaml</code>:
+<div class="highlight"><pre><span></span><code><a id="__codelineno-69-1" name="__codelineno-69-1" href="#__codelineno-69-1"></a><span class="nt">framework</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">langgraph</span><span class="w">   </span><span class="c1"># Must be one of the above</span>
+</code></pre></div></p>
+<h3 id="rbac-check-failed">"RBAC check failed"<a class="headerlink" href="#rbac-check-failed" title="Permanent link">&para;</a></h3>
+<p>The deploying user must belong to the team specified in <code>agent.yaml</code>:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-70-1" name="__codelineno-70-1" href="#__codelineno-70-1"></a><span class="nt">team</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">engineering</span><span class="w">   </span><span class="c1"># Your user must be a member of this team</span>
+</code></pre></div>
+<h3 id="container-build-failed">"Container build failed"<a class="headerlink" href="#container-build-failed" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-71-1" name="__codelineno-71-1" href="#__codelineno-71-1"></a><span class="c1"># Check Docker is running</span>
+<a id="__codelineno-71-2" name="__codelineno-71-2" href="#__codelineno-71-2"></a>docker<span class="w"> </span>info
+<a id="__codelineno-71-3" name="__codelineno-71-3" href="#__codelineno-71-3"></a>
+<a id="__codelineno-71-4" name="__codelineno-71-4" href="#__codelineno-71-4"></a><span class="c1"># Try building manually</span>
+<a id="__codelineno-71-5" name="__codelineno-71-5" href="#__codelineno-71-5"></a>docker<span class="w"> </span>build<span class="w"> </span>-t<span class="w"> </span>my-agent<span class="w"> </span>.
+<a id="__codelineno-71-6" name="__codelineno-71-6" href="#__codelineno-71-6"></a>
+<a id="__codelineno-71-7" name="__codelineno-71-7" href="#__codelineno-71-7"></a><span class="c1"># Check the generated Dockerfile</span>
+<a id="__codelineno-71-8" name="__codelineno-71-8" href="#__codelineno-71-8"></a>agentbreeder<span class="w"> </span>deploy<span class="w"> </span>agent.yaml<span class="w"> </span>--target<span class="w"> </span><span class="nb">local</span><span class="w"> </span>--dry-run
+</code></pre></div>
+<h3 id="deploy-rolled-back">"Deploy rolled back"<a class="headerlink" href="#deploy-rolled-back" title="Permanent link">&para;</a></h3>
+<p>The pipeline is atomic — if any of the 8 steps fails, everything rolls back. Check which step failed:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-72-1" name="__codelineno-72-1" href="#__codelineno-72-1"></a>agentbreeder<span class="w"> </span>logs<span class="w"> </span>my-agent
+<a id="__codelineno-72-2" name="__codelineno-72-2" href="#__codelineno-72-2"></a>agentbreeder<span class="w"> </span>status<span class="w"> </span>my-agent
+</code></pre></div>
+<h3 id="dashboard-wont-start">Dashboard won't start<a class="headerlink" href="#dashboard-wont-start" title="Permanent link">&para;</a></h3>
+<p>The dashboard container needs the API to be running:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-73-1" name="__codelineno-73-1" href="#__codelineno-73-1"></a><span class="c1"># Start API first</span>
+<a id="__codelineno-73-2" name="__codelineno-73-2" href="#__codelineno-73-2"></a>docker<span class="w"> </span>run<span class="w"> </span>-d<span class="w"> </span>-p<span class="w"> </span><span class="m">8000</span>:8000<span class="w"> </span>rajits/agentbreeder-api
+<a id="__codelineno-73-3" name="__codelineno-73-3" href="#__codelineno-73-3"></a>
+<a id="__codelineno-73-4" name="__codelineno-73-4" href="#__codelineno-73-4"></a><span class="c1"># Then dashboard</span>
+<a id="__codelineno-73-5" name="__codelineno-73-5" href="#__codelineno-73-5"></a>docker<span class="w"> </span>run<span class="w"> </span>-d<span class="w"> </span>-p<span class="w"> </span><span class="m">3001</span>:3001<span class="w"> </span>rajits/agentbreeder-dashboard
+</code></pre></div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; 2026 AgentBreeder Contributors — Apache License 2.0
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/open-agent-garden/agentbreeder" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.expand", "navigation.top", "navigation.instant", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate", "content.tabs.link", "toc.follow"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>
