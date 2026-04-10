@@ -149,8 +149,8 @@ jobs:
           tags: |
             ghcr.io/${{ github.repository }}/api:${{ steps.version.outputs.version }}
             ghcr.io/${{ github.repository }}/api:latest
-            agentbreeder/api:${{ steps.version.outputs.version }}
-            agentbreeder/api:latest
+            rajits/agentbreeder-api:${{ steps.version.outputs.version }}
+            rajits/agentbreeder-api:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -163,8 +163,8 @@ jobs:
           tags: |
             ghcr.io/${{ github.repository }}/dashboard:${{ steps.version.outputs.version }}
             ghcr.io/${{ github.repository }}/dashboard:latest
-            agentbreeder/dashboard:${{ steps.version.outputs.version }}
-            agentbreeder/dashboard:latest
+            rajits/agentbreeder-dashboard:${{ steps.version.outputs.version }}
+            rajits/agentbreeder-dashboard:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -175,8 +175,8 @@ jobs:
           push: true
           platforms: linux/amd64,linux/arm64
           tags: |
-            agentbreeder/cli:${{ steps.version.outputs.version }}
-            agentbreeder/cli:latest
+            rajits/agentbreeder-cli:${{ steps.version.outputs.version }}
+            rajits/agentbreeder-cli:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
 

@@ -283,16 +283,16 @@ brew install agentbreeder
 
 ```bash
 # API server
-docker pull agentbreeder/api
-docker run -p 8000:8000 agentbreeder/api
+docker pull rajits/agentbreeder-api
+docker run -p 8000:8000 rajits/agentbreeder-api
 
 # Dashboard
-docker pull agentbreeder/dashboard
-docker run -p 3001:3001 agentbreeder/dashboard
+docker pull rajits/agentbreeder-dashboard
+docker run -p 3001:3001 rajits/agentbreeder-dashboard
 
 # CLI (for CI/CD pipelines)
-docker pull agentbreeder/cli
-docker run agentbreeder/cli deploy agent.yaml --target gcp
+docker pull rajits/agentbreeder-cli
+docker run rajits/agentbreeder-cli deploy agent.yaml --target gcp
 ```
 
 ---

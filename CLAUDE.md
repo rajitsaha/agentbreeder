@@ -290,9 +290,9 @@ AgentBreeder is distributed through three channels for maximum reach.
 
 | Image | Purpose | Dockerfile |
 |-------|---------|-----------|
-| `agentbreeder/api` | API server | `Dockerfile` |
-| `agentbreeder/dashboard` | React frontend | `dashboard/Dockerfile` |
-| `agentbreeder/cli` | Lightweight CLI for CI/CD pipelines | `Dockerfile.cli` |
+| `rajits/agentbreeder-api` | API server | `Dockerfile` |
+| `rajits/agentbreeder-dashboard` | React frontend | `dashboard/Dockerfile` |
+| `rajits/agentbreeder-cli` | Lightweight CLI for CI/CD pipelines | `Dockerfile.cli` |
 
 All images tagged with version + `latest`, built for linux/amd64 and linux/arm64.
 
@@ -312,7 +312,7 @@ Plan to migrate to Homebrew core once the project has sufficient traction.
 |--------|-----------|
 | GitHub | `open-agent-garden/agentbreeder` |
 | PyPI | `agentbreeder`, `agentbreeder-sdk` |
-| Docker Hub | `agentbreeder/api`, `agentbreeder/dashboard`, `agentbreeder/cli` |
+| Docker Hub | `rajits/agentbreeder-api`, `rajits/agentbreeder-dashboard`, `rajits/agentbreeder-cli` |
 | Homebrew | `open-agent-garden/homebrew-agentbreeder` |
 
 ### Release Flow
