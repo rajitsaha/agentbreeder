@@ -48,3 +48,4 @@ node_modules/
 dashboard/dist/
 dashboard/.env
 dashboard/test-results/
+site/

@@ -116,10 +116,12 @@ See the [Quickstart guide](quickstart.md) for the full setup.
 
 | Section | Description |
 |---------|-------------|
-| [Overview](OVERVIEW.md) | Executive overview — why it exists, org benefits, M&A use case |
 | [Quickstart](quickstart.md) | Get running in under 10 minutes |
+| [How-To Guide](how-to.md) | 20+ practical recipes for common workflows |
+| [Registry Guide](registry-guide.md) | Create, edit, and register prompts, tools, RAG, memory, and agents |
 | [CLI Reference](cli-reference.md) | All `agentbreeder` commands |
 | [agent.yaml](agent-yaml.md) | Full agent configuration reference |
 | [orchestration.yaml](orchestration-yaml.md) | Multi-agent pipeline configuration |
 | [Orchestration SDK](orchestration-sdk.md) | Python/TypeScript SDK for complex workflows |
+| [Migration Guides](migrations/OVERVIEW.md) | Migrate from LangGraph, CrewAI, OpenAI Agents, AutoGen |
 | [API Stability](api-stability.md) | API versioning and deprecation policy |

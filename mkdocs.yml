@@ -1,14 +1,18 @@
 site_name: AgentBreeder
-site_description: "Define Once. Deploy Anywhere. Govern Automatically."
-site_url: https://open-agent-garden.github.io/agentbreeder
+site_description: "Open-source platform to build, deploy, and govern AI agents. Define Once. Deploy Anywhere. Govern Automatically."
+site_url: https://agent-garden.com
 repo_url: https://github.com/open-agent-garden/agentbreeder
 repo_name: open-agent-garden/agentbreeder
 edit_uri: edit/main/docs/
 
 theme:
   name: material
-  logo: assets/logo.png
-  favicon: assets/favicon.png
+  custom_dir: docs/overrides
+  # logo: assets/logo.png
+  # favicon: assets/favicon.png
+  icon:
+    repo: fontawesome/brands/github
+    logo: material/robot-outline
   palette:
     - media: "(prefers-color-scheme: light)"
       scheme: default
@@ -24,6 +28,9 @@ theme:
       toggle:
         icon: material/brightness-4
         name: Switch to light mode
+  font:
+    text: Inter
+    code: JetBrains Mono
   features:
     - navigation.tabs
     - navigation.tabs.sticky
@@ -31,15 +38,23 @@ theme:
     - navigation.expand
     - navigation.top
     - navigation.instant
+    - navigation.instant.prefetch
+    - navigation.path
+    - navigation.footer
     - search.suggest
     - search.highlight
+    - search.share
     - content.code.copy
     - content.code.annotate
     - content.tabs.link
+    - content.action.edit
+    - content.action.view
     - toc.follow
+    - announce.dismiss
 
 plugins:
   - search
+  - social
 
 markdown_extensions:
   - admonition
@@ -53,16 +68,26 @@ markdown_extensions:
       alternate_style: true
   - pymdownx.highlight:
       anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
   - pymdownx.inlinehilite
   - pymdownx.snippets
   - pymdownx.emoji:
       emoji_index: !!python/name:material.extensions.emoji.twemoji
       emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.keys
+  - pymdownx.mark
+  - pymdownx.tasklist:
+      custom_checkbox: true
   - attr_list
   - md_in_html
   - tables
+  - def_list
+  - footnotes
+  - abbr
   - toc:
       permalink: true
+      toc_depth: 3
 
 nav:
   - Home: index.md
@@ -79,12 +104,49 @@ nav:
       - Full Code Orchestration SDK: orchestration-sdk.md
   - API:
       - API Stability & Versioning: api-stability.md
+  - Migrations:
+      - Overview: migrations/OVERVIEW.md
+      - From LangGraph: migrations/FROM_LANGGRAPH.md
+      - From CrewAI: migrations/FROM_CREWAI.md
+      - From OpenAI Agents: migrations/FROM_OPENAI_AGENTS.md
+      - From AutoGen: migrations/FROM_AUTOGEN.md
+      - From Custom: migrations/FROM_CUSTOM.md
 
 extra:
   social:
     - icon: fontawesome/brands/github
       link: https://github.com/open-agent-garden/agentbreeder
+      name: AgentBreeder on GitHub
+    - icon: fontawesome/brands/python
+      link: https://pypi.org/project/agentbreeder/
+      name: AgentBreeder on PyPI
+    - icon: fontawesome/brands/docker
+      link: https://hub.docker.com/u/rajits
+      name: AgentBreeder on Docker Hub
+    - icon: fontawesome/brands/linkedin
+      link: https://www.linkedin.com/in/rajsaha/
+      name: Rajit Saha on LinkedIn
+  generator: false
   version:
     provider: mike
+    default: latest
+  analytics:
+    provider: google
+    property: G-XXXXXXXXXX
+    feedback:
+      title: Was this page helpful?
+      ratings:
+        - icon: material/emoticon-happy-outline
+          name: This page was helpful
+          data: 1
+          note: Thanks for your feedback!
+        - icon: material/emoticon-sad-outline
+          name: This page could be improved
+          data: 0
+          note: >-
+            Thanks for your feedback! Help us improve by
+            <a href="https://github.com/open-agent-garden/agentbreeder/issues/new?title=[Docs]+{title}&labels=documentation" target="_blank" rel="noopener">opening an issue</a>.
 
-copyright: "Copyright &copy; 2026 AgentBreeder Contributors — Apache License 2.0"
+copyright: >-
+  Copyright &copy; 2026 <a href="https://www.linkedin.com/in/rajsaha/" target="_blank">Rajit Saha</a>
+  &amp; AgentBreeder Contributors — Apache License 2.0
