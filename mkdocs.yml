@@ -69,6 +69,7 @@ nav:
   - Getting Started:
       - Quickstart: quickstart.md
       - How-To Guide: how-to.md
+      - Registry Guide: registry-guide.md
       - Local Development: local-development.md
   - Reference:
       - CLI Reference: cli-reference.md
