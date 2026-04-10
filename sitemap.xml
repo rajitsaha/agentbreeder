@@ -2,78 +2,94 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://open-agentbreeder.github.io/agentbreeder/</loc>
-         <lastmod>2026-03-21</lastmod>
+         <lastmod>2026-04-10</lastmod>
     </url>
     <url>
          <loc>https://open-agentbreeder.github.io/agentbreeder/ANALYSIS/</loc>
-         <lastmod>2026-03-21</lastmod>
+         <lastmod>2026-04-10</lastmod>
     </url>
     <url>
          <loc>https://open-agentbreeder.github.io/agentbreeder/GITHUB_ISSUES/</loc>
-         <lastmod>2026-03-21</lastmod>
+         <lastmod>2026-04-10</lastmod>
+    </url>
+    <url>
+         <loc>https://open-agentbreeder.github.io/agentbreeder/GTM_STRATEGY/</loc>
+         <lastmod>2026-04-10</lastmod>
     </url>
     <url>
          <loc>https://open-agentbreeder.github.io/agentbreeder/MARKET_RESEARCH/</loc>
-         <lastmod>2026-03-21</lastmod>
+         <lastmod>2026-04-10</lastmod>
     </url>
     <url>
          <loc>https://open-agentbreeder.github.io/agentbreeder/OSS_VC_PLAYBOOK/</loc>
-         <lastmod>2026-03-21</lastmod>
+         <lastmod>2026-04-10</lastmod>
+    </url>
+    <url>
+         <loc>https://open-agentbreeder.github.io/agentbreeder/OVERVIEW/</loc>
+         <lastmod>2026-04-10</lastmod>
     </url>
     <url>
          <loc>https://open-agentbreeder.github.io/agentbreeder/PITCH_DECK/</loc>
-         <lastmod>2026-03-21</lastmod>
+         <lastmod>2026-04-10</lastmod>
     </url>
     <url>
          <loc>https://open-agentbreeder.github.io/agentbreeder/agent-yaml/</loc>
-         <lastmod>2026-03-21</lastmod>
+         <lastmod>2026-04-10</lastmod>
     </url>
     <url>
          <loc>https://open-agentbreeder.github.io/agentbreeder/api-stability/</loc>
-         <lastmod>2026-03-21</lastmod>
+         <lastmod>2026-04-10</lastmod>
     </url>
     <url>
          <loc>https://open-agentbreeder.github.io/agentbreeder/cli-reference/</loc>
-         <lastmod>2026-03-21</lastmod>
+         <lastmod>2026-04-10</lastmod>
     </url>
     <url>
          <loc>https://open-agentbreeder.github.io/agentbreeder/local-development/</loc>
-         <lastmod>2026-03-21</lastmod>
+         <lastmod>2026-04-10</lastmod>
     </url>
     <url>
          <loc>https://open-agentbreeder.github.io/agentbreeder/orchestration-sdk/</loc>
-         <lastmod>2026-03-21</lastmod>
+         <lastmod>2026-04-10</lastmod>
     </url>
     <url>
          <loc>https://open-agentbreeder.github.io/agentbreeder/orchestration-yaml/</loc>
-         <lastmod>2026-03-21</lastmod>
+         <lastmod>2026-04-10</lastmod>
     </url>
     <url>
          <loc>https://open-agentbreeder.github.io/agentbreeder/quickstart/</loc>
-         <lastmod>2026-03-21</lastmod>
+         <lastmod>2026-04-10</lastmod>
+    </url>
+    <url>
+         <loc>https://open-agentbreeder.github.io/agentbreeder/content/linkedin-article-agent-revenue-stack/</loc>
+         <lastmod>2026-04-10</lastmod>
+    </url>
+    <url>
+         <loc>https://open-agentbreeder.github.io/agentbreeder/content/linkedin-post-agentbreeder-launch/</loc>
+         <lastmod>2026-04-10</lastmod>
     </url>
     <url>
          <loc>https://open-agentbreeder.github.io/agentbreeder/migrations/FROM_AUTOGEN/</loc>
-         <lastmod>2026-03-21</lastmod>
+         <lastmod>2026-04-10</lastmod>
     </url>
     <url>
          <loc>https://open-agentbreeder.github.io/agentbreeder/migrations/FROM_CREWAI/</loc>
-         <lastmod>2026-03-21</lastmod>
+         <lastmod>2026-04-10</lastmod>
     </url>
     <url>
          <loc>https://open-agentbreeder.github.io/agentbreeder/migrations/FROM_CUSTOM/</loc>
-         <lastmod>2026-03-21</lastmod>
+         <lastmod>2026-04-10</lastmod>
     </url>
     <url>
          <loc>https://open-agentbreeder.github.io/agentbreeder/migrations/FROM_LANGGRAPH/</loc>
-         <lastmod>2026-03-21</lastmod>
+         <lastmod>2026-04-10</lastmod>
     </url>
     <url>
          <loc>https://open-agentbreeder.github.io/agentbreeder/migrations/FROM_OPENAI_AGENTS/</loc>
-         <lastmod>2026-03-21</lastmod>
+         <lastmod>2026-04-10</lastmod>
     </url>
     <url>
          <loc>https://open-agentbreeder.github.io/agentbreeder/migrations/OVERVIEW/</loc>
-         <lastmod>2026-03-21</lastmod>
+         <lastmod>2026-04-10</lastmod>
     </url>
 </urlset>

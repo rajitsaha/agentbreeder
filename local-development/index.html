@@ -1622,7 +1622,7 @@
 </table>
 <h2 id="setup">Setup<a class="headerlink" href="#setup" title="Permanent link">&para;</a></h2>
 <h3 id="1-clone-and-install">1. Clone and install<a class="headerlink" href="#1-clone-and-install" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/open-agentbreeder/agentbreeder.git
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/open-agent-garden/agentbreeder.git
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="nb">cd</span><span class="w"> </span>agentbreeder
 <a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
 <a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="c1"># Python environment</span>
@@ -1693,7 +1693,7 @@
 </table>
 <p>Default credentials for local dev:
 - <strong>DB:</strong> <code>agentbreeder</code> / <code>agentbreeder</code> / database <code>agentbreeder</code>
-- <strong>App login:</strong> <code>admin@agentbreeder.local</code> / <code>plant</code></p>
+- <strong>App login:</strong> <code>admin@agentbreeder.local</code> / <code>changeme</code></p>
 <h2 id="running-tests">Running Tests<a class="headerlink" href="#running-tests" title="Permanent link">&para;</a></h2>
 <h3 id="python-unit-tests">Python unit tests<a class="headerlink" href="#python-unit-tests" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>pytest<span class="w"> </span>tests/unit/<span class="w">                        </span><span class="c1"># All unit tests</span>
@@ -1938,7 +1938,7 @@
 <a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="nv">DATABASE_URL</span><span class="o">=</span>postgresql+asyncpg://agentbreeder:agentbreeder@localhost:5432/agentbreeder
 <a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a><span class="nv">REDIS_URL</span><span class="o">=</span>redis://localhost:6379
 <a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a><span class="nv">SECRET_KEY</span><span class="o">=</span>dev-secret-key
-<a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a><span class="nv">GARDEN_ENV</span><span class="o">=</span>development
+<a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a><span class="nv">AGENTBREEDER_ENV</span><span class="o">=</span>development
 <a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a>
 <a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a><span class="c1"># Auth</span>
 <a id="__codelineno-15-8" name="__codelineno-15-8" href="#__codelineno-15-8"></a><span class="nv">JWT_SECRET_KEY</span><span class="o">=</span>dev-jwt-secret

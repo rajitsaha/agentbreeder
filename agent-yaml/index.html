@@ -1440,9 +1440,9 @@
 <a id="__codelineno-1-48" name="__codelineno-1-48" href="#__codelineno-1-48"></a><span class="w">    </span><span class="nt">transport</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sse</span>
 <a id="__codelineno-1-49" name="__codelineno-1-49" href="#__codelineno-1-49"></a>
 <a id="__codelineno-1-50" name="__codelineno-1-50" href="#__codelineno-1-50"></a><span class="nt">deploy</span><span class="p">:</span>
-<a id="__codelineno-1-51" name="__codelineno-1-51" href="#__codelineno-1-51"></a><span class="w">  </span><span class="nt">cloud</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aws</span>
-<a id="__codelineno-1-52" name="__codelineno-1-52" href="#__codelineno-1-52"></a><span class="w">  </span><span class="nt">runtime</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ecs-fargate</span>
-<a id="__codelineno-1-53" name="__codelineno-1-53" href="#__codelineno-1-53"></a><span class="w">  </span><span class="nt">region</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">us-east-1</span>
+<a id="__codelineno-1-51" name="__codelineno-1-51" href="#__codelineno-1-51"></a><span class="w">  </span><span class="nt">cloud</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gcp</span><span class="w">             </span><span class="c1"># local | gcp (AWS and Kubernetes support planned)</span>
+<a id="__codelineno-1-52" name="__codelineno-1-52" href="#__codelineno-1-52"></a><span class="w">  </span><span class="nt">target</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">cloud-run</span>
+<a id="__codelineno-1-53" name="__codelineno-1-53" href="#__codelineno-1-53"></a><span class="w">  </span><span class="nt">region</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">us-central1</span>
 <a id="__codelineno-1-54" name="__codelineno-1-54" href="#__codelineno-1-54"></a><span class="w">  </span><span class="nt">scaling</span><span class="p">:</span>
 <a id="__codelineno-1-55" name="__codelineno-1-55" href="#__codelineno-1-55"></a><span class="w">    </span><span class="nt">min</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
 <a id="__codelineno-1-56" name="__codelineno-1-56" href="#__codelineno-1-56"></a><span class="w">    </span><span class="nt">max</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10</span>
@@ -1534,32 +1534,39 @@
 <tr>
 <th>Value</th>
 <th>Framework</th>
+<th>Runtime</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td><code>langgraph</code></td>
-<td>LangGraph (v0.1+)</td>
-</tr>
-<tr>
-<td><code>crewai</code></td>
-<td>CrewAI (v0.2)</td>
-</tr>
-<tr>
-<td><code>claude_sdk</code></td>
-<td>Anthropic Claude SDK (v0.2)</td>
+<td>LangGraph</td>
+<td>✅ Implemented</td>
 </tr>
 <tr>
 <td><code>openai_agents</code></td>
-<td>OpenAI Agents SDK (v0.2)</td>
+<td>OpenAI Agents SDK</td>
+<td>✅ Implemented</td>
+</tr>
+<tr>
+<td><code>crewai</code></td>
+<td>CrewAI</td>
+<td>🔲 Planned</td>
+</tr>
+<tr>
+<td><code>claude_sdk</code></td>
+<td>Anthropic Claude SDK</td>
+<td>🔲 Planned</td>
 </tr>
 <tr>
 <td><code>google_adk</code></td>
-<td>Google Agent Development Kit (v0.2)</td>
+<td>Google Agent Development Kit</td>
+<td>🔲 Planned</td>
 </tr>
 <tr>
 <td><code>custom</code></td>
-<td>Any Python/TS agent (v0.2)</td>
+<td>Any Python/TS agent</td>
+<td>🔲 Planned</td>
 </tr>
 </tbody>
 </table>

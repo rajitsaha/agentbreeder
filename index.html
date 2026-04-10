@@ -1118,7 +1118,7 @@
 <a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="nt">model</span><span class="p">:</span>
 <a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">  </span><span class="nt">primary</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">claude-sonnet-4</span>
 <a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="nt">deploy</span><span class="p">:</span>
-<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">  </span><span class="nt">cloud</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aws</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">  </span><span class="nt">cloud</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">local</span><span class="w">          </span><span class="c1"># or: gcp</span>
 </code></pre></div>
 <p><strong>Who:</strong> ML engineers, DevOps, developers comfortable with config files.</p>
 </div>
@@ -1141,8 +1141,8 @@
 <hr />
 <h2 id="key-features">Key Features<a class="headerlink" href="#key-features" title="Permanent link">&para;</a></h2>
 <ul>
-<li><strong>Framework-agnostic</strong> — LangGraph, CrewAI, Claude SDK, OpenAI Agents, Google ADK, Custom</li>
-<li><strong>Multi-cloud first</strong> — AWS ECS/Fargate/EKS and GCP Cloud Run as equal first-class targets</li>
+<li><strong>Framework-agnostic</strong> — LangGraph and OpenAI Agents implemented; CrewAI, Claude SDK, Google ADK planned</li>
+<li><strong>Multi-cloud</strong> — GCP Cloud Run and local Docker Compose implemented; AWS ECS and Kubernetes planned</li>
 <li><strong>Governance as a side effect</strong> — RBAC, cost attribution, audit trail, and registry registration happen automatically on every <code>agentbreeder deploy</code></li>
 <li><strong>Shared org registry</strong> — agents, prompts, tools/MCP servers, models, knowledge bases all in one place</li>
 <li><strong>Tier mobility</strong> — start No Code, eject to YAML, eject to SDK — no lock-in at any level</li>
@@ -1172,33 +1172,40 @@
 <thead>
 <tr>
 <th>Layer</th>
-<th>Options</th>
+<th>Implemented</th>
+<th>Planned</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td>Frameworks</td>
-<td>LangGraph, CrewAI, Claude SDK, OpenAI Agents, Google ADK, Custom</td>
+<td>LangGraph, OpenAI Agents SDK</td>
+<td>CrewAI, Claude SDK, Google ADK, Custom</td>
 </tr>
 <tr>
 <td>Cloud targets</td>
-<td>AWS ECS Fargate, GCP Cloud Run, Kubernetes, Local Docker</td>
+<td>GCP Cloud Run, Local Docker Compose</td>
+<td>AWS ECS Fargate, Kubernetes</td>
 </tr>
 <tr>
 <td>LLM providers</td>
 <td>Anthropic, OpenAI, Google, Ollama, LiteLLM, OpenRouter</td>
+<td>—</td>
 </tr>
 <tr>
-<td>Shared state backends</td>
-<td>Redis, PostgreSQL, In-Memory</td>
+<td>Secrets backends</td>
+<td>env, AWS Secrets Manager, GCP Secret Manager, HashiCorp Vault</td>
+<td>—</td>
 </tr>
 <tr>
 <td>Auth</td>
 <td>JWT + OAuth2, RBAC</td>
+<td>SSO / SAML</td>
 </tr>
 <tr>
 <td>Observability</td>
 <td>OpenTelemetry, distributed tracing, cost monitoring</td>
+<td>—</td>
 </tr>
 </tbody>
 </table>
@@ -1212,6 +1219,10 @@
 </tr>
 </thead>
 <tbody>
+<tr>
+<td><a href="OVERVIEW/">Overview</a></td>
+<td>Executive overview — why it exists, org benefits, M&amp;A use case</td>
+</tr>
 <tr>
 <td><a href="quickstart/">Quickstart</a></td>
 <td>Get running in under 10 minutes</td>

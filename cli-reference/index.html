@@ -1832,7 +1832,7 @@
 <td><code>--target</code>, <code>-t</code></td>
 <td>No</td>
 <td><code>local</code></td>
-<td>Deploy target: <code>local</code>, <code>kubernetes</code>, <code>aws</code>, <code>gcp</code></td>
+<td>Deploy target: <code>local</code>, <code>cloud-run</code></td>
 </tr>
 </tbody>
 </table>
@@ -1847,10 +1847,10 @@
 8. Return endpoint URL</p>
 <p>If any step fails, the entire deploy rolls back.</p>
 <p><strong>Examples:</strong>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>agentbreeder<span class="w"> </span>deploy<span class="w"> </span>./agent.yaml<span class="w">                    </span><span class="c1"># Deploy locally</span>
-<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>agentbreeder<span class="w"> </span>deploy<span class="w"> </span>./agent.yaml<span class="w"> </span>--target<span class="w"> </span><span class="nb">local</span><span class="w">     </span><span class="c1"># Same as above</span>
-<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>agentbreeder<span class="w"> </span>deploy<span class="w"> </span>./agent.yaml<span class="w"> </span>-t<span class="w"> </span>kubernetes<span class="w">      </span><span class="c1"># Deploy to K8s</span>
-<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>agentbreeder<span class="w"> </span>deploy<span class="w"> </span>./agent.yaml<span class="w"> </span>--json<span class="w">             </span><span class="c1"># JSON output</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>agentbreeder<span class="w"> </span>deploy<span class="w"> </span>./agent.yaml<span class="w">                          </span><span class="c1"># Deploy locally</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>agentbreeder<span class="w"> </span>deploy<span class="w"> </span>./agent.yaml<span class="w"> </span>--target<span class="w"> </span><span class="nb">local</span><span class="w">           </span><span class="c1"># Same as above</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>agentbreeder<span class="w"> </span>deploy<span class="w"> </span>./agent.yaml<span class="w"> </span>--target<span class="w"> </span>cloud-run<span class="w">       </span><span class="c1"># Deploy to GCP Cloud Run</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>agentbreeder<span class="w"> </span>deploy<span class="w"> </span>./agent.yaml<span class="w"> </span>--json<span class="w">                   </span><span class="c1"># JSON output</span>
 </code></pre></div></p>
 <hr />
 <h3 id="agentbreeder-validate"><code>agentbreeder validate</code><a class="headerlink" href="#agentbreeder-validate" title="Permanent link">&para;</a></h3>
