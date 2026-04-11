@@ -33,7 +33,7 @@ CURRENT_API_VERSION = "v1"
 LATEST_API_VERSION = "v1"  # bump to "v2" when v2 is promoted to stable
 
 
-class APIVersionMiddleware(BaseHTTPMiddleware):  # type: ignore[misc]
+class APIVersionMiddleware(BaseHTTPMiddleware):
     """Middleware that injects API version headers on every response.
 
     Headers added:
