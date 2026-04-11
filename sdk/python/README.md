@@ -1,6 +1,6 @@
 # agentbreeder-sdk
 
-The official Python SDK for [AgentBreeder](https://github.com/open-agent-garden/agentbreeder) — define, validate, and deploy AI agents programmatically.
+The official Python SDK for [AgentBreeder](https://github.com/rajitsaha/agentbreeder) — define, validate, and deploy AI agents programmatically.
 
 ## Installation
 
@@ -76,6 +76,6 @@ agentbreeder eject agent.yaml --output agent_sdk.py
 
 ## Links
 
-- [Documentation](https://open-agent-garden.github.io/agentbreeder)
-- [GitHub](https://github.com/open-agent-garden/agentbreeder)
-- [agent.yaml reference](https://open-agent-garden.github.io/agentbreeder/agent-yaml)
+- [Documentation](https://agent-garden.com)
+- [GitHub](https://github.com/rajitsaha/agentbreeder)
+- [agent.yaml reference](https://agent-garden.com/agent-yaml)

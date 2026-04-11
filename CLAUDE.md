@@ -299,21 +299,21 @@ All images tagged with version + `latest`, built for linux/amd64 and linux/arm64
 ### Homebrew Tap
 
 ```bash
-brew tap open-agent-garden/agentbreeder
+brew tap rajitsaha/agentbreeder
 brew install agentbreeder
 ```
 
-Tap repo: `open-agent-garden/homebrew-agentbreeder`. Auto-updated on each release.
+Tap repo: `rajitsaha/homebrew-agentbreeder`. Auto-updated on each release.
 Plan to migrate to Homebrew core once the project has sufficient traction.
 
 ### Namespace Alignment
 
 | System | Namespace |
 |--------|-----------|
-| GitHub | `open-agent-garden/agentbreeder` |
+| GitHub | `rajitsaha/agentbreeder` |
 | PyPI | `agentbreeder`, `agentbreeder-sdk` |
 | Docker Hub | `rajits/agentbreeder-api`, `rajits/agentbreeder-dashboard`, `rajits/agentbreeder-cli` |
-| Homebrew | `open-agent-garden/homebrew-agentbreeder` |
+| Homebrew | `rajitsaha/homebrew-agentbreeder` |
 
 ### Release Flow
 

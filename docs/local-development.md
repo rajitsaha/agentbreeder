@@ -16,7 +16,7 @@ This guide covers setting up AgentBreeder for local development and contributing
 ### 1. Clone and install
 
 ```bash
-git clone https://github.com/open-agent-garden/agentbreeder.git
+git clone https://github.com/rajitsaha/agentbreeder.git
 cd agentbreeder
 
 # Python environment

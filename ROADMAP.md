@@ -1871,18 +1871,18 @@ Each example is a complete, working agent with `agent.yaml`, source code, `requi
 
 | SDK | Example | Runtime Builder | Priority | Issue | Notes |
 |-----|---------|----------------|----------|-------|-------|
-| **CrewAI** | `examples/crewai-agent/` | `engine/runtimes/crewai.py` | **P1** | [#35](https://github.com/open-agent-garden/agentbreeder/issues/35) | 25k+ stars; sequential + hierarchical crews |
-| **Claude SDK** | `examples/claude-sdk-agent/` | `engine/runtimes/claude_sdk.py` | **P1** | [#36](https://github.com/open-agent-garden/agentbreeder/issues/36) | Anthropic-native; streaming + tool use required |
-| **Google ADK** | `examples/google-adk-agent/` | `engine/runtimes/google_adk.py` | **P1** | [#37](https://github.com/open-agent-garden/agentbreeder/issues/37) | Gemini-native; natural pairing with GCP Cloud Run |
-| **Custom (BYOF)** | via init scaffold | `engine/runtimes/custom.py` | **P2** | [#38](https://github.com/open-agent-garden/agentbreeder/issues/38) | BYO Dockerfile or thin wrapper; bridge for unsupported frameworks |
+| **CrewAI** | `examples/crewai-agent/` | `engine/runtimes/crewai.py` | **P1** | [#35](https://github.com/rajitsaha/agentbreeder/issues/35) | 25k+ stars; sequential + hierarchical crews |
+| **Claude SDK** | `examples/claude-sdk-agent/` | `engine/runtimes/claude_sdk.py` | **P1** | [#36](https://github.com/rajitsaha/agentbreeder/issues/36) | Anthropic-native; streaming + tool use required |
+| **Google ADK** | `examples/google-adk-agent/` | `engine/runtimes/google_adk.py` | **P1** | [#37](https://github.com/rajitsaha/agentbreeder/issues/37) | Gemini-native; natural pairing with GCP Cloud Run |
+| **Custom (BYOF)** | via init scaffold | `engine/runtimes/custom.py` | **P2** | [#38](https://github.com/rajitsaha/agentbreeder/issues/38) | BYO Dockerfile or thin wrapper; bridge for unsupported frameworks |
 
 #### Feature Depth Gaps — Existing Runtimes (v1.6 → M34)
 
 | Gap | Runtime | Priority | Issue | Notes |
 |-----|---------|----------|-------|-------|
-| Subgraphs, HITL breakpoints, persistence checkpointers | LangGraph | **P1** | [#39](https://github.com/open-agent-garden/agentbreeder/issues/39) | Core LangGraph production features; `PostgresSaver` for stateful agents |
-| Agent handoffs, nested agent patterns | OpenAI Agents | **P1** | [#40](https://github.com/open-agent-garden/agentbreeder/issues/40) | Primary value prop of OAI Agents SDK; `HandoffOutputItem` handling |
-| Per-framework OTel tracing (LLM calls, tool use, agent steps) | All runtimes | **P1** | [#41](https://github.com/open-agent-garden/agentbreeder/issues/41) | Required for AgentOps dashboard and cost attribution to work at runtime |
+| Subgraphs, HITL breakpoints, persistence checkpointers | LangGraph | **P1** | [#39](https://github.com/rajitsaha/agentbreeder/issues/39) | Core LangGraph production features; `PostgresSaver` for stateful agents |
+| Agent handoffs, nested agent patterns | OpenAI Agents | **P1** | [#40](https://github.com/rajitsaha/agentbreeder/issues/40) | Primary value prop of OAI Agents SDK; `HandoffOutputItem` handling |
+| Per-framework OTel tracing (LLM calls, tool use, agent steps) | All runtimes | **P1** | [#41](https://github.com/rajitsaha/agentbreeder/issues/41) | Required for AgentOps dashboard and cost attribution to work at runtime |
 
 #### Later SDKs (post v1.6)
 
@@ -1907,13 +1907,13 @@ Each example is a complete, working agent with `agent.yaml`, source code, `requi
 - [x] Integration test per runtime: build container, start, verify `/health` responds
 
 #### 13.3 — Additional SDKs (M25 — v1.3 remaining work)
-- [ ] `engine/runtimes/crewai.py` — CrewAI runtime builder ([#35](https://github.com/open-agent-garden/agentbreeder/issues/35))
+- [ ] `engine/runtimes/crewai.py` — CrewAI runtime builder ([#35](https://github.com/rajitsaha/agentbreeder/issues/35))
 - [ ] `engine/runtimes/templates/crewai_server.py` — CrewAI FastAPI server template
-- [ ] `engine/runtimes/claude_sdk.py` — Claude SDK runtime builder ([#36](https://github.com/open-agent-garden/agentbreeder/issues/36))
+- [ ] `engine/runtimes/claude_sdk.py` — Claude SDK runtime builder ([#36](https://github.com/rajitsaha/agentbreeder/issues/36))
 - [ ] `engine/runtimes/templates/claude_sdk_server.py` — Claude SDK server template (streaming + tool use)
-- [ ] `engine/runtimes/google_adk.py` — Google ADK runtime builder ([#37](https://github.com/open-agent-garden/agentbreeder/issues/37))
+- [ ] `engine/runtimes/google_adk.py` — Google ADK runtime builder ([#37](https://github.com/rajitsaha/agentbreeder/issues/37))
 - [ ] `engine/runtimes/templates/google_adk_server.py` — Google ADK server template (ADC auth)
-- [ ] `engine/runtimes/custom.py` — Custom (BYOF) runtime builder ([#38](https://github.com/open-agent-garden/agentbreeder/issues/38))
+- [ ] `engine/runtimes/custom.py` — Custom (BYOF) runtime builder ([#38](https://github.com/rajitsaha/agentbreeder/issues/38))
 - [ ] `engine/runtimes/templates/custom_server.py` — thin wrapper for BYO agents
 - [ ] `examples/crewai-agent/` — CrewAI multi-agent crew example
 - [ ] `examples/claude-sdk-agent/` — Anthropic Claude SDK example (tool use + streaming)
@@ -2624,18 +2624,18 @@ Three production Docker images:
 ### M32.5 — Homebrew Tap
 
 Homebrew distribution for macOS/Linux:
-- [ ] Create repo `open-agent-garden/homebrew-agentbreeder` (manual step)
+- [ ] Create repo `rajitsaha/homebrew-agentbreeder` (manual step)
 - [x] Write `Formula/agentbreeder.rb` (Python virtualenv formula)
 - [x] Create Homebrew update workflow in `release.yml`
-- [ ] Test `brew tap open-agent-garden/agentbreeder && brew install agentbreeder`
+- [ ] Test `brew tap rajitsaha/agentbreeder && brew install agentbreeder`
 - [ ] Document migration path to Homebrew core
 - [ ] Add `HOMEBREW_TAP_TOKEN` to GitHub Secrets (manual step)
 
 ### M32.6 — Namespace & URL Cleanup
 
 Align all public-facing names:
-- [x] Fix `pyproject.toml` Repository URL → `https://github.com/open-agent-garden/agentbreeder`
-- [x] Fix `pyproject.toml` Documentation URL → `https://open-agent-garden.github.io/agentbreeder`
+- [x] Fix `pyproject.toml` Repository URL → `https://github.com/rajitsaha/agentbreeder`
+- [x] Fix `pyproject.toml` Documentation URL → `https://agent-garden.com`
 - [ ] Register `agentbreeder` and `agentbreeder-sdk` names on PyPI (manual step)
 - [ ] Register `agentbreeder` org on Docker Hub (manual step)
 - [x] Update README install instructions
@@ -2647,7 +2647,7 @@ Align all public-facing names:
 **Release:** v1.5 (Multi-Cloud)
 **Theme:** Make AgentBreeder genuinely multi-cloud by implementing AWS ECS Fargate, Azure Container Apps, and general Kubernetes deployers.
 **Status:** Planned
-**GitHub Issue:** [#34](https://github.com/open-agent-garden/agentbreeder/issues/34)
+**GitHub Issue:** [#34](https://github.com/rajitsaha/agentbreeder/issues/34)
 
 ### Background
 
@@ -2724,7 +2724,7 @@ AgentBreeder's core promise is "Multi-cloud first — AWS and GCP as equal first
 **Release:** v1.6 (Framework Depth)
 **Theme:** Close all feature gaps in existing runtimes and wire up per-agent observability so the AgentOps dashboard and cost tracking work end-to-end for deployed agents.
 **Status:** Planned
-**GitHub Issues:** [#39](https://github.com/open-agent-garden/agentbreeder/issues/39) [#40](https://github.com/open-agent-garden/agentbreeder/issues/40) [#41](https://github.com/open-agent-garden/agentbreeder/issues/41)
+**GitHub Issues:** [#39](https://github.com/rajitsaha/agentbreeder/issues/39) [#40](https://github.com/rajitsaha/agentbreeder/issues/40) [#41](https://github.com/rajitsaha/agentbreeder/issues/41)
 
 ### Background
 
@@ -2732,7 +2732,7 @@ LangGraph and OpenAI Agents SDK are the two fully implemented runtimes. Both dep
 
 ### M34.1 — LangGraph: Subgraphs, HITL, and Persistence
 
-**Issue:** [#39](https://github.com/open-agent-garden/agentbreeder/issues/39) | **Priority: P1**
+**Issue:** [#39](https://github.com/rajitsaha/agentbreeder/issues/39) | **Priority: P1**
 
 - [ ] **Checkpointer auto-selection** in `langgraph_server.py`:
   - `MemorySaver` when `DATABASE_URL` is not set (dev/local)
@@ -2749,7 +2749,7 @@ LangGraph and OpenAI Agents SDK are the two fully implemented runtimes. Both dep
 
 ### M34.2 — OpenAI Agents SDK: Handoffs and Nested Agents
 
-**Issue:** [#40](https://github.com/open-agent-garden/agentbreeder/issues/40) | **Priority: P1**
+**Issue:** [#40](https://github.com/rajitsaha/agentbreeder/issues/40) | **Priority: P1**
 
 - [ ] **`HandoffOutputItem` extraction** in `openai_agents_server.py`: unwrap `RunResult.new_items` to find the final agent's text output
 - [ ] **Response schema update**: `/invoke` returns `{"output": "...", "agent": "<name>", "handoffs": [...]}`  — additive, backwards compatible
@@ -2761,7 +2761,7 @@ LangGraph and OpenAI Agents SDK are the two fully implemented runtimes. Both dep
 
 ### M34.3 — Per-Framework Runtime Tracing
 
-**Issue:** [#41](https://github.com/open-agent-garden/agentbreeder/issues/41) | **Priority: P1**
+**Issue:** [#41](https://github.com/rajitsaha/agentbreeder/issues/41) | **Priority: P1**
 
 - [ ] `engine/runtimes/templates/_tracing.py` — shared OTel init utility:
   - `MemorySaver` / no-op tracer when `OPENTELEMETRY_ENDPOINT` not set (zero breakage for existing deploys)
@@ -2795,10 +2795,10 @@ LangGraph and OpenAI Agents SDK are the two fully implemented runtimes. Both dep
 
 | Release | Milestone | Theme | Key Work | Issues | Est. |
 |---------|-----------|-------|----------|--------|------|
-| **v1.3** | M25 | Complete Enterprise SDK support | CrewAI, Claude SDK, Google ADK, Custom runtime builders | [#35](https://github.com/open-agent-garden/agentbreeder/issues/35) [#36](https://github.com/open-agent-garden/agentbreeder/issues/36) [#37](https://github.com/open-agent-garden/agentbreeder/issues/37) [#38](https://github.com/open-agent-garden/agentbreeder/issues/38) | ~3d |
+| **v1.3** | M25 | Complete Enterprise SDK support | CrewAI, Claude SDK, Google ADK, Custom runtime builders | [#35](https://github.com/rajitsaha/agentbreeder/issues/35) [#36](https://github.com/rajitsaha/agentbreeder/issues/36) [#37](https://github.com/rajitsaha/agentbreeder/issues/37) [#38](https://github.com/rajitsaha/agentbreeder/issues/38) | ~3d |
 | **v1.4** | M32 | Distribution | PyPI/Docker Hub/Homebrew infra setup (code done) | — | ~1d |
-| **v1.5** | M33 | Multi-Cloud | AWS ECS, Azure Container Apps, Kubernetes deployers | [#34](https://github.com/open-agent-garden/agentbreeder/issues/34) | ~5d |
-| **v1.6** | M34 | Framework Depth | LangGraph HITL+persistence, OAI Agents handoffs, runtime OTel tracing | [#39](https://github.com/open-agent-garden/agentbreeder/issues/39) [#40](https://github.com/open-agent-garden/agentbreeder/issues/40) [#41](https://github.com/open-agent-garden/agentbreeder/issues/41) | ~5d |
+| **v1.5** | M33 | Multi-Cloud | AWS ECS, Azure Container Apps, Kubernetes deployers | [#34](https://github.com/rajitsaha/agentbreeder/issues/34) | ~5d |
+| **v1.6** | M34 | Framework Depth | LangGraph HITL+persistence, OAI Agents handoffs, runtime OTel tracing | [#39](https://github.com/rajitsaha/agentbreeder/issues/39) [#40](https://github.com/rajitsaha/agentbreeder/issues/40) [#41](https://github.com/rajitsaha/agentbreeder/issues/41) | ~5d |
 
 **Recommended sequencing rationale:**
 - M25 first — unblocks users who picked CrewAI/Claude SDK/ADK in the init wizard today

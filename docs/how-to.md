@@ -19,7 +19,7 @@ agentbreeder --help
 ### Option 2: Homebrew (macOS / Linux)
 
 ```bash
-brew tap open-agent-garden/agentbreeder
+brew tap rajitsaha/agentbreeder
 brew install agentbreeder
 
 # Verify
@@ -59,7 +59,7 @@ print(agent.to_yaml())
 ### Option 5: From source (for contributors)
 
 ```bash
-git clone https://github.com/open-agent-garden/agentbreeder.git
+git clone https://github.com/rajitsaha/agentbreeder.git
 cd agentbreeder
 python -m venv venv && source venv/bin/activate
 pip install -e ".[dev]"

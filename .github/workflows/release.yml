@@ -272,6 +272,6 @@ jobs:
         uses: mislav/bump-homebrew-formula-action@v3
         with:
           formula-name: agentbreeder
-          homebrew-tap: open-agent-garden/homebrew-agentbreeder
+          homebrew-tap: rajitsaha/homebrew-agentbreeder
         env:
           COMMITTER_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}

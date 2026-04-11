@@ -1,8 +1,8 @@
 site_name: AgentBreeder
 site_description: "Open-source platform to build, deploy, and govern AI agents. Define Once. Deploy Anywhere. Govern Automatically."
 site_url: https://agent-garden.com
-repo_url: https://github.com/open-agent-garden/agentbreeder
-repo_name: open-agent-garden/agentbreeder
+repo_url: https://github.com/rajitsaha/agentbreeder
+repo_name: rajitsaha/agentbreeder
 edit_uri: edit/main/docs/
 
 theme:
@@ -114,7 +114,7 @@ nav:
 extra:
   social:
     - icon: fontawesome/brands/github
-      link: https://github.com/open-agent-garden/agentbreeder
+      link: https://github.com/rajitsaha/agentbreeder
       name: AgentBreeder on GitHub
     - icon: fontawesome/brands/python
       link: https://pypi.org/project/agentbreeder/
@@ -144,7 +144,7 @@ extra:
           data: 0
           note: >-
             Thanks for your feedback! Help us improve by
-            <a href="https://github.com/open-agent-garden/agentbreeder/issues/new?title=[Docs]+{title}&labels=documentation" target="_blank" rel="noopener">opening an issue</a>.
+            <a href="https://github.com/rajitsaha/agentbreeder/issues/new?title=[Docs]+{title}&labels=documentation" target="_blank" rel="noopener">opening an issue</a>.
 
 copyright: >-
   Copyright &copy; 2026 <a href="https://www.linkedin.com/in/rajsaha/" target="_blank">Rajit Saha</a>

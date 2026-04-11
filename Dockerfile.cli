@@ -1,6 +1,6 @@
 FROM python:3.12-slim
 
-LABEL org.opencontainers.image.source="https://github.com/open-agent-garden/agentbreeder"
+LABEL org.opencontainers.image.source="https://github.com/rajitsaha/agentbreeder"
 LABEL org.opencontainers.image.description="AgentBreeder CLI for CI/CD pipelines"
 
 RUN pip install --no-cache-dir agentbreeder

@@ -17,7 +17,7 @@ Choose one:
 === "Homebrew"
 
     ```bash
-    brew tap open-agent-garden/agentbreeder
+    brew tap rajitsaha/agentbreeder
     brew install agentbreeder
     ```
 
@@ -30,7 +30,7 @@ Choose one:
 === "From source"
 
     ```bash
-    git clone https://github.com/open-agent-garden/agentbreeder.git
+    git clone https://github.com/rajitsaha/agentbreeder.git
     cd agentbreeder
     python -m venv venv && source venv/bin/activate
     pip install -e ".[dev]"
@@ -141,7 +141,7 @@ agentbreeder deploy agent.yaml --target aws --region us-east-1
 If you want the dashboard, registry, and API server running locally:
 
 ```bash
-git clone https://github.com/open-agent-garden/agentbreeder.git
+git clone https://github.com/rajitsaha/agentbreeder.git
 cd agentbreeder
 
 python -m venv venv && source venv/bin/activate

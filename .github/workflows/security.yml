@@ -147,7 +147,7 @@ jobs:
 
   # NOTE: dependency-review removed — requires GitHub Advanced Security
   # which is not available on this repository. Re-enable when GHAS is active.
-  # See: https://github.com/open-agent-garden/agentbreeder/settings/security_analysis
+  # See: https://github.com/rajitsaha/agentbreeder/settings/security_analysis
 
   # ── Secret scanning (detect hardcoded secrets) ──────────────────────────────
   secret-scan:

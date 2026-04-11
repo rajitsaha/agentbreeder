@@ -16,7 +16,7 @@
 set -euo pipefail
 
 # ── Configuration ─────────────────────────────────────────────────────────────
-REPO="${1:-$(gh repo view --json nameWithOwner -q .nameWithOwner 2>/dev/null || echo "open-agent-garden/agentbreeder")}"
+REPO="${1:-$(gh repo view --json nameWithOwner -q .nameWithOwner 2>/dev/null || echo "rajitsaha/agentbreeder")}"
 BRANCH="main"
 
 # Only this GitHub user can merge PRs into main.

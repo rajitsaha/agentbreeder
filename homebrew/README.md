@@ -1,11 +1,11 @@
 # homebrew-agentbreeder
 
-Homebrew tap for [AgentBreeder](https://github.com/open-agent-garden/agentbreeder).
+Homebrew tap for [AgentBreeder](https://github.com/rajitsaha/agentbreeder).
 
 ## Install
 
 ```bash
-brew tap open-agent-garden/agentbreeder
+brew tap rajitsaha/agentbreeder
 brew install agentbreeder
 ```
 

@@ -13,7 +13,7 @@ RUN npm run build
 # Production stage — nginx serves static files + proxies /api to backend
 FROM nginx:alpine AS production
 
-LABEL org.opencontainers.image.source="https://github.com/open-agent-garden/agentbreeder"
+LABEL org.opencontainers.image.source="https://github.com/rajitsaha/agentbreeder"
 LABEL org.opencontainers.image.description="AgentBreeder Dashboard"
 
 COPY --from=build /app/dist /usr/share/nginx/html

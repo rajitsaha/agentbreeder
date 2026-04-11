@@ -113,5 +113,5 @@ This project follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) an
 
 ---
 
-[Unreleased]: https://github.com/open-agent-garden/agentbreeder/compare/v1.0.0...HEAD
-[1.0.0]: https://github.com/open-agent-garden/agentbreeder/releases/tag/v1.0.0
+[Unreleased]: https://github.com/rajitsaha/agentbreeder/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/rajitsaha/agentbreeder/releases/tag/v1.0.0

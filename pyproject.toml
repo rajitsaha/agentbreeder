@@ -61,8 +61,8 @@ agentbreeder = "cli.main:app"
 
 [project.urls]
 Homepage = "https://agentbreeder.com"
-Repository = "https://github.com/open-agent-garden/agentbreeder"
-Documentation = "https://open-agent-garden.github.io/agentbreeder"
+Repository = "https://github.com/rajitsaha/agentbreeder"
+Documentation = "https://agent-garden.com"
 
 [tool.hatch.build.targets.wheel]
 packages = ["engine", "api", "cli", "registry", "connectors"]

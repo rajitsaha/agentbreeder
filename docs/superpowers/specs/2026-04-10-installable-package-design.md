@@ -13,7 +13,7 @@ AgentBreeder will be distributed through three channels — PyPI, Docker Hub, an
 |---------|-----------|-----------------|
 | PyPI | `agentbreeder`, `agentbreeder-sdk` | `pip install agentbreeder` |
 | Docker Hub | `agentbreeder/api`, `agentbreeder/dashboard`, `agentbreeder/cli` | `docker pull agentbreeder/api` |
-| Homebrew | `open-agent-garden/agentbreeder` tap | `brew tap open-agent-garden/agentbreeder && brew install agentbreeder` |
+| Homebrew | `rajitsaha/agentbreeder` tap | `brew tap rajitsaha/agentbreeder && brew install agentbreeder` |
 
 ## 1. Package Split
 
@@ -63,7 +63,7 @@ agentbreeder validate agent.yaml
 
 1. Remove `sdk` from `hatch.build.targets.wheel.packages`
 2. Add `agentbreeder-sdk>=0.1.0` to `dependencies`
-3. Fix repository URL: `https://github.com/open-agent-garden/agentbreeder`
+3. Fix repository URL: `https://github.com/rajitsaha/agentbreeder`
 4. Fix homepage URL if needed
 
 ## 2. Versioning Strategy
@@ -118,7 +118,7 @@ Triggered on: workflow dispatch from release.yml
 Steps:
 1. Download PyPI tarball for new version
 2. Compute SHA256
-3. Update formula in `open-agent-garden/homebrew-agentbreeder` repo
+3. Update formula in `rajitsaha/homebrew-agentbreeder` repo
 4. Commit + push to tap repo
 
 ## 4. Docker Hub Images
@@ -192,12 +192,12 @@ All images built for `linux/amd64` and `linux/arm64` using `docker buildx`.
 
 ### Repository
 
-New repo: `open-agent-garden/homebrew-agentbreeder`
+New repo: `rajitsaha/homebrew-agentbreeder`
 
 ### Install Flow
 
 ```bash
-brew tap open-agent-garden/agentbreeder
+brew tap rajitsaha/agentbreeder
 brew install agentbreeder
 ```
 
@@ -208,7 +208,7 @@ class Agentbreeder < Formula
   include Language::Python::Virtualenv
 
   desc "Define Once. Deploy Anywhere. Govern Automatically."
-  homepage "https://github.com/open-agent-garden/agentbreeder"
+  homepage "https://github.com/rajitsaha/agentbreeder"
   url "https://files.pythonhosted.org/packages/source/a/agentbreeder/agentbreeder-VERSION.tar.gz"
   sha256 "SHA256_HASH"
   license "Apache-2.0"
@@ -236,23 +236,23 @@ Use PyPI trusted publishers (OIDC) — no API tokens stored in GitHub Secrets.
 
 Setup:
 1. Create PyPI accounts for `agentbreeder` and `agentbreeder-sdk`
-2. Configure each as a trusted publisher linked to the `open-agent-garden/agentbreeder` GitHub repo
+2. Configure each as a trusted publisher linked to the `rajitsaha/agentbreeder` GitHub repo
 3. The `release.yml` workflow uses `pypa/gh-action-pypi-publish` which handles OIDC automatically
 
 ## 7. Namespace Alignment
 
 | System | Namespace |
 |--------|-----------|
-| GitHub | `open-agent-garden/agentbreeder` |
+| GitHub | `rajitsaha/agentbreeder` |
 | PyPI | `agentbreeder`, `agentbreeder-sdk` |
 | Docker Hub | `agentbreeder/api`, `agentbreeder/dashboard`, `agentbreeder/cli` |
-| Homebrew | `open-agent-garden/homebrew-agentbreeder` |
+| Homebrew | `rajitsaha/homebrew-agentbreeder` |
 | Homepage | `agentbreeder.com` |
-| Docs | `open-agent-garden.github.io/agentbreeder` |
+| Docs | `agent-garden.com` |
 
 Fix stale URLs in `pyproject.toml`:
-- Repository: `https://github.com/open-agent-garden/agentbreeder`
-- Documentation: `https://open-agent-garden.github.io/agentbreeder`
+- Repository: `https://github.com/rajitsaha/agentbreeder`
+- Documentation: `https://agent-garden.com`
 
 ## 8. New Files Summary
 
@@ -271,7 +271,7 @@ agentbreeder/
 
 **Separate repo:**
 ```
-open-agent-garden/homebrew-agentbreeder/
+rajitsaha/homebrew-agentbreeder/
 └── Formula/agentbreeder.rb                 # Homebrew formula
 ```
 
