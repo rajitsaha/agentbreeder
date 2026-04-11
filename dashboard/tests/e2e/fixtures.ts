@@ -23,6 +23,21 @@ async function setupAuth(page: Page) {
     }),
   );
 
+  // Catch-all for git/prs — many pages render an approvals badge that fetches
+  // this endpoint. Without a mock the request leaks through Vite's proxy to the
+  // non-existent backend and pollutes CI logs with ECONNREFUSED noise.
+  await page.route("**/api/v1/git/prs**", (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        data: { prs: [], total: 0, page: 1, per_page: 20 },
+        meta: { page: 1, per_page: 20, total: 0 },
+        errors: [],
+      }),
+    }),
+  );
+
   // Set token before navigating
   await page.goto("/login");
   await page.evaluate(() => localStorage.setItem("ag-token", "test-token"));

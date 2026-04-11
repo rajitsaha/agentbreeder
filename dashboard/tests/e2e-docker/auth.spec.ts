@@ -8,8 +8,8 @@ test.describe("Real auth flows", () => {
 
     await page.goto("/login");
 
-    // Switch to register mode
-    const switchBtn = page.getByRole("button", { name: /sign up|register|create account/i });
+    // Switch to register mode — top-right button text is "Create an account"
+    const switchBtn = page.getByRole("button", { name: /sign up|register|create\s+(?:an?\s+)?account/i });
     await switchBtn.click();
 
     // Fill registration form

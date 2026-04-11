@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 
 test.describe("Stack health smoke tests", () => {
   test("API /health returns 200 with status healthy", async ({ request, baseURL }) => {
-    const res = await request.get(`${baseURL}/api/v1/health`);
+    const res = await request.get(`${baseURL}/health`);
     expect(res.status()).toBe(200);
     const body = await res.json();
     expect(body).toMatchObject({ status: "healthy" });
