@@ -11,6 +11,7 @@ from __future__ import annotations
 import logging
 import os
 from datetime import UTC, datetime
+from typing import cast
 
 from engine.secrets.base import SecretEntry, SecretsBackend
 
@@ -19,7 +20,7 @@ logger = logging.getLogger(__name__)
 _HVAC_IMPORT_ERROR = "HashiCorp Vault backend requires hvac. Install it with: pip install hvac"
 
 
-def _client(addr: str, token: str):  # type: ignore[return]
+def _client(addr: str, token: str) -> object:
     try:
         import hvac  # type: ignore[import-untyped]
 
@@ -67,7 +68,7 @@ class VaultBackend(SecretsBackend):
                 mount_point=self._mount,
                 raise_on_deleted_version=False,
             )
-            return resp["data"]["data"].get("value")
+            return cast("str | None", resp["data"]["data"].get("value"))
         except Exception as exc:
             if "InvalidPath" in type(exc).__name__ or "404" in str(exc):
                 return None

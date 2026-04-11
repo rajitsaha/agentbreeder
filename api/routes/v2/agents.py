@@ -111,10 +111,26 @@ async def batch_register_agents_v2(
     results = []
     for agent_create in agents:
         try:
+            from engine.config_parser import AgentConfig, FrameworkType
             from registry.agents import AgentRegistry
 
-            registry = AgentRegistry(db)
-            created = await registry.create(agent_create, created_by=current_user.id)
+            config = AgentConfig(
+                name=agent_create.name,
+                version=agent_create.version,
+                description=agent_create.description,
+                team=agent_create.team,
+                owner=agent_create.owner,
+                framework=FrameworkType(agent_create.framework),
+                model={
+                    "primary": agent_create.model_primary,
+                    "fallback": agent_create.model_fallback,
+                },
+                deploy={"cloud": "local"},
+                tags=agent_create.tags,
+            )
+            created = await AgentRegistry.register(
+                db, config, endpoint_url=agent_create.endpoint_url or ""
+            )
             results.append({"data": AgentResponse.model_validate(created), "error": None})
         except Exception as exc:
             results.append({"data": None, "error": str(exc)})

@@ -11,6 +11,7 @@ from __future__ import annotations
 import logging
 import os
 from datetime import UTC, datetime
+from typing import cast
 
 from engine.secrets.base import SecretEntry, SecretsBackend
 
@@ -22,7 +23,7 @@ _GCP_IMPORT_ERROR = (
 )
 
 
-def _client():  # type: ignore[return]
+def _client() -> object:
     try:
         from google.cloud import secretmanager  # type: ignore[import-untyped]
 
@@ -76,7 +77,7 @@ class GCPSecretManagerBackend(SecretsBackend):
         client = _client()
         try:
             response = client.access_secret_version(request={"name": self._version_path(name)})
-            return response.payload.data.decode("utf-8")
+            return cast("str", response.payload.data.decode("utf-8"))
         except Exception as exc:
             # google.api_core.exceptions.NotFound → return None
             if "NOT_FOUND" in str(exc) or "404" in str(exc):
@@ -129,7 +130,7 @@ class GCPSecretManagerBackend(SecretsBackend):
         entries: list[SecretEntry] = []
         request = {"parent": self._parent()}
         if self._prefix:
-            request["filter"] = f"name:{self._prefix}"  # type: ignore[assignment]
+            request["filter"] = f"name:{self._prefix}"
 
         for secret in client.list_secrets(request=request):
             raw_id = secret.name.split("/")[-1]  # e.g. "agentbreeder-OPENAI_API_KEY"
@@ -152,7 +153,7 @@ def _dt(ts: object) -> datetime | None:
     if ts is None:
         return None
     try:
-        from google.protobuf.timestamp_pb2 import Timestamp  # type: ignore[import-untyped]
+        from google.protobuf.timestamp_pb2 import Timestamp
 
         if isinstance(ts, Timestamp):
             return datetime.fromtimestamp(ts.seconds, tz=UTC)

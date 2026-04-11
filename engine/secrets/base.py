@@ -18,7 +18,7 @@ class SecretEntry:
     updated_at: datetime | None = None
     tags: dict[str, str] = field(default_factory=dict)
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> dict[str, object]:
         return {
             "name": self.name,
             "masked_value": self.masked_value,

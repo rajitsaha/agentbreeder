@@ -35,7 +35,7 @@ secret_app = typer.Typer(
 # ── helpers ─────────────────────────────────────────────────────────────────
 
 
-def _get_backend(backend: str, **kwargs):  # type: ignore[return]
+def _get_backend(backend: str, **kwargs):
     from engine.secrets.factory import get_backend
 
     if backend not in VALID_BACKENDS:
@@ -52,7 +52,7 @@ def _get_backend(backend: str, **kwargs):  # type: ignore[return]
         raise typer.Exit(code=1) from exc
 
 
-def _run(coro):  # type: ignore[return]
+def _run(coro):
     return asyncio.run(coro)
 
 

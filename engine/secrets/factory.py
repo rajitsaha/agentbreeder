@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import re
+from typing import Any
 
 from engine.secrets.base import SecretsBackend
 
@@ -45,9 +46,9 @@ def get_backend(backend: str = "env", **kwargs: object) -> SecretsBackend:
 
 
 async def resolve_secret_refs(
-    data: dict | list | str | object,
+    data: dict[str, Any] | list[Any] | str | object,
     backend: SecretsBackend,
-) -> dict | list | str | object:
+) -> dict[str, Any] | list[Any] | str | object:
     """Recursively resolve all secret:// references in a config dict.
 
     Walks the config tree. When a string value matches ``secret://KEY_NAME``,
@@ -83,7 +84,7 @@ async def resolve_secret_refs(
     return data
 
 
-def find_secret_refs(data: dict | list | str | object) -> list[str]:
+def find_secret_refs(data: dict[str, Any] | list[Any] | str | object) -> list[str]:
     """Return a list of all secret key names referenced in a config.
 
     Useful for pre-flight checks: collect all secret:// references, then

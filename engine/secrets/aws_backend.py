@@ -11,7 +11,7 @@ from __future__ import annotations
 import json
 import logging
 from datetime import UTC, datetime
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 from engine.secrets.base import SecretEntry, SecretsBackend
 
@@ -25,7 +25,7 @@ _BOTO_IMPORT_ERROR = (
 )
 
 
-def _client(region: str):  # type: ignore[return]
+def _client(region: str) -> object:
     """Create a boto3 Secrets Manager client. Raises ImportError if boto3 not installed."""
     try:
         import boto3  # type: ignore[import-untyped]
@@ -64,10 +64,10 @@ class AWSSecretsManagerBackend(SecretsBackend):
             try:
                 parsed = json.loads(raw)
                 if isinstance(parsed, dict) and "value" in parsed:
-                    return parsed["value"]
+                    return cast("str", parsed["value"])
             except (json.JSONDecodeError, TypeError):
                 pass
-            return raw
+            return cast("str", raw)
         except client.exceptions.ResourceNotFoundException:
             return None
         except Exception as exc:
@@ -84,7 +84,7 @@ class AWSSecretsManagerBackend(SecretsBackend):
             client.put_secret_value(SecretId=full_name, SecretString=secret_string)
             logger.info("Updated secret '%s' in AWS Secrets Manager", full_name)
         except client.exceptions.ResourceNotFoundException:
-            kwargs: dict = {
+            kwargs: dict[str, object] = {
                 "Name": full_name,
                 "SecretString": secret_string,
                 "Description": f"Managed by AgentBreeder (key: {name})",
