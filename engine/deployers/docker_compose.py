@@ -98,17 +98,26 @@ class DockerComposeDeployer(BaseDeployer):
         except docker.errors.NotFound:
             pass
 
+        # Build container environment — inject platform defaults first so
+        # user env_vars can override them if needed.
+        import os as _os
+
+        container_env: dict[str, str] = {
+            "AGENT_NAME": config.name,
+            "AGENT_VERSION": config.version,
+            "AGENT_FRAMEWORK": config.framework.value,
+        }
+        if otel := _os.getenv("OPENTELEMETRY_ENDPOINT"):
+            container_env["OPENTELEMETRY_ENDPOINT"] = otel
+        container_env.update(config.deploy.env_vars)
+
         # Run the container
         logger.info("Starting container: %s on port %d", container_name, port)
         container = client.containers.run(
             image.tag,
             name=container_name,
             ports={"8080/tcp": port},
-            environment={
-                "AGENT_NAME": config.name,
-                "AGENT_VERSION": config.version,
-                **config.deploy.env_vars,
-            },
+            environment=container_env,
             detach=True,
             remove=False,
         )

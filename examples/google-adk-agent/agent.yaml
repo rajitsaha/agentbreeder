@@ -1,0 +1,23 @@
+name: gemini-assistant
+version: 0.1.0
+description: "A simple assistant agent built with the Google Agent Development Kit (ADK)"
+team: examples
+owner: dev@agentbreeder.com
+tags: [example, google-adk, gemini]
+
+framework: google_adk
+
+model:
+  primary: gemini-2.0-flash
+
+tools:
+  - name: get_current_time
+    type: function
+    description: "Return the current UTC time"
+
+deploy:
+  cloud: gcp
+  env_vars:
+    LOG_LEVEL: info
+  secrets:
+    - GOOGLE_CLOUD_PROJECT

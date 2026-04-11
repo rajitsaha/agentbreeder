@@ -6,22 +6,31 @@ Maps cloud types to their deployer implementations.
 from __future__ import annotations
 
 from engine.config_parser import CloudType
+from engine.deployers.aws_ecs import AWSECSDeployer
+from engine.deployers.azure_container_apps import AzureContainerAppsDeployer
 from engine.deployers.base import BaseDeployer
 from engine.deployers.docker_compose import DockerComposeDeployer
 from engine.deployers.gcp_cloudrun import GCPCloudRunDeployer
+from engine.deployers.kubernetes import KubernetesDeployer
 
 DEPLOYERS: dict[CloudType, type[BaseDeployer]] = {
     CloudType.local: DockerComposeDeployer,
-    CloudType.kubernetes: DockerComposeDeployer,  # local K8s uses Docker Compose for M1
+    CloudType.aws: AWSECSDeployer,
+    CloudType.azure: AzureContainerAppsDeployer,
     CloudType.gcp: GCPCloudRunDeployer,
+    CloudType.kubernetes: KubernetesDeployer,
 }
 
 # Maps runtime strings (from deploy.runtime) to deployer classes.
-# When deploy.cloud is "gcp" and deploy.runtime is set, this allows
-# selecting a specific GCP deployer (Cloud Run vs GKE vs Cloud Functions).
 RUNTIME_DEPLOYERS: dict[str, type[BaseDeployer]] = {
     "cloud-run": GCPCloudRunDeployer,
     "cloudrun": GCPCloudRunDeployer,
+    "ecs-fargate": AWSECSDeployer,
+    "ecs": AWSECSDeployer,
+    "container-apps": AzureContainerAppsDeployer,
+    "eks": KubernetesDeployer,
+    "gke": KubernetesDeployer,
+    "aks": KubernetesDeployer,
 }
 
 

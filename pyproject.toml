@@ -55,6 +55,24 @@ docs = [
     "mkdocs-material>=9.5.0",
     "mike>=2.0.0",
 ]
+aws = [
+    "boto3>=1.34.0",
+]
+azure = [
+    "azure-identity>=1.16.0",
+    "azure-mgmt-appcontainers>=3.0.0",
+    "azure-monitor-query>=1.3.0",
+]
+kubernetes = [
+    "kubernetes>=29.0.0",
+]
+all-clouds = [
+    "boto3>=1.34.0",
+    "azure-identity>=1.16.0",
+    "azure-mgmt-appcontainers>=3.0.0",
+    "azure-monitor-query>=1.3.0",
+    "kubernetes>=29.0.0",
+]
 
 [project.scripts]
 agentbreeder = "cli.main:app"
@@ -62,7 +80,7 @@ agentbreeder = "cli.main:app"
 [project.urls]
 Homepage = "https://agentbreeder.com"
 Repository = "https://github.com/rajitsaha/agentbreeder"
-Documentation = "https://agent-garden.com"
+Documentation = "https://agent-breeder.com"
 
 [tool.hatch.build.targets.wheel]
 packages = ["engine", "api", "cli", "registry", "connectors"]

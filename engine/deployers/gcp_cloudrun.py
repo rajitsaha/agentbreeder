@@ -118,6 +118,12 @@ def _build_service_template(
         "AGENT_VERSION": config.version,
         "AGENT_FRAMEWORK": config.framework.value,
     }
+    # Inject platform-level OTel endpoint if configured
+    import os as _os
+
+    otel_endpoint = _os.getenv("OPENTELEMETRY_ENDPOINT")
+    if otel_endpoint:
+        env_vars["OPENTELEMETRY_ENDPOINT"] = otel_endpoint
     # Add user-defined env vars, excluding GCP_ prefixed ones (those are for infra config)
     for key, value in config.deploy.env_vars.items():
         if not key.startswith("GCP_") and not key.startswith("GOOGLE_"):

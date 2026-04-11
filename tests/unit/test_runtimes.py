@@ -5,8 +5,6 @@ from __future__ import annotations
 import tempfile
 from pathlib import Path
 
-import pytest
-
 from engine.config_parser import AgentConfig, FrameworkType
 from engine.runtimes import get_runtime
 from engine.runtimes.langgraph import LangGraphRuntime
@@ -40,13 +38,35 @@ class TestGetRuntime:
         runtime = get_runtime(FrameworkType.langgraph)
         assert isinstance(runtime, LangGraphRuntime)
 
-    def test_unsupported_framework_raises(self) -> None:
-        with pytest.raises(KeyError, match="not yet supported"):
-            get_runtime(FrameworkType.crewai)
+    def test_get_crewai_runtime(self) -> None:
+        from engine.runtimes.crewai import CrewAIRuntime
 
-    def test_error_message_lists_supported(self) -> None:
-        with pytest.raises(KeyError, match="langgraph"):
-            get_runtime(FrameworkType.crewai)
+        runtime = get_runtime(FrameworkType.crewai)
+        assert isinstance(runtime, CrewAIRuntime)
+
+    def test_get_claude_sdk_runtime(self) -> None:
+        from engine.runtimes.claude_sdk import ClaudeSDKRuntime
+
+        runtime = get_runtime(FrameworkType.claude_sdk)
+        assert isinstance(runtime, ClaudeSDKRuntime)
+
+    def test_get_google_adk_runtime(self) -> None:
+        from engine.runtimes.google_adk import GoogleADKRuntime
+
+        runtime = get_runtime(FrameworkType.google_adk)
+        assert isinstance(runtime, GoogleADKRuntime)
+
+    def test_get_custom_runtime(self) -> None:
+        from engine.runtimes.custom import CustomRuntime
+
+        runtime = get_runtime(FrameworkType.custom)
+        assert isinstance(runtime, CustomRuntime)
+
+    def test_all_framework_types_have_runtime(self) -> None:
+        """Every FrameworkType value must have a registered runtime builder."""
+        for framework in FrameworkType:
+            runtime = get_runtime(framework)
+            assert runtime is not None, f"No runtime for {framework.value}"
 
 
 class TestLangGraphRuntime:

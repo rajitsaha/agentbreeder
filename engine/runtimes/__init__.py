@@ -7,12 +7,20 @@ from __future__ import annotations
 
 from engine.config_parser import FrameworkType
 from engine.runtimes.base import RuntimeBuilder
+from engine.runtimes.claude_sdk import ClaudeSDKRuntime
+from engine.runtimes.crewai import CrewAIRuntime
+from engine.runtimes.custom import CustomRuntime
+from engine.runtimes.google_adk import GoogleADKRuntime
 from engine.runtimes.langgraph import LangGraphRuntime
 from engine.runtimes.openai_agents import OpenAIAgentsRuntime
 
 RUNTIMES: dict[FrameworkType, type[RuntimeBuilder]] = {
     FrameworkType.langgraph: LangGraphRuntime,
     FrameworkType.openai_agents: OpenAIAgentsRuntime,
+    FrameworkType.crewai: CrewAIRuntime,
+    FrameworkType.claude_sdk: ClaudeSDKRuntime,
+    FrameworkType.google_adk: GoogleADKRuntime,
+    FrameworkType.custom: CustomRuntime,
 }
 
 

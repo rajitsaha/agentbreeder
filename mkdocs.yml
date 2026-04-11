@@ -1,6 +1,6 @@
 site_name: AgentBreeder
 site_description: "Open-source platform to build, deploy, and govern AI agents. Define Once. Deploy Anywhere. Govern Automatically."
-site_url: https://agent-garden.com
+site_url: https://agent-breeder.com
 repo_url: https://github.com/rajitsaha/agentbreeder
 repo_name: rajitsaha/agentbreeder
 edit_uri: edit/main/docs/

@@ -32,16 +32,34 @@ class TestGetDeployer:
         assert isinstance(deployer, DockerComposeDeployer)
 
     def test_get_kubernetes_deployer(self) -> None:
+        from engine.deployers.kubernetes import KubernetesDeployer
+
         deployer = get_deployer(CloudType.kubernetes)
-        assert isinstance(deployer, DockerComposeDeployer)
+        assert isinstance(deployer, KubernetesDeployer)
 
-    def test_unsupported_cloud_raises(self) -> None:
-        with pytest.raises(KeyError, match="not yet supported"):
-            get_deployer(CloudType.aws)
+    def test_get_aws_deployer(self) -> None:
+        from engine.deployers.aws_ecs import AWSECSDeployer
 
-    def test_error_message_lists_supported(self) -> None:
-        with pytest.raises(KeyError, match="local"):
-            get_deployer(CloudType.aws)
+        deployer = get_deployer(CloudType.aws)
+        assert isinstance(deployer, AWSECSDeployer)
+
+    def test_get_azure_deployer(self) -> None:
+        from engine.deployers.azure_container_apps import AzureContainerAppsDeployer
+
+        deployer = get_deployer(CloudType.azure)
+        assert isinstance(deployer, AzureContainerAppsDeployer)
+
+    def test_runtime_alias_ecs_fargate(self) -> None:
+        from engine.deployers.aws_ecs import AWSECSDeployer
+
+        deployer = get_deployer(CloudType.aws, runtime="ecs-fargate")
+        assert isinstance(deployer, AWSECSDeployer)
+
+    def test_runtime_alias_eks(self) -> None:
+        from engine.deployers.kubernetes import KubernetesDeployer
+
+        deployer = get_deployer(CloudType.kubernetes, runtime="eks")
+        assert isinstance(deployer, KubernetesDeployer)
 
 
 class TestDockerComposeDeployer:

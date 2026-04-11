@@ -134,7 +134,7 @@
       "properties": {
         "cloud": {
           "type": "string",
-          "enum": ["aws", "gcp", "kubernetes", "local"],
+          "enum": ["aws", "azure", "gcp", "kubernetes", "local"],
           "description": "Target cloud platform"
         },
         "runtime": {

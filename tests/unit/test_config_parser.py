@@ -240,11 +240,27 @@ framework: langgraph
 model:
   primary: gpt-4o
 deploy:
-  cloud: azure
+  cloud: totally-invalid-cloud
 """
         path = _write_yaml(yaml)
         with pytest.raises(ConfigParseError):
             parse_config(path)
+
+    def test_azure_cloud_is_valid(self) -> None:
+        yaml = """\
+name: test-agent
+version: 1.0.0
+team: engineering
+owner: test@example.com
+framework: langgraph
+model:
+  primary: gpt-4o
+deploy:
+  cloud: azure
+"""
+        path = _write_yaml(yaml)
+        config = parse_config(path)
+        assert config.deploy.cloud.value == "azure"
 
     def test_invalid_version_format_raises(self) -> None:
         yaml = """\

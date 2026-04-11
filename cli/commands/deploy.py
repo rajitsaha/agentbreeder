@@ -35,7 +35,10 @@ def deploy(
         "local",
         "--target",
         "-t",
-        help="Deploy target: local, kubernetes, aws, gcp, cloud-run",
+        help=(
+            "Deploy target: local | gcp | cloud-run | aws | ecs-fargate"
+            " | azure | container-apps | kubernetes | eks | gke | aks"
+        ),
     ),
     json_output: bool = typer.Option(
         False,

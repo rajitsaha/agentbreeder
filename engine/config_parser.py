@@ -29,6 +29,7 @@ class FrameworkType(enum.StrEnum):
 
 class CloudType(enum.StrEnum):
     aws = "aws"
+    azure = "azure"
     gcp = "gcp"
     kubernetes = "kubernetes"
     local = "local"

@@ -76,6 +76,6 @@ agentbreeder eject agent.yaml --output agent_sdk.py
 
 ## Links
 
-- [Documentation](https://agent-garden.com)
+- [Documentation](https://agent-breeder.com)
 - [GitHub](https://github.com/rajitsaha/agentbreeder)
-- [agent.yaml reference](https://agent-garden.com/agent-yaml)
+- [agent.yaml reference](https://agent-breeder.com/agent-yaml)
