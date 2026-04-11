@@ -79,5 +79,5 @@ export async function createAgent(
 
 /** Generate a unique test email to avoid conflicts between test runs. */
 export function uniqueEmail(prefix = "e2e"): string {
-  return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}@test.local`;
+  return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}@example.com`;
 }
