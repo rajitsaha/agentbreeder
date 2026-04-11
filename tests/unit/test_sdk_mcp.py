@@ -1,5 +1,9 @@
 """Tests for sdk/python/agenthub/mcp.py — MCPServe decorator and helpers."""
 
+import pytest
+
+pytest.importorskip("mcp", reason="mcp package not installed")
+
 from unittest.mock import MagicMock, patch
 
 from sdk.python.agenthub.mcp import (

@@ -11,7 +11,7 @@ from __future__ import annotations
 import logging
 import os
 from datetime import UTC, datetime
-from typing import cast
+from typing import Any, cast
 
 from engine.secrets.base import SecretEntry, SecretsBackend
 
@@ -20,9 +20,9 @@ logger = logging.getLogger(__name__)
 _HVAC_IMPORT_ERROR = "HashiCorp Vault backend requires hvac. Install it with: pip install hvac"
 
 
-def _client(addr: str, token: str) -> object:
+def _client(addr: str, token: str) -> Any:
     try:
-        import hvac  # type: ignore[import-untyped]
+        import hvac
 
         client = hvac.Client(url=addr, token=token)
         if not client.is_authenticated():

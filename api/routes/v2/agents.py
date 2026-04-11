@@ -108,7 +108,7 @@ async def batch_register_agents_v2(
     if len(agents) > 50:
         raise HTTPException(status_code=400, detail="Batch size limit is 50 agents")
 
-    results = []
+    results: list[dict[str, AgentResponse | str | None]] = []
     for agent_create in agents:
         try:
             from engine.config_parser import AgentConfig, FrameworkType

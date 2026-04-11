@@ -11,7 +11,7 @@ from __future__ import annotations
 import logging
 import os
 from datetime import UTC, datetime
-from typing import cast
+from typing import Any, cast
 
 from engine.secrets.base import SecretEntry, SecretsBackend
 
@@ -23,9 +23,9 @@ _GCP_IMPORT_ERROR = (
 )
 
 
-def _client() -> object:
+def _client() -> Any:
     try:
-        from google.cloud import secretmanager  # type: ignore[import-untyped]
+        from google.cloud import secretmanager
 
         return secretmanager.SecretManagerServiceClient()
     except ImportError as exc:

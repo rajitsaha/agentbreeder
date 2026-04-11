@@ -5,7 +5,7 @@ const AGENT_DETAIL_URL = `/agents/${AGENT_ID}`;
 const AGENT_API_PATTERN = `**/api/v1/agents/${AGENT_ID}`;
 const AGENTS_LIST_API_PATTERN = "**/api/v1/agents";
 
-function mockAgentDetail(page: Parameters<typeof test>[1] extends (args: { authedPage: infer P }) => unknown ? P : never) {
+function _mockAgentDetail(page: Parameters<typeof test>[1] extends (args: { authedPage: infer P }) => unknown ? P : never) {
   return page.route(AGENT_API_PATTERN, (route) =>
     route.fulfill({
       status: 200,

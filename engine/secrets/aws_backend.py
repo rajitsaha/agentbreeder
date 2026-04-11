@@ -11,7 +11,7 @@ from __future__ import annotations
 import json
 import logging
 from datetime import UTC, datetime
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING, Any, cast
 
 from engine.secrets.base import SecretEntry, SecretsBackend
 
@@ -25,10 +25,10 @@ _BOTO_IMPORT_ERROR = (
 )
 
 
-def _client(region: str) -> object:
+def _client(region: str) -> Any:
     """Create a boto3 Secrets Manager client. Raises ImportError if boto3 not installed."""
     try:
-        import boto3  # type: ignore[import-untyped]
+        import boto3
 
         return boto3.client("secretsmanager", region_name=region)
     except ImportError as exc:

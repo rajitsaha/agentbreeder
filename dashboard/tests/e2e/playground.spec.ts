@@ -178,7 +178,7 @@ test.describe("Playground Page", () => {
     await page.waitForTimeout(500);
     // The send button is next to the textarea — disabled when input is empty
     // It's the last Button in the input area
-    const sendButton = page.locator(".flex.items-end > button").last()
+    const _sendButton = page.locator(".flex.items-end > button").last()
       .or(page.locator('button[data-slot="button"]').last())
       .first();
     // At minimum the textarea should be visible and disabled (no agent selected initially)
