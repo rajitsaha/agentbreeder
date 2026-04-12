@@ -8,13 +8,12 @@ Set GOOGLE_APPLICATION_CREDENTIALS to a service account key path, or rely on
 Workload Identity when running on GCP.
 """
 
-from __future__ import annotations
-
 import importlib
 import logging
 import os
 import sys
-from typing import Any
+import uuid
+from typing import Any, Optional
 
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
@@ -31,12 +30,14 @@ app = FastAPI(
 
 class InvokeRequest(BaseModel):
     input: str
-    config: dict[str, Any] | None = None
+    session_id: Optional[str] = None  # pass to maintain conversation history
+    config: Optional[dict[str, Any]] = None
 
 
 class InvokeResponse(BaseModel):
     output: Any
-    metadata: dict[str, Any] | None = None
+    session_id: str  # echo back so caller can continue conversation
+    metadata: Optional[dict[str, Any]] = None
 
 
 class HealthResponse(BaseModel):
@@ -54,7 +55,6 @@ def _load_agent() -> Any:
         logger.error("Failed to import agent module: %s", e)
         raise
 
-    # Look for common Google ADK exports
     for attr_name in ("root_agent", "agent", "app"):
         if hasattr(module, attr_name):
             return getattr(module, attr_name)
@@ -66,25 +66,53 @@ def _load_agent() -> Any:
     raise AttributeError(msg)
 
 
-# Module-level globals — initialized at startup
+# Module-level singletons — initialized once at startup, reused for all requests
 _agent = None
 _runner = None
+_session_service = None
 
 
 @app.on_event("startup")
 async def startup() -> None:
-    global _agent, _runner  # noqa: PLW0603
+    global _agent, _runner, _session_service  # noqa: PLW0603
     logger.info("Loading Google ADK agent...")
     _agent = _load_agent()
+
+    # Apply AGENT_MODEL override if the loaded agent is an LlmAgent
+    agent_model = os.getenv("AGENT_MODEL")
+    agent_temperature_str = os.getenv("AGENT_TEMPERATURE")
+    agent_max_tokens_str = os.getenv("AGENT_MAX_TOKENS")
+
+    if agent_model and hasattr(_agent, "model"):
+        try:
+            _agent.model = agent_model
+            logger.info("Applied AGENT_MODEL override: %s", agent_model)
+        except Exception:
+            logger.warning("Could not set AGENT_MODEL on agent — proceeding with agent default")
+
+    if (agent_temperature_str or agent_max_tokens_str) and hasattr(_agent, "generate_content_config"):
+        try:
+            from google.genai import types as genai_types
+
+            kwargs: dict[str, Any] = {}
+            if agent_temperature_str:
+                kwargs["temperature"] = float(agent_temperature_str)
+            if agent_max_tokens_str:
+                kwargs["max_output_tokens"] = int(agent_max_tokens_str)
+            _agent.generate_content_config = genai_types.GenerateContentConfig(**kwargs)
+            logger.info("Applied generate_content_config overrides: %s", kwargs)
+        except Exception:
+            logger.warning("Could not apply generate_content_config — proceeding with agent defaults")
 
     from google.adk.runners import Runner
     from google.adk.sessions import InMemorySessionService
 
     app_name = os.getenv("GOOGLE_CLOUD_PROJECT", "agentbreeder-local")
+    _session_service = InMemorySessionService()
     _runner = Runner(
         agent=_agent,
         app_name=app_name,
-        session_service=InMemorySessionService(),
+        session_service=_session_service,
     )
     logger.info("Google ADK agent loaded successfully (app_name=%s)", app_name)
 
@@ -100,35 +128,38 @@ async def health() -> HealthResponse:
 
 @app.post("/invoke", response_model=InvokeResponse)
 async def invoke(request: InvokeRequest) -> InvokeResponse:
-    if _agent is None or _runner is None:
+    if _agent is None or _runner is None or _session_service is None:
         raise HTTPException(status_code=503, detail="Agent not loaded yet")
 
+    # Reuse provided session_id or create a new one for this call
+    session_id = request.session_id or str(uuid.uuid4())
+    config = request.config or {}
+    user_id = config.get("user_id", "agentbreeder-user")
+
     try:
-        result = await _run_agent(request.input, request.config or {})
-        return InvokeResponse(output=result)
+        result = await _run_agent(request.input, session_id, user_id)
+        return InvokeResponse(output=result, session_id=session_id)
     except Exception as e:
         logger.exception("Agent invocation failed")
         raise HTTPException(status_code=500, detail=str(e)) from e
 
 
-async def _run_agent(input_text: str, config: dict[str, Any]) -> str:
-    """Run the Google ADK agent and return the final response text."""
-    from google.adk.sessions import InMemorySessionService
+async def _run_agent(input_text: str, session_id: str, user_id: str) -> str:
+    """Run the Google ADK agent using the module-level runner and session service."""
     from google.genai import types as genai_types
 
-    # Use a per-request session so invocations are independent
-    session_service = InMemorySessionService()
     app_name = os.getenv("GOOGLE_CLOUD_PROJECT", "agentbreeder-local")
-    user_id = config.get("user_id", "agentbreeder-user")
-    session = await session_service.create_session(app_name=app_name, user_id=user_id)
 
-    from google.adk.runners import Runner
-
-    runner = Runner(
-        agent=_agent,
-        app_name=app_name,
-        session_service=session_service,
+    # Look up existing session or create a new one
+    existing = await _session_service.get_session(
+        app_name=app_name, user_id=user_id, session_id=session_id
     )
+    if existing is None:
+        session = await _session_service.create_session(
+            app_name=app_name, user_id=user_id, session_id=session_id
+        )
+    else:
+        session = existing
 
     user_message = genai_types.Content(
         role="user",
@@ -136,7 +167,7 @@ async def _run_agent(input_text: str, config: dict[str, Any]) -> str:
     )
 
     final_response = ""
-    async for event in runner.run_async(
+    async for event in _runner.run_async(
         user_id=user_id,
         session_id=session.id,
         new_message=user_message,

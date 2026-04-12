@@ -284,3 +284,71 @@ class TestGoogleADKRuntimeEnvVarInjection:
         dockerfile = (image.context_dir / "Dockerfile").read_text()
         assert "GOOGLE_CLOUD_PROJECT" in dockerfile
         assert "my-proj" in dockerfile
+
+
+# ---------------------------------------------------------------------------
+# BUG-1: module-level Runner reuse + session_id in request/response
+# ---------------------------------------------------------------------------
+import importlib.util
+import sys
+import types
+from unittest.mock import MagicMock
+
+
+def _load_adk_server_module(module_alias: str) -> types.ModuleType:
+    """Load google_adk_server.py with google.adk stubs injected into sys.modules."""
+    # Clean up any previously loaded alias
+    for key in list(sys.modules.keys()):
+        if module_alias in key:
+            del sys.modules[key]
+
+    # Build minimal google.adk namespace stubs
+    fake_google = types.ModuleType("google")
+    fake_adk = types.ModuleType("google.adk")
+    fake_runners = types.ModuleType("google.adk.runners")
+    fake_sessions = types.ModuleType("google.adk.sessions")
+    fake_genai = types.ModuleType("google.genai")
+    fake_genai_types = types.ModuleType("google.genai.types")
+
+    fake_runners.Runner = MagicMock()
+    fake_sessions.InMemorySessionService = MagicMock()
+    fake_google.adk = fake_adk
+    fake_google.genai = fake_genai
+    fake_genai.types = fake_genai_types
+
+    sys.modules["google"] = fake_google
+    sys.modules["google.adk"] = fake_adk
+    sys.modules["google.adk.runners"] = fake_runners
+    sys.modules["google.adk.sessions"] = fake_sessions
+    sys.modules["google.genai"] = fake_genai
+    sys.modules["google.genai.types"] = fake_genai_types
+
+    spec = importlib.util.spec_from_file_location(
+        module_alias,
+        "engine/runtimes/templates/google_adk_server.py",
+    )
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+class TestGoogleADKServerRunnerReuse:
+    """The module-level _runner must be reused across requests."""
+
+    def test_invoke_request_schema_accepts_session_id(self) -> None:
+        """InvokeRequest should have an optional session_id field."""
+        mod = _load_adk_server_module("google_adk_server_test1")
+
+        req = mod.InvokeRequest(input="hello")
+        assert hasattr(req, "session_id"), "InvokeRequest must have session_id field"
+        assert req.session_id is None  # default None
+
+        req_with_session = mod.InvokeRequest(input="hello", session_id="abc-123")
+        assert req_with_session.session_id == "abc-123"
+
+    def test_invoke_response_has_session_id(self) -> None:
+        """InvokeResponse must echo back a session_id."""
+        mod = _load_adk_server_module("google_adk_server_test2")
+
+        resp = mod.InvokeResponse(output="hello", session_id="abc-123")
+        assert resp.session_id == "abc-123"
