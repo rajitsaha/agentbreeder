@@ -16,7 +16,10 @@ import uuid
 from contextlib import asynccontextmanager
 from typing import Any, Optional
 
+import json
+
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
 logging.basicConfig(level=logging.INFO)
@@ -148,6 +151,57 @@ async def invoke(request: InvokeRequest) -> InvokeResponse:
     except Exception as e:
         logger.exception("Agent invocation failed")
         raise HTTPException(status_code=500, detail=str(e)) from e
+
+
+@app.post("/stream")
+async def stream(request: InvokeRequest) -> StreamingResponse:
+    """Stream Google ADK execution as Server-Sent Events."""
+    if _agent is None or _runner is None:
+        raise HTTPException(status_code=503, detail="Agent not loaded yet")
+    return StreamingResponse(
+        _stream_agent_sse(request.input, request.session_id, request.config or {}),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )
+
+
+async def _stream_agent_sse(input_text: str, session_id: str | None, config: dict[str, Any]) -> Any:
+    """Async generator forwarding each ADK Event as an SSE data line."""
+    from google.genai import types as genai_types
+
+    app_name = os.getenv("GOOGLE_CLOUD_PROJECT", "agentbreeder-local")
+    user_id = config.get("user_id", "agentbreeder-user")
+
+    # Reuse module-level session service (same as /invoke)
+    sid = session_id or str(uuid.uuid4())
+    existing = await _session_service.get_session(app_name=app_name, user_id=user_id, session_id=sid)
+    if existing is None:
+        session = await _session_service.create_session(app_name=app_name, user_id=user_id, session_id=sid)
+    else:
+        session = existing
+
+    user_message = genai_types.Content(
+        role="user",
+        parts=[genai_types.Part(text=input_text)],
+    )
+
+    try:
+        async for event in _runner.run_async(
+            user_id=user_id,
+            session_id=session.id,
+            new_message=user_message,
+        ):
+            if hasattr(event, "model_dump"):
+                payload = event.model_dump()
+            else:
+                payload = {"is_final": bool(hasattr(event, "is_final_response") and event.is_final_response())}
+                if event.content and event.content.parts:
+                    payload["text"] = "".join(getattr(p, "text", "") for p in event.content.parts)
+            yield f"data: {json.dumps(payload)}\n\n"
+    except Exception as exc:  # noqa: BLE001
+        yield f"data: {json.dumps({'error': str(exc)})}\n\n"
+
+    yield "data: [DONE]\n\n"
 
 
 async def _run_agent(input_text: str, session_id: str, user_id: str) -> str:
