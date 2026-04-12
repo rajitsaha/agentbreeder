@@ -376,7 +376,7 @@ Validate your config without deploying:
 agentbreeder validate ./agent.yaml
 ```
 
-The JSON Schema is at [`engine/schema/agent.schema.json`](../engine/schema/agent.schema.json).
+The JSON Schema is at [`engine/schema/agent.schema.json`](https://github.com/rajitsaha/agentbreeder/blob/main/engine/schema/agent.schema.json).
 
 ## Name Constraints
 
