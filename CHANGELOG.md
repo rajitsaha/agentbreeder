@@ -82,6 +82,33 @@ This project follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) an
 
 ---
 
+## [1.4.0] — 2026-04-12
+
+### Added
+
+#### Package Distribution (M32)
+- PyPI: `pip install agentbreeder` (CLI + API server + engine) and `pip install agentbreeder-sdk` (lightweight SDK)
+- npm: `npm install @agentbreeder/sdk` — TypeScript SDK published to the npm registry
+- Docker Hub: multi-platform images (`linux/amd64` + `linux/arm64`) for API server, dashboard, and CLI
+  - `rajits/agentbreeder-api` — FastAPI backend
+  - `rajits/agentbreeder-dashboard` — React frontend
+  - `rajits/agentbreeder-cli` — lightweight CLI image for CI/CD pipelines
+- Homebrew: `brew tap rajitsaha/agentbreeder && brew install agentbreeder` via `Formula/agentbreeder.rb` (Python virtualenv pattern)
+
+#### Release Automation
+- `.github/workflows/release.yml`: single workflow publishes to all four distribution channels on each tagged release
+- PyPI publishing via OIDC trusted publishers — no long-lived API tokens required
+- Homebrew formula auto-updated on every release via the `rajitsaha/homebrew-agentbreeder` tap repo
+
+### Changed
+- Both Python packages (`agentbreeder` and `agentbreeder-sdk`) now derive their version from git tags using `hatch-vcs` — no more manual version bumps
+
+### Infrastructure
+- CI test matrix expanded to Python 3.11 and 3.12
+- Codecov configuration fixed (`fail_ci_if_error`) for accurate coverage reporting across the matrix
+
+---
+
 ## [1.0.0] — 2026-03-12
 
 ### Added
@@ -113,5 +140,6 @@ This project follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) an
 
 ---
 
-[Unreleased]: https://github.com/rajitsaha/agentbreeder/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/rajitsaha/agentbreeder/compare/v1.4.0...HEAD
+[1.4.0]: https://github.com/rajitsaha/agentbreeder/compare/v1.0.0...v1.4.0
 [1.0.0]: https://github.com/rajitsaha/agentbreeder/releases/tag/v1.0.0

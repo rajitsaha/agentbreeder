@@ -8,6 +8,7 @@
 
 [![PyPI](https://img.shields.io/pypi/v/agentbreeder?color=blue&label=PyPI)](https://pypi.org/project/agentbreeder/)
 [![PyPI Downloads](https://img.shields.io/pypi/dm/agentbreeder?color=green&label=Downloads)](https://pypi.org/project/agentbreeder/)
+[![npm](https://img.shields.io/npm/v/@agentbreeder/sdk?color=red&label=npm)](https://www.npmjs.com/package/@agentbreeder/sdk)
 [![Python](https://img.shields.io/pypi/pyversions/agentbreeder?color=blue)](https://pypi.org/project/agentbreeder/)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![CI](https://github.com/rajitsaha/agentbreeder/actions/workflows/ci.yml/badge.svg)](https://github.com/rajitsaha/agentbreeder/actions/workflows/ci.yml)
@@ -268,8 +269,25 @@ pipeline.deploy()
 # Full CLI + API server + engine
 pip install agentbreeder
 
-# Lightweight SDK only (for programmatic agent definitions)
+# Lightweight Python SDK only (for programmatic agent definitions)
 pip install agentbreeder-sdk
+```
+
+### npm (TypeScript / JavaScript)
+
+```bash
+npm install @agentbreeder/sdk
+```
+
+```typescript
+import { Agent } from "@agentbreeder/sdk";
+
+const agent = new Agent("customer-support", { version: "1.0.0", team: "eng" })
+  .withModel({ primary: "claude-sonnet-4", fallback: "gpt-4o" })
+  .withTool({ ref: "tools/zendesk-mcp" })
+  .withDeploy({ cloud: "aws", region: "us-east-1" });
+
+await agent.deploy();
 ```
 
 ### Homebrew (macOS / Linux)

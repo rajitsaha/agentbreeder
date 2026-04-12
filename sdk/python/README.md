@@ -74,8 +74,19 @@ The SDK is the **Full Code** tier of AgentBreeder. You can eject from a YAML con
 agentbreeder eject agent.yaml --output agent_sdk.py
 ```
 
+## TypeScript SDK
+
+Looking for TypeScript / JavaScript? Install the official TypeScript SDK:
+
+```bash
+npm install @agentbreeder/sdk
+```
+
+See [`sdk/typescript/`](../../sdk/typescript/README.md) for full documentation.
+
 ## Links
 
 - [Documentation](https://agent-breeder.com)
 - [GitHub](https://github.com/rajitsaha/agentbreeder)
 - [agent.yaml reference](https://agent-breeder.com/agent-yaml)
+- [TypeScript SDK on npm](https://www.npmjs.com/package/@agentbreeder/sdk)

@@ -44,8 +44,9 @@ docker run -p 3001:3001 rajits/agentbreeder-dashboard
 
 ### Option 4: SDK only (for programmatic use)
 
+**Python:**
+
 ```bash
-# Lightweight SDK — no CLI, no server, just the Python API
 pip install agentbreeder-sdk
 ```
 
@@ -54,6 +55,19 @@ from agenthub import Agent
 
 agent = Agent("my-agent", version="1.0.0", team="eng")
 print(agent.to_yaml())
+```
+
+**TypeScript / JavaScript:**
+
+```bash
+npm install @agentbreeder/sdk
+```
+
+```typescript
+import { Agent } from "@agentbreeder/sdk";
+
+const agent = new Agent("my-agent", { version: "1.0.0", team: "eng" });
+console.log(agent.toYaml());
 ```
 
 ### Option 5: From source (for contributors)

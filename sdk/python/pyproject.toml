@@ -33,7 +33,7 @@ Documentation = "https://agent-breeder.com"
 
 [tool.hatch.version]
 source = "vcs"
-fallback-version = "0.1.0"
+fallback-version = "1.4.0"
 
 [tool.hatch.build.targets.wheel]
 packages = ["agenthub"]
