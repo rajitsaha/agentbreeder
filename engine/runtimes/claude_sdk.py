@@ -57,7 +57,7 @@ def _build_env_block(config: "AgentConfig") -> str:
     if config.model.max_tokens is not None:
         lines.append(f"ENV AGENT_MAX_TOKENS={config.model.max_tokens}")
     if config.prompts.system:
-        safe = config.prompts.system.replace("\n", " ").replace('"', '\\"')
+        safe = config.prompts.system.replace("\n", " ").replace("\r", " ").replace('"', '\\"')
         lines.append(f'ENV AGENT_SYSTEM_PROMPT="{safe}"')
     for key, val in config.deploy.env_vars.items():
         safe_val = str(val).replace("\n", " ").replace("\r", " ").replace('"', '\\"')
