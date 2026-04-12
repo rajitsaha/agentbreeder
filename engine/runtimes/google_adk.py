@@ -48,6 +48,29 @@ CMD ["uvicorn", "server:app", "--host", "0.0.0.0", "--port", "8080"]
 """
 
 
+def _build_env_block(config: "AgentConfig") -> str:
+    """Generate Dockerfile ENV lines from agent.yaml model + deploy config."""
+    lines: list[str] = [
+        f'ENV AGENT_NAME="{config.name}"',
+        f'ENV AGENT_VERSION="{config.version}"',
+        'ENV AGENT_FRAMEWORK="google_adk"',
+    ]
+    if config.model.primary:
+        safe_model = config.model.primary.replace("\n", " ").replace("\r", " ").replace('"', '\\"')
+        lines.append(f'ENV AGENT_MODEL="{safe_model}"')
+    if config.model.temperature is not None:
+        lines.append(f"ENV AGENT_TEMPERATURE={config.model.temperature}")
+    if config.model.max_tokens is not None:
+        lines.append(f"ENV AGENT_MAX_TOKENS={config.model.max_tokens}")
+    if config.prompts.system:
+        safe = config.prompts.system.replace("\n", " ").replace("\r", " ").replace('"', '\\"')
+        lines.append(f'ENV AGENT_SYSTEM_PROMPT="{safe}"')
+    for key, val in config.deploy.env_vars.items():
+        safe_val = str(val).replace("\n", " ").replace("\r", " ").replace('"', '\\"')
+        lines.append(f'ENV {key}="{safe_val}"')
+    return "\n".join(lines)
+
+
 class GoogleADKRuntime(RuntimeBuilder):
     """Runtime builder for Google Agent Development Kit (ADK) agents."""
 
@@ -115,13 +138,15 @@ class GoogleADKRuntime(RuntimeBuilder):
 
         # Write Dockerfile
         dockerfile = build_dir / "Dockerfile"
-        dockerfile.write_text(DOCKERFILE_TEMPLATE)
+        env_block = _build_env_block(config)
+        dockerfile_content = DOCKERFILE_TEMPLATE.rstrip() + "\n\n# Agent configuration\n" + env_block + "\n"
+        dockerfile.write_text(dockerfile_content)
 
         tag = f"agentbreeder/{config.name}:{config.version}"
 
         return ContainerImage(
             tag=tag,
-            dockerfile_content=DOCKERFILE_TEMPLATE,
+            dockerfile_content=dockerfile_content,
             context_dir=build_dir,
         )
 

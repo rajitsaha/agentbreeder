@@ -245,3 +245,59 @@ class TestCrewAIRuntimeBuild:
         (pycache / "crew.cpython-311.pyc").write_text("bytecode")
         image = runtime.build(agent_dir, _make_config())
         assert not (image.context_dir / "__pycache__").exists()
+
+
+# ---------------------------------------------------------------------------
+# build() — env var injection
+# ---------------------------------------------------------------------------
+
+
+class TestCrewAIRuntimeEnvVarInjection:
+    """build() must write model config and deploy.env_vars into the Dockerfile."""
+
+    def test_build_writes_agent_model_env_var(self) -> None:
+        runtime = CrewAIRuntime()
+        agent_dir = _make_agent_dir(
+            {"crew.py": "crew = None", "requirements.txt": "crewai>=0.80.0"}
+        )
+        config = _make_config(model={"primary": "claude-opus-4-6"})
+        image = runtime.build(agent_dir, config)
+        dockerfile = (image.context_dir / "Dockerfile").read_text()
+        assert "AGENT_MODEL" in dockerfile
+        assert "claude-opus-4-6" in dockerfile
+
+    def test_build_writes_temperature_env_var(self) -> None:
+        runtime = CrewAIRuntime()
+        agent_dir = _make_agent_dir(
+            {"crew.py": "crew = None", "requirements.txt": "crewai>=0.80.0"}
+        )
+        config = _make_config(model={"primary": "gpt-4o", "temperature": 0.3})
+        image = runtime.build(agent_dir, config)
+        dockerfile = (image.context_dir / "Dockerfile").read_text()
+        assert "AGENT_TEMPERATURE" in dockerfile
+        assert "0.3" in dockerfile
+
+    def test_build_writes_deploy_env_vars(self) -> None:
+        runtime = CrewAIRuntime()
+        agent_dir = _make_agent_dir(
+            {"crew.py": "crew = None", "requirements.txt": "crewai>=0.80.0"}
+        )
+        config = _make_config(
+            deploy={"cloud": "local", "env_vars": {"SERPER_API_KEY": "test-key", "LOG_LEVEL": "debug"}}
+        )
+        image = runtime.build(agent_dir, config)
+        dockerfile = (image.context_dir / "Dockerfile").read_text()
+        assert "SERPER_API_KEY" in dockerfile
+        assert "test-key" in dockerfile
+        assert "LOG_LEVEL" in dockerfile
+
+    def test_build_skips_optional_env_vars_when_not_set(self) -> None:
+        runtime = CrewAIRuntime()
+        agent_dir = _make_agent_dir(
+            {"crew.py": "crew = None", "requirements.txt": "crewai>=0.80.0"}
+        )
+        config = _make_config()  # no temperature, no max_tokens
+        image = runtime.build(agent_dir, config)
+        dockerfile = (image.context_dir / "Dockerfile").read_text()
+        assert "AGENT_TEMPERATURE" not in dockerfile
+        assert "AGENT_MAX_TOKENS" not in dockerfile

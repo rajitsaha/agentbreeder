@@ -251,3 +251,36 @@ class TestGoogleADKRuntimeRequirements:
         assert isinstance(reqs, list)
         assert len(reqs) > 0
         assert all(isinstance(r, str) for r in reqs)
+
+
+# ---------------------------------------------------------------------------
+# build() — env var injection
+# ---------------------------------------------------------------------------
+
+
+class TestGoogleADKRuntimeEnvVarInjection:
+    def test_build_writes_agent_model_env_var(self, tmp_path: Path) -> None:
+        runtime = GoogleADKRuntime()
+        agent_dir = _make_agent_dir(
+            tmp_path,
+            {"agent.py": "root_agent = None", "requirements.txt": "google-adk>=0.3.0"},
+        )
+        config = _make_config(model={"primary": "gemini-1.5-pro"})
+        image = runtime.build(agent_dir, config)
+        dockerfile = (image.context_dir / "Dockerfile").read_text()
+        assert "AGENT_MODEL" in dockerfile
+        assert "gemini-1.5-pro" in dockerfile
+
+    def test_build_writes_deploy_env_vars(self, tmp_path: Path) -> None:
+        runtime = GoogleADKRuntime()
+        agent_dir = _make_agent_dir(
+            tmp_path,
+            {"agent.py": "root_agent = None", "requirements.txt": "google-adk>=0.3.0"},
+        )
+        config = _make_config(
+            deploy={"cloud": "gcp", "env_vars": {"GOOGLE_CLOUD_PROJECT": "my-proj"}}
+        )
+        image = runtime.build(agent_dir, config)
+        dockerfile = (image.context_dir / "Dockerfile").read_text()
+        assert "GOOGLE_CLOUD_PROJECT" in dockerfile
+        assert "my-proj" in dockerfile
