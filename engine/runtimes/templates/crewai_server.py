@@ -11,6 +11,7 @@ import importlib
 import logging
 import os
 import sys
+from contextlib import asynccontextmanager
 from typing import Any
 
 from fastapi import FastAPI, HTTPException
@@ -18,12 +19,6 @@ from pydantic import BaseModel
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("agentbreeder.agent")
-
-app = FastAPI(
-    title="AgentBreeder Agent",
-    description="Deployed by AgentBreeder",
-    version=os.getenv("AGENT_VERSION", "0.1.0"),
-)
 
 
 class InvokeRequest(BaseModel):
@@ -69,12 +64,47 @@ def _load_agent() -> Any:
 _crew = None
 
 
-@app.on_event("startup")
-async def startup() -> None:
+@asynccontextmanager
+async def lifespan(app: FastAPI):  # noqa: ARG001
+    """FastAPI lifespan context manager for startup and shutdown."""
     global _crew  # noqa: PLW0603
     logger.info("Loading CrewAI crew...")
     _crew = _load_agent()
     logger.info("CrewAI crew loaded successfully")
+
+    # Apply model config from env vars if the crew has agents
+    agent_model = os.getenv("AGENT_MODEL")
+    agent_temperature_str = os.getenv("AGENT_TEMPERATURE")
+    agent_temperature = float(agent_temperature_str) if agent_temperature_str else None
+
+    if agent_model and hasattr(_crew, "agents"):
+        try:
+            from crewai import LLM
+
+            llm_kwargs: dict[str, Any] = {"model": agent_model}
+            if agent_temperature is not None:
+                llm_kwargs["temperature"] = agent_temperature
+            override_llm = LLM(**llm_kwargs)
+            for agent in _crew.agents:
+                agent.llm = override_llm
+            logger.info(
+                "Applied model override to %d agent(s): model=%s temperature=%s",
+                len(_crew.agents),
+                agent_model,
+                agent_temperature,
+            )
+        except Exception:
+            logger.warning("Could not apply AGENT_MODEL override — proceeding with crew defaults")
+
+    yield
+
+
+app = FastAPI(
+    title="AgentBreeder Agent",
+    description="Deployed by AgentBreeder",
+    version=os.getenv("AGENT_VERSION", "0.1.0"),
+    lifespan=lifespan,
+)
 
 
 @app.get("/health", response_model=HealthResponse)

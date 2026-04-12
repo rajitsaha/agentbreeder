@@ -314,3 +314,18 @@ class TestCrewAIRuntimeEnvVarInjection:
         dockerfile = (image.context_dir / "Dockerfile").read_text()
         assert "SAFE_KEY" in dockerfile
         assert "value" in dockerfile
+
+
+class TestCrewAIServerModelConfig:
+    """The server template must read AGENT_MODEL / AGENT_TEMPERATURE from env."""
+
+    def test_server_template_references_agent_model_env(self) -> None:
+        """crewai_server.py must read AGENT_MODEL env var to allow model override."""
+        server_text = Path("engine/runtimes/templates/crewai_server.py").read_text()
+        assert "AGENT_MODEL" in server_text, (
+            "crewai_server.py must read AGENT_MODEL env var to allow model override"
+        )
+
+    def test_server_template_references_agent_temperature_env(self) -> None:
+        server_text = Path("engine/runtimes/templates/crewai_server.py").read_text()
+        assert "AGENT_TEMPERATURE" in server_text
