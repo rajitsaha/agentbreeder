@@ -328,10 +328,14 @@ jobs:
       - name: Publish to npm
         run: |
           VERSION="${{ steps.version.outputs.version }}"
-          if npm view "@agentbreeder/sdk@${VERSION}" version 2>/dev/null; then
-            echo "Version ${VERSION} already published on npm, skipping."
-          else
-            npm publish --access public
+          npm publish --access public 2>&1 | tee /tmp/npm-publish.log; publish_exit=${PIPESTATUS[0]}
+          if [ $publish_exit -ne 0 ]; then
+            if grep -q "You cannot publish over" /tmp/npm-publish.log; then
+              echo "Version ${VERSION} already published on npm, skipping."
+            else
+              cat /tmp/npm-publish.log
+              exit $publish_exit
+            fi
           fi
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
