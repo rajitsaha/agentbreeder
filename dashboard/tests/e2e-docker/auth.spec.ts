@@ -12,19 +12,18 @@ test.describe("Real auth flows", () => {
     const switchBtn = page.getByRole("button", { name: /sign up|register|create\s+(?:an?\s+)?account/i });
     await switchBtn.click();
 
-    // Fill registration form
-    await page.locator('input[type="email"]').fill(email);
-    await page.locator('input[type="password"]').fill(password);
+    // Fill registration form — name/team fields have id="name" and id="team"
+    const nameInput = page.locator('#name');
+    await nameInput.waitFor({ state: 'visible', timeout: 5_000 });
+    await nameInput.fill("E2E User");
 
-    // Fill name/team if present (gracefully handle optional fields)
-    const nameInput = page.locator('input[name="name"], input[placeholder*="name" i]').first();
-    if (await nameInput.isVisible()) {
-      await nameInput.fill("E2E User");
-    }
-    const teamInput = page.locator('input[name="team"], input[placeholder*="team" i]').first();
+    const teamInput = page.locator('#team');
     if (await teamInput.isVisible()) {
       await teamInput.fill("engineering");
     }
+
+    await page.locator('input[type="email"]').fill(email);
+    await page.locator('input[type="password"]').fill(password);
 
     await page.locator('button[type="submit"]').click();
 

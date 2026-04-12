@@ -6,6 +6,7 @@ export default defineConfig({
   testDir: "./tests/e2e-docker",
   timeout: 60_000,   // Docker cold-start responses can be slower
   retries: 1,        // One retry for transient Docker networking hiccups
+  workers: 1,        // Sequential — prevents concurrent auth API interference
   use: {
     baseURL: process.env.PLAYWRIGHT_DOCKER_BASE_URL ?? "http://localhost:3001",
     headless: true,
