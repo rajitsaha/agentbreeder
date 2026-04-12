@@ -14,7 +14,10 @@ import sys
 from contextlib import asynccontextmanager
 from typing import Any
 
+import json
+
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
 logging.basicConfig(level=logging.INFO)
@@ -136,3 +139,61 @@ async def _run_crew(input_data: dict[str, Any]) -> str:
     else:
         msg = "Crew object does not have a kickoff method"
         raise TypeError(msg)
+
+
+@app.post("/stream")
+async def stream(request: InvokeRequest) -> StreamingResponse:
+    """Stream CrewAI execution as Server-Sent Events."""
+    if _crew is None:
+        raise HTTPException(status_code=503, detail="Crew not loaded yet")
+    return StreamingResponse(
+        _stream_crew(request.input),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )
+
+
+async def _stream_crew(input_data: dict[str, Any]) -> Any:
+    """Async generator that yields SSE-formatted strings for each CrewAI step."""
+    queue: asyncio.Queue = asyncio.Queue()
+
+    def _step_callback(step_output: Any) -> None:
+        payload: dict[str, Any] = {}
+        if hasattr(step_output, "task") and hasattr(step_output.task, "description"):
+            payload["task"] = step_output.task.description
+        if hasattr(step_output, "result"):
+            payload["result"] = str(step_output.result)
+        queue.put_nowait(("step", payload))
+
+    _DONE = object()
+
+    async def _run() -> None:
+        try:
+            if hasattr(_crew, "akickoff"):
+                result = await _crew.akickoff(inputs=input_data, step_callback=_step_callback)
+            elif hasattr(_crew, "kickoff"):
+                result = await asyncio.to_thread(_crew.kickoff, inputs=input_data)
+            else:
+                raise TypeError("Crew object does not have akickoff or kickoff method")
+            final_raw = getattr(result, "raw", str(result))
+            queue.put_nowait(("result", {"output": final_raw}))
+        except Exception as exc:  # noqa: BLE001
+            queue.put_nowait(("error", {"detail": str(exc)}))
+        finally:
+            queue.put_nowait(_DONE)
+
+    task = asyncio.create_task(_run())
+    try:
+        while True:
+            item = await queue.get()
+            if item is _DONE:
+                break
+            event_type, payload = item
+            yield f"event: {event_type}\ndata: {json.dumps(payload)}\n\n"
+        yield "data: [DONE]\n\n"
+    finally:
+        task.cancel()
+        try:
+            await task
+        except asyncio.CancelledError:
+            pass
