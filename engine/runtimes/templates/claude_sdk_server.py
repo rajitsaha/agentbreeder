@@ -20,7 +20,10 @@ import os
 import sys
 from typing import Any
 
+import json
+
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
 logging.basicConfig(level=logging.INFO)
@@ -103,6 +106,59 @@ async def invoke(request: InvokeRequest) -> InvokeResponse:
     except Exception as e:
         logger.exception("Agent invocation failed")
         raise HTTPException(status_code=500, detail=str(e)) from e
+
+
+@app.post("/stream")
+async def stream(request: InvokeRequest) -> StreamingResponse:
+    """Stream Claude SDK responses as Server-Sent Events."""
+    if _agent is None:
+        raise HTTPException(status_code=503, detail="Agent not loaded yet")
+    return StreamingResponse(
+        _stream_agent(request.input),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )
+
+
+async def _stream_agent(input_data: str) -> Any:
+    """Async generator that yields SSE-formatted strings for Claude SDK agents."""
+    import anthropic
+
+    model = os.getenv("AGENT_MODEL", "claude-sonnet-4-6")
+    system_prompt = os.getenv("AGENT_SYSTEM_PROMPT", "")
+    max_tokens = int(os.getenv("AGENT_MAX_TOKENS", "1024"))
+    messages = [{"role": "user", "content": input_data}]
+
+    if isinstance(_agent, anthropic.AsyncAnthropic):
+        kwargs: dict[str, Any] = {
+            "model": model,
+            "max_tokens": max_tokens,
+            "messages": messages,
+        }
+        if system_prompt:
+            kwargs["system"] = system_prompt
+        try:
+            async with _agent.messages.stream(**kwargs) as stream:
+                async for event in stream:
+                    event_type_val = getattr(event, "type", "unknown")
+                    payload: dict[str, Any] = {"type": event_type_val}
+                    if (
+                        event_type_val == "content_block_delta"
+                        and hasattr(event, "delta")
+                        and isinstance(getattr(event.delta, "text", None), str)
+                    ):
+                        payload["text"] = event.delta.text
+                    yield f"data: {json.dumps(payload)}\n\n"
+        except Exception as exc:  # noqa: BLE001
+            yield f"data: {json.dumps({'error': str(exc)})}\n\n"
+    else:
+        try:
+            result = await _run_agent(input_data)
+            yield f"data: {json.dumps({'type': 'result', 'text': result})}\n\n"
+        except Exception as exc:  # noqa: BLE001
+            yield f"data: {json.dumps({'error': str(exc)})}\n\n"
+
+    yield "data: [DONE]\n\n"
 
 
 async def _run_agent(input_data: str) -> str:
