@@ -67,6 +67,8 @@ jobs:
     needs: pre-release-check
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # hatch-vcs needs full tag history
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -91,6 +93,8 @@ jobs:
     needs: pre-release-check
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # hatch-vcs needs full tag history
 
       - uses: actions/setup-python@v5
         with:
