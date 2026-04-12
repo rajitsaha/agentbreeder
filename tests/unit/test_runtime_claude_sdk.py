@@ -251,3 +251,37 @@ class TestClaudeSDKRuntimeRequirements:
         reqs = runtime.get_requirements(config)
         anthropic_req = next(r for r in reqs if "anthropic" in r)
         assert "0.40.0" in anthropic_req
+
+
+class TestClaudeSDKServerMaxTokens:
+    """max_tokens must come from AGENT_MAX_TOKENS env var, not be hardcoded."""
+
+    def test_build_sets_agent_max_tokens_env_var(self) -> None:
+        """build() must write AGENT_MAX_TOKENS into the Dockerfile."""
+        runtime = ClaudeSDKRuntime()
+        agent_dir = _make_agent_dir(
+            {
+                "agent.py": "agent = None",
+                "requirements.txt": "anthropic>=0.40.0",
+            }
+        )
+        config = _make_config(model={"primary": "claude-opus-4-6", "max_tokens": 4096})
+        image = runtime.build(agent_dir, config)
+        dockerfile = (image.context_dir / "Dockerfile").read_text()
+        assert "AGENT_MAX_TOKENS" in dockerfile
+        assert "4096" in dockerfile
+
+    def test_build_omits_max_tokens_env_when_not_set(self) -> None:
+        """If model.max_tokens is None, AGENT_MAX_TOKENS should not appear in Dockerfile."""
+        runtime = ClaudeSDKRuntime()
+        agent_dir = _make_agent_dir(
+            {
+                "agent.py": "agent = None",
+                "requirements.txt": "anthropic>=0.40.0",
+            }
+        )
+        # _make_config() uses no max_tokens by default
+        config = _make_config()
+        image = runtime.build(agent_dir, config)
+        dockerfile = (image.context_dir / "Dockerfile").read_text()
+        assert "AGENT_MAX_TOKENS" not in dockerfile

@@ -110,6 +110,7 @@ async def _run_agent(input_data: str) -> str:
     import anthropic
 
     model = os.getenv("AGENT_MODEL", "claude-sonnet-4-6")
+    max_tokens = int(os.getenv("AGENT_MAX_TOKENS", "1024"))
     system_prompt = os.getenv("AGENT_SYSTEM_PROMPT", "")
     messages = [{"role": "user", "content": input_data}]
 
@@ -117,7 +118,7 @@ async def _run_agent(input_data: str) -> str:
     if isinstance(_agent, anthropic.AsyncAnthropic):
         kwargs: dict[str, Any] = {
             "model": model,
-            "max_tokens": 1024,
+            "max_tokens": max_tokens,
             "messages": messages,
         }
         if system_prompt:
@@ -129,7 +130,7 @@ async def _run_agent(input_data: str) -> str:
     if isinstance(_agent, anthropic.Anthropic):
         kwargs = {
             "model": model,
-            "max_tokens": 1024,
+            "max_tokens": max_tokens,
             "messages": messages,
         }
         if system_prompt:
