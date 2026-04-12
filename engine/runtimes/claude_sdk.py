@@ -12,7 +12,7 @@ import tempfile
 from pathlib import Path
 
 from engine.config_parser import AgentConfig
-from engine.runtimes.base import ContainerImage, RuntimeBuilder, RuntimeValidationResult
+from engine.runtimes.base import ContainerImage, RuntimeBuilder, RuntimeValidationResult, build_env_block
 
 logger = logging.getLogger(__name__)
 
@@ -42,27 +42,6 @@ HEALTHCHECK --interval=10s --timeout=5s --retries=3 \
 CMD ["uvicorn", "server:app", "--host", "0.0.0.0", "--port", "8080"]
 """
 
-
-def _build_env_block(config: "AgentConfig") -> str:
-    """Generate Dockerfile ENV lines from agent.yaml model + deploy config."""
-    lines: list[str] = []
-    lines.append(f'ENV AGENT_NAME="{config.name}"')
-    lines.append(f'ENV AGENT_VERSION="{config.version}"')
-    lines.append(f'ENV AGENT_FRAMEWORK="claude_sdk"')
-    if config.model.primary:
-        safe_model = config.model.primary.replace("\n", " ").replace("\r", " ").replace('"', '\\"')
-        lines.append(f'ENV AGENT_MODEL="{safe_model}"')
-    if config.model.temperature is not None:
-        lines.append(f"ENV AGENT_TEMPERATURE={config.model.temperature}")
-    if config.model.max_tokens is not None:
-        lines.append(f"ENV AGENT_MAX_TOKENS={config.model.max_tokens}")
-    if config.prompts.system:
-        safe = config.prompts.system.replace("\n", " ").replace("\r", " ").replace('"', '\\"')
-        lines.append(f'ENV AGENT_SYSTEM_PROMPT="{safe}"')
-    for key, val in config.deploy.env_vars.items():
-        safe_val = str(val).replace("\n", " ").replace("\r", " ").replace('"', '\\"')
-        lines.append(f'ENV {key}="{safe_val}"')
-    return "\n".join(lines)
 
 
 class ClaudeSDKRuntime(RuntimeBuilder):
@@ -142,7 +121,7 @@ class ClaudeSDKRuntime(RuntimeBuilder):
 
         # Write Dockerfile
         dockerfile = build_dir / "Dockerfile"
-        env_block = _build_env_block(config)
+        env_block = build_env_block(config, "claude_sdk")
         dockerfile_content = DOCKERFILE_TEMPLATE.rstrip() + "\n\n# Agent configuration\n" + env_block + "\n"
         dockerfile.write_text(dockerfile_content)
 

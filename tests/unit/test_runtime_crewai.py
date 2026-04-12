@@ -301,3 +301,16 @@ class TestCrewAIRuntimeEnvVarInjection:
         dockerfile = (image.context_dir / "Dockerfile").read_text()
         assert "AGENT_TEMPERATURE" not in dockerfile
         assert "AGENT_MAX_TOKENS" not in dockerfile
+
+    def test_build_sanitises_env_var_keys(self) -> None:
+        runtime = CrewAIRuntime()
+        agent_dir = _make_agent_dir(
+            {"crew.py": "crew = None", "requirements.txt": "crewai>=0.80.0"}
+        )
+        config = _make_config(
+            deploy={"cloud": "local", "env_vars": {"SAFE_KEY": "value"}}
+        )
+        image = runtime.build(agent_dir, config)
+        dockerfile = (image.context_dir / "Dockerfile").read_text()
+        assert "SAFE_KEY" in dockerfile
+        assert "value" in dockerfile
