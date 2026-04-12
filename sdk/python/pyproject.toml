@@ -1,10 +1,10 @@
 [build-system]
-requires = ["hatchling"]
+requires = ["hatchling", "hatch-vcs"]
 build-backend = "hatchling.build"
 
 [project]
 name = "agentbreeder-sdk"
-version = "0.1.0"
+dynamic = ["version"]
 description = "AgentBreeder Python SDK — define, validate, and deploy AI agents programmatically."
 readme = "README.md"
 license = "Apache-2.0"
@@ -27,9 +27,13 @@ dependencies = [
 mcp = ["mcp>=1.0.0"]
 
 [project.urls]
-Homepage = "https://github.com/rajitsaha/agentbreeder"
+Homepage = "https://agent-breeder.com"
 Repository = "https://github.com/rajitsaha/agentbreeder"
 Documentation = "https://agent-breeder.com"
+
+[tool.hatch.version]
+source = "vcs"
+fallback-version = "0.1.0"
 
 [tool.hatch.build.targets.wheel]
 packages = ["agenthub"]

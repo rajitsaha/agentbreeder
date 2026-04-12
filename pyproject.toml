@@ -1,10 +1,10 @@
 [build-system]
-requires = ["hatchling"]
+requires = ["hatchling", "hatch-vcs"]
 build-backend = "hatchling.build"
 
 [project]
 name = "agentbreeder"
-version = "0.1.0"
+dynamic = ["version"]
 description = "Define Once. Deploy Anywhere. Govern Automatically."
 readme = "README.md"
 license = "Apache-2.0"
@@ -78,9 +78,13 @@ all-clouds = [
 agentbreeder = "cli.main:app"
 
 [project.urls]
-Homepage = "https://agentbreeder.com"
+Homepage = "https://agent-breeder.com"
 Repository = "https://github.com/rajitsaha/agentbreeder"
 Documentation = "https://agent-breeder.com"
+
+[tool.hatch.version]
+source = "vcs"
+fallback-version = "0.1.0"
 
 [tool.hatch.build.targets.wheel]
 packages = ["engine", "api", "cli", "registry", "connectors"]
