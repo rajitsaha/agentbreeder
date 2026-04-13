@@ -230,8 +230,9 @@ async def invoke(request: InvokeRequest) -> InvokeResponse:
     if _crew is None:
         raise HTTPException(status_code=503, detail="Crew not loaded yet")
 
+    obj = _agent_obj if _agent_obj is not None else _crew
     try:
-        result = await _run_crew(request.input)
+        result = await _dispatch(obj, _mode, request.input)
         schema_errors = _validate_output(str(result), _output_schema)
         return InvokeResponse(output=result, mode=_mode, output_schema_errors=schema_errors)
     except Exception as e:
