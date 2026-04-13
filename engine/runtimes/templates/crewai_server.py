@@ -20,6 +20,9 @@ from fastapi import FastAPI, HTTPException
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
+from engine.tool_bridge import to_crewai_tools
+from engine.config_parser import ToolRef
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("agentbreeder.agent")
 
@@ -65,6 +68,35 @@ def _load_agent() -> Any:
 
 # Load crew at startup
 _crew = None
+_crewai_tools: list = []
+
+
+async def startup() -> None:
+    """Wire tool bridge into the loaded crew.
+
+    This is called by the lifespan after _load_agent(), and can also be
+    called directly in tests (with _crew pre-set) to exercise the wiring.
+    """
+    global _crewai_tools  # noqa: PLW0603
+    tools_json = os.getenv("AGENT_TOOLS_JSON", "[]")
+    try:
+        raw_tools = json.loads(tools_json)
+        tool_refs = [ToolRef(**t) for t in raw_tools]
+        _crewai_tools = to_crewai_tools(tool_refs)
+        if _crewai_tools:
+            logger.info("Loaded %d CrewAI tool(s)", len(_crewai_tools))
+            if hasattr(_crew, "agents"):
+                for agent in _crew.agents:
+                    if hasattr(agent, "tools") and isinstance(agent.tools, list):
+                        agent.tools = list(agent.tools) + _crewai_tools
+                        logger.debug(
+                            "Injected %d tool(s) into CrewAI agent %r",
+                            len(_crewai_tools),
+                            getattr(agent, "role", "<unknown>"),
+                        )
+    except Exception:
+        logger.exception("Failed to load CrewAI tools -- proceeding with no tools")
+        _crewai_tools = []
 
 
 @asynccontextmanager
@@ -98,6 +130,9 @@ async def lifespan(app: FastAPI):  # noqa: ARG001
             )
         except Exception:
             logger.warning("Could not apply AGENT_MODEL override — proceeding with crew defaults")
+
+    # --- Tool bridge ---
+    await startup()
 
     yield
 

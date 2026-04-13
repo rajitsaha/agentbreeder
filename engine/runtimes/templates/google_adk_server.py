@@ -22,6 +22,9 @@ from fastapi import FastAPI, HTTPException
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
+from engine.tool_bridge import to_adk_tools
+from engine.config_parser import ToolRef
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("agentbreeder.agent")
 
@@ -29,6 +32,7 @@ logger = logging.getLogger("agentbreeder.agent")
 _agent = None
 _runner = None
 _session_service = None
+_adk_tools: list = []
 
 
 def _load_agent() -> Any:
@@ -49,6 +53,35 @@ def _load_agent() -> Any:
         "This should be a google.adk.agents.Agent instance."
     )
     raise AttributeError(msg)
+
+
+async def startup() -> None:
+    """Wire tool bridge into the loaded ADK agent.
+
+    This is called by the lifespan after _load_agent(), and can also be
+    called directly in tests (with _agent pre-set) to exercise the wiring.
+    """
+    global _adk_tools  # noqa: PLW0603
+    tools_json = os.getenv("AGENT_TOOLS_JSON", "[]")
+    try:
+        raw_tools = json.loads(tools_json)
+        tool_refs = [ToolRef(**t) for t in raw_tools]
+        _adk_tools = to_adk_tools(tool_refs)
+        if _adk_tools:
+            logger.info("Loaded %d ADK tool(s)", len(_adk_tools))
+            if hasattr(_agent, "tools"):
+                try:
+                    if isinstance(_agent.tools, list):
+                        _agent.tools.extend(_adk_tools)
+                    else:
+                        _agent.tools = list(_agent.tools) + _adk_tools
+                except Exception:
+                    logger.warning(
+                        "Could not inject tools into ADK agent -- agent.tools is not mutable"
+                    )
+    except Exception:
+        logger.exception("Failed to load ADK tools -- proceeding with no tools")
+        _adk_tools = []
 
 
 @asynccontextmanager
@@ -83,6 +116,9 @@ async def lifespan(app: FastAPI):  # noqa: ARG001
             logger.info("Applied generate_content_config overrides: %s", kwargs)
         except Exception:
             logger.warning("Could not apply generate_content_config — proceeding with agent defaults")
+
+    # --- Tool bridge ---
+    await startup()
 
     from google.adk.runners import Runner
     from google.adk.sessions import InMemorySessionService
