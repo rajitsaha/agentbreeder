@@ -203,7 +203,7 @@ class TestToCrewaiTools:
 
         with patch.dict(sys.modules, {"crewai": fake_crewai, "crewai.tools": fake_crewai_tools}):
             bridge = _import_bridge()
-            with patch("httpx.post", return_value=mock_response) as mock_post:
+            with patch.object(bridge._sync_http_client, "post", return_value=mock_response) as mock_post:
                 result = bridge.to_crewai_tools([_ToolRef(name="search", description="Search")])
                 assert len(result) == 1
                 output = result[0]._run(input="hello world")
@@ -211,7 +211,6 @@ class TestToCrewaiTools:
         mock_post.assert_called_once_with(
             "http://tool-host/search",
             json={"input": "hello world"},
-            timeout=30.0,
         )
         assert output == "found 3 results"
 
@@ -222,7 +221,7 @@ class TestToCrewaiTools:
 
         with patch.dict(sys.modules, {"crewai": fake_crewai, "crewai.tools": fake_crewai_tools}):
             bridge = _import_bridge()
-            with patch("httpx.post", side_effect=real_httpx.ConnectError("refused")):
+            with patch.object(bridge._sync_http_client, "post", side_effect=real_httpx.ConnectError("refused")):
                 result = bridge.to_crewai_tools([_ToolRef(name="search")])
                 output = result[0]._run(input="test")
 

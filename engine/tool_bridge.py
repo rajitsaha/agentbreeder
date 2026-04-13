@@ -20,6 +20,9 @@ logger = logging.getLogger(__name__)
 # Env var prefix used for all tool endpoint URLs.
 _ENV_PREFIX = "TOOL_ENDPOINT_"
 
+# Shared synchronous HTTP client for tool calls; avoids per-call connection setup.
+_sync_http_client = httpx.Client(timeout=30.0)
+
 
 # ---------------------------------------------------------------------------
 # Internal helpers
@@ -211,7 +214,7 @@ def to_crewai_tools(tools: list[Any]) -> list[Any]:
             def _run(self: Any, **kwargs: Any) -> str:
                 payload = kwargs if kwargs else {"input": getattr(self, "input", "")}
                 try:
-                    response = httpx.post(ep, json=payload, timeout=30.0)
+                    response = _sync_http_client.post(ep, json=payload)
                     response.raise_for_status()
                     data = response.json()
                     if isinstance(data, dict):
@@ -242,6 +245,66 @@ def to_crewai_tools(tools: list[Any]) -> list[Any]:
 # ---------------------------------------------------------------------------
 # Google ADK adapter
 # ---------------------------------------------------------------------------
+
+
+def _make_adk_func(
+    safe_name: str,
+    description: str,
+    param_specs: list[tuple[str, bool]],
+    endpoint: str,
+) -> Callable[..., Any]:
+    """Build an ADK-compatible async callable using closures instead of exec().
+
+    Sets __name__, __doc__, __signature__, and __annotations__ so that ADK's
+    introspection (inspect.signature) sees the correct typed parameter list.
+
+    Args:
+        safe_name: Sanitised Python identifier for the function name.
+        description: Tool description used as the function docstring.
+        param_specs: List of (param_name, is_required) tuples.
+        endpoint: HTTP endpoint URL for the tool call.
+
+    Returns:
+        Async callable compatible with google.adk.agents.Agent(tools=...).
+    """
+    import inspect
+
+    param_names = [p[0] for p in param_specs]
+    _endpoint = endpoint  # close over in the async function
+
+    async def _adk_tool(**kwargs: Any) -> str:
+        payload = {n: kwargs.get(n, "") for n in param_names}
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            try:
+                resp = await client.post(_endpoint, json=payload)
+                resp.raise_for_status()
+                data = resp.json()
+                if isinstance(data, dict):
+                    return str(data.get("output", data))
+                return str(data)
+            except httpx.HTTPError as exc:
+                return f"Error calling tool {safe_name!r}: {exc}"
+
+    _adk_tool.__name__ = safe_name
+    _adk_tool.__qualname__ = safe_name
+    _adk_tool.__doc__ = description
+
+    params: list[inspect.Parameter] = []
+    for name, is_required in param_specs:
+        if is_required:
+            params.append(
+                inspect.Parameter(name, inspect.Parameter.POSITIONAL_OR_KEYWORD, annotation=str)
+            )
+        else:
+            params.append(
+                inspect.Parameter(
+                    name, inspect.Parameter.POSITIONAL_OR_KEYWORD, annotation=str, default=""
+                )
+            )
+    _adk_tool.__signature__ = inspect.Signature(params)
+    _adk_tool.__annotations__ = {n: str for n in param_names}
+
+    return _adk_tool
 
 
 def to_adk_tools(tools: list[Any]) -> list[Callable[..., Any]]:
@@ -299,53 +362,26 @@ def to_adk_tools(tools: list[Any]) -> list[Callable[..., Any]]:
         props: dict[str, Any] = raw_schema.get("properties", {})
         required: list[str] = raw_schema.get("required", [])
 
-        # Build parameter list -- required params have no default, optional
-        # params default to "".  All are typed as str.
-        param_parts: list[str] = []
+        # Build parameter specs
+        param_parts_list: list[tuple[str, bool]] = []  # (safe_name, is_required)
         for prop_name in props:
             safe_prop = re.sub(r"[^a-zA-Z0-9_]", "_", prop_name)
-            if prop_name in required:
-                param_parts.append(f"{safe_prop}: str")
-            else:
-                param_parts.append(f'{safe_prop}: str = ""')
+            param_parts_list.append((safe_prop, prop_name in required))
 
-        if not param_parts:
-            param_parts = ['input: str = ""']
+        if not param_parts_list:
+            param_parts_list = [("input", False)]
 
-        # Extract just the parameter name (before the colon) for the payload dict.
-        param_names = [p.split(":")[0].strip() for p in param_parts]
-        params_str = ", ".join(param_parts)
-        payload_str = "{" + ", ".join(f"{repr(n)}: {n}" for n in param_names) + "}"
-
-        # Build the error message string separately to avoid quoting issues inside exec'd code.
-        err_msg_expr = '"Error calling tool ' + repr(safe_name) + ': " + str(exc)'
-        func_code = (
-            f"async def {safe_name}({params_str}) -> str:\n"
-            f"    import httpx as _httpx\n"
-            f"    payload = {payload_str}\n"
-            f"    async with _httpx.AsyncClient(timeout=30.0) as client:\n"
-            f"        try:\n"
-            f"            resp = await client.post({tool_endpoint!r}, json=payload)\n"
-            f"            resp.raise_for_status()\n"
-            f"            data = resp.json()\n"
-            f"            if isinstance(data, dict):\n"
-            f"                return str(data.get('output', data))\n"
-            f"            return str(data)\n"
-            f"        except _httpx.HTTPError as exc:\n"
-            f"            return {err_msg_expr}\n"
+        func = _make_adk_func(
+            safe_name=safe_name,
+            description=description,
+            param_specs=param_parts_list,
+            endpoint=tool_endpoint,
         )
-
-        namespace: dict[str, Any] = {}
-        exec(func_code, namespace)  # noqa: S102
-        func: Callable[..., Any] = namespace[safe_name]
-        func.__doc__ = description
-
         result.append(func)
         logger.debug(
-            "Registered ADK tool %r -> endpoint %r (params: %s)",
+            "Registered ADK tool %r -> endpoint %r",
             safe_name,
             tool_endpoint,
-            params_str,
         )
 
     return result

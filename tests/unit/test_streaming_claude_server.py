@@ -207,3 +207,44 @@ class TestClaudeStreamEndpoint:
             await client.post("/stream", json={"input": "hi"})
         assert captured_kwargs.get("max_tokens") == 4096
         srv._agent = None
+
+    @pytest.mark.asyncio
+    async def test_stream_passes_tools_to_messages_stream(self):
+        """_tools populated from startup must appear in messages.stream() kwargs."""
+        srv = _import_server()
+        # Import anthropic AFTER _import_server() so we get the fake module
+        # that was installed in sys.modules, matching what claude_sdk_server uses.
+        import anthropic as _anthropic_mod
+        mock_client = MagicMock()
+        # Make isinstance(_agent, anthropic.AsyncAnthropic) return True.
+        mock_client.__class__ = _anthropic_mod.AsyncAnthropic
+
+        captured_kwargs = {}
+
+        class _FakeStream:
+            async def __aenter__(self):
+                return self
+            async def __aexit__(self, *args):
+                pass
+            def __aiter__(self):
+                return self
+            async def __anext__(self):
+                raise StopAsyncIteration
+
+        def _fake_stream(**kwargs):
+            captured_kwargs.update(kwargs)
+            return _FakeStream()
+
+        mock_client.messages = MagicMock()
+        mock_client.messages.stream = _fake_stream
+        srv._agent = mock_client
+        srv._tools = [{"name": "search", "description": "desc", "input_schema": {"type": "object", "properties": {}}}]
+
+        transport = ASGITransport(app=srv.app)
+        async with AsyncClient(transport=transport, base_url="http://test") as client:
+            await client.post("/stream", json={"input": "hello"})
+
+        assert "tools" in captured_kwargs
+        assert captured_kwargs["tools"] == srv._tools
+        srv._agent = None
+        srv._tools = []

@@ -22,6 +22,9 @@ from typing import Any
 
 import json
 
+from engine.tool_bridge import to_claude_tools
+from engine.config_parser import ToolRef
+
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
@@ -76,14 +79,31 @@ def _load_agent() -> Any:
 
 # Load agent at startup
 _agent = None
+_tools: list[dict] = []
 
 
 @app.on_event("startup")
 async def startup() -> None:
-    global _agent  # noqa: PLW0603
+    global _agent, _tools  # noqa: PLW0603
     logger.info("Loading agent...")
-    _agent = _load_agent()
-    logger.info("Agent loaded successfully")
+    try:
+        _agent = _load_agent()
+        logger.info("Agent loaded successfully")
+    except Exception:
+        logger.warning("Agent module not loaded yet -- will retry on first request")
+    # --- Tool bridge ---
+    tools_json = os.getenv("AGENT_TOOLS_JSON", "[]")
+    try:
+        raw_tools = json.loads(tools_json)
+        tool_refs = [ToolRef(**t) for t in raw_tools]
+        _tools = to_claude_tools(tool_refs)
+        if _tools:
+            logger.info("Loaded %d Claude tool(s) from AGENT_TOOLS_JSON", len(_tools))
+    except Exception:
+        logger.exception(
+            "Failed to load tools from AGENT_TOOLS_JSON -- proceeding with no tools"
+        )
+        _tools = []
 
 
 @app.get("/health", response_model=HealthResponse)
@@ -137,6 +157,8 @@ async def _stream_agent(input_data: str) -> Any:
         }
         if system_prompt:
             kwargs["system"] = system_prompt
+        if _tools:
+            kwargs["tools"] = _tools
         try:
             async with _agent.messages.stream(**kwargs) as stream:
                 async for event in stream:
@@ -179,6 +201,8 @@ async def _run_agent(input_data: str) -> str:
         }
         if system_prompt:
             kwargs["system"] = system_prompt
+        if _tools:
+            kwargs["tools"] = _tools
         response = await _agent.messages.create(**kwargs)
         return _extract_text(response)
 
@@ -191,6 +215,8 @@ async def _run_agent(input_data: str) -> str:
         }
         if system_prompt:
             kwargs["system"] = system_prompt
+        if _tools:
+            kwargs["tools"] = _tools
         response = await asyncio.to_thread(_agent.messages.create, **kwargs)
         return _extract_text(response)
 
