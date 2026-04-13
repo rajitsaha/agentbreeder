@@ -43,7 +43,7 @@ InvokeRequest.model_rebuild()
 
 
 class InvokeResponse(BaseModel):
-    output: object = None
+    output: str | None = None
     session_id: str
     metadata: Optional[dict] = None  # type: ignore[type-arg]
 
@@ -356,7 +356,7 @@ async def _run_agent(
     input_text: str,
     user_id: str,
     session_id: Optional[str],
-) -> tuple:
+) -> tuple[str, str]:
     """Run the Google ADK agent using the module-level runner.
 
     Reuses an existing session when session_id is provided; creates a new one otherwise.

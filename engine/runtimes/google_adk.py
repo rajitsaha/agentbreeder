@@ -101,7 +101,10 @@ def _build_adk_env_block(config: AgentConfig) -> str:
     """Generate ENV directive for AGENTBREEDER_ADK_CONFIG from google_adk config."""
     if config.google_adk is None:
         return "# No google_adk config block — using defaults"
-    adk_dict = config.google_adk.model_dump(exclude_none=True)
+    # Exclude session_db_url — it may contain credentials and must not be baked into
+    # the image layer. The server template falls back to os.getenv("DATABASE_URL") at
+    # runtime, which should be supplied via deploy.secrets or a runtime secret reference.
+    adk_dict = config.google_adk.model_dump(exclude_none=True, exclude={"session_db_url"})
     json_val = json.dumps(adk_dict).replace('"', '\\"')
     return f'ENV AGENTBREEDER_ADK_CONFIG="{json_val}"'
 
@@ -141,24 +144,9 @@ class GoogleADKRuntime(RuntimeBuilder):
                     "The server will fall back to 'agentbreeder-local' if unset."
                 )
 
-        # Validate google_adk cross-field constraints (Pydantic already validates, but
-        # surface friendly errors here too)
-        if config.google_adk is not None:
-            from engine.config_parser import ADKSessionBackend, ADKArtifactService
-            if (
-                config.google_adk.session_backend == ADKSessionBackend.database
-                and not config.google_adk.session_db_url
-            ):
-                errors.append(
-                    "google_adk.session_db_url is required when session_backend=database"
-                )
-            if (
-                config.google_adk.artifact_service == ADKArtifactService.gcs
-                and not config.google_adk.gcs_bucket
-            ):
-                errors.append(
-                    "google_adk.gcs_bucket is required when artifact_service=gcs"
-                )
+        # Note: cross-field constraints (session_db_url required for database backend,
+        # gcs_bucket required for gcs artifact service) are enforced by Pydantic's
+        # GoogleADKConfig model_validator — no need to duplicate them here.
 
         return RuntimeValidationResult(valid=len(errors) == 0, errors=errors)
 
