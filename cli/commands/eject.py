@@ -10,6 +10,8 @@ Usage:
 
 from __future__ import annotations
 
+import re
+import yaml
 from pathlib import Path
 
 import typer
@@ -27,8 +29,6 @@ console = Console()
 
 def _to_class_name(slug: str) -> str:
     """Convert a slug like 'my-agent' or 'customer_support' to 'MyAgent'."""
-    import re
-
     parts = re.split(r"[-_]", slug)
     return "".join(part.capitalize() for part in parts if part)
 
@@ -40,8 +40,6 @@ def _to_class_name(slug: str) -> str:
 
 def _generate_crewai_scaffold(yaml_content: str, out_dir: Path) -> None:
     """Write a CrewAI project scaffold from agent YAML into *out_dir*."""
-    import yaml
-
     data = yaml.safe_load(yaml_content)
     if not isinstance(data, dict):
         raise ValueError("Invalid YAML: expected a mapping at the top level")
@@ -88,8 +86,7 @@ class {class_name}Crew:
 '''
 
     # config/agents.yaml — use yaml.dump to safely serialize user-supplied strings
-    import yaml as _yaml
-    agents_yaml = _yaml.dump(
+    agents_yaml = yaml.dump(
         {
             "primary_agent": {
                 "role": f"{name} Primary Agent",
@@ -102,7 +99,7 @@ class {class_name}Crew:
     )
 
     # config/tasks.yaml
-    tasks_yaml = _yaml.dump(
+    tasks_yaml = yaml.dump(
         {
             "primary_task": {
                 "description": f"Execute the primary task for {name}.",
@@ -135,8 +132,6 @@ class {class_name}Crew:
 
 def _generate_google_adk_scaffold(yaml_content: str, out_dir: Path) -> None:
     """Write a Google ADK project scaffold from agent YAML into *out_dir*."""
-    import yaml
-
     data = yaml.safe_load(yaml_content)
     if not isinstance(data, dict):
         raise ValueError("Invalid YAML: expected a mapping at the top level")
@@ -213,8 +208,6 @@ root_agent = LlmAgent(
 
 def _generate_claude_sdk_scaffold(yaml_content: str, out_dir: Path) -> None:
     """Write a Claude SDK project scaffold from agent YAML into *out_dir*."""
-    import yaml
-
     data = yaml.safe_load(yaml_content)
     if not isinstance(data, dict):
         raise ValueError("Invalid YAML: expected a mapping at the top level")
@@ -309,8 +302,6 @@ async def run_agent(user_input: str) -> str:
 
 def _generate_python_sdk(yaml_content: str) -> str:
     """Generate Python SDK code that recreates the agent from YAML."""
-    import yaml
-
     data = yaml.safe_load(yaml_content)
     if not isinstance(data, dict):
         raise typer.BadParameter("Invalid YAML: expected a mapping at the top level")
@@ -447,8 +438,6 @@ def _generate_python_sdk(yaml_content: str) -> str:
 
 def _generate_typescript_sdk(yaml_content: str) -> str:
     """Generate TypeScript SDK code that recreates the agent from YAML."""
-    import yaml
-
     data = yaml.safe_load(yaml_content)
     if not isinstance(data, dict):
         raise typer.BadParameter("Invalid YAML: expected a mapping at the top level")
@@ -573,8 +562,6 @@ def eject(
     Converts a Low Code YAML definition to Full Code SDK for
     custom routing, middleware, hooks, and state management.
     """
-    import yaml
-
     yaml_content = config_path.read_text(encoding="utf-8")
 
     # Detect framework from YAML to dispatch to the right scaffold generator
