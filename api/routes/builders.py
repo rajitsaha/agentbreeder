@@ -11,6 +11,7 @@ from typing import Any
 import yaml as pyyaml
 from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import PlainTextResponse
+from starlette.concurrency import run_in_threadpool
 from jsonschema import Draft202012Validator
 from pydantic import BaseModel
 
@@ -114,9 +115,7 @@ class FileStore:
         self._base.mkdir(parents=True, exist_ok=True)
 
     def _path(self, resource_type: str, name: str) -> Path:
-        dir_ = self._base / resource_type
-        dir_.mkdir(parents=True, exist_ok=True)
-        return dir_ / f"{name}.yaml"
+        return self._base / resource_type / f"{name}.yaml"
 
     def get(self, resource_type: str, name: str) -> dict[str, Any] | None:
         """Return the stored resource as a dict, or None if not found."""
@@ -136,6 +135,7 @@ class FileStore:
     def set(self, resource_type: str, name: str, data: dict[str, Any] | str) -> None:
         """Store *data* (dict or raw YAML string) under resource_type/name."""
         p = self._path(resource_type, name)
+        p.parent.mkdir(parents=True, exist_ok=True)
         if isinstance(data, dict):
             text = pyyaml.dump(data, default_flow_style=False)
         else:
@@ -189,7 +189,7 @@ async def get_resource_yaml(
     """Return the raw YAML config for a resource."""
     _validate_resource_type(resource_type)
 
-    stored = _store.get_raw(resource_type, name)
+    stored = await run_in_threadpool(_store.get_raw, resource_type, name)
     if stored is None:
         raise HTTPException(status_code=404, detail=f"{resource_type} '{name}' not found")
 
@@ -218,7 +218,7 @@ async def put_resource_yaml(
 
     _validate_yaml_against_schema(yaml_content, resource_type)
 
-    _store.set(resource_type, name, yaml_content)
+    await run_in_threadpool(_store.set, resource_type, name, yaml_content)
     logger.info("Saved %s '%s' YAML (%d bytes)", resource_type, name, len(yaml_content))
 
     return ApiResponse(
@@ -249,13 +249,13 @@ async def import_resource_yaml(
     if not name:
         raise HTTPException(status_code=422, detail="YAML must contain a 'name' field")
 
-    if _store.exists(body.resource_type, name):
+    if await run_in_threadpool(_store.exists, body.resource_type, name):
         raise HTTPException(
             status_code=409,
             detail=f"{body.resource_type} '{name}' already exists. Use PUT to update.",
         )
 
-    _store.set(body.resource_type, name, body.yaml_content)
+    await run_in_threadpool(_store.set, body.resource_type, name, body.yaml_content)
     logger.info("Imported %s '%s' from YAML", body.resource_type, name)
 
     return ApiResponse(
