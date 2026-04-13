@@ -352,28 +352,32 @@ class TestClaudeSdkServerToolWiring:
         fake_anthropic.Anthropic = MagicMock  # type: ignore[attr-defined]
 
         # Stub the bridge and config_parser so the server can import them.
+        # The new server uses `from tool_bridge import to_claude_tools` (no engine. prefix)
+        def _fake_to_claude_tools(refs):
+            return [
+                {
+                    "name": (r.get("name") or (r.get("ref") or "").split("/")[-1]) if isinstance(r, dict) else (r.name or (r.ref or "").split("/")[-1]),
+                    "description": "",
+                    "input_schema": {"type": "object", "properties": {}},
+                }
+                for r in refs
+            ]
+
+        fake_tool_bridge = types.ModuleType("tool_bridge")
+        fake_tool_bridge.to_claude_tools = _fake_to_claude_tools  # type: ignore[attr-defined]
         fake_engine_tb = types.ModuleType("engine.tool_bridge")
-        fake_engine_tb.to_claude_tools = lambda refs: [  # type: ignore[attr-defined]
-            {
-                "name": (r.name or (r.ref or "").split("/")[-1]),
-                "description": "",
-                "input_schema": {"type": "object", "properties": {}},
-            }
-            for r in refs
-        ]
+        fake_engine_tb.to_claude_tools = _fake_to_claude_tools  # type: ignore[attr-defined]
         fake_engine_cp = types.ModuleType("engine.config_parser")
         fake_engine_cp.ToolRef = _ToolRef  # type: ignore[attr-defined]
 
-        with patch.dict(
-            sys.modules,
-            {
-                "anthropic": fake_anthropic,
-                "engine.tool_bridge": fake_engine_tb,
-                "engine.config_parser": fake_engine_cp,
-            },
-        ):
-            sys.path.insert(0, "engine/runtimes/templates")
-            import claude_sdk_server as srv  # noqa: PLC0415
+        # Use monkeypatch to keep stubs alive after _import_server returns,
+        # so that startup() can still import tool_bridge when called later.
+        monkeypatch.setitem(sys.modules, "anthropic", fake_anthropic)
+        monkeypatch.setitem(sys.modules, "tool_bridge", fake_tool_bridge)
+        monkeypatch.setitem(sys.modules, "engine.tool_bridge", fake_engine_tb)
+        monkeypatch.setitem(sys.modules, "engine.config_parser", fake_engine_cp)
+        sys.path.insert(0, "engine/runtimes/templates")
+        import claude_sdk_server as srv  # noqa: PLC0415
         return srv
 
     def test_empty_tools_json_leaves_tools_empty(self, monkeypatch):
