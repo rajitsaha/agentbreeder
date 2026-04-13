@@ -162,6 +162,7 @@ interface VisualBuilderProps {
   initialEdges?: Edge[];
   onNodesChange?: (nodes: Node<CanvasNodeData>[]) => void;
   onEdgesChange?: (edges: Edge[]) => void;
+  framework?: string;
 }
 
 export function VisualBuilder({
@@ -169,6 +170,7 @@ export function VisualBuilder({
   initialEdges = [],
   onNodesChange: onNodesChangeExternal,
   onEdgesChange: onEdgesChangeExternal,
+  framework,
 }: VisualBuilderProps) {
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
   const [reactFlowInstance, setReactFlowInstance] =
@@ -324,7 +326,7 @@ export function VisualBuilder({
     <div className="flex h-full">
       {/* Left: Node Palette */}
       <aside className="w-56 shrink-0 border-r border-border bg-background">
-        <NodePalette />
+        <NodePalette framework={framework} />
       </aside>
 
       {/* Center: ReactFlow Canvas */}

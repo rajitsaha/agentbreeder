@@ -8,7 +8,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from api.main import app
-from api.routes.builders import _STORE
+import api.routes.builders as builders_module
 
 client = TestClient(app)
 
@@ -19,13 +19,14 @@ client = TestClient(app)
 
 
 @pytest.fixture(autouse=True)
-def _clear_store():
-    """Reset the in-memory YAML store before each test."""
-    for key in _STORE:
-        _STORE[key].clear()
-    yield
-    for key in _STORE:
-        _STORE[key].clear()
+def _clear_store(tmp_path):
+    """Redirect the global FileStore to a fresh temp directory for each test."""
+    from api.routes.builders import FileStore
+    store = FileStore(base_dir=tmp_path)
+    builders_module._store = store
+    yield store
+    # Restore default store after test (use a new instance)
+    builders_module._store = FileStore()
 
 
 # ---------------------------------------------------------------------------
@@ -64,9 +65,9 @@ VALID_TOOL_YAML = textwrap.dedent("""\
 
 
 class TestGetYamlAgent:
-    def test_get_yaml_agent(self) -> None:
+    def test_get_yaml_agent(self, _clear_store) -> None:
         """GET /builders/agent/{name}/yaml returns stored YAML."""
-        _STORE["agent"]["test-agent"] = VALID_AGENT_YAML
+        _clear_store.set("agent", "test-agent", VALID_AGENT_YAML)
         resp = client.get("/api/v1/builders/agent/test-agent/yaml")
         assert resp.status_code == 200
         assert "test-agent" in resp.text
@@ -92,7 +93,7 @@ class TestPutYamlAgent:
         assert body["data"]["name"] == "test-agent"
         assert body["data"]["resource_type"] == "agent"
         # Verify it was persisted
-        assert _STORE["agent"]["test-agent"] == VALID_AGENT_YAML
+        assert builders_module._store.get_raw("agent", "test-agent") == VALID_AGENT_YAML
 
     def test_put_yaml_invalid_schema(self) -> None:
         """PUT with YAML missing required fields returns 422."""
@@ -132,7 +133,7 @@ class TestImportYaml:
         assert body["data"]["resource_type"] == "agent"
         assert "imported" in body["data"]["message"].lower()
         # Verify persisted
-        assert "test-agent" in _STORE["agent"]
+        assert builders_module._store.exists("agent", "test-agent")
 
     def test_import_yaml_invalid_type(self) -> None:
         """POST with unknown resource_type returns 400."""
@@ -148,18 +149,18 @@ class TestImportYaml:
 
 
 class TestGetYamlPrompt:
-    def test_get_yaml_prompt(self) -> None:
+    def test_get_yaml_prompt(self, _clear_store) -> None:
         """GET /builders/prompt/{name}/yaml returns stored prompt YAML."""
-        _STORE["prompt"]["support-system"] = VALID_PROMPT_YAML
+        _clear_store.set("prompt", "support-system", VALID_PROMPT_YAML)
         resp = client.get("/api/v1/builders/prompt/support-system/yaml")
         assert resp.status_code == 200
         assert "support-system" in resp.text
 
 
 class TestGetYamlTool:
-    def test_get_yaml_tool(self) -> None:
+    def test_get_yaml_tool(self, _clear_store) -> None:
         """GET /builders/tool/{name}/yaml returns stored tool YAML."""
-        _STORE["tool"]["zendesk-mcp"] = VALID_TOOL_YAML
+        _clear_store.set("tool", "zendesk-mcp", VALID_TOOL_YAML)
         resp = client.get("/api/v1/builders/tool/zendesk-mcp/yaml")
         assert resp.status_code == 200
         assert "zendesk-mcp" in resp.text

@@ -140,19 +140,29 @@ VALID_AGENT_YAML_NO_NAME = textwrap.dedent("""\
 class TestBuildersBranchCoverage:
     """Hit the uncovered branches in api/routes/builders.py."""
 
-    def setup_method(self):
+    def setup_method(self, tmp_path=None):
+        import tempfile
         from fastapi.testclient import TestClient
 
         from api.main import app
-        from api.routes.builders import _SCHEMA_CACHE, _STORE
+        from api.routes.builders import _SCHEMA_CACHE, FileStore
+        import api.routes.builders as builders_module
 
         self.client = TestClient(app)
-        self._store = _STORE
+        # Redirect store to a fresh temp dir
+        self._tmp_dir = tempfile.mkdtemp()
+        self._file_store = FileStore(base_dir=__import__("pathlib").Path(self._tmp_dir))
+        builders_module._store = self._file_store
         self._cache = _SCHEMA_CACHE
-        # Clear state
-        for k in _STORE:
-            _STORE[k].clear()
         _SCHEMA_CACHE.clear()
+
+    def teardown_method(self):
+        import shutil
+        import api.routes.builders as builders_module
+        from api.routes.builders import FileStore
+        # Restore default store
+        builders_module._store = FileStore()
+        shutil.rmtree(self._tmp_dir, ignore_errors=True)
 
     def test_schema_cache_hit(self):
         """Second PUT to same resource_type uses cached schema (line 40)."""

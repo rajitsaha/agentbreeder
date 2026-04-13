@@ -1359,6 +1359,7 @@ export default function AgentBuilderPage() {
                 initialEdges={canvasEdges}
                 onNodesChange={handleCanvasNodesChange}
                 onEdgesChange={handleCanvasEdgesChange}
+                framework={formData.framework}
               />
             </div>
           ) : (
