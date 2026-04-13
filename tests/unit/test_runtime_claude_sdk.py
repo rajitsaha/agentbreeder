@@ -250,7 +250,7 @@ class TestClaudeSDKRuntimeRequirements:
         config = _make_config()
         reqs = runtime.get_requirements(config)
         anthropic_req = next(r for r in reqs if "anthropic" in r)
-        assert "0.40.0" in anthropic_req
+        assert "0.50.0" in anthropic_req
 
 
 class TestClaudeSDKServerMaxTokens:
