@@ -12,6 +12,7 @@ import json
 import logging
 import os
 import sys
+from collections.abc import AsyncGenerator
 from typing import Any
 
 from fastapi import FastAPI, HTTPException
@@ -24,7 +25,7 @@ from pydantic import BaseModel
 try:
     import importlib as _importlib
 
-    _engine_tb = _importlib.import_module("engine.tool_bridge")  # type: ignore[assignment]
+    _engine_tb = _importlib.import_module("engine.tool_bridge")
 except ImportError:
     _engine_tb = None  # type: ignore[assignment]
 
@@ -144,7 +145,7 @@ def _check_json_type(value: Any, json_type: str) -> bool:
 # Module-level globals — set at startup, reused for all requests
 _module: Any = None
 _crew: Any = None
-_crewai_tools: list = []
+_crewai_tools: list[Any] = []
 
 
 @app.on_event("startup")
@@ -224,20 +225,20 @@ async def stream(request: InvokeRequest) -> StreamingResponse:
     )
 
 
-async def _stream_crew_sse(crew: Any, inputs: dict[str, Any]):
+async def _stream_crew_sse(crew: Any, inputs: dict[str, Any]) -> AsyncGenerator[str, None]:
     """Async generator that streams CrewAI execution as SSE events."""
     try:
         if hasattr(crew, "akickoff"):
             # Streaming path: use akickoff with a step_callback
             import queue as _queue
 
-            step_q: _queue.Queue = _queue.Queue()
+            step_q: _queue.Queue[Any] = _queue.Queue()
 
             def _step_cb(step_output: Any) -> None:
                 step_q.put(step_output)
 
             # Run akickoff in a task so we can drain the step queue concurrently
-            async def _run():
+            async def _run() -> Any:
                 return await crew.akickoff(inputs=inputs, step_callback=_step_cb)
 
             task = asyncio.create_task(_run())

@@ -160,7 +160,7 @@ def to_crewai_tools(tools: list[Any]) -> list[Any]:
         List of crewai.tools.BaseTool instances.
     """
     try:
-        from crewai.tools import BaseTool as CrewBaseTool  # type: ignore[import-untyped]
+        from crewai.tools import BaseTool as CrewBaseTool
         from pydantic import BaseModel as PydanticBaseModel
     except ImportError:
         logger.warning(
@@ -302,7 +302,7 @@ def _make_adk_func(
                     name, inspect.Parameter.POSITIONAL_OR_KEYWORD, annotation=str, default=""
                 )
             )
-    _adk_tool.__signature__ = inspect.Signature(params)
+    _adk_tool.__signature__ = inspect.Signature(params)  # type: ignore[attr-defined]
     _adk_tool.__annotations__ = dict.fromkeys(param_names, str)
 
     return _adk_tool

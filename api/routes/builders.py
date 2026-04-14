@@ -123,7 +123,7 @@ class FileStore:
         if not p.exists():
             return None
         raw = p.read_text(encoding="utf-8")
-        return pyyaml.safe_load(raw)  # type: ignore[return-value]
+        return pyyaml.safe_load(raw)
 
     def get_raw(self, resource_type: str, name: str) -> str | None:
         """Return the stored resource as raw YAML text, or None if not found."""

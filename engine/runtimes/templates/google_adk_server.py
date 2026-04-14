@@ -18,6 +18,7 @@ import json
 import logging
 import os
 import sys
+from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from typing import Any
 
@@ -25,8 +26,8 @@ from fastapi import FastAPI, HTTPException
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
-from engine.config_parser import ToolRef  # type: ignore[import]
-from engine.tool_bridge import to_adk_tools  # type: ignore[import]
+from engine.config_parser import ToolRef
+from engine.tool_bridge import to_adk_tools
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("agentbreeder.agent")
@@ -80,7 +81,7 @@ def _load_agent() -> Any:
     yaml_path = "/app/root_agent.yaml"
     if os.path.exists(yaml_path):
         try:
-            from server_loader import load_agent_from_yaml  # type: ignore[import]
+            from server_loader import load_agent_from_yaml
 
             logger.info("Loaded agent from root_agent.yaml")
             return load_agent_from_yaml(yaml_path)
@@ -168,7 +169,7 @@ _agent = None
 _runner = None
 _session_service = None
 _adk_cfg: dict = {}  # type: ignore[type-arg]
-_adk_tools: list = []
+_adk_tools: list[Any] = []
 
 
 async def startup() -> None:
@@ -185,7 +186,7 @@ async def startup() -> None:
         _adk_tools = to_adk_tools(tool_refs)
         if _adk_tools:
             logger.info("Loaded %d ADK tool(s)", len(_adk_tools))
-            if hasattr(_agent, "tools"):
+            if _agent is not None and hasattr(_agent, "tools"):
                 try:
                     if isinstance(_agent.tools, list):
                         _agent.tools.extend(_adk_tools)
@@ -201,7 +202,7 @@ async def startup() -> None:
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):  # noqa: ARG001
+async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:  # noqa: ARG001
     """FastAPI lifespan context manager for startup and shutdown."""
     global _agent, _runner, _session_service, _adk_cfg  # noqa: PLW0603
     logger.info("Loading Google ADK agent...")

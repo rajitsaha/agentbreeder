@@ -19,6 +19,7 @@ import json
 import logging
 import os
 import sys
+from collections.abc import AsyncGenerator
 from typing import Any
 
 from fastapi import FastAPI, HTTPException
@@ -76,7 +77,7 @@ def _load_agent() -> Any:
 # Module-level globals — set at startup, reused for all requests
 _agent = None
 _client = None  # AsyncAnthropic client used for /stream; may equal _agent or be separate
-_tools: list = []
+_tools: list[Any] = []
 _prompt_caching_enabled: bool = False
 _thinking_config: dict[str, Any] | None = None
 
@@ -255,7 +256,7 @@ async def stream(request: InvokeRequest) -> StreamingResponse:
     )
 
 
-async def _stream_sse(input_text: str):
+async def _stream_sse(input_text: str) -> AsyncGenerator[str, None]:
     """Async generator that yields SSE data lines."""
     model = os.getenv("AGENT_MODEL", "claude-sonnet-4-6")
     system_prompt = os.getenv("AGENT_SYSTEM_PROMPT", "")
