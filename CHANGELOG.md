@@ -10,6 +10,26 @@ This project follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) an
 
 ---
 
+## [1.7.0] — 2026-04-14
+
+### Added
+
+#### Agent Architect Skill (`/agent-build`) — M35
+- `/agent-build` Claude Code skill: AI-powered agent architect with two paths — Fast Path (6-question scaffold) and Advisory Path (6-question interview → full-stack recommendations → scaffold)
+- Advisory Path recommendation engine: framework, model, RAG, memory, MCP/A2A, deployment target, and eval dimensions with reasoning in `ARCHITECT_NOTES.md`
+- Advisory Path scaffold generates 19 files including `CLAUDE.md`, `AGENTS.md`, `.cursorrules`, `.antigravity.md`, `memory/`, `rag/`, `mcp/servers.yaml`, `tests/evals/`
+- Fast Path scaffold generates 10 files (core project, no advisory extras)
+- IDE config file contents tailored to chosen framework, model, and deployment target
+- Skill entry added to `AGENT.md` under Build category
+
+#### Documentation
+- Homepage animation: split-screen autoplay demo in `docs/index.md` showing `/agent-build` advisory flow (invoke → interview → recommendations → scaffold → deploy, ~14s loop)
+- `docs/how-to.md`: `/agent-build` lead paragraph in "Build Your First Agent" section
+- `docs/how-to.md`: new "Use the Agent Architect (`/agent-build`)" section with Fast Path walkthrough, Advisory Path walkthrough, 18-row generated-files table, and next-steps commands
+- `CLAUDE.md`: added item 8 to "When Adding a New Feature" — scaffold with `/agent-build`
+
+---
+
 ## [1.5.0] — 2026-04-13
 
 ### Added
