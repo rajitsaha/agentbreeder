@@ -15,12 +15,15 @@ from __future__ import annotations
 
 import asyncio
 import importlib
+import json
 import logging
 import os
 import sys
+from collections.abc import AsyncGenerator
 from typing import Any
 
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
 logging.basicConfig(level=logging.INFO)
@@ -71,16 +74,100 @@ def _load_agent() -> Any:
     raise AttributeError(msg)
 
 
-# Load agent at startup
+# Module-level globals — set at startup, reused for all requests
 _agent = None
+_client = None  # AsyncAnthropic client used for /stream; may equal _agent or be separate
+_tools: list[Any] = []
+_prompt_caching_enabled: bool = False
+_thinking_config: dict[str, Any] | None = None
+
+
+def _get_cache_threshold(model: str) -> int:
+    """Return the prompt-caching character threshold for the given model."""
+    if "sonnet" in model.lower():
+        return 8192
+    return 16384
+
+
+async def _call_client(
+    client: Any,
+    model: str,
+    system_prompt: str,
+    messages: list[dict[str, Any]],
+) -> str:
+    """Call the Anthropic messages API with thinking/caching configuration applied."""
+    max_tokens = int(os.getenv("AGENT_MAX_TOKENS", "4096"))
+
+    kwargs: dict[str, Any] = {
+        "model": model,
+        "max_tokens": max_tokens,
+        "messages": messages,
+    }
+
+    # Apply thinking config (disables temperature)
+    if _thinking_config:
+        thinking_type = _thinking_config.get("type", "adaptive")
+        effort = _thinking_config.get("_effort", "high")
+        kwargs["thinking"] = {"type": thinking_type}
+        kwargs["output_config"] = {"effort": effort}
+        kwargs["betas"] = ["interleaved-thinking-2025-05-14"]
+
+    # Apply system prompt with optional prompt caching
+    if system_prompt:
+        if _prompt_caching_enabled and len(system_prompt) >= _get_cache_threshold(model):
+            kwargs["system"] = [
+                {
+                    "type": "text",
+                    "text": system_prompt,
+                    "cache_control": {"type": "ephemeral"},
+                }
+            ]
+        else:
+            kwargs["system"] = system_prompt
+
+    if _tools:
+        kwargs["tools"] = _tools
+
+    response = await client.messages.create(**kwargs)
+    return _extract_text(response)
 
 
 @app.on_event("startup")
 async def startup() -> None:
-    global _agent  # noqa: PLW0603
+    global _agent, _client, _tools  # noqa: PLW0603
+
+    # --- Tool wiring (done first, independently of agent loading) ---
+    tools_json = os.getenv("AGENT_TOOLS_JSON", "[]")
+    try:
+        raw_tools = json.loads(tools_json)
+        if raw_tools:
+            # Use sys.modules directly to pick up test-injected stubs
+            _tb = sys.modules.get("engine.tool_bridge")
+            if _tb is None:
+                import engine.tool_bridge as _tb  # noqa: PLC0415
+
+            _tools = _tb.to_claude_tools(raw_tools) or []
+            logger.info("Loaded %d Claude tool(s)", len(_tools))
+    except Exception:
+        logger.exception("Failed to load Claude tools — proceeding with no tools")
+        _tools = []
+
+    # --- Load agent (can fail gracefully if tools-only startup) ---
     logger.info("Loading agent...")
-    _agent = _load_agent()
-    logger.info("Agent loaded successfully")
+    try:
+        _agent = _load_agent()
+        logger.info("Agent loaded successfully")
+    except (AttributeError, ImportError, ModuleNotFoundError):
+        logger.warning("Could not load agent module — server will return 503 on /invoke")
+
+    # Set _client for streaming when _agent is an AsyncAnthropic instance
+    try:
+        import anthropic as _anthropic
+
+        if isinstance(_agent, _anthropic.AsyncAnthropic):
+            _client = _agent
+    except ImportError:
+        pass
 
 
 @app.get("/health", response_model=HealthResponse)
@@ -122,6 +209,8 @@ async def _run_agent(input_data: str) -> str:
         }
         if system_prompt:
             kwargs["system"] = system_prompt
+        if _tools:
+            kwargs["tools"] = _tools
         response = await _agent.messages.create(**kwargs)
         return _extract_text(response)
 
@@ -134,6 +223,8 @@ async def _run_agent(input_data: str) -> str:
         }
         if system_prompt:
             kwargs["system"] = system_prompt
+        if _tools:
+            kwargs["tools"] = _tools
         response = await asyncio.to_thread(_agent.messages.create, **kwargs)
         return _extract_text(response)
 
@@ -151,6 +242,40 @@ async def _run_agent(input_data: str) -> str:
         "async callable, or object with async run() method."
     )
     raise TypeError(msg)
+
+
+@app.post("/stream")
+async def stream(request: InvokeRequest) -> StreamingResponse:
+    """Stream the agent response as Server-Sent Events."""
+    if _client is None:
+        raise HTTPException(status_code=503, detail="Agent not loaded yet")
+    return StreamingResponse(
+        _stream_sse(request.input),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )
+
+
+async def _stream_sse(input_text: str) -> AsyncGenerator[str, None]:
+    """Async generator that yields SSE data lines."""
+    model = os.getenv("AGENT_MODEL", "claude-sonnet-4-6")
+    system_prompt = os.getenv("AGENT_SYSTEM_PROMPT", "")
+    max_tokens = int(os.getenv("AGENT_MAX_TOKENS", "1024"))
+    messages = [{"role": "user", "content": input_text}]
+    kwargs: dict[str, Any] = {"model": model, "max_tokens": max_tokens, "messages": messages}
+    if system_prompt:
+        kwargs["system"] = system_prompt
+    if _tools:
+        kwargs["tools"] = _tools
+
+    try:
+        async with _client.messages.stream(**kwargs) as stream_ctx:
+            async for text in stream_ctx.text_stream:
+                yield f"data: {json.dumps({'text': text})}\n\n"
+    except Exception as exc:  # noqa: BLE001
+        yield f"data: {json.dumps({'error': str(exc)})}\n\n"
+
+    yield "data: [DONE]\n\n"
 
 
 def _extract_text(response: Any) -> str:

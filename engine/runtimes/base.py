@@ -31,6 +31,34 @@ class ContainerImage(BaseModel):
     model_config = {"arbitrary_types_allowed": True}
 
 
+def build_env_block(config: AgentConfig, framework: str) -> str:
+    """Generate Dockerfile ENV lines from agent.yaml model + deploy config.
+
+    All string values are sanitised against Dockerfile injection:
+    newlines and carriage returns are replaced with spaces, double-quotes are escaped.
+    """
+    lines: list[str] = [
+        f'ENV AGENT_NAME="{config.name}"',
+        f'ENV AGENT_VERSION="{config.version}"',
+        f'ENV AGENT_FRAMEWORK="{framework}"',
+    ]
+    if config.model.primary:
+        safe_model = config.model.primary.replace("\n", " ").replace("\r", " ").replace('"', '\\"')
+        lines.append(f'ENV AGENT_MODEL="{safe_model}"')
+    if config.model.temperature is not None:
+        lines.append(f"ENV AGENT_TEMPERATURE={config.model.temperature}")
+    if config.model.max_tokens is not None:
+        lines.append(f"ENV AGENT_MAX_TOKENS={config.model.max_tokens}")
+    if config.prompts.system:
+        safe = config.prompts.system.replace("\n", " ").replace("\r", " ").replace('"', '\\"')
+        lines.append(f'ENV AGENT_SYSTEM_PROMPT="{safe}"')
+    for key, val in config.deploy.env_vars.items():
+        safe_key = key.replace("\n", "").replace("\r", "").replace(" ", "_")
+        safe_val = str(val).replace("\n", " ").replace("\r", " ").replace('"', '\\"')
+        lines.append(f'ENV {safe_key}="{safe_val}"')
+    return "\n".join(lines)
+
+
 class RuntimeBuilder(ABC):
     """Abstract base class for framework-specific runtime builders.
 

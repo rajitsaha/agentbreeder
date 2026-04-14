@@ -1,3 +1,129 @@
+# Agent Architect Skill — Implementation Plan
+
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+
+**Goal:** Evolve `/agent-build` into an AI Agent Architect with an opt-in 6-question advisory interview that recommends framework, mode, model, RAG, memory, MCP/A2A, deployment, and eval dimensions — with per-item reasoning — before scaffolding a complete tier-interoperable agent project plus IDE config files.
+
+**Architecture:** A single `.claude/commands/agent-build.md` skill file is rewritten in-place. A mode-selection fork is added at the top. The fast path (existing behavior) is preserved byte-for-byte. The advisory path adds a 6-question interview, a deterministic recommendation engine, and a Recommendations Summary with override support. New scaffold outputs (memory/, rag/, mcp/, tests/evals/, ARCHITECT_NOTES.md, CLAUDE.md, AGENTS.md, .cursorrules, .antigravity.md) are added to the generation phase. A structural test in `tests/unit/` validates the skill file has all required sections and gates CI.
+
+**Tech Stack:** Markdown (Claude Code skill file), Python + pytest (structural tests).
+
+---
+
+### Task 1: Write structural test for agent-build.md (TDD gate)
+
+**Files:**
+- Create: `tests/unit/test_agent_build_skill.py`
+
+- [ ] **Step 1: Write the failing test**
+
+```python
+"""Structural tests for the /agent-build skill file.
+
+Validates that the skill file contains all required sections
+for both fast path and advisory path flows.
+"""
+from pathlib import Path
+
+
+SKILL_FILE = Path(__file__).parents[2] / ".claude/commands/agent-build.md"
+
+
+def skill_content() -> str:
+    return SKILL_FILE.read_text()
+
+
+def test_skill_file_exists():
+    assert SKILL_FILE.exists(), f"Skill file not found: {SKILL_FILE}"
+
+
+def test_fast_path_preserved():
+    content = skill_content()
+    assert "I know my stack" in content or "know your stack" in content.lower()
+
+
+def test_advisory_path_present():
+    content = skill_content()
+    assert "Recommend for me" in content or "recommend" in content.lower()
+
+
+def test_all_six_advisory_questions_present():
+    content = skill_content()
+    questions = [
+        "Business Goal",
+        "Technical Use Case",
+        "State Complexity",
+        "Team",
+        "Data Access",
+        "Scale",
+    ]
+    for q in questions:
+        assert q in content, f"Missing advisory question: {q}"
+
+
+def test_recommendation_dimensions_present():
+    content = skill_content()
+    dimensions = ["Framework", "Model", "RAG", "Memory", "MCP", "Deploy", "Eval"]
+    for dim in dimensions:
+        assert dim in content, f"Missing recommendation dimension: {dim}"
+
+
+def test_new_scaffold_outputs_present():
+    content = skill_content()
+    outputs = [
+        "memory/",
+        "rag/",
+        "tests/evals/",
+        "ARCHITECT_NOTES",
+        "CLAUDE.md",
+        "AGENTS.md",
+        ".cursorrules",
+        ".antigravity",
+    ]
+    for output in outputs:
+        assert output in content, f"Missing scaffold output: {output}"
+
+
+def test_ide_config_templates_present():
+    content = skill_content()
+    for name in ["CLAUDE.md", "AGENTS.md", ".cursorrules", ".antigravity.md"]:
+        assert name in content, f"Missing IDE config template: {name}"
+
+
+def test_architect_notes_template_present():
+    content = skill_content()
+    assert "ARCHITECT_NOTES" in content
+    assert "Business Goal" in content
+    assert "Why" in content
+```
+
+- [ ] **Step 2: Run test to verify it fails**
+
+```bash
+python -m pytest tests/unit/test_agent_build_skill.py -v 2>&1 | head -40
+```
+
+Expected: `test_skill_file_exists` and `test_fast_path_preserved` PASS. All advisory/new-output tests FAIL.
+
+- [ ] **Step 3: Commit the failing test**
+
+```bash
+git add tests/unit/test_agent_build_skill.py
+git commit -m "test(skill): structural tests for /agent-build advisory mode (failing)"
+```
+
+---
+
+### Task 2: Rewrite agent-build.md — Header, Fork, and Fast Path
+
+**Files:**
+- Modify: `.claude/commands/agent-build.md` (full rewrite — replaces all 213 lines)
+
+- [ ] **Step 1: Write new file content (header + fork + complete fast path)**
+
+Replace `.claude/commands/agent-build.md` entirely with:
+
+```markdown
 # /agent-build — AI Agent Architect
 
 You are an AI Agent Architect for AgentBreeder. You can collect the user's stack choices directly OR advise them on the best choices for their use case — then scaffold a complete, tier-interoperable agent project.
@@ -12,7 +138,7 @@ Ask exactly:
 
 > "Do you already know your stack (framework, cloud, model), or would you like me to recommend the best setup for your use case?
 >
-> **(a) I know my stack** — I'll ask 6 quick questions and scaffold your project
+> **(a) I know my stack** — I'll ask 5 quick questions and scaffold your project
 > **(b) Recommend for me** — I'll ask 6 questions about your use case and advise on the best framework, model, RAG, memory, MCP/A2A, deployment, and evaluation setup"
 
 - User picks **(a)** → proceed to **FAST PATH** below.
@@ -49,7 +175,7 @@ Ask: "Where will it run?" Present:
 1. **Local** — Docker Compose on your machine
 2. **AWS** — ECS Fargate
 3. **GCP** — Cloud Run
-4. **Kubernetes** — Any K8s cluster *(planned — ECS Fargate/Cloud Run recommended for now)*
+4. **Kubernetes** — Any K8s cluster
 
 #### 1e. Tools Needed
 Ask: "What tools should this agent have? List them (or say 'none')."
@@ -65,7 +191,28 @@ Present a summary table of all choices. Ask: "Look good? I'll generate your proj
 Wait for confirmation before proceeding to **Step 2: Generate Project**.
 
 ---
+```
 
+- [ ] **Step 2: Verify fast path test passes**
+
+```bash
+python -m pytest tests/unit/test_agent_build_skill.py::test_fast_path_preserved -v
+```
+
+Expected: PASS
+
+---
+
+### Task 3: Add Advisory Path (Steps A–I)
+
+**Files:**
+- Modify: `.claude/commands/agent-build.md` (append after Step 1-Confirm)
+
+- [ ] **Step 1: Append the advisory path**
+
+Append to `.claude/commands/agent-build.md`:
+
+```markdown
 ## ADVISORY PATH
 
 ### Step A: Business Goal
@@ -134,7 +281,7 @@ Ask:
 > **(d)** Live APIs or real-time web data
 > **(e)** None — the agent generates output without external data"
 
-Record as `DATA_FLAGS`. Pre-populate likely answers inferred from `BUSINESS_GOAL`.
+Record as `DATA_FLAGS`. Pre-populate likely answers inferred from `BUSINESS_GOAL` (e.g., "data warehouse" → suggest (b)).
 
 ---
 
@@ -162,12 +309,12 @@ Apply the following decision logic. Do NOT show this logic to the user — only 
 |---|---|
 | STATE_FLAGS contains (b) or (c), LANGUAGE_PREFERENCE Python or none | **LangGraph — Full Code** |
 | TECHNICAL_USE_CASE mentions multiple specialized agents or crew, Python | **CrewAI — Full Code** (STATE_FLAGS ≥ 2) or **CrewAI — Low Code** |
-| TECHNICAL_USE_CASE mentions Claude tool use or adaptive thinking, Python, no strong state | **Claude SDK — Full Code** |
+| TECHNICAL_USE_CASE mentions Claude tool use or adaptive thinking, Python, no strong state complexity | **Claude SDK — Full Code** |
 | CLOUD_PREFERENCE is GCP, or TECHNICAL_USE_CASE mentions Vertex AI / Google Workspace | **Google ADK — Low Code or Full Code** |
 | LANGUAGE_PREFERENCE is TypeScript | **OpenAI Agents SDK — Full Code** |
 | STATE_FLAGS is (e) only | **Low Code YAML** (any framework matching cloud/language) |
 
-Full Code trigger rule: STATE_FLAGS contains 2+ of (a)–(d) → Full Code. Otherwise → Low Code.
+Full Code trigger: STATE_FLAGS contains 2+ of (a)–(d) → Full Code. Otherwise → Low Code.
 
 #### Model
 
@@ -209,16 +356,15 @@ If framework is claude_sdk: always add `prompt_caching: true` and `thinking: {ty
 | Both signals | **MCP + A2A** |
 | Neither | **Neither** |
 
-#### Deploy
+#### Deployment
 
 | Signals | Recommendation |
 |---|---|
 | CLOUD_PREFERENCE is AWS and SCALE_PROFILE is (a) real-time | **ECS Fargate** |
-| CLOUD_PREFERENCE is AWS and SCALE_PROFILE is (c) event-driven | **Lambda** *(planned — not yet available)* |
+| CLOUD_PREFERENCE is AWS and SCALE_PROFILE is (c) event-driven | **Lambda** *(planned — flag as not yet available)* |
 | CLOUD_PREFERENCE is GCP | **Cloud Run** |
 | CLOUD_PREFERENCE is Local or (d) | **Docker Compose** |
-| CLOUD_PREFERENCE is Azure | **Azure Container Apps** *(planned — not yet available)* |
-| CLOUD_PREFERENCE is Kubernetes | **Docker Compose** *(Kubernetes deployer is planned — use Docker Compose and configure your own K8s manifests for now)* |
+| CLOUD_PREFERENCE is Azure | **Azure Container Apps** *(planned — flag as not yet available)* |
 
 #### Eval Dimensions
 
@@ -249,7 +395,7 @@ Present this structured table. Replace each `[X]` with computed values from Step
 > | **RAG** | [RAG TYPE or None] | [1-sentence reasoning referencing DATA_FLAGS] |
 > | **Memory** | [MEMORY CONFIG or None] | [1-sentence reasoning referencing SCALE_PROFILE and BUSINESS_GOAL] |
 > | **MCP/A2A** | [MCP / A2A / Both / Neither] | [1-sentence reasoning referencing DATA_FLAGS and TECHNICAL_USE_CASE] |
-> | **Deploy** | [DEPLOY TARGET] | [1-sentence reasoning referencing CLOUD_PREFERENCE and SCALE_PROFILE] |
+> | **Deployment** | [DEPLOY TARGET] | [1-sentence reasoning referencing CLOUD_PREFERENCE and SCALE_PROFILE] |
 > | **Eval dimensions** | [COMMA-SEPARATED LIST] | Derived from: "[BUSINESS_GOAL excerpt]" |
 >
 > **Any changes?** Type a dimension name and your preferred value, or say "looks good" to proceed.
@@ -265,13 +411,45 @@ Present the final confirmed choices in a summary table (same format as Step 1-Co
 Wait for confirmation. Then proceed to **Step 2: Generate Project**.
 
 ---
+```
+
+- [ ] **Step 2: Run advisory tests**
+
+```bash
+python -m pytest tests/unit/test_agent_build_skill.py::test_advisory_path_present \
+  tests/unit/test_agent_build_skill.py::test_all_six_advisory_questions_present \
+  tests/unit/test_agent_build_skill.py::test_recommendation_dimensions_present -v
+```
+
+Expected: All 3 PASS.
+
+- [ ] **Step 3: Commit**
+
+```bash
+git add .claude/commands/agent-build.md
+git commit -m "feat(skill): advisory interview + recommendation engine in /agent-build"
+```
+
+---
+
+### Task 4: Add new scaffold generation instructions — Step 2
+
+**Files:**
+- Modify: `.claude/commands/agent-build.md` (append Step 2: Generate Project)
+
+- [ ] **Step 1: Append Step 2 (convergence point + all new scaffold outputs)**
+
+Append to `.claude/commands/agent-build.md`:
+
+```markdown
+---
 
 ## Step 2: Generate Project
 
-Both paths converge here. Create the project at `./<agent-name>/` relative to the user's current working directory.
+Both paths converge here. Create the project at `./<agent-name>/` relative to the user's current working directory. Generate ALL applicable files below.
 
 ### 2a. `agent.yaml`
-Must include: name, version (0.1.0), description, team, owner, tags, framework, model.primary (from choice or recommendation), guardrails: [pii_detection, content_filter], deploy.cloud, deploy.runtime.
+Must include: name, version (0.1.0), description, team, owner, tags, framework, model.primary (from choice or recommendation), guardrails: [pii_detection, content_filter], deploy.cloud, deploy.runtime (infer from cloud or recommendation).
 
 If claude_sdk: also include:
 ```yaml
@@ -293,28 +471,6 @@ Working agent code for the chosen framework. Wire tool stubs matching described 
 - **Google ADK:** `adk.Agent` with session backend from recommendation
 - **Custom:** minimal wrapper with HTTP entrypoint
 
-Also generate one file per described tool as `tools/<tool-name>.py`:
-
-```python
-"""<Tool description based on user's stated purpose>."""
-from typing import Any
-
-
-def <tool_name>(input: str) -> dict[str, Any]:
-    """<What this tool does — tailored to the agent's purpose>.
-
-    Args:
-        input: The input to the tool.
-
-    Returns:
-        A dict with the tool result.
-    """
-    # TODO: implement tool logic
-    raise NotImplementedError("<tool_name> not yet implemented")
-```
-
-Import all tools in `agent.py` from `tools/`. Never inline tool logic directly in `agent.py`.
-
 ### 2c. `requirements.txt`
 - langgraph: `langgraph>=0.2.0`, `langchain-anthropic>=0.1.0`
 - crewai: `crewai>=0.80.0`, `crewai-tools>=0.14.0`
@@ -327,7 +483,7 @@ Import all tools in `agent.py` from `tools/`. Never inline tool logic directly i
 - Always: `agentbreeder-sdk>=1.5.0`
 
 ### 2d. `.env.example`
-- langgraph/crewai/openai_agents: `OPENAI_API_KEY=sk-...`
+- langgraph/crewai: `OPENAI_API_KEY=sk-...`
 - claude_sdk: `ANTHROPIC_API_KEY=sk-ant-...`
 - google_adk: `GOOGLE_API_KEY=AIza...`
 - If Vector RAG: `DATABASE_URL=postgresql://localhost:5432/agentdb`
@@ -348,12 +504,42 @@ CMD ["python", "agent.py"]
 For google_adk: `CMD ["adk", "api_server", "--host", "0.0.0.0", "--port", "8080"]`
 
 ### 2f. `docker-compose.yml`
-Base: agent service with ports 8080:8080, env_file .env, restart unless-stopped, healthcheck.
+Base:
+```yaml
+version: "3.8"
+services:
+  agent:
+    build: .
+    ports: ["8080:8080"]
+    env_file: [.env]
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "print('ok')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+```
 If Redis: add `redis: {image: redis:7-alpine, ports: ["6379:6379"]}` service.
-If Vector RAG: add `postgres: {image: pgvector/pgvector:pg16, environment: {POSTGRES_DB: agentdb, ...}, ports: ["5432:5432"]}` service.
+If Vector RAG: add `postgres: {image: pgvector/pgvector:pg16, environment: {POSTGRES_DB: agentdb, POSTGRES_USER: agent, POSTGRES_PASSWORD: agent}, ports: ["5432:5432"]}` service.
 
 ### 2g. `.agentbreeder/layout.json`
 Always generate. Agent at (400,300), model at (400,100), prompt at (150,300). Tools fan right at (650, 200+i×100). RAG node at (150,500) if applicable. Memory node at (650,500) if applicable.
+
+```json
+{
+  "version": "1.0",
+  "canvas": {"zoom": 1.0, "x": 0, "y": 0},
+  "nodes": [
+    {"id": "agent", "type": "agent", "position": {"x": 400, "y": 300}, "data": {"ref": "agent.yaml"}},
+    {"id": "model", "type": "model", "position": {"x": 400, "y": 100}, "data": {"ref": "model.primary"}},
+    {"id": "prompt", "type": "prompt", "position": {"x": 150, "y": 300}, "data": {"ref": "prompts.system"}}
+  ],
+  "edges": [
+    {"id": "e-model-agent", "source": "model", "target": "agent"},
+    {"id": "e-prompt-agent", "source": "prompt", "target": "agent"}
+  ]
+}
+```
 
 ### 2h. `memory/config.py` — ONLY if memory recommended
 
@@ -446,39 +632,17 @@ def search(entity: str, depth: int = 2) -> list[dict]:
         return [dict(record) for record in result]
 ```
 
-For **Hybrid RAG**: generate both the Vector RAG (`rag/vector_index.py`) and Graph RAG (`rag/graph_index.py`) files using the templates above (renamed). Also generate `rag/index.py` as a unified interface:
-```python
-"""Hybrid RAG index for <agent-name>.
-Combines vector search (pgvector) and graph traversal (Neo4j).
-"""
-from rag.vector_index import search as vector_search, setup_vector_index
-from rag.graph_index import search as graph_search
-
-
-def setup():
-    """Initialize both vector and graph indexes."""
-    setup_vector_index()
-    # Neo4j schema initialization is handled at graph_index import time
-
-
-def search(query_embedding: list[float], entity: str | None = None, limit: int = 5) -> list[dict]:
-    """Search both vector and graph indexes and merge results."""
-    results = vector_search(query_embedding, limit=limit)
-    if entity:
-        graph_results = graph_search(entity)
-        results = results + graph_results
-    return results[:limit]
-```
-
 ### 2j. `rag/ingest.py` — ONLY if Vector RAG recommended
 
 ```python
 """Document ingestion for <agent-name> RAG index.
+
 Usage: python rag/ingest.py --path /path/to/docs
 """
 import argparse
 from pathlib import Path
 from rag.index import setup_vector_index
+import os
 
 def ingest_file(path: Path) -> None:
     content = path.read_text()
@@ -538,6 +702,7 @@ def test_layout_json_exists():
 Usage: python tests/evals/eval_runner.py
 Requires: LANGSMITH_API_KEY in .env
 """
+from langsmith import Client
 from langsmith.evaluation import evaluate
 
 DATASET_NAME = "<agent-name>-evals"
@@ -546,6 +711,7 @@ def target(inputs: dict) -> dict:
     # TODO: wire up your agent
     # from agent import graph
     # result = graph.invoke({"messages": [{"role": "user", "content": inputs["input"]}]})
+    # return {"output": result["messages"][-1]["content"]}
     return {"output": "placeholder — wire up your agent"}
 
 def main():
@@ -584,8 +750,8 @@ Usage: npx promptfoo eval --config tests/evals/promptfooconfig.yaml
 """
 print("Run: npx promptfoo eval --config tests/evals/promptfooconfig.yaml")
 ```
-Also generate `tests/evals/promptfooconfig.yaml`:
 ```yaml
+# tests/evals/promptfooconfig.yaml
 description: "<agent-name> evals"
 prompts: ["{{input}}"]
 providers:
@@ -601,7 +767,7 @@ tests:
 
 ### 2n. `tests/evals/criteria.md`
 
-Generate with eval dimensions from Step G, tailored to BUSINESS_GOAL:
+Generate with the eval dimensions from Step G, tailored to BUSINESS_GOAL. Structure:
 ```markdown
 # Eval Criteria — <agent-name>
 Generated by /agent-build. Business goal: "<BUSINESS_GOAL>"
@@ -609,8 +775,10 @@ Generated by /agent-build. Business goal: "<BUSINESS_GOAL>"
 ## Eval Dimensions
 
 ### <Dimension 1 from Step G>
-**Pass:** <what constitutes a pass for this agent's use case>
-**Fail:** <what constitutes a fail>
+<What constitutes pass vs fail for this agent's use case>
+
+### <Dimension 2 from Step G>
+<What constitutes pass vs fail>
 
 [... one section per eval dimension ...]
 
@@ -624,8 +792,36 @@ Generated by /agent-build. Business goal: "<BUSINESS_GOAL>"
 ```
 Generate at least 3 starter test cases derived from BUSINESS_GOAL and TECHNICAL_USE_CASE.
 
-If fast path (BUSINESS_GOAL not defined): use the agent purpose from step 1b as the business goal substitute. Use the default eval dimensions: Correctness, latency, tool call accuracy, hallucination rate. Generate 3 starter test cases derived from the agent's stated purpose and tools.
+---
+```
 
+- [ ] **Step 2: Run scaffold output tests**
+
+```bash
+python -m pytest tests/unit/test_agent_build_skill.py::test_new_scaffold_outputs_present -v
+```
+
+Expected: PASS.
+
+- [ ] **Step 3: Commit**
+
+```bash
+git add .claude/commands/agent-build.md
+git commit -m "feat(skill): new scaffold outputs (memory, rag, mcp, evals) in /agent-build"
+```
+
+---
+
+### Task 5: Add IDE Config Generation Instructions
+
+**Files:**
+- Modify: `.claude/commands/agent-build.md` (append IDE config + ARCHITECT_NOTES + repo updates + post-gen summary + rules)
+
+- [ ] **Step 1: Append IDE config sections, ARCHITECT_NOTES, repo updates, post-gen summary, and rules**
+
+Append to `.claude/commands/agent-build.md`:
+
+```markdown
 ### 2o. `CLAUDE.md` (inside agent project)
 
 ```markdown
@@ -676,7 +872,7 @@ Files: `rag/index.py`, `rag/ingest.py`
 Validate and deploy.
 Commands: `agentbreeder validate && agentbreeder deploy --target <deploy-target>`
 ```
-Omit `update-rag` if no RAG.
+Omit `update-rag` if no RAG. Omit memory-related skills if no memory.
 
 ### 2q. `.cursorrules` (inside agent project)
 
@@ -685,6 +881,7 @@ Generate framework-specific content:
 **LangGraph:**
 ```
 # <agent-name> Cursor Rules — LangGraph
+
 - State classes use TypedDict, never plain dict
 - Nodes: `async def node_name(state: AgentState) -> AgentState`
 - Use `interrupt()` for HITL — never polling loops
@@ -699,6 +896,7 @@ Generate framework-specific content:
 **CrewAI:**
 ```
 # <agent-name> Cursor Rules — CrewAI
+
 - Agents need specific role, goal, backstory — no generic values
 - Tasks need description and expected_output — no vague descriptions
 - Tool functions must have `@tool` decorator and docstrings
@@ -711,10 +909,11 @@ Generate framework-specific content:
 **Claude SDK:**
 ```
 # <agent-name> Cursor Rules — Claude SDK
+
 - Tool loop: always check `stop_reason == "tool_use"` before processing
 - Adaptive thinking: do not disable — configured in `agent.yaml`
 - Prompt caching: keep system prompt > 1024 tokens
-- `max_tokens` must be set when thinking is enabled (>= 2000 for complex tasks)
+- `max_tokens` must be set when thinking is enabled (≥ 2000 for complex tasks)
 - Mock `anthropic.Anthropic()` in tests — never make real API calls in tests
 - Never hardcode `api_key` — always `os.getenv("ANTHROPIC_API_KEY")`
 - Never disable guardrails in production
@@ -723,6 +922,7 @@ Generate framework-specific content:
 **Google ADK:**
 ```
 # <agent-name> Cursor Rules — Google ADK
+
 - Tools need `@adk.tool` decorator with Google-style docstrings (Args/Returns)
 - Session backend set in `agent.yaml` (google_adk.session_backend), not in code
 - Serve with `adk api_server`, not `python agent.py`
@@ -734,6 +934,7 @@ Generate framework-specific content:
 **OpenAI Agents:**
 ```
 # <agent-name> Cursor Rules — OpenAI Agents SDK
+
 - Tools: typed Python functions with docstrings — SDK infers schema
 - Handoffs: use `handoff()` for agent delegation — never call agents directly
 - Prefer `Runner.run_streamed()` for interactive agents
@@ -778,7 +979,7 @@ Generate framework-specific content:
 ### 2s. `ARCHITECT_NOTES.md` — ADVISORY PATH ONLY
 
 ```markdown
-# ARCHITECT_NOTES — <agent-name>
+# Architect Notes — <agent-name>
 Generated by /agent-build on <ISO-8601 date>. Edit freely — this file is for humans.
 
 ## Business Goal
@@ -788,10 +989,10 @@ Generated by /agent-build on <ISO-8601 date>. Edit freely — this file is for h
 <TECHNICAL_USE_CASE verbatim>
 
 ## Why <Framework> (<Full Code / Low Code>)?
-<Reference specific STATE_FLAGS that drove the decision>
+<Reference specific STATE_FLAGS that drove the decision. E.g.: "You selected checkpoints (b) and HITL (c). LangGraph is the only framework with native StateGraph checkpointing and interrupt() for HITL. CrewAI would require custom workarounds.">
 
 ## Why <Model>?
-<Reference SCALE_PROFILE and use case characteristics>
+<Reference SCALE_PROFILE and use case. E.g.: "Real-time interactive (a) + tool use. Opus is overkill for latency-sensitive tool-calling; Haiku lacks reasoning depth for multi-step planning.">
 
 ## Why <RAG type>? / Why No RAG?
 <Reference DATA_FLAGS>
@@ -805,7 +1006,7 @@ Generated by /agent-build on <ISO-8601 date>. Edit freely — this file is for h
 ## Why <Deploy target>?
 <Reference CLOUD_PREFERENCE and SCALE_PROFILE>
 
-## Why These Eval Dimensions?
+## Eval Dimensions
 <List each dimension with one-line rationale derived from BUSINESS_GOAL keywords>
 
 ## Overrides Made
@@ -817,43 +1018,41 @@ Generated by /agent-build on <ISO-8601 date>. Edit freely — this file is for h
 
 ## Step 3: AgentBreeder Repo Updates — ADVISORY PATH ONLY
 
-After generating the agent project, also update the AgentBreeder repository:
-
 ### 3a. Update `AGENT.md`
-In the `## 🏗️ BUILD Skills` section, append after the last existing build skill:
+In the `## 🏗️ BUILD Skills` section, append after the last existing build skill (before `## 🧪 TEST Skills`):
 
 ```
 ### `build:agent-scaffold`
-**Purpose:** Run the `/agent-build` advisory interview and scaffold a complete agent project.
+**Purpose:** Run the `/agent-build` advisory interview and scaffold a complete agent project with IDE config files, eval harness, and all recommended infrastructure stubs.
 
 **Skill Prompt:**
-Invoke /agent-build. The skill will ask 6 advisory questions, recommend framework+mode, model, RAG, memory, MCP/A2A, deployment, and eval dimensions with reasoning, let the user override, then scaffold a complete project with IDE config files and eval harness.
+```
+Invoke /agent-build. The skill will:
+1. Ask 6 questions (business goal, technical use case, state complexity, team/org, data access, scale)
+2. Recommend: framework+mode, model, RAG, memory, MCP/A2A, deployment, eval dimensions
+3. Present Recommendations Summary with per-item reasoning + allow overrides
+4. Scaffold: agent.yaml, agent.py, memory/, rag/, mcp/, tests/evals/, ARCHITECT_NOTES.md,
+   CLAUDE.md, AGENTS.md, .cursorrules, .antigravity.md
+5. Update AGENT.md and CLAUDE.md in the AgentBreeder repo
 
 Output: ./<agent-name>/ relative to cwd
+```
 
 **MCP Tools:** `filesystem`, `sequential-thinking`
+
+---
 ```
 
 ### 3b. Update `CLAUDE.md`
 Append after the `engine/runtimes/templates/` entry in the Project Structure section:
 
 ```
-> **IDE config files:** The `/agent-build` skill generates per-agent `CLAUDE.md`, `AGENTS.md`, `.cursorrules`, and `.antigravity.md` inside each scaffolded agent project. These follow the patterns in this file.
+> **IDE config files:** The `/agent-build` skill generates per-agent `CLAUDE.md`, `AGENTS.md`,
+> `.cursorrules`, and `.antigravity.md` inside each scaffolded agent project. These follow the
+> patterns established in this file.
 ```
 
 ---
-
-### 2t. `README.md`
-
-Generate a quick start guide with:
-- Agent name, framework badge, and one-line description
-- Prerequisites (Python 3.11+, Docker)
-- Setup: `pip install -r requirements.txt`, `cp .env.example .env`, API keys needed
-- Run locally: `python agent.py` (or `adk run` for Google ADK)
-- Run in container: `docker compose up`
-- Validate: `agentbreeder validate`
-- Deploy: `agentbreeder deploy --target <cloud>`
-- Project structure listing of generated files
 
 ## Step 4: Post-Generation Summary
 
@@ -875,7 +1074,7 @@ Files generated:
   mcp/servers.yaml            — MCP server refs       [if applicable]
   tests/test_agent.py         — Smoke tests
   tests/evals/                — Eval harness + criteria
-  ARCHITECT_NOTES.md          — Why each choice was made [advisory path only]
+  ARCHITECT_NOTES.md          — Why each choice was made [advisory path]
   CLAUDE.md                   — AI context for this agent
   AGENTS.md                   — AI skill roster
   .cursorrules                — Cursor IDE rules
@@ -907,7 +1106,150 @@ Tier mobility:
 - ALWAYS generate a tailored system prompt based on stated purpose — never a placeholder
 - ALWAYS validate agent name format before proceeding
 - ALWAYS include guardrails (pii_detection, content_filter) by default
-- ALWAYS generate CLAUDE.md, AGENTS.md, .cursorrules, .antigravity.md for every project (both paths)
+- ALWAYS generate CLAUDE.md, AGENTS.md, .cursorrules, .antigravity.md for every project
 - ONLY generate ARCHITECT_NOTES.md for advisory path projects
 - ONLY update AGENT.md and CLAUDE.md in the AgentBreeder repo for advisory path projects
 - The fast path must produce identical output to the old skill for identical inputs (zero regression)
+```
+
+- [ ] **Step 2: Run full structural test suite**
+
+```bash
+python -m pytest tests/unit/test_agent_build_skill.py -v
+```
+
+Expected: ALL tests PASS.
+
+- [ ] **Step 3: Check skill file line count**
+
+```bash
+wc -l .claude/commands/agent-build.md
+grep -c "^##\|^###" .claude/commands/agent-build.md
+```
+
+Expected: > 400 lines, > 20 sections.
+
+- [ ] **Step 4: Commit**
+
+```bash
+git add .claude/commands/agent-build.md
+git commit -m "feat(skill): IDE config generation + ARCHITECT_NOTES + repo update instructions"
+```
+
+---
+
+### Task 6: Update AGENT.md and CLAUDE.md
+
+**Files:**
+- Modify: `AGENT.md` (add build:agent-scaffold before `## 🧪 TEST Skills`)
+- Modify: `CLAUDE.md` (append note to Project Structure section)
+
+- [ ] **Step 1: Insert build:agent-scaffold into AGENT.md**
+
+Find the line `## 🧪 TEST Skills` (line 360). Insert before it:
+
+```markdown
+### `build:agent-scaffold`
+**Purpose:** Run the `/agent-build` advisory interview and scaffold a complete agent project with IDE config files, eval harness, and all recommended infrastructure stubs.
+
+**Skill Prompt:**
+```
+Invoke /agent-build. The skill will:
+1. Ask 6 questions: business goal, technical use case, state complexity, team/org context,
+   data access, scale profile
+2. Recommend: framework + mode, model, RAG type, memory, MCP/A2A, deployment, eval dimensions
+3. Present Recommendations Summary with per-item reasoning; let the user override any item
+4. Scaffold a complete agent project including ARCHITECT_NOTES.md, CLAUDE.md, AGENTS.md,
+   .cursorrules, .antigravity.md, tests/evals/, and all recommended infra stubs (memory/, rag/, mcp/)
+5. Update AGENT.md and CLAUDE.md in the AgentBreeder repo (advisory path only)
+
+Output location: ./<agent-name>/ relative to current working directory
+```
+
+**MCP Tools:** `filesystem` (write generated files), `sequential-thinking` (recommendation reasoning)
+
+---
+```
+
+- [ ] **Step 2: Append note to CLAUDE.md**
+
+Find the `engine/runtimes/templates/` entry in the Project Structure section. After the `templates` line, append:
+
+```markdown
+> **IDE config files (per-agent):** The `/agent-build` skill generates `CLAUDE.md`, `AGENTS.md`, `.cursorrules`, and `.antigravity.md` inside each scaffolded agent project. These follow the patterns in this file.
+```
+
+- [ ] **Step 3: Run full test suite**
+
+```bash
+python -m pytest tests/unit/ -v --tb=short 2>&1 | tail -20
+```
+
+Expected: All pass.
+
+- [ ] **Step 4: Commit**
+
+```bash
+git add AGENT.md CLAUDE.md
+git commit -m "docs: add build:agent-scaffold to AGENT.md + IDE config note to CLAUDE.md"
+```
+
+---
+
+### Task 7: Final check and push
+
+- [ ] **Step 1: Run all unit tests**
+
+```bash
+python -m pytest tests/unit/ -v 2>&1 | tail -20
+```
+
+Expected: All pass.
+
+- [ ] **Step 2: Spot-check skill file completeness**
+
+```bash
+grep -n "Step 0\|FAST PATH\|ADVISORY PATH\|Step A\|Step B\|Step C\|Step D\|Step E\|Step F\|Step G\|Step H\|Step I\|Step 2\|Step 3\|Step 4\|Rules" .claude/commands/agent-build.md
+```
+
+Expected: All sections present with correct line numbers.
+
+- [ ] **Step 3: Verify no regressions in existing tests**
+
+```bash
+python -m pytest tests/unit/ tests/integration/ -v --tb=short -x 2>&1 | tail -30
+```
+
+Expected: Pass (or only pre-existing failures unrelated to this change).
+
+- [ ] **Step 4: Push**
+
+```bash
+git push origin main
+```
+
+---
+
+## Self-Review
+
+**Spec coverage check:**
+- [x] Mode fork (Step 0) — Task 2
+- [x] Fast path preserved — Task 2 (byte-for-byte existing content)
+- [x] 6-question advisory interview (A–F) — Task 3
+- [x] Recommendation engine (all 7 dimensions) — Task 3, Step G
+- [x] Recommendations Summary with per-item reasoning — Task 3, Step H
+- [x] User override handling — Task 3, Step H
+- [x] memory/ directory — Task 4 (2h)
+- [x] rag/index.py + ingest.py — Task 4 (2i, 2j)
+- [x] mcp/servers.yaml — Task 4 (2k)
+- [x] tests/evals/ harness (LangSmith/Inspect AI/PromptFoo) — Task 4 (2m)
+- [x] tests/evals/criteria.md with use-case dimensions — Task 4 (2n)
+- [x] ARCHITECT_NOTES.md (advisory path only) — Task 5 (2s)
+- [x] CLAUDE.md, AGENTS.md, .cursorrules, .antigravity.md — Task 5 (2o–2r)
+- [x] AgentBreeder repo updates (AGENT.md, CLAUDE.md) — Task 5 (Step 3), Task 6
+- [x] Post-generation summary — Task 5 (Step 4)
+- [x] Structural tests gate CI — Task 1
+
+**No placeholders:** All code blocks are complete. All templates have explicit structure with field names and example content.
+
+**Type consistency:** No cross-task type references (this is a markdown skill, not Python code). Template variable names (`BUSINESS_GOAL`, `TECHNICAL_USE_CASE`, `STATE_FLAGS`, `CLOUD_PREFERENCE`, `LANGUAGE_PREFERENCE`, `DATA_FLAGS`, `SCALE_PROFILE`) are used consistently across Steps G, H, and ARCHITECT_NOTES.md.

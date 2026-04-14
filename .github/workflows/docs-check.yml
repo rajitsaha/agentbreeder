@@ -84,6 +84,8 @@ jobs:
           FAILED=0
           for yaml_file in examples/**/*.yaml examples/**/*.yml; do
             if [ -f "$yaml_file" ]; then
+              # Skip template definitions — they use the template schema, not agent schema
+              case "$yaml_file" in examples/templates/*) continue ;; esac
               echo "Validating: $yaml_file"
               python -m cli.main validate "$yaml_file" 2>&1 || {
                 echo "::error file=$yaml_file::YAML validation failed"

@@ -11,7 +11,12 @@ import tempfile
 from pathlib import Path
 
 from engine.config_parser import AgentConfig
-from engine.runtimes.base import ContainerImage, RuntimeBuilder, RuntimeValidationResult
+from engine.runtimes.base import (
+    ContainerImage,
+    RuntimeBuilder,
+    RuntimeValidationResult,
+    build_env_block,
+)
 
 CREWAI_SERVER_TEMPLATE = Path(__file__).parent / "templates" / "crewai_server.py"
 
@@ -98,13 +103,40 @@ class CrewAIRuntime(RuntimeBuilder):
 
         # Write Dockerfile
         dockerfile = build_dir / "Dockerfile"
-        dockerfile.write_text(DOCKERFILE_TEMPLATE)
+        env_block = build_env_block(config, "crewai")
+
+        # CrewAI-specific ENV directives
+        crewai_env_lines: list[str] = []
+        if config.crewai is not None:
+            # process is validated as enum so safe, but quote for consistency
+            crewai_env_lines.append(f'ENV AGENT_CREWAI_PROCESS="{config.crewai.process}"')
+            if config.crewai.manager_llm:
+                safe_llm = (
+                    config.crewai.manager_llm.replace("\n", " ")
+                    .replace("\r", " ")
+                    .replace('"', '\\"')
+                )
+                crewai_env_lines.append(f'ENV AGENT_CREWAI_MANAGER_LLM="{safe_llm}"')
+            if config.crewai.verbose:
+                crewai_env_lines.append("ENV AGENT_CREWAI_VERBOSE=true")
+            if config.crewai.memory:
+                crewai_env_lines.append("ENV AGENT_CREWAI_MEMORY=true")
+
+        crewai_env_block = ("\n" + "\n".join(crewai_env_lines)) if crewai_env_lines else ""
+        dockerfile_content = (
+            DOCKERFILE_TEMPLATE.rstrip()
+            + "\n\n# Agent configuration\n"
+            + env_block
+            + crewai_env_block
+            + "\n"
+        )
+        dockerfile.write_text(dockerfile_content)
 
         tag = f"agentbreeder/{config.name}:{config.version}"
 
         return ContainerImage(
             tag=tag,
-            dockerfile_content=DOCKERFILE_TEMPLATE,
+            dockerfile_content=dockerfile_content,
             context_dir=build_dir,
         )
 
@@ -114,6 +146,7 @@ class CrewAIRuntime(RuntimeBuilder):
     def get_requirements(self, config: AgentConfig) -> list[str]:
         return [
             "crewai>=0.80.0",
+            "crewai-tools>=0.4.0",
             "fastapi>=0.110.0",
             "uvicorn[standard]>=0.27.0",
             "httpx>=0.27.0",

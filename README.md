@@ -145,10 +145,10 @@ agent.deploy()
 |-----------|--------|---------|
 | LangGraph | ✅ | `engine/runtimes/langgraph.py` |
 | OpenAI Agents SDK | ✅ | `engine/runtimes/openai_agents.py` |
-| Claude SDK (Anthropic) | 🔲 Planned | |
-| CrewAI | 🔲 Planned | |
-| Google ADK | 🔲 Planned | |
-| Custom (bring your own) | ✅ | |
+| Claude SDK (Anthropic) | ✅ | `engine/runtimes/claude_sdk.py` |
+| CrewAI | ✅ | `engine/runtimes/crewai.py` |
+| Google ADK | ✅ | `engine/runtimes/google_adk.py` |
+| Custom (bring your own) | ✅ | `engine/runtimes/custom.py` |
 
 ### Cloud Targets
 
@@ -565,7 +565,7 @@ Every cloud vendor now has an agent platform. They all share the same tradeoff: 
 High-impact areas where contributions are especially welcome:
 
 - **AWS ECS deployer** — `engine/deployers/aws_ecs.py` — most requested cloud target
-- **Framework runtimes** — CrewAI, Claude SDK, Google ADK in `engine/runtimes/`
+- **Framework runtimes** — additional frameworks beyond the six currently supported
 - **Agent templates** — starter templates for common use cases
 - **Connectors** — Datadog, Grafana, and other observability integrations
 
