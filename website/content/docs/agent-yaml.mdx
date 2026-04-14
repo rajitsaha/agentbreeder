@@ -126,10 +126,119 @@ One of:
 |-------|-----------|---------|
 | `langgraph` | LangGraph | ✅ Implemented |
 | `openai_agents` | OpenAI Agents SDK | ✅ Implemented |
-| `crewai` | CrewAI | 🔲 Planned |
-| `claude_sdk` | Anthropic Claude SDK | 🔲 Planned |
-| `google_adk` | Google Agent Development Kit | 🔲 Planned |
-| `custom` | Any Python/TS agent | 🔲 Planned |
+| `crewai` | CrewAI | ✅ Implemented |
+| `claude_sdk` | Anthropic Claude SDK | ✅ Implemented |
+| `google_adk` | Google Agent Development Kit | ✅ Implemented |
+| `custom` | Any Python/TS agent | ✅ Implemented |
+
+#### Framework-Specific Configuration
+
+Each framework supports optional configuration under a top-level key matching the framework name. These keys are only read by the corresponding runtime.
+
+##### `claude_sdk` — Anthropic Claude SDK
+
+```yaml
+claude_sdk:
+  thinking:
+    type: adaptive          # "adaptive" (default) or "enabled"
+    effort: high            # "low" | "medium" | "high" (default: "high")
+  prompt_caching: true      # Enable prompt caching for long system prompts (default: false)
+```
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `thinking.type` | string | `"adaptive"` | Thinking mode. `"adaptive"` activates thinking when beneficial; `"enabled"` always activates. |
+| `thinking.effort` | string | `"high"` | Thinking compute budget. Maps to `output_config.effort` in the API. |
+| `prompt_caching` | boolean | `false` | Cache the system prompt via Anthropic's prompt caching API. Reduces latency and cost when the system prompt is reused across many requests. Minimum length thresholds: 8 192 chars for Sonnet models, 16 384 chars for others. |
+
+**Environment variables injected by the runtime:**
+
+| Variable | Description |
+|----------|-------------|
+| `AGENT_MODEL` | Claude model ID (e.g., `claude-sonnet-4-6`) |
+| `AGENT_MAX_TOKENS` | Max tokens for responses (default: `4096`) |
+| `AGENT_SYSTEM_PROMPT` | System prompt injected at startup |
+| `AGENT_TOOLS_JSON` | JSON array of tool definitions |
+| `AGENT_THINKING_CONFIG` | JSON object with thinking configuration |
+| `AGENT_PROMPT_CACHING` | `"true"` when prompt caching is enabled |
+
+##### `crewai` — CrewAI
+
+```yaml
+crewai:
+  # No additional configuration required.
+  # AGENT_MODEL and AGENT_TEMPERATURE are injected automatically
+  # from the top-level model: block.
+```
+
+The CrewAI runtime automatically injects `AGENT_MODEL` and `AGENT_TEMPERATURE` from the top-level `model:` block into every agent in the crew. Your `crew.py` does not need to read these environment variables — the runtime sets them on each `agent.llm` object at startup.
+
+**Environment variables injected by the runtime:**
+
+| Variable | Description |
+|----------|-------------|
+| `AGENT_MODEL` | LLM model name (propagated to each crew agent's LLM) |
+| `AGENT_TEMPERATURE` | Sampling temperature (propagated to each crew agent's LLM) |
+| `AGENT_TOOLS_JSON` | JSON array of tool definitions from the registry |
+
+The crew module must export either a `crew` attribute (a `Crew` instance) or a `flow` attribute (a `Flow` instance). Both sync and async (`akickoff`) crew execution are supported.
+
+##### `google_adk` — Google Agent Development Kit
+
+```yaml
+google_adk:
+  session_backend: memory       # "memory" (default) | "database" | "vertex_ai"
+  session_db_url: ""            # Required when session_backend is "database"
+  memory_service: memory        # "memory" (default) | "vertex_ai_bank" | "vertex_ai_rag"
+  artifact_service: memory      # "memory" (default) | "gcs"
+  gcs_bucket: ""                # Required when artifact_service is "gcs"
+```
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `session_backend` | string | `"memory"` | Session storage backend. `"database"` requires `DATABASE_URL`. `"vertex_ai"` uses Vertex AI session service and requires `GOOGLE_CLOUD_PROJECT`. |
+| `session_db_url` | string | — | PostgreSQL URL for database session storage. Falls back to `DATABASE_URL` env var. |
+| `memory_service` | string | `"memory"` | Memory persistence service. `"vertex_ai_bank"` and `"vertex_ai_rag"` require `GOOGLE_CLOUD_PROJECT`. |
+| `artifact_service` | string | `"memory"` | Artifact storage service. `"gcs"` requires a GCS bucket name. |
+| `gcs_bucket` | string | — | GCS bucket name for artifact storage. Falls back to `GCS_ARTIFACT_BUCKET` env var. |
+
+**Environment variables injected by the runtime:**
+
+| Variable | Description |
+|----------|-------------|
+| `AGENT_MODEL` | Gemini model ID (applied to `agent.model` at startup) |
+| `AGENT_TEMPERATURE` | Sampling temperature (applied via `generate_content_config`) |
+| `AGENT_MAX_TOKENS` | Max output tokens (applied via `generate_content_config`) |
+| `AGENTBREEDER_ADK_CONFIG` | JSON blob of the `google_adk:` config block |
+| `GOOGLE_CLOUD_PROJECT` | GCP project for Vertex AI services |
+| `GOOGLE_CLOUD_LOCATION` | GCP region (default: `us-central1`) |
+
+The agent module must export one of: `root_agent`, `agent`, or `app` (a `google.adk.agents.Agent` instance). Alternatively, a `root_agent.yaml` file (ADK config-based agents) is supported as a fallback.
+
+---
+
+### Streaming — `/stream` SSE Endpoint
+
+All deployed agents expose a `/stream` endpoint alongside `/invoke`. The endpoint streams execution progress as [Server-Sent Events](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events).
+
+**Request:** same body as `/invoke`
+
+**Response:** `text/event-stream`
+
+| Framework | SSE events |
+|-----------|-----------|
+| Claude SDK | `data: {"text": "..."}` — one event per streamed text chunk |
+| CrewAI | `event: step` with `{"description": "...", "result": "..."}` for each crew step; `event: result` with the final output |
+| Google ADK | `data: {"text": "...", "is_final": false\|true}` — one event per ADK event |
+
+All streams terminate with `data: [DONE]`.
+
+**Example (curl):**
+```bash
+curl -N -X POST https://<agent-endpoint>/stream \
+  -H "Content-Type: application/json" \
+  -d '{"input": "Summarize this quarter'\''s results"}'
+```
 
 ---
 

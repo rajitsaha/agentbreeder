@@ -117,6 +117,10 @@ agentbreeder/
 │   │   ├── base.py             # Runtime builder interface
 │   │   ├── langgraph.py        # LangGraph runtime
 │   │   ├── openai_agents.py    # OpenAI Agents runtime
+│   │   ├── crewai.py           # CrewAI runtime
+│   │   ├── claude_sdk.py       # Claude SDK (Anthropic) runtime
+│   │   ├── google_adk.py       # Google ADK runtime
+│   │   ├── custom.py           # Custom (bring your own) runtime
 │   │   └── templates/          # Server templates per runtime
 │   ├── secrets/                # Pluggable secrets backend system
 │   │   ├── base.py             # Secrets backend interface
@@ -453,6 +457,26 @@ access:
     - team:engineering
     - team:customer-success
   require_approval: false             # If true, deploys require admin approval
+
+# Framework-Specific Configuration (optional — only read by the matching runtime)
+
+# Claude SDK — adaptive thinking + prompt caching
+claude_sdk:
+  thinking:
+    type: adaptive                    # "adaptive" (default) | "enabled"
+    effort: high                      # "low" | "medium" | "high"
+  prompt_caching: true                # Cache system prompt (requires ≥8 192 chars for Sonnet)
+
+# CrewAI — no extra config needed; AGENT_MODEL/AGENT_TEMPERATURE are auto-injected
+# crewai: {}
+
+# Google ADK — session and memory backends
+google_adk:
+  session_backend: memory             # "memory" | "database" | "vertex_ai"
+  session_db_url: ""                  # Required if session_backend is "database"
+  memory_service: memory              # "memory" | "vertex_ai_bank" | "vertex_ai_rag"
+  artifact_service: memory            # "memory" | "gcs"
+  gcs_bucket: ""                      # Required if artifact_service is "gcs"
 ```
 
 ---
