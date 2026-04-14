@@ -83,6 +83,17 @@ pip install -e ".[dev]"
 
 ## Build Your First Agent
 
+The fastest way to scaffold a new agent project is the **AI Agent Architect**:
+
+```bash
+# Run this in Claude Code
+/agent-build
+```
+
+It asks you 6 questions (or recommends the best stack for your use case) and generates a complete, production-ready project. See the [full walkthrough below](#use-the-agent-architect-agent-build).
+
+Prefer to scaffold manually? The steps below walk through each file.
+
 ### Step 1: Scaffold
 
 ```bash
