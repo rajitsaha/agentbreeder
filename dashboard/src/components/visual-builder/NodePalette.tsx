@@ -45,7 +45,36 @@ const PALETTE_ITEMS: PaletteEntry[] = [
   { type: "guardrail", label: "Guardrail", description: "Safety guardrail" },
 ];
 
-export function NodePalette() {
+const FRAMEWORK_PALETTE_MAP: Record<string, PaletteEntry[]> = {
+  crewai: [
+    { type: "agent", label: "Crew Agent", description: "CrewAI role-based agent" },
+    { type: "tool", label: "Crew Tool", description: "Tool available to crew members" },
+    { type: "prompt", label: "Task Prompt", description: "Task description & expected output" },
+    { type: "guardrail", label: "Guardrail", description: "Safety guardrail" },
+  ],
+  google_adk: [
+    { type: "agent", label: "LlmAgent", description: "Google ADK LLM agent" },
+    { type: "agent", label: "SequentialAgent", description: "Google ADK sequential multi-agent" },
+    { type: "tool", label: "Tool", description: "ADK tool / function" },
+    { type: "prompt", label: "Instruction", description: "Agent instruction prompt" },
+  ],
+  claude_sdk: [
+    { type: "agent", label: "Claude Agent", description: "Anthropic Claude async agent" },
+    { type: "tool", label: "Tool Block", description: "Claude tool-use block" },
+    { type: "prompt", label: "System Prompt", description: "Claude system prompt" },
+    { type: "guardrail", label: "Guardrail", description: "Safety guardrail" },
+  ],
+};
+
+interface NodePaletteProps {
+  framework?: string;
+}
+
+export function NodePalette({ framework }: NodePaletteProps = {}) {
+  const paletteItems =
+    framework && FRAMEWORK_PALETTE_MAP[framework]
+      ? FRAMEWORK_PALETTE_MAP[framework]
+      : PALETTE_ITEMS;
   const onDragStart = (
     event: React.DragEvent<HTMLDivElement>,
     nodeType: CanvasNodeType
@@ -64,12 +93,12 @@ export function NodePalette() {
       </div>
       <div className="flex-1 overflow-y-auto p-2">
         <div className="space-y-1.5">
-          {PALETTE_ITEMS.map((item) => {
+          {paletteItems.map((item, idx) => {
             const style = NODE_STYLES[item.type];
             const IconComp = ICON_MAP[style.icon] ?? Bot;
             return (
               <div
-                key={item.type}
+                key={`${item.type}-${idx}`}
                 draggable
                 onDragStart={(e) => onDragStart(e, item.type)}
                 className={cn(

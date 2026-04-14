@@ -250,4 +250,66 @@ class TestClaudeSDKRuntimeRequirements:
         config = _make_config()
         reqs = runtime.get_requirements(config)
         anthropic_req = next(r for r in reqs if "anthropic" in r)
-        assert "0.40.0" in anthropic_req
+        assert "0.50.0" in anthropic_req
+
+
+class TestClaudeSDKServerMaxTokens:
+    """max_tokens must come from AGENT_MAX_TOKENS env var, not be hardcoded."""
+
+    def test_build_sets_agent_max_tokens_env_var(self) -> None:
+        """build() must write AGENT_MAX_TOKENS into the Dockerfile."""
+        runtime = ClaudeSDKRuntime()
+        agent_dir = _make_agent_dir(
+            {
+                "agent.py": "agent = None",
+                "requirements.txt": "anthropic>=0.40.0",
+            }
+        )
+        config = _make_config(model={"primary": "claude-opus-4-6", "max_tokens": 4096})
+        image = runtime.build(agent_dir, config)
+        dockerfile = (image.context_dir / "Dockerfile").read_text()
+        assert "AGENT_MAX_TOKENS" in dockerfile
+        assert "4096" in dockerfile
+
+    def test_build_omits_max_tokens_env_when_not_set(self) -> None:
+        """If model.max_tokens is None, AGENT_MAX_TOKENS should not appear in Dockerfile."""
+        runtime = ClaudeSDKRuntime()
+        agent_dir = _make_agent_dir(
+            {
+                "agent.py": "agent = None",
+                "requirements.txt": "anthropic>=0.40.0",
+            }
+        )
+        # _make_config() uses no max_tokens by default
+        config = _make_config()
+        image = runtime.build(agent_dir, config)
+        dockerfile = (image.context_dir / "Dockerfile").read_text()
+        assert "AGENT_MAX_TOKENS" not in dockerfile
+
+
+class TestBuildEnvBlockSecurity:
+    """_build_env_block must sanitize values against Dockerfile injection."""
+
+    def test_build_strips_newlines_from_model_primary(self) -> None:
+        runtime = ClaudeSDKRuntime()
+        agent_dir = _make_agent_dir(
+            {"agent.py": "agent = None", "requirements.txt": "anthropic>=0.40.0"}
+        )
+        config = _make_config(model={"primary": "claude-sonnet\nRUN rm -rf /"})
+        image = runtime.build(agent_dir, config)
+        dockerfile = (image.context_dir / "Dockerfile").read_text()
+        # Verify newline is stripped (converted to space) —
+        # injection becomes a string value, not a command
+        assert 'ENV AGENT_MODEL="claude-sonnet RUN rm -rf /"' in dockerfile
+        # Verify it's not a standalone RUN instruction that would execute
+        assert "\nRUN rm -rf /" not in dockerfile
+
+    def test_build_escapes_quotes_in_deploy_env_vars(self) -> None:
+        runtime = ClaudeSDKRuntime()
+        agent_dir = _make_agent_dir(
+            {"agent.py": "agent = None", "requirements.txt": "anthropic>=0.40.0"}
+        )
+        config = _make_config(deploy={"cloud": "local", "env_vars": {"MY_KEY": 'val"ue'}})
+        image = runtime.build(agent_dir, config)
+        dockerfile = (image.context_dir / "Dockerfile").read_text()
+        assert 'MY_KEY="val\\"ue"' in dockerfile

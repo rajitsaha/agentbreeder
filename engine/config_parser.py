@@ -8,11 +8,12 @@ from __future__ import annotations
 
 import enum
 import json
+import re
 from pathlib import Path
 from typing import Any
 
 import jsonschema
-from pydantic import BaseModel, EmailStr, Field, field_validator
+from pydantic import BaseModel, EmailStr, Field, field_validator, model_validator
 from ruamel.yaml import YAML
 
 SCHEMA_PATH = Path(__file__).parent / "schema" / "agent.schema.json"
@@ -119,6 +120,89 @@ class GuardrailConfig(BaseModel):
     endpoint: str | None = None
 
 
+class ClaudeSDKThinkingConfig(BaseModel):
+    enabled: bool = False
+    effort: str = "high"  # "high" | "medium" | "low"  (adaptive mode for Opus 4.6 / Sonnet 4.6)
+
+
+class ClaudeSDKRoutingConfig(BaseModel):
+    provider: str = "anthropic"  # "anthropic" | "vertex_ai" | "bedrock"
+    project_id: str | None = None  # GCP project ID (required for vertex_ai)
+    region: str | None = None  # Cloud region (required for vertex_ai / bedrock)
+
+
+class ClaudeSDKConfig(BaseModel):
+    thinking: ClaudeSDKThinkingConfig = Field(default_factory=ClaudeSDKThinkingConfig)
+    prompt_caching: bool = False
+    routing: ClaudeSDKRoutingConfig = Field(default_factory=ClaudeSDKRoutingConfig)
+
+
+class CrewAIConfig(BaseModel):
+    """Optional CrewAI-specific configuration block."""
+
+    process: str = Field(
+        default="sequential",
+        description="Crew execution process. One of: sequential, hierarchical, parallel.",
+    )
+    manager_llm: str | None = Field(
+        default=None,
+        description="Model ref for the manager agent. Required when process=hierarchical.",
+    )
+    verbose: bool = False
+    memory: bool = False
+    memory_config: dict[str, Any] | None = None
+
+    @field_validator("process")
+    @classmethod
+    def validate_process(cls, v: str) -> str:
+        allowed = {"sequential", "hierarchical", "parallel"}
+        if v not in allowed:
+            raise ValueError(f"crewai.process must be one of {sorted(allowed)}, got {v!r}")
+        return v
+
+
+class ADKSessionBackend(enum.StrEnum):
+    memory = "memory"
+    database = "database"
+    vertex_ai = "vertex_ai"
+
+
+class ADKMemoryService(enum.StrEnum):
+    memory = "memory"
+    vertex_ai_bank = "vertex_ai_bank"
+    vertex_ai_rag = "vertex_ai_rag"
+
+
+class ADKArtifactService(enum.StrEnum):
+    memory = "memory"
+    gcs = "gcs"
+
+
+class ADKStreamingMode(enum.StrEnum):
+    none = "none"
+    sse = "sse"
+    bidi = "bidi"
+
+
+class GoogleADKConfig(BaseModel):
+    """Framework-specific configuration for Google ADK agents."""
+
+    session_backend: ADKSessionBackend = ADKSessionBackend.memory
+    session_db_url: str | None = None  # required when session_backend=database
+    memory_service: ADKMemoryService = ADKMemoryService.memory
+    artifact_service: ADKArtifactService = ADKArtifactService.memory
+    gcs_bucket: str | None = None  # required when artifact_service=gcs
+    streaming: ADKStreamingMode = ADKStreamingMode.none
+
+    @model_validator(mode="after")
+    def check_backend_deps(self) -> GoogleADKConfig:
+        if self.session_backend == ADKSessionBackend.database and not self.session_db_url:
+            raise ValueError("session_db_url is required when session_backend=database")
+        if self.artifact_service == ADKArtifactService.gcs and not self.gcs_bucket:
+            raise ValueError("gcs_bucket is required when artifact_service=gcs")
+        return self
+
+
 class AgentConfig(BaseModel):
     """The complete agent configuration parsed from agent.yaml."""
 
@@ -139,12 +223,13 @@ class AgentConfig(BaseModel):
     mcp_servers: list[McpServerRef] = Field(default_factory=list)
     deploy: DeployConfig
     access: AccessConfig = Field(default_factory=AccessConfig)
+    crewai: CrewAIConfig | None = None
+    google_adk: GoogleADKConfig | None = None
+    claude_sdk: ClaudeSDKConfig = Field(default_factory=ClaudeSDKConfig)
 
     @field_validator("name")
     @classmethod
     def validate_name(cls, v: str) -> str:
-        import re
-
         if not re.match(r"^[a-z0-9][a-z0-9-]*[a-z0-9]$", v) and len(v) >= 2:
             msg = (
                 f"Agent name '{v}' must be lowercase alphanumeric with hyphens, "
@@ -156,8 +241,6 @@ class AgentConfig(BaseModel):
     @field_validator("version")
     @classmethod
     def validate_version(cls, v: str) -> str:
-        import re
-
         if not re.match(r"^\d+\.\d+\.\d+$", v):
             msg = f"Version '{v}' must be semantic versioning (e.g., '1.0.0')"
             raise ValueError(msg)

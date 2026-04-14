@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 from pathlib import Path
 from typing import Any
 
@@ -12,6 +13,7 @@ from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import PlainTextResponse
 from jsonschema import Draft202012Validator
 from pydantic import BaseModel
+from starlette.concurrency import run_in_threadpool
 
 from api.models.schemas import ApiResponse
 
@@ -88,16 +90,63 @@ def _validate_yaml_against_schema(yaml_content: str, resource_type: str) -> dict
 
 
 # ---------------------------------------------------------------------------
-# In-memory store (swap for DB-backed registry in production)
+# File-backed store
 # ---------------------------------------------------------------------------
 
-_STORE: dict[str, dict[str, str]] = {
-    "agent": {},
-    "prompt": {},
-    "tool": {},
-    "rag": {},
-    "memory": {},
-}
+
+class FileStore:
+    """File-backed key-value store for builder configs.
+
+    Layout: {base_dir}/{resource_type}/{name}.yaml
+
+    ``set`` accepts either a raw YAML string or a dict (serialised to YAML).
+    ``get`` returns a dict (deserialised from YAML), or None if missing.
+    ``get_raw`` returns the raw YAML string, or None if missing.
+    """
+
+    def __init__(self, base_dir: Path | None = None) -> None:
+        env_dir = os.getenv("BUILDERS_DATA_DIR")
+        if base_dir is not None:
+            self._base = base_dir
+        elif env_dir:
+            self._base = Path(env_dir)
+        else:
+            self._base = Path.home() / ".agentbreeder" / "builders"
+        self._base.mkdir(parents=True, exist_ok=True)
+
+    def _path(self, resource_type: str, name: str) -> Path:
+        return self._base / resource_type / f"{name}.yaml"
+
+    def get(self, resource_type: str, name: str) -> dict[str, Any] | None:
+        """Return the stored resource as a dict, or None if not found."""
+        p = self._path(resource_type, name)
+        if not p.exists():
+            return None
+        raw = p.read_text(encoding="utf-8")
+        return pyyaml.safe_load(raw)
+
+    def get_raw(self, resource_type: str, name: str) -> str | None:
+        """Return the stored resource as raw YAML text, or None if not found."""
+        p = self._path(resource_type, name)
+        if not p.exists():
+            return None
+        return p.read_text(encoding="utf-8")
+
+    def set(self, resource_type: str, name: str, data: dict[str, Any] | str) -> None:
+        """Store *data* (dict or raw YAML string) under resource_type/name."""
+        p = self._path(resource_type, name)
+        p.parent.mkdir(parents=True, exist_ok=True)
+        if isinstance(data, dict):
+            text = pyyaml.dump(data, default_flow_style=False)
+        else:
+            text = data
+        p.write_text(text, encoding="utf-8")
+
+    def exists(self, resource_type: str, name: str) -> bool:
+        return self._path(resource_type, name).exists()
+
+
+_store = FileStore()
 
 
 # ---------------------------------------------------------------------------
@@ -140,7 +189,7 @@ async def get_resource_yaml(
     """Return the raw YAML config for a resource."""
     _validate_resource_type(resource_type)
 
-    stored = _STORE.get(resource_type, {}).get(name)
+    stored = await run_in_threadpool(_store.get_raw, resource_type, name)
     if stored is None:
         raise HTTPException(status_code=404, detail=f"{resource_type} '{name}' not found")
 
@@ -169,7 +218,7 @@ async def put_resource_yaml(
 
     _validate_yaml_against_schema(yaml_content, resource_type)
 
-    _STORE[resource_type][name] = yaml_content
+    await run_in_threadpool(_store.set, resource_type, name, yaml_content)
     logger.info("Saved %s '%s' YAML (%d bytes)", resource_type, name, len(yaml_content))
 
     return ApiResponse(
@@ -200,13 +249,13 @@ async def import_resource_yaml(
     if not name:
         raise HTTPException(status_code=422, detail="YAML must contain a 'name' field")
 
-    if name in _STORE.get(body.resource_type, {}):
+    if await run_in_threadpool(_store.exists, body.resource_type, name):
         raise HTTPException(
             status_code=409,
             detail=f"{body.resource_type} '{name}' already exists. Use PUT to update.",
         )
 
-    _STORE[body.resource_type][name] = body.yaml_content
+    await run_in_threadpool(_store.set, body.resource_type, name, body.yaml_content)
     logger.info("Imported %s '%s' from YAML", body.resource_type, name)
 
     return ApiResponse(
