@@ -13,8 +13,8 @@ export default function HomePage() {
       <main>
         <Hero />
         <Frameworks />
-        <Features />
         <AgentDemo />
+        <Features />
         <HowItWorks />
       </main>
       <Footer />
