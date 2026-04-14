@@ -5,7 +5,6 @@ adaptive thinking, prompt caching, provider routing, and version bump.
 from __future__ import annotations
 
 import os
-import tempfile
 from pathlib import Path
 from typing import Any
 from unittest.mock import AsyncMock, MagicMock, patch
@@ -21,10 +20,10 @@ from engine.config_parser import (
 )
 from engine.runtimes.claude_sdk import ClaudeSDKRuntime
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def _make_config(**overrides: object) -> AgentConfig:
     defaults: dict[str, object] = {
@@ -47,6 +46,7 @@ def _make_config_with_sdk(**sdk_kwargs: object) -> AgentConfig:
 # ---------------------------------------------------------------------------
 # ClaudeSDKConfig Pydantic model
 # ---------------------------------------------------------------------------
+
 
 class TestClaudeSDKConfig:
     def test_defaults(self) -> None:
@@ -106,6 +106,7 @@ class TestClaudeSDKConfig:
 # ---------------------------------------------------------------------------
 # _build_env_block()
 # ---------------------------------------------------------------------------
+
 
 class TestBuildEnvBlock:
     def test_default_routing_vars(self) -> None:
@@ -191,9 +192,11 @@ class TestBuildEnvBlock:
 # _call_client — thinking, caching, max_tokens fix
 # ---------------------------------------------------------------------------
 
+
 class TestCallClient:
     def _import_server_module(self) -> Any:
         import importlib.util
+
         spec = importlib.util.spec_from_file_location(
             "claude_sdk_server_adv",
             Path("engine/runtimes/templates/claude_sdk_server.py"),
@@ -215,7 +218,9 @@ class TestCallClient:
         mod._prompt_caching_enabled = False
         mod._thinking_config = None
 
-        result = await mod._call_client(mock_client, "claude-sonnet-4-6", "", [{"role": "user", "content": "hi"}])
+        result = await mod._call_client(
+            mock_client, "claude-sonnet-4-6", "", [{"role": "user", "content": "hi"}]
+        )
 
         call_kwargs = mock_client.messages.create.call_args[1]
         assert call_kwargs["max_tokens"] == 2048
@@ -245,7 +250,9 @@ class TestCallClient:
         mod._prompt_caching_enabled = False
         mod._thinking_config = {"type": "adaptive", "_effort": "high"}
 
-        await mod._call_client(mock_client, "claude-sonnet-4-6", "", [{"role": "user", "content": "think"}])
+        await mod._call_client(
+            mock_client, "claude-sonnet-4-6", "", [{"role": "user", "content": "think"}]
+        )
 
         call_kwargs = mock_client.messages.create.call_args[1]
         assert call_kwargs["thinking"] == {"type": "adaptive"}
@@ -319,9 +326,11 @@ class TestCallClient:
 # Cache threshold logic
 # ---------------------------------------------------------------------------
 
+
 class TestCacheThreshold:
     def _get_threshold(self, model: str) -> int:
         import importlib.util
+
         spec = importlib.util.spec_from_file_location(
             "claude_sdk_server_thresh",
             Path("engine/runtimes/templates/claude_sdk_server.py"),
@@ -345,6 +354,7 @@ class TestCacheThreshold:
 # ---------------------------------------------------------------------------
 # Requirements version
 # ---------------------------------------------------------------------------
+
 
 class TestRequirementsVersion:
     def test_anthropic_version_is_050_or_higher(self) -> None:

@@ -295,10 +295,11 @@ class TestBuildEnvBlockSecurity:
         agent_dir = _make_agent_dir(
             {"agent.py": "agent = None", "requirements.txt": "anthropic>=0.40.0"}
         )
-        config = _make_config(model={"primary": 'claude-sonnet\nRUN rm -rf /'})
+        config = _make_config(model={"primary": "claude-sonnet\nRUN rm -rf /"})
         image = runtime.build(agent_dir, config)
         dockerfile = (image.context_dir / "Dockerfile").read_text()
-        # Verify newline is stripped (converted to space) — injection becomes a string value, not a command
+        # Verify newline is stripped (converted to space) —
+        # injection becomes a string value, not a command
         assert 'ENV AGENT_MODEL="claude-sonnet RUN rm -rf /"' in dockerfile
         # Verify it's not a standalone RUN instruction that would execute
         assert "\nRUN rm -rf /" not in dockerfile

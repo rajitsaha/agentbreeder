@@ -19,7 +19,7 @@ import logging
 import os
 import sys
 from contextlib import asynccontextmanager
-from typing import Any, Optional
+from typing import Any
 
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import StreamingResponse
@@ -34,9 +34,9 @@ logger = logging.getLogger("agentbreeder.agent")
 
 class InvokeRequest(BaseModel):
     input: str
-    session_id: Optional[str] = None
-    user_id: Optional[str] = None
-    config: Optional[dict] = None  # type: ignore[type-arg]
+    session_id: str | None = None
+    user_id: str | None = None
+    config: dict | None = None  # type: ignore[type-arg]
 
 
 InvokeRequest.model_rebuild()
@@ -45,7 +45,7 @@ InvokeRequest.model_rebuild()
 class InvokeResponse(BaseModel):
     output: str | None = None
     session_id: str
-    metadata: Optional[dict] = None  # type: ignore[type-arg]
+    metadata: dict | None = None  # type: ignore[type-arg]
 
 
 InvokeResponse.model_rebuild()
@@ -81,6 +81,7 @@ def _load_agent() -> Any:
     if os.path.exists(yaml_path):
         try:
             from server_loader import load_agent_from_yaml  # type: ignore[import]
+
             logger.info("Loaded agent from root_agent.yaml")
             return load_agent_from_yaml(yaml_path)
         except Exception as e:
@@ -99,6 +100,7 @@ def _build_session_service(cfg: dict) -> Any:  # type: ignore[type-arg]
     backend = cfg.get("session_backend", "memory")
     if backend == "database":
         from google.adk.sessions import DatabaseSessionService
+
         db_url = cfg.get("session_db_url") or os.getenv("DATABASE_URL")
         if not db_url:
             raise ValueError(
@@ -108,14 +110,14 @@ def _build_session_service(cfg: dict) -> Any:  # type: ignore[type-arg]
         return DatabaseSessionService(db_url=db_url)
     elif backend == "vertex_ai":
         from google.adk.sessions import VertexAiSessionService
+
         project = os.getenv("GOOGLE_CLOUD_PROJECT", "agentbreeder-local")
         location = os.getenv("GOOGLE_CLOUD_LOCATION", "us-central1")
-        logger.info(
-            "Using VertexAiSessionService (project=%s, location=%s)", project, location
-        )
+        logger.info("Using VertexAiSessionService (project=%s, location=%s)", project, location)
         return VertexAiSessionService(project=project, location=location)
     else:
         from google.adk.sessions import InMemorySessionService
+
         logger.info("Using InMemorySessionService")
         return InMemorySessionService()
 
@@ -125,12 +127,14 @@ def _build_memory_service(cfg: dict) -> Any:  # type: ignore[type-arg]
     svc = cfg.get("memory_service", "memory")
     if svc == "vertex_ai_bank":
         from google.adk.memory import VertexAiMemoryBankService
+
         project = os.getenv("GOOGLE_CLOUD_PROJECT", "agentbreeder-local")
         location = os.getenv("GOOGLE_CLOUD_LOCATION", "us-central1")
         logger.info("Using VertexAiMemoryBankService")
         return VertexAiMemoryBankService(project=project, location=location)
     elif svc == "vertex_ai_rag":
         from google.adk.memory import VertexAiRagMemoryService
+
         rag_corpus = os.getenv("VERTEX_RAG_CORPUS", "")
         logger.info("Using VertexAiRagMemoryService (corpus=%s)", rag_corpus)
         return VertexAiRagMemoryService(rag_corpus=rag_corpus)
@@ -145,6 +149,7 @@ def _build_artifact_service(cfg: dict) -> Any:  # type: ignore[type-arg]
     svc = cfg.get("artifact_service", "memory")
     if svc == "gcs":
         from google.adk.artifacts import GcsArtifactService
+
         bucket = cfg.get("gcs_bucket") or os.getenv("GCS_ARTIFACT_BUCKET", "")
         if not bucket:
             raise ValueError(
@@ -214,9 +219,12 @@ async def lifespan(app: FastAPI):  # noqa: ARG001
         except Exception:
             logger.warning("Could not set AGENT_MODEL on agent — proceeding with agent default")
 
-    if (agent_temperature_str or agent_max_tokens_str) and hasattr(_agent, "generate_content_config"):
+    if (agent_temperature_str or agent_max_tokens_str) and hasattr(
+        _agent, "generate_content_config"
+    ):
         try:
             from google.genai import types as genai_types
+
             kwargs: dict = {}  # type: ignore[type-arg]
             if agent_temperature_str:
                 kwargs["temperature"] = float(agent_temperature_str)
@@ -225,7 +233,9 @@ async def lifespan(app: FastAPI):  # noqa: ARG001
             _agent.generate_content_config = genai_types.GenerateContentConfig(**kwargs)
             logger.info("Applied generate_content_config overrides: %s", kwargs)
         except Exception:
-            logger.warning("Could not apply generate_content_config — proceeding with agent defaults")
+            logger.warning(
+                "Could not apply generate_content_config — proceeding with agent defaults"
+            )
 
     # --- Tool bridge ---
     await startup()
@@ -313,7 +323,7 @@ async def stream(request: InvokeRequest) -> StreamingResponse:
     )
 
 
-async def _stream_agent_sse(input_text: str, session_id: Optional[str], user_id: str) -> Any:
+async def _stream_agent_sse(input_text: str, session_id: str | None, user_id: str) -> Any:
     """Async generator forwarding each ADK Event as an SSE data line."""
     from google.genai import types as genai_types
 
@@ -322,7 +332,9 @@ async def _stream_agent_sse(input_text: str, session_id: Optional[str], user_id:
     # Reuse or create session
     existing = None
     if session_id:
-        existing = await _session_service.get_session(app_name=app_name, user_id=user_id, session_id=session_id)
+        existing = await _session_service.get_session(
+            app_name=app_name, user_id=user_id, session_id=session_id
+        )
     if existing is None:
         session = await _session_service.create_session(app_name=app_name, user_id=user_id)
     else:
@@ -342,7 +354,11 @@ async def _stream_agent_sse(input_text: str, session_id: Optional[str], user_id:
             if hasattr(event, "model_dump"):
                 payload = event.model_dump()
             else:
-                payload = {"is_final": bool(hasattr(event, "is_final_response") and event.is_final_response())}
+                payload = {
+                    "is_final": bool(
+                        hasattr(event, "is_final_response") and event.is_final_response()
+                    )
+                }
                 if event.content and event.content.parts:
                     payload["text"] = "".join(getattr(p, "text", "") for p in event.content.parts)
             yield f"data: {json.dumps(payload)}\n\n"
@@ -355,7 +371,7 @@ async def _stream_agent_sse(input_text: str, session_id: Optional[str], user_id:
 async def _run_agent(
     input_text: str,
     user_id: str,
-    session_id: Optional[str],
+    session_id: str | None,
 ) -> tuple[str, str]:
     """Run the Google ADK agent using the module-level runner.
 
@@ -373,13 +389,9 @@ async def _run_agent(
         )
         if session is None:
             # Session expired or not found — create a new one
-            session = await _session_service.create_session(
-                app_name=app_name, user_id=user_id
-            )
+            session = await _session_service.create_session(app_name=app_name, user_id=user_id)
     else:
-        session = await _session_service.create_session(
-            app_name=app_name, user_id=user_id
-        )
+        session = await _session_service.create_session(app_name=app_name, user_id=user_id)
 
     user_message = genai_types.Content(
         role="user",

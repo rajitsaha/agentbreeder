@@ -33,6 +33,7 @@ def _import_server():
     sys.modules["google.genai.types"] = fake_genai_types
     sys.path.insert(0, "engine/runtimes/templates")
     import google_adk_server as srv  # noqa: PLC0415
+
     return srv
 
 
@@ -84,7 +85,10 @@ class TestADKStreamEndpoint:
         srv = _import_server()
         srv._agent = MagicMock(name="agent")
         mock_runner = MagicMock(name="runner")
-        events = [_make_adk_event(text="thinking..."), _make_adk_event(is_final=True, text="answer")]
+        events = [
+            _make_adk_event(text="thinking..."),
+            _make_adk_event(is_final=True, text="answer"),
+        ]
         mock_runner.run_async = MagicMock(return_value=_aiter(*events))
         srv._runner = mock_runner
         mock_ss = MagicMock()
@@ -106,7 +110,9 @@ class TestADKStreamEndpoint:
         srv = _import_server()
         srv._agent = MagicMock(name="agent")
         mock_runner = MagicMock(name="runner")
-        mock_runner.run_async = MagicMock(return_value=_aiter(_make_adk_event(is_final=True, text="done")))
+        mock_runner.run_async = MagicMock(
+            return_value=_aiter(_make_adk_event(is_final=True, text="done"))
+        )
         srv._runner = mock_runner
         mock_ss = MagicMock()
         mock_session = MagicMock()
@@ -150,7 +156,7 @@ class TestADKStreamEndpoint:
             response = await client.post("/stream", json={"input": "hi"})
         for line in response.text.splitlines():
             if line.startswith("data:"):
-                payload = line[len("data:"):].strip()
+                payload = line[len("data:") :].strip()
                 if payload != "[DONE]":
                     json.loads(payload)
         srv._agent = None

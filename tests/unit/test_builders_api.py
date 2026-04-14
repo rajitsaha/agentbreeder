@@ -7,8 +7,8 @@ import textwrap
 import pytest
 from fastapi.testclient import TestClient
 
-from api.main import app
 import api.routes.builders as builders_module
+from api.main import app
 
 client = TestClient(app)
 
@@ -22,6 +22,7 @@ client = TestClient(app)
 def _clear_store(tmp_path):
     """Redirect the global FileStore to a fresh temp directory for each test."""
     from api.routes.builders import FileStore
+
     store = FileStore(base_dir=tmp_path)
     builders_module._store = store
     yield store

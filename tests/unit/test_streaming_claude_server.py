@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 import sys
 import types
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import MagicMock
 
 import pytest
 from httpx import ASGITransport, AsyncClient
@@ -21,6 +21,7 @@ def _import_server():
     sys.modules["anthropic"] = fake_anthropic
     sys.path.insert(0, "engine/runtimes/templates")
     import claude_sdk_server as srv  # noqa: PLC0415
+
     return srv
 
 
@@ -57,6 +58,7 @@ class _FailStream:
         async def _gen():
             return
             yield  # make it a generator
+
         return _gen()
 
 
@@ -64,6 +66,7 @@ class TestClaudeStreamEndpoint:
     def _make_mock_client(self, stream_obj, srv):
         """Create a mock client whose messages.stream() returns stream_obj."""
         import anthropic
+
         mock_client = MagicMock()
         mock_client.__class__ = anthropic.AsyncAnthropic
         mock_client.messages = MagicMock()
@@ -137,7 +140,7 @@ class TestClaudeStreamEndpoint:
             response = await client.post("/stream", json={"input": "hi"})
         for line in response.text.splitlines():
             if line.startswith("data:"):
-                payload = line[len("data:"):].strip()
+                payload = line[len("data:") :].strip()
                 if payload != "[DONE]":
                     json.loads(payload)
         srv._agent = None
@@ -156,6 +159,7 @@ class TestClaudeStreamEndpoint:
         # Create a fake client that can stream via text_stream
         stream_obj = _FakeTextStream([])
         import anthropic
+
         fake_client = MagicMock()
         fake_client.__class__ = anthropic.AsyncAnthropic
         fake_client.messages = MagicMock()
@@ -204,6 +208,7 @@ class TestClaudeStreamEndpoint:
             return _FakeTextStream([])
 
         import anthropic
+
         mock_client = MagicMock()
         mock_client.__class__ = anthropic.AsyncAnthropic
         mock_client.messages = MagicMock()
@@ -222,6 +227,7 @@ class TestClaudeStreamEndpoint:
         """_tools populated from startup must appear in messages.stream() kwargs."""
         srv = _import_server()
         import anthropic as _anthropic_mod
+
         mock_client = MagicMock()
         mock_client.__class__ = _anthropic_mod.AsyncAnthropic
 
@@ -235,7 +241,13 @@ class TestClaudeStreamEndpoint:
         mock_client.messages.stream = _fake_stream
         srv._agent = mock_client
         srv._client = mock_client
-        srv._tools = [{"name": "search", "description": "desc", "input_schema": {"type": "object", "properties": {}}}]
+        srv._tools = [
+            {
+                "name": "search",
+                "description": "desc",
+                "input_schema": {"type": "object", "properties": {}},
+            }
+        ]
 
         transport = ASGITransport(app=srv.app)
         async with AsyncClient(transport=transport, base_url="http://test") as client:

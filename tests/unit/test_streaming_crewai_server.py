@@ -4,8 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import sys
-import types
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import MagicMock
 
 import pytest
 from httpx import ASGITransport, AsyncClient
@@ -18,6 +17,7 @@ def _import_server():
             del sys.modules[key]
     sys.path.insert(0, "engine/runtimes/templates")
     import crewai_server as srv  # noqa: PLC0415
+
     return srv
 
 
@@ -33,16 +33,20 @@ class TestCrewAIStreamEndpoint:
     @pytest.mark.asyncio
     async def test_stream_returns_200_with_event_stream_content_type(self):
         srv = _import_server()
+
         async def fake_akickoff(inputs, callbacks=None, step_callback=None, **kwargs):
             if step_callback:
                 step_callback(_make_step_output("do the thing", "result_1"))
             return MagicMock(raw="final answer")
+
         mock_crew = MagicMock()
         mock_crew.akickoff = fake_akickoff
         srv._crew = mock_crew
         transport = ASGITransport(app=srv.app)
         async with AsyncClient(transport=transport, base_url="http://test") as client:
-            response = await client.post("/stream", json={"input": {"topic": "AI"}, "config": None})
+            response = await client.post(
+                "/stream", json={"input": {"topic": "AI"}, "config": None}
+            )
         assert response.status_code == 200
         assert "text/event-stream" in response.headers["content-type"]
         srv._crew = None
@@ -51,12 +55,14 @@ class TestCrewAIStreamEndpoint:
     async def test_stream_emits_step_events_for_each_step_callback(self):
         srv = _import_server()
         steps = [_make_step_output("step A", "res_a"), _make_step_output("step B", "res_b")]
+
         async def fake_akickoff(inputs, callbacks=None, step_callback=None, **kwargs):
             for s in steps:
                 if step_callback:
                     step_callback(s)
                 await asyncio.sleep(0)
             return MagicMock(raw="done")
+
         mock_crew = MagicMock()
         mock_crew.akickoff = fake_akickoff
         srv._crew = mock_crew
@@ -72,8 +78,10 @@ class TestCrewAIStreamEndpoint:
     @pytest.mark.asyncio
     async def test_stream_emits_done_event_at_end(self):
         srv = _import_server()
+
         async def fake_akickoff(inputs, callbacks=None, step_callback=None, **kwargs):
             return MagicMock(raw="finished")
+
         mock_crew = MagicMock()
         mock_crew.akickoff = fake_akickoff
         srv._crew = mock_crew
@@ -86,8 +94,10 @@ class TestCrewAIStreamEndpoint:
     @pytest.mark.asyncio
     async def test_stream_emits_result_event_with_final_output(self):
         srv = _import_server()
+
         async def fake_akickoff(inputs, callbacks=None, step_callback=None, **kwargs):
             return MagicMock(raw="the final answer")
+
         mock_crew = MagicMock()
         mock_crew.akickoff = fake_akickoff
         srv._crew = mock_crew

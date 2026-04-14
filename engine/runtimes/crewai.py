@@ -11,7 +11,12 @@ import tempfile
 from pathlib import Path
 
 from engine.config_parser import AgentConfig
-from engine.runtimes.base import ContainerImage, RuntimeBuilder, RuntimeValidationResult, build_env_block
+from engine.runtimes.base import (
+    ContainerImage,
+    RuntimeBuilder,
+    RuntimeValidationResult,
+    build_env_block,
+)
 
 CREWAI_SERVER_TEMPLATE = Path(__file__).parent / "templates" / "crewai_server.py"
 
@@ -38,7 +43,6 @@ HEALTHCHECK --interval=10s --timeout=5s --retries=3 \
 
 CMD ["uvicorn", "server:app", "--host", "0.0.0.0", "--port", "8080"]
 """
-
 
 
 class CrewAIRuntime(RuntimeBuilder):
@@ -107,7 +111,11 @@ class CrewAIRuntime(RuntimeBuilder):
             # process is validated as enum so safe, but quote for consistency
             crewai_env_lines.append(f'ENV AGENT_CREWAI_PROCESS="{config.crewai.process}"')
             if config.crewai.manager_llm:
-                safe_llm = config.crewai.manager_llm.replace("\n", " ").replace("\r", " ").replace('"', '\\"')
+                safe_llm = (
+                    config.crewai.manager_llm.replace("\n", " ")
+                    .replace("\r", " ")
+                    .replace('"', '\\"')
+                )
                 crewai_env_lines.append(f'ENV AGENT_CREWAI_MANAGER_LLM="{safe_llm}"')
             if config.crewai.verbose:
                 crewai_env_lines.append("ENV AGENT_CREWAI_VERBOSE=true")

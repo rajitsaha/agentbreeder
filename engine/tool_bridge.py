@@ -11,7 +11,8 @@ from __future__ import annotations
 import logging
 import os
 import re
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 import httpx
 
@@ -199,7 +200,7 @@ def to_crewai_tools(tools: list[Any]) -> list[Any]:
             ArgsSchema = type(  # noqa: N806
                 f"{safe_name}Args",
                 (PydanticBaseModel,),
-                {"__annotations__": {k: str for k in props}},
+                {"__annotations__": dict.fromkeys(props, str)},
             )
         else:
             ArgsSchema = type(  # noqa: N806
@@ -302,7 +303,7 @@ def _make_adk_func(
                 )
             )
     _adk_tool.__signature__ = inspect.Signature(params)
-    _adk_tool.__annotations__ = {n: str for n in param_names}
+    _adk_tool.__annotations__ = dict.fromkeys(param_names, str)
 
     return _adk_tool
 

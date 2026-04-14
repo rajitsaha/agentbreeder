@@ -4,9 +4,7 @@ streaming mode, multi-agent hierarchy, and root_agent.yaml support.
 
 from __future__ import annotations
 
-import json
 from pathlib import Path
-from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from pydantic import ValidationError
@@ -19,7 +17,6 @@ from engine.config_parser import (
     AgentConfig,
     GoogleADKConfig,
 )
-
 
 # ---------------------------------------------------------------------------
 # GoogleADKConfig unit tests
@@ -276,9 +273,9 @@ def test_server_runner_not_recreated_per_request():
     """The module-level _runner in the server template is set once at startup
     and reused across requests (BUG-1 regression test)."""
     import ast
+
     server_path = (
-        Path(__file__).parent.parent.parent
-        / "engine/runtimes/templates/google_adk_server.py"
+        Path(__file__).parent.parent.parent / "engine/runtimes/templates/google_adk_server.py"
     )
     source = server_path.read_text()
 

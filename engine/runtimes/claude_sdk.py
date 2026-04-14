@@ -12,7 +12,11 @@ import tempfile
 from pathlib import Path
 
 from engine.config_parser import AgentConfig
-from engine.runtimes.base import ContainerImage, RuntimeBuilder, RuntimeValidationResult, build_env_block
+from engine.runtimes.base import (
+    ContainerImage,
+    RuntimeBuilder,
+    RuntimeValidationResult,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -44,7 +48,6 @@ HEALTHCHECK --interval=10s --timeout=5s --retries=3 \\
 
 CMD ["uvicorn", "server:app", "--host", "0.0.0.0", "--port", "8080"]
 """
-
 
 
 class ClaudeSDKRuntime(RuntimeBuilder):
@@ -165,7 +168,9 @@ class ClaudeSDKRuntime(RuntimeBuilder):
         if config.model.temperature is not None:
             lines.append(f"ENV AGENT_TEMPERATURE={config.model.temperature}")
         if config.prompts.system:
-            safe_sys = config.prompts.system.replace("\n", " ").replace("\r", " ").replace('"', '\\"')
+            safe_sys = (
+                config.prompts.system.replace("\n", " ").replace("\r", " ").replace('"', '\\"')
+            )
             lines.append(f'ENV AGENT_SYSTEM_PROMPT="{safe_sys}"')
 
         # deploy.env_vars (non-secret, safe to bake into image layer)

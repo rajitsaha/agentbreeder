@@ -10,7 +10,6 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-
 # ---------------------------------------------------------------------------
 # Minimal ToolRef stand-in so tests don't depend on the full engine package.
 # ---------------------------------------------------------------------------
@@ -24,13 +23,13 @@ class _ToolRef:
         *,
         ref: str | None = None,
         name: str | None = None,
-        type: str | None = None,
+        type_: str | None = None,
         description: str | None = None,
         schema_: dict[str, Any] | None = None,
     ) -> None:
         self.ref = ref
         self.name = name
-        self.type = type
+        self.type = type_
         self.description = description
         self.schema_ = schema_
 
@@ -203,7 +202,9 @@ class TestToCrewaiTools:
 
         with patch.dict(sys.modules, {"crewai": fake_crewai, "crewai.tools": fake_crewai_tools}):
             bridge = _import_bridge()
-            with patch.object(bridge._sync_http_client, "post", return_value=mock_response) as mock_post:
+            with patch.object(
+                bridge._sync_http_client, "post", return_value=mock_response
+            ) as mock_post:
                 result = bridge.to_crewai_tools([_ToolRef(name="search", description="Search")])
                 assert len(result) == 1
                 output = result[0]._run(input="hello world")
@@ -221,7 +222,10 @@ class TestToCrewaiTools:
 
         with patch.dict(sys.modules, {"crewai": fake_crewai, "crewai.tools": fake_crewai_tools}):
             bridge = _import_bridge()
-            with patch.object(bridge._sync_http_client, "post", side_effect=real_httpx.ConnectError("refused")):
+            with patch.object(
+                bridge._sync_http_client, "post",
+                side_effect=real_httpx.ConnectError("refused"),
+            ):
                 result = bridge.to_crewai_tools([_ToolRef(name="search")])
                 output = result[0]._run(input="test")
 
@@ -356,7 +360,11 @@ class TestClaudeSdkServerToolWiring:
         def _fake_to_claude_tools(refs):
             return [
                 {
-                    "name": (r.get("name") or (r.get("ref") or "").split("/")[-1]) if isinstance(r, dict) else (r.name or (r.ref or "").split("/")[-1]),
+                    "name": (
+                        (r.get("name") or (r.get("ref") or "").split("/")[-1])
+                        if isinstance(r, dict)
+                        else (r.name or (r.ref or "").split("/")[-1])
+                    ),
                     "description": "",
                     "input_schema": {"type": "object", "properties": {}},
                 }
@@ -391,13 +399,13 @@ class TestClaudeSdkServerToolWiring:
             {"name": "search", "description": "Search"},
         ])
         srv = self._import_server(monkeypatch, tools_payload)
-        asyncio.get_event_loop().run_until_complete(srv.startup())
+        asyncio.run(srv.startup())
         assert len(srv._tools) == 2
 
     def test_malformed_tools_json_does_not_crash(self, monkeypatch):
         import asyncio
         srv = self._import_server(monkeypatch, "{not valid json}")
-        asyncio.get_event_loop().run_until_complete(srv.startup())
+        asyncio.run(srv.startup())
         assert srv._tools == []
 
 
@@ -456,7 +464,7 @@ class TestCrewAiServerToolWiring:
             agents = [FakeAgent()]
 
         srv._crew = FakeCrew()
-        asyncio.get_event_loop().run_until_complete(srv.startup())
+        asyncio.run(srv.startup())
 
         assert len(srv._crewai_tools) == 1
         assert len(FakeCrew.agents[0].tools) == 1
@@ -473,7 +481,7 @@ class TestCrewAiServerToolWiring:
             agents = [FakeAgent()]
 
         srv._crew = FakeCrew()
-        asyncio.get_event_loop().run_until_complete(srv.startup())
+        asyncio.run(srv.startup())
         assert srv._crewai_tools == []
         assert FakeCrew.agents[0].tools == []
 
@@ -506,7 +514,7 @@ class TestAdkServerToolWiring:
         fake_sessions.InMemorySessionService = FakeSessionService  # type: ignore[attr-defined]
 
         fake_engine_tb = types.ModuleType("engine.tool_bridge")
-        fake_engine_tb.to_adk_tools = lambda refs: [lambda input="": "result" for _ in refs]  # type: ignore[attr-defined]
+        fake_engine_tb.to_adk_tools = lambda refs: [lambda inp="": "result" for _ in refs]  # type: ignore[attr-defined]
         fake_engine_cp = types.ModuleType("engine.config_parser")
         fake_engine_cp.ToolRef = _ToolRef  # type: ignore[attr-defined]
 
@@ -536,7 +544,7 @@ class TestAdkServerToolWiring:
             tools: list = []
 
         srv._agent = FakeADKAgent()
-        asyncio.get_event_loop().run_until_complete(srv.startup())
+        asyncio.run(srv.startup())
 
         assert len(srv._adk_tools) == 1
         assert len(FakeADKAgent.tools) == 1
@@ -549,6 +557,6 @@ class TestAdkServerToolWiring:
             tools: list = []
 
         srv._agent = FakeADKAgent()
-        asyncio.get_event_loop().run_until_complete(srv.startup())
+        asyncio.run(srv.startup())
         assert srv._adk_tools == []
         assert FakeADKAgent.tools == []

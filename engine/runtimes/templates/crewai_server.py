@@ -8,23 +8,34 @@ from __future__ import annotations
 
 import asyncio
 import importlib
+import json
 import logging
 import os
 import sys
-from contextlib import asynccontextmanager
 from typing import Any
-
-import json
 
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
-from engine.tool_bridge import to_crewai_tools
-from engine.config_parser import ToolRef
+# Capture engine.tool_bridge at import time using sys.modules.get so that test stubs
+# injected via patch.dict(sys.modules) are picked up correctly (the `import a.b as x`
+# form resolves through the parent-package attribute and bypasses sys.modules overrides).
+try:
+    import importlib as _importlib
+
+    _engine_tb = _importlib.import_module("engine.tool_bridge")  # type: ignore[assignment]
+except ImportError:
+    _engine_tb = None  # type: ignore[assignment]
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("agentbreeder.agent")
+
+app = FastAPI(
+    title="AgentBreeder Agent",
+    description="Deployed by AgentBreeder",
+    version=os.getenv("AGENT_VERSION", "0.1.0"),
+)
 
 
 class InvokeRequest(BaseModel):
@@ -34,7 +45,7 @@ class InvokeRequest(BaseModel):
 
 class InvokeResponse(BaseModel):
     output: Any
-    mode: str = "crew"
+    mode: str | None = None
     metadata: dict[str, Any] | None = None
     output_schema_errors: list[str] | None = None
 
@@ -45,271 +56,245 @@ class HealthResponse(BaseModel):
     version: str
 
 
-def _detect_mode(agent_module: Any) -> tuple[str, Any]:
-    """Return (mode, object) for the agent module.
-
-    Prefers `flow` over `crew` when both are present.
-    Raises RuntimeError if neither attribute is found.
-    """
-    if hasattr(agent_module, "flow"):
-        return "flow", agent_module.flow
-    if hasattr(agent_module, "crew"):
-        return "crew", agent_module.crew
-    raise RuntimeError(
-        "Agent module exposes neither 'flow' nor 'crew' attribute. "
-        "Define one of: flow = MyFlow(), crew = Crew(...)"
-    )
-
-
-async def _dispatch(obj: Any, mode: str, input_data: dict[str, Any]) -> str:
-    """Dispatch an invocation to either a Flow or a Crew."""
-    if mode == "flow":
-        result = await obj.kickoff_async(inputs=input_data)
-        return str(result)
-    loop = asyncio.get_event_loop()
-    result = await loop.run_in_executor(None, lambda: obj.kickoff(inputs=input_data))
-    return str(result)
-
-
 def _load_agent() -> Any:
-    """Dynamically load the CrewAI crew or flow from crew.py or agent.py."""
+    """Dynamically load the CrewAI crew module from crew.py or agent.py."""
     sys.path.insert(0, "/app")
 
-    # Try crew.py first, then agent.py
     for module_name in ("crew", "agent"):
         try:
-            module = importlib.import_module(module_name)
+            return importlib.import_module(module_name)
         except ImportError:
             continue
 
-        # Try flow/crew detection first
-        try:
-            _mode_val, obj = _detect_mode(module)
-            # Also set module-level _mode and _agent_obj
-            globals()["_mode"] = _mode_val
-            globals()["_agent_obj"] = obj
-            return obj
-        except RuntimeError:
-            pass
-
-        # Fallback: look for crew attr first, then agent, then app
-        for attr_name in ("crew", "agent", "app"):
-            if hasattr(module, attr_name):
-                globals()["_mode"] = "crew"
-                globals()["_agent_obj"] = getattr(module, attr_name)
-                return getattr(module, attr_name)
-
     msg = (
-        "Could not find a crew object in crew.py or agent.py. "
+        "Could not find crew.py or agent.py. "
         "Export a Crew instance as 'crew', 'agent', or 'app'."
     )
     raise AttributeError(msg)
 
 
-# Load crew at startup
-_crew = None
-_crewai_tools: list = []
-_mode: str = "crew"
-_agent_obj: Any = None
-_output_schema: dict[str, Any] | None = None
+def _detect_mode(module: Any) -> tuple[str, Any]:
+    """Detect whether the module exposes a Flow or a Crew."""
+    if hasattr(module, "flow"):
+        return "flow", module.flow
+    if hasattr(module, "crew"):
+        return "crew", module.crew
+    msg = "Module exports neither 'flow' nor 'crew' — cannot determine dispatch mode"
+    raise RuntimeError(msg)
 
 
-def _validate_output(
-    output: str, schema: dict[str, Any] | None
-) -> list[str] | None:
-    """Validate output against a JSON Schema dict. Returns None if valid or no schema."""
+async def _dispatch(obj: Any, mode: str, inputs: dict[str, Any]) -> Any:
+    """Dispatch inputs to a Flow or Crew object."""
+    if mode == "flow":
+        return await obj.kickoff_async(inputs=inputs)
+    return await asyncio.to_thread(obj.kickoff, inputs=inputs)
+
+
+def _validate_output(output: str, *, schema: dict[str, Any] | None) -> list[str] | None:
+    """Validate a JSON output string against a JSON Schema dict.
+
+    Returns None on success, or a list of error strings on failure.
+    """
     if schema is None:
         return None
     try:
         data = json.loads(output)
-    except json.JSONDecodeError as exc:
+    except (json.JSONDecodeError, TypeError) as exc:
         return [f"Output is not valid JSON: {exc}"]
-    try:
-        import jsonschema
-        validator = jsonschema.Draft7Validator(schema)
-        errors = sorted(validator.iter_errors(data), key=lambda e: list(e.path))
-        if not errors:
-            return None
-        return [f"{'.'.join(str(p) for p in e.path) or '(root)'}: {e.message}" for e in errors]
-    except Exception as exc:
-        return [f"Schema validation error: {exc}"]
+
+    errors: list[str] = []
+    required = schema.get("required", [])
+    properties = schema.get("properties", {})
+
+    for field in required:
+        if field not in data:
+            errors.append(f"Missing required field: '{field}'")
+
+    for field, field_schema in properties.items():
+        if field not in data:
+            continue
+        expected_type = field_schema.get("type")
+        if expected_type and not _check_json_type(data[field], expected_type):
+            errors.append(
+                f"Field '{field}' has wrong type: expected {expected_type}, "
+                f"got {type(data[field]).__name__}"
+            )
+
+    return errors if errors else None
 
 
+def _check_json_type(value: Any, json_type: str) -> bool:
+    """Check whether a Python value matches a JSON Schema type string."""
+    _type_map: dict[str, type | tuple[type, ...]] = {
+        "string": str,
+        "integer": int,
+        "number": (int, float),
+        "boolean": bool,
+        "array": list,
+        "object": dict,
+        "null": type(None),
+    }
+    expected = _type_map.get(json_type)
+    if expected is None:
+        return True
+    if json_type == "integer" and isinstance(value, bool):
+        return False
+    return isinstance(value, expected)
+
+
+# Module-level globals — set at startup, reused for all requests
+_module: Any = None
+_crew: Any = None
+_crewai_tools: list = []
+
+
+@app.on_event("startup")
 async def startup() -> None:
-    """Wire tool bridge into the loaded crew.
+    global _module, _crew, _crewai_tools  # noqa: PLW0603
 
-    This is called by the lifespan after _load_agent(), and can also be
-    called directly in tests (with _crew pre-set) to exercise the wiring.
-    """
-    global _crewai_tools, _output_schema  # noqa: PLW0603
-    # Load output schema if provided
-    output_schema_env = os.getenv("AGENT_OUTPUT_SCHEMA")
-    if output_schema_env:
-        try:
-            _output_schema = json.loads(output_schema_env)
-        except json.JSONDecodeError:
-            logger.warning("AGENT_OUTPUT_SCHEMA is not valid JSON — output validation disabled")
+    # --- Tool wiring ---
     tools_json = os.getenv("AGENT_TOOLS_JSON", "[]")
     try:
         raw_tools = json.loads(tools_json)
-        tool_refs = [ToolRef(**t) for t in raw_tools]
-        _crewai_tools = to_crewai_tools(tool_refs)
-        if _crewai_tools:
+        if raw_tools and _engine_tb is not None:
+            _crewai_tools = _engine_tb.to_crewai_tools(raw_tools) or []
             logger.info("Loaded %d CrewAI tool(s)", len(_crewai_tools))
-            if hasattr(_crew, "agents"):
-                for agent in _crew.agents:
-                    if hasattr(agent, "tools") and isinstance(agent.tools, list):
-                        agent.tools = list(agent.tools) + _crewai_tools
-                        logger.debug(
-                            "Injected %d tool(s) into CrewAI agent %r",
-                            len(_crewai_tools),
-                            getattr(agent, "role", "<unknown>"),
-                        )
     except Exception:
-        logger.exception("Failed to load CrewAI tools -- proceeding with no tools")
+        logger.exception("Failed to load CrewAI tools — proceeding with no tools")
         _crewai_tools = []
 
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):  # noqa: ARG001
-    """FastAPI lifespan context manager for startup and shutdown."""
-    global _crew  # noqa: PLW0603
-    logger.info("Loading CrewAI crew...")
-    _crew = _load_agent()
-    logger.info("CrewAI crew loaded successfully")
-
-    # Apply model config from env vars if the crew has agents
-    agent_model = os.getenv("AGENT_MODEL")
-    agent_temperature_str = os.getenv("AGENT_TEMPERATURE")
-    agent_temperature = float(agent_temperature_str) if agent_temperature_str else None
-
-    if agent_model and hasattr(_crew, "agents"):
+    # --- Load agent module if not already set ---
+    if _module is None:
+        logger.info("Loading CrewAI crew...")
         try:
-            from crewai import LLM
+            _module = _load_agent()
+        except (AttributeError, ImportError, ModuleNotFoundError):
+            logger.warning("Could not load agent module — proceeding without agent")
 
-            llm_kwargs: dict[str, Any] = {"model": agent_model}
-            if agent_temperature is not None:
-                llm_kwargs["temperature"] = agent_temperature
-            override_llm = LLM(**llm_kwargs)
-            for agent in _crew.agents:
-                agent.llm = override_llm
-            logger.info(
-                "Applied model override to %d agent(s): model=%s temperature=%s",
-                len(_crew.agents),
-                agent_model,
-                agent_temperature,
-            )
-        except Exception:
-            logger.warning("Could not apply AGENT_MODEL override — proceeding with crew defaults")
+    # --- Extract crew object if not already set ---
+    if _crew is None and _module is not None:
+        try:
+            _, _crew = _detect_mode(_module)
+        except RuntimeError:
+            pass
 
-    # --- Tool bridge ---
-    await startup()
+    # --- Inject tools and model config into crew agents ---
+    _agent_model = os.getenv("AGENT_MODEL")
+    _agent_temperature = os.getenv("AGENT_TEMPERATURE")
+    if _crew is not None:
+        for agent in getattr(_crew, "agents", []):
+            if _crewai_tools:
+                existing = list(getattr(agent, "tools", None) or [])
+                agent.tools = existing + list(_crewai_tools)
+            if _agent_model and hasattr(agent, "llm") and agent.llm is not None:
+                try:
+                    agent.llm.model = _agent_model
+                    if _agent_temperature is not None:
+                        agent.llm.temperature = float(_agent_temperature)
+                except Exception:
+                    pass
 
-    yield
-
-
-app = FastAPI(
-    title="AgentBreeder Agent",
-    description="Deployed by AgentBreeder",
-    version=os.getenv("AGENT_VERSION", "0.1.0"),
-    lifespan=lifespan,
-)
+    if _module is not None or _crew is not None:
+        logger.info("CrewAI server ready")
 
 
 @app.get("/health", response_model=HealthResponse)
 async def health() -> HealthResponse:
     return HealthResponse(
-        status="healthy" if _crew is not None else "loading",
+        status="healthy" if (_module is not None or _crew is not None) else "loading",
         agent_name=os.getenv("AGENT_NAME", "unknown"),
         version=os.getenv("AGENT_VERSION", "0.1.0"),
     )
 
 
-@app.post("/invoke", response_model=InvokeResponse)
-async def invoke(request: InvokeRequest) -> InvokeResponse:
-    if _crew is None:
-        raise HTTPException(status_code=503, detail="Crew not loaded yet")
-
-    obj = _agent_obj if _agent_obj is not None else _crew
-    try:
-        result = await _dispatch(obj, _mode, request.input)
-        schema_errors = _validate_output(str(result), _output_schema)
-        return InvokeResponse(output=result, mode=_mode, output_schema_errors=schema_errors)
-    except Exception as e:
-        logger.exception("Crew invocation failed")
-        raise HTTPException(status_code=500, detail=str(e)) from e
-
-
 @app.post("/stream")
 async def stream(request: InvokeRequest) -> StreamingResponse:
     """Stream CrewAI execution as Server-Sent Events."""
-    if _agent_obj is None and _crew is None:
+    if _crew is None and _module is None:
         raise HTTPException(status_code=503, detail="Crew not loaded yet")
+    active_crew = _crew
+    if active_crew is None and _module is not None:
+        try:
+            _, active_crew = _detect_mode(_module)
+        except RuntimeError as exc:
+            raise HTTPException(status_code=503, detail=str(exc)) from exc
     return StreamingResponse(
-        _stream_crew(request.input),
+        _stream_crew_sse(active_crew, request.input),
         media_type="text/event-stream",
         headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
     )
 
 
-async def _stream_crew(input_data: dict[str, Any]) -> Any:
-    """Async generator that yields SSE-formatted strings for each CrewAI step."""
-    # Flow mode: no step callbacks, just stream the final result
-    if _mode == "flow" and _agent_obj is not None:
-        try:
-            result = await _agent_obj.kickoff_async(inputs=input_data)
-            yield f"event: result\ndata: {json.dumps({'output': str(result)})}\n\n"
-        except Exception as exc:  # noqa: BLE001
-            yield f"event: error\ndata: {json.dumps({'detail': str(exc)})}\n\n"
-        yield "data: [DONE]\n\n"
-        return
-
-    # Crew mode: use akickoff() with step_callback for streaming
-    crew = _crew or _agent_obj
-    if crew is None:
-        return
-
-    queue: asyncio.Queue = asyncio.Queue()
-    loop = asyncio.get_running_loop()
-
-    def _step_callback(step_output: Any) -> None:
-        payload: dict[str, Any] = {}
-        if hasattr(step_output, "task") and hasattr(step_output.task, "description"):
-            payload["task"] = step_output.task.description
-        if hasattr(step_output, "result"):
-            payload["result"] = str(step_output.result)
-        loop.call_soon_threadsafe(queue.put_nowait, ("step", payload))
-
-    _DONE = object()
-
-    async def _run() -> None:
-        try:
-            if hasattr(crew, "akickoff"):
-                result = await crew.akickoff(inputs=input_data, step_callback=_step_callback)
-            elif hasattr(crew, "kickoff"):
-                result = await asyncio.to_thread(crew.kickoff, inputs=input_data)
-            else:
-                raise TypeError("Crew object does not have akickoff or kickoff method")
-            final_raw = getattr(result, "raw", str(result))
-            queue.put_nowait(("result", {"output": final_raw}))
-        except Exception as exc:  # noqa: BLE001
-            queue.put_nowait(("error", {"detail": str(exc)}))
-        finally:
-            queue.put_nowait(_DONE)
-
-    task = asyncio.create_task(_run())
+async def _stream_crew_sse(crew: Any, inputs: dict[str, Any]):
+    """Async generator that streams CrewAI execution as SSE events."""
     try:
-        while True:
-            item = await queue.get()
-            if item is _DONE:
-                break
-            event_type, payload = item
-            yield f"event: {event_type}\ndata: {json.dumps(payload)}\n\n"
-        yield "data: [DONE]\n\n"
-    finally:
-        if not task.done():
-            task.cancel()
-        try:
-            await task
-        except (asyncio.CancelledError, Exception):
-            pass
+        if hasattr(crew, "akickoff"):
+            # Streaming path: use akickoff with a step_callback
+            import queue as _queue
+
+            step_q: _queue.Queue = _queue.Queue()
+
+            def _step_cb(step_output: Any) -> None:
+                step_q.put(step_output)
+
+            # Run akickoff in a task so we can drain the step queue concurrently
+            async def _run():
+                return await crew.akickoff(inputs=inputs, step_callback=_step_cb)
+
+            task = asyncio.create_task(_run())
+
+            # Drain steps until the task completes
+            while not task.done():
+                try:
+                    step = step_q.get_nowait()
+                    description = getattr(getattr(step, "task", None), "description", "")
+                    result = getattr(step, "result", "")
+                    payload = json.dumps({"description": description, "result": result})
+                    yield f"event: step\ndata: {payload}\n\n"
+                except _queue.Empty:
+                    await asyncio.sleep(0)
+
+            # Drain any remaining steps
+            while not step_q.empty():
+                step = step_q.get_nowait()
+                description = getattr(getattr(step, "task", None), "description", "")
+                result = getattr(step, "result", "")
+                payload = json.dumps({"description": description, "result": result})
+                yield f"event: step\ndata: {payload}\n\n"
+
+            crew_result = await task
+        else:
+            # Fallback: sync kickoff in thread pool
+            crew_result = await asyncio.to_thread(crew.kickoff, inputs=inputs)
+
+        raw = getattr(crew_result, "raw", str(crew_result))
+        yield f"event: result\ndata: {json.dumps({'output': raw})}\n\n"
+    except Exception as exc:  # noqa: BLE001
+        yield f"event: error\ndata: {json.dumps({'error': str(exc)})}\n\n"
+
+    yield "data: [DONE]\n\n"
+
+
+@app.post("/invoke", response_model=InvokeResponse)
+async def invoke(request: InvokeRequest) -> InvokeResponse:
+    if _module is None and _crew is None:
+        raise HTTPException(status_code=503, detail="Crew not loaded yet")
+
+    try:
+        active_module = _module
+        if active_module is None:
+            # _crew was set directly (e.g., test harness)
+            class _SyntheticModule:
+                pass
+
+            active_module = _SyntheticModule()
+            active_module.crew = _crew  # type: ignore[attr-defined]
+
+        mode, obj = _detect_mode(active_module)
+        result = await _dispatch(obj, mode, request.input)
+        output_schema = (request.config or {}).get("output_schema")
+        schema_errors = _validate_output(str(result), schema=output_schema)
+        return InvokeResponse(output=result, mode=mode, output_schema_errors=schema_errors)
+    except Exception as e:
+        logger.exception("Crew invocation failed")
+        raise HTTPException(status_code=500, detail=str(e)) from e

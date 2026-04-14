@@ -1,12 +1,10 @@
 """Tests for Phase 4 CrewAI advanced features."""
 import asyncio
-import importlib
-import importlib.util
 import json
 import sys
+import tempfile
 import types
 from pathlib import Path
-from typing import Any
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -18,7 +16,7 @@ from engine.config_parser import (
     parse_config,
     validate_config,
 )
-
+from engine.runtimes.crewai import CrewAIRuntime
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -62,11 +60,14 @@ class TestCrewAIConfig:
         assert cfg.process == "parallel"
 
     def test_crewai_config_rejects_unknown_process(self) -> None:
-        with pytest.raises(Exception):
+        with pytest.raises((ValueError, Exception)):
             CrewAIConfig(process="unknown-mode")
 
     def test_crewai_config_memory_config_dict(self) -> None:
-        cfg = CrewAIConfig(memory=True, memory_config={"provider": "mem0", "config": {"user_id": "u1"}})
+        cfg = CrewAIConfig(
+            memory=True,
+            memory_config={"provider": "mem0", "config": {"user_id": "u1"}},
+        )
         assert cfg.memory is True
         assert cfg.memory_config["provider"] == "mem0"
 
@@ -155,8 +156,6 @@ crewai:
 # Task 2: crewai-tools in requirements + process/manager_llm ENV vars
 # ---------------------------------------------------------------------------
 
-import tempfile
-from engine.runtimes.crewai import CrewAIRuntime
 
 
 class TestCrewAIRuntimeAdvancedRequirements:
@@ -241,7 +240,9 @@ def _load_crewai_server():
     fake_crewai = types.ModuleType("crewai")
     fake_crewai_tools = types.ModuleType("crewai.tools")
     class FakeBaseTool:
-        name = ""; description = ""; args_schema = None
+        name = ""
+        description = ""
+        args_schema = None
         def _run(self, **kw): return ""
     fake_crewai_tools.BaseTool = FakeBaseTool
     fake_engine_tb = types.ModuleType("engine.tool_bridge")
@@ -291,7 +292,7 @@ class TestCrewAIServerFlowDispatch:
     def test_flow_invoke_calls_kickoff_async(self) -> None:
         srv = _load_crewai_server()
         mod = _make_crew_module(has_flow=True, has_crew=False)
-        result = asyncio.get_event_loop().run_until_complete(
+        result = asyncio.run(
             srv._dispatch(mod.flow, "flow", {"prompt": "hello"})
         )
         mod.flow.kickoff_async.assert_called_once_with(inputs={"prompt": "hello"})
@@ -300,7 +301,7 @@ class TestCrewAIServerFlowDispatch:
     def test_crew_invoke_calls_kickoff_in_thread(self) -> None:
         srv = _load_crewai_server()
         mod = _make_crew_module(has_flow=False, has_crew=True)
-        result = asyncio.get_event_loop().run_until_complete(
+        result = asyncio.run(
             srv._dispatch(mod.crew, "crew", {"prompt": "hello"})
         )
         mod.crew.kickoff.assert_called_once()
@@ -445,7 +446,7 @@ crewai:
         srv = _load_crewai_server()
         crew_mock = MagicMock()
         crew_mock.kickoff = MagicMock(return_value="ticket resolved")
-        result = asyncio.get_event_loop().run_until_complete(
+        result = asyncio.run(
             srv._dispatch(crew_mock, "crew", {"prompt": "resolve ticket #42"})
         )
         crew_mock.kickoff.assert_called_once()

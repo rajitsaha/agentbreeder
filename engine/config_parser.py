@@ -127,8 +127,8 @@ class ClaudeSDKThinkingConfig(BaseModel):
 
 class ClaudeSDKRoutingConfig(BaseModel):
     provider: str = "anthropic"  # "anthropic" | "vertex_ai" | "bedrock"
-    project_id: str | None = None   # GCP project ID (required for vertex_ai)
-    region: str | None = None       # Cloud region (required for vertex_ai / bedrock)
+    project_id: str | None = None  # GCP project ID (required for vertex_ai)
+    region: str | None = None  # Cloud region (required for vertex_ai / bedrock)
 
 
 class ClaudeSDKConfig(BaseModel):
@@ -195,15 +195,11 @@ class GoogleADKConfig(BaseModel):
     streaming: ADKStreamingMode = ADKStreamingMode.none
 
     @model_validator(mode="after")
-    def check_backend_deps(self) -> "GoogleADKConfig":
+    def check_backend_deps(self) -> GoogleADKConfig:
         if self.session_backend == ADKSessionBackend.database and not self.session_db_url:
-            raise ValueError(
-                "session_db_url is required when session_backend=database"
-            )
+            raise ValueError("session_db_url is required when session_backend=database")
         if self.artifact_service == ADKArtifactService.gcs and not self.gcs_bucket:
-            raise ValueError(
-                "gcs_bucket is required when artifact_service=gcs"
-            )
+            raise ValueError("gcs_bucket is required when artifact_service=gcs")
         return self
 
 

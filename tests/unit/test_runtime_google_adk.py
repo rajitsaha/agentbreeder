@@ -2,7 +2,11 @@
 
 from __future__ import annotations
 
+import importlib.util
+import sys
+import types
 from pathlib import Path
+from unittest.mock import MagicMock
 
 import pytest
 
@@ -289,10 +293,6 @@ class TestGoogleADKRuntimeEnvVarInjection:
 # ---------------------------------------------------------------------------
 # BUG-1: module-level Runner reuse + session_id in request/response
 # ---------------------------------------------------------------------------
-import importlib.util
-import sys
-import types
-from unittest.mock import MagicMock
 
 
 def _load_adk_server_module(module_alias: str) -> types.ModuleType:

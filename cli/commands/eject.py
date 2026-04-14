@@ -11,10 +11,10 @@ Usage:
 from __future__ import annotations
 
 import re
-import yaml
 from pathlib import Path
 
 import typer
+import yaml
 from rich.console import Console
 from rich.panel import Panel
 from rich.syntax import Syntax
@@ -139,7 +139,11 @@ def _generate_google_adk_scaffold(yaml_content: str, out_dir: Path) -> None:
     name: str = data.get("name", "my-agent")
     description: str = data.get("description") or "A helpful agent"
     model_cfg = data.get("model") or {}
-    model: str = model_cfg.get("primary", "gemini-2.0-flash") if isinstance(model_cfg, dict) else "gemini-2.0-flash"
+    model: str = (
+        model_cfg.get("primary", "gemini-2.0-flash")
+        if isinstance(model_cfg, dict)
+        else "gemini-2.0-flash"
+    )
     has_subagents = bool(data.get("subagents"))
 
     r_name = repr(name)
@@ -213,7 +217,11 @@ def _generate_claude_sdk_scaffold(yaml_content: str, out_dir: Path) -> None:
         raise ValueError("Invalid YAML: expected a mapping at the top level")
 
     model_cfg = data.get("model") or {}
-    model: str = model_cfg.get("primary", "claude-sonnet-4-6") if isinstance(model_cfg, dict) else "claude-sonnet-4-6"
+    model: str = (
+        model_cfg.get("primary", "claude-sonnet-4-6")
+        if isinstance(model_cfg, dict)
+        else "claude-sonnet-4-6"
+    )
 
     prompts_cfg = data.get("prompts") or {}
     system_prompt: str = (

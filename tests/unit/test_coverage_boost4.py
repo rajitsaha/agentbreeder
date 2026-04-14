@@ -142,11 +142,12 @@ class TestBuildersBranchCoverage:
 
     def setup_method(self, tmp_path=None):
         import tempfile
+
         from fastapi.testclient import TestClient
 
+        import api.routes.builders as builders_module
         from api.main import app
         from api.routes.builders import _SCHEMA_CACHE, FileStore
-        import api.routes.builders as builders_module
 
         self.client = TestClient(app)
         # Redirect store to a fresh temp dir
@@ -158,8 +159,10 @@ class TestBuildersBranchCoverage:
 
     def teardown_method(self):
         import shutil
+
         import api.routes.builders as builders_module
         from api.routes.builders import FileStore
+
         # Restore default store
         builders_module._store = FileStore()
         shutil.rmtree(self._tmp_dir, ignore_errors=True)

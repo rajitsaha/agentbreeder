@@ -11,9 +11,9 @@ from typing import Any
 import yaml as pyyaml
 from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import PlainTextResponse
-from starlette.concurrency import run_in_threadpool
 from jsonschema import Draft202012Validator
 from pydantic import BaseModel
+from starlette.concurrency import run_in_threadpool
 
 from api.models.schemas import ApiResponse
 

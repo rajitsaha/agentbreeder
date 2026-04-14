@@ -283,7 +283,10 @@ class TestCrewAIRuntimeEnvVarInjection:
             {"crew.py": "crew = None", "requirements.txt": "crewai>=0.80.0"}
         )
         config = _make_config(
-            deploy={"cloud": "local", "env_vars": {"SERPER_API_KEY": "test-key", "LOG_LEVEL": "debug"}}
+            deploy={
+                "cloud": "local",
+                "env_vars": {"SERPER_API_KEY": "test-key", "LOG_LEVEL": "debug"},
+            }
         )
         image = runtime.build(agent_dir, config)
         dockerfile = (image.context_dir / "Dockerfile").read_text()
@@ -307,9 +310,7 @@ class TestCrewAIRuntimeEnvVarInjection:
         agent_dir = _make_agent_dir(
             {"crew.py": "crew = None", "requirements.txt": "crewai>=0.80.0"}
         )
-        config = _make_config(
-            deploy={"cloud": "local", "env_vars": {"SAFE_KEY": "value"}}
-        )
+        config = _make_config(deploy={"cloud": "local", "env_vars": {"SAFE_KEY": "value"}})
         image = runtime.build(agent_dir, config)
         dockerfile = (image.context_dir / "Dockerfile").read_text()
         assert "SAFE_KEY" in dockerfile
