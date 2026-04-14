@@ -347,7 +347,21 @@ jobs:
     needs: publish-pypi
     steps:
       - name: Wait for PyPI propagation
-        run: sleep 60
+        run: |
+          VERSION="${GITHUB_REF#refs/tags/v}"
+          echo "Waiting for agentbreeder==$VERSION and agentbreeder-sdk==$VERSION on PyPI..."
+          for i in $(seq 1 20); do
+            AB=$(curl -sf "https://pypi.org/pypi/agentbreeder/${VERSION}/json" -o /dev/null -w "%{http_code}")
+            SDK=$(curl -sf "https://pypi.org/pypi/agentbreeder-sdk/${VERSION}/json" -o /dev/null -w "%{http_code}")
+            echo "Attempt $i: agentbreeder=$AB  agentbreeder-sdk=$SDK"
+            if [ "$AB" = "200" ] && [ "$SDK" = "200" ]; then
+              echo "Both packages visible on PyPI."
+              exit 0
+            fi
+            sleep 30
+          done
+          echo "Timed out waiting for PyPI propagation after 10 minutes."
+          exit 1
 
       - name: Extract version from tag
         id: version
