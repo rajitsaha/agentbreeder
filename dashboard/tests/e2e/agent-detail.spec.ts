@@ -65,7 +65,7 @@ test("shows team and owner info", async ({ authedPage: page }) => {
   );
 
   await page.goto(AGENT_DETAIL_URL);
-  await expect(page.getByText("engineering")).toBeVisible();
+  await expect(page.getByLabel("Overview").getByText("engineering")).toBeVisible();
 });
 
 test("back navigation works", async ({ authedPage: page }) => {
