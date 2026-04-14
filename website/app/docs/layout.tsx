@@ -14,6 +14,7 @@ export default function Layout({ children }: { children: ReactNode }) {
       sidebar={{
         collapsible: false,
       }}
+      themeSwitch={{ enabled: false }}
     >
       {children}
     </DocsLayout>

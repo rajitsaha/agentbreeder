@@ -41,6 +41,8 @@
 
 html {
   scroll-behavior: smooth;
+  /* offset anchors and page-tops below the fixed Fumadocs nav (h-14 = 3.5rem) */
+  scroll-padding-top: 3.5rem;
 }
 
 body {
