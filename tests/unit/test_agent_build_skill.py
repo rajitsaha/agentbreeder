@@ -19,12 +19,12 @@ def test_skill_file_exists():
 
 def test_fast_path_preserved():
     content = skill_content()
-    assert "I know my stack" in content or "know your stack" in content.lower()
+    assert "I know my stack" in content
 
 
 def test_advisory_path_present():
     content = skill_content()
-    assert "Recommend for me" in content or "recommend" in content.lower()
+    assert "Recommend for me" in content
 
 
 def test_all_six_advisory_questions_present():
@@ -58,7 +58,7 @@ def test_new_scaffold_outputs_present():
         "CLAUDE.md",
         "AGENTS.md",
         ".cursorrules",
-        ".antigravity",
+        ".antigravity.md",
     ]
     for output in outputs:
         assert output in content, f"Missing scaffold output: {output}"
@@ -72,6 +72,6 @@ def test_ide_config_templates_present():
 
 def test_architect_notes_template_present():
     content = skill_content()
-    assert "ARCHITECT_NOTES" in content
-    assert "Business Goal" in content
-    assert "Why" in content
+    assert "ARCHITECT_NOTES" in content, "Missing ARCHITECT_NOTES section"
+    assert "Business Goal" in content, "Missing Business Goal in ARCHITECT_NOTES"
+    assert "## Why" in content, "Missing '## Why' markdown heading in ARCHITECT_NOTES"
