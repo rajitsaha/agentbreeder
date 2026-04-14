@@ -45,6 +45,7 @@ def _import_bridge():
         if "tool_bridge" in key:
             del sys.modules[key]
     import engine.tool_bridge as bridge  # noqa: PLC0415
+
     return bridge
 
 
@@ -217,13 +218,15 @@ class TestToCrewaiTools:
 
     def test_run_returns_error_string_on_http_failure(self, monkeypatch):
         import httpx as real_httpx
+
         monkeypatch.setenv("TOOL_ENDPOINT_SEARCH", "http://tool-host/search")
         fake_crewai, fake_crewai_tools = self._make_mock_crewai()
 
         with patch.dict(sys.modules, {"crewai": fake_crewai, "crewai.tools": fake_crewai_tools}):
             bridge = _import_bridge()
             with patch.object(
-                bridge._sync_http_client, "post",
+                bridge._sync_http_client,
+                "post",
                 side_effect=real_httpx.ConnectError("refused"),
             ):
                 result = bridge.to_crewai_tools([_ToolRef(name="search")])
@@ -269,9 +272,7 @@ class TestToAdkTools:
     def test_returns_callable_when_endpoint_set(self, monkeypatch):
         monkeypatch.setenv("TOOL_ENDPOINT_TOOLS_ZENDESK_MCP", "http://tool-host/zendesk")
         bridge = _import_bridge()
-        result = bridge.to_adk_tools(
-            [_ToolRef(ref="tools/zendesk-mcp", description="Zendesk")]
-        )
+        result = bridge.to_adk_tools([_ToolRef(ref="tools/zendesk-mcp", description="Zendesk")])
         assert len(result) == 1
         assert callable(result[0])
 
@@ -302,6 +303,7 @@ class TestToAdkTools:
         }
         result = bridge.to_adk_tools([_ToolRef(name="lookup", schema_=schema)])
         import inspect
+
         sig = inspect.signature(result[0])
         assert "order_id" in sig.parameters
 
@@ -310,6 +312,7 @@ class TestToAdkTools:
         bridge = _import_bridge()
         result = bridge.to_adk_tools([_ToolRef(name="search")])
         import inspect
+
         sig = inspect.signature(result[0])
         assert "input" in sig.parameters
 
@@ -386,6 +389,7 @@ class TestClaudeSdkServerToolWiring:
         monkeypatch.setitem(sys.modules, "engine.config_parser", fake_engine_cp)
         sys.path.insert(0, "engine/runtimes/templates")
         import claude_sdk_server as srv  # noqa: PLC0415
+
         return srv
 
     def test_empty_tools_json_leaves_tools_empty(self, monkeypatch):
@@ -394,16 +398,20 @@ class TestClaudeSdkServerToolWiring:
 
     def test_valid_tools_json_populates_tools(self, monkeypatch):
         import asyncio
-        tools_payload = json.dumps([
-            {"ref": "tools/zendesk-mcp", "description": "Zendesk"},
-            {"name": "search", "description": "Search"},
-        ])
+
+        tools_payload = json.dumps(
+            [
+                {"ref": "tools/zendesk-mcp", "description": "Zendesk"},
+                {"name": "search", "description": "Search"},
+            ]
+        )
         srv = self._import_server(monkeypatch, tools_payload)
         asyncio.run(srv.startup())
         assert len(srv._tools) == 2
 
     def test_malformed_tools_json_does_not_crash(self, monkeypatch):
         import asyncio
+
         srv = self._import_server(monkeypatch, "{not valid json}")
         asyncio.run(srv.startup())
         assert srv._tools == []
@@ -453,6 +461,7 @@ class TestCrewAiServerToolWiring:
 
     def test_tools_injected_into_crew_agents(self, monkeypatch):
         import asyncio
+
         tools_payload = json.dumps([{"name": "search", "description": "Search"}])
         srv = self._import_server(monkeypatch, tools_payload)
 
@@ -471,6 +480,7 @@ class TestCrewAiServerToolWiring:
 
     def test_empty_tools_json_no_injection(self, monkeypatch):
         import asyncio
+
         srv = self._import_server(monkeypatch, "[]")
 
         class FakeAgent:
@@ -537,6 +547,7 @@ class TestAdkServerToolWiring:
 
     def test_tools_injected_into_adk_agent(self, monkeypatch):
         import asyncio
+
         tools_payload = json.dumps([{"name": "search", "description": "Search"}])
         srv = self._import_server(monkeypatch, tools_payload)
 
@@ -551,6 +562,7 @@ class TestAdkServerToolWiring:
 
     def test_empty_tools_no_mutation(self, monkeypatch):
         import asyncio
+
         srv = self._import_server(monkeypatch, "[]")
 
         class FakeADKAgent:

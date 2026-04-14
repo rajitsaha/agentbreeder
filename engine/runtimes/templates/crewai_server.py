@@ -67,8 +67,7 @@ def _load_agent() -> Any:
             continue
 
     msg = (
-        "Could not find crew.py or agent.py. "
-        "Export a Crew instance as 'crew', 'agent', or 'app'."
+        "Could not find crew.py or agent.py. Export a Crew instance as 'crew', 'agent', or 'app'."
     )
     raise AttributeError(msg)
 

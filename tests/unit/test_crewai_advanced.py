@@ -1,4 +1,5 @@
 """Tests for Phase 4 CrewAI advanced features."""
+
 import asyncio
 import json
 import sys
@@ -22,6 +23,7 @@ from engine.runtimes.crewai import CrewAIRuntime
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def _make_config(**overrides: object) -> AgentConfig:
     defaults: dict = {
         "name": "test-agent",
@@ -39,6 +41,7 @@ def _make_config(**overrides: object) -> AgentConfig:
 # ---------------------------------------------------------------------------
 # Task 1: CrewAIConfig Pydantic model
 # ---------------------------------------------------------------------------
+
 
 class TestCrewAIConfig:
     def test_crewai_config_defaults(self) -> None:
@@ -157,7 +160,6 @@ crewai:
 # ---------------------------------------------------------------------------
 
 
-
 class TestCrewAIRuntimeAdvancedRequirements:
     def test_get_requirements_includes_crewai_tools(self) -> None:
         rt = CrewAIRuntime()
@@ -219,6 +221,7 @@ class TestCrewAIRuntimeBuildEnvVars:
 # Task 3: Flow detection + dispatch in crewai_server.py
 # ---------------------------------------------------------------------------
 
+
 def _make_crew_module(has_flow: bool = False, has_crew: bool = True) -> types.ModuleType:
     mod = types.ModuleType("agent")
     if has_flow:
@@ -239,22 +242,34 @@ def _load_crewai_server():
             del sys.modules[key]
     fake_crewai = types.ModuleType("crewai")
     fake_crewai_tools = types.ModuleType("crewai.tools")
+
     class FakeBaseTool:
         name = ""
         description = ""
         args_schema = None
-        def _run(self, **kw): return ""
+
+        def _run(self, **kw):
+            return ""
+
     fake_crewai_tools.BaseTool = FakeBaseTool
     fake_engine_tb = types.ModuleType("engine.tool_bridge")
     fake_engine_tb.to_crewai_tools = lambda refs: []
     fake_engine_cp = types.ModuleType("engine.config_parser")
+
     class _TR:
-        def __init__(self, **kw): [setattr(self, k, v) for k, v in kw.items()]
+        def __init__(self, **kw):
+            [setattr(self, k, v) for k, v in kw.items()]
+
     fake_engine_cp.ToolRef = _TR
-    with patch.dict(sys.modules, {
-        "crewai": fake_crewai, "crewai.tools": fake_crewai_tools,
-        "engine.tool_bridge": fake_engine_tb, "engine.config_parser": fake_engine_cp,
-    }):
+    with patch.dict(
+        sys.modules,
+        {
+            "crewai": fake_crewai,
+            "crewai.tools": fake_crewai_tools,
+            "engine.tool_bridge": fake_engine_tb,
+            "engine.config_parser": fake_engine_cp,
+        },
+    ):
         sys.path.insert(0, "engine/runtimes/templates")
         import crewai_server as srv
     return srv
@@ -292,18 +307,14 @@ class TestCrewAIServerFlowDispatch:
     def test_flow_invoke_calls_kickoff_async(self) -> None:
         srv = _load_crewai_server()
         mod = _make_crew_module(has_flow=True, has_crew=False)
-        result = asyncio.run(
-            srv._dispatch(mod.flow, "flow", {"prompt": "hello"})
-        )
+        result = asyncio.run(srv._dispatch(mod.flow, "flow", {"prompt": "hello"}))
         mod.flow.kickoff_async.assert_called_once_with(inputs={"prompt": "hello"})
         assert result == "flow-result"
 
     def test_crew_invoke_calls_kickoff_in_thread(self) -> None:
         srv = _load_crewai_server()
         mod = _make_crew_module(has_flow=False, has_crew=True)
-        result = asyncio.run(
-            srv._dispatch(mod.crew, "crew", {"prompt": "hello"})
-        )
+        result = asyncio.run(srv._dispatch(mod.crew, "crew", {"prompt": "hello"}))
         mod.crew.kickoff.assert_called_once()
         assert result == "crew-result"
 
@@ -311,6 +322,7 @@ class TestCrewAIServerFlowDispatch:
 # ---------------------------------------------------------------------------
 # Task 4: Structured output validation
 # ---------------------------------------------------------------------------
+
 
 class TestCrewAIServerStructuredOutput:
     def _get_srv(self):
@@ -374,6 +386,7 @@ class TestCrewAIServerInvokeResponseSchema:
 # ---------------------------------------------------------------------------
 # Task 5: Integration — hierarchical crew end-to-end
 # ---------------------------------------------------------------------------
+
 
 class TestHierarchicalCrewEndToEnd:
     _AGENT_YAML = """\
@@ -446,9 +459,7 @@ crewai:
         srv = _load_crewai_server()
         crew_mock = MagicMock()
         crew_mock.kickoff = MagicMock(return_value="ticket resolved")
-        result = asyncio.run(
-            srv._dispatch(crew_mock, "crew", {"prompt": "resolve ticket #42"})
-        )
+        result = asyncio.run(srv._dispatch(crew_mock, "crew", {"prompt": "resolve ticket #42"}))
         crew_mock.kickoff.assert_called_once()
         assert result == "ticket resolved"
 
