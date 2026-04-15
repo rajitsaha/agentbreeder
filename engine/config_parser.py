@@ -10,7 +10,7 @@ import enum
 import json
 import re
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 import jsonschema
 from pydantic import BaseModel, EmailStr, Field, field_validator, model_validator
@@ -34,6 +34,7 @@ class CloudType(enum.StrEnum):
     gcp = "gcp"
     kubernetes = "kubernetes"
     local = "local"
+    claude_managed = "claude-managed"
 
 
 class Visibility(enum.StrEnum):
@@ -203,6 +204,33 @@ class GoogleADKConfig(BaseModel):
         return self
 
 
+class ClaudeManagedEnvironmentConfig(BaseModel):
+    """Environment configuration for a Claude Managed Agent."""
+
+    networking: Literal["unrestricted", "restricted"] = "unrestricted"
+
+
+class ClaudeManagedToolConfig(BaseModel):
+    """A single tool entry in a Claude Managed Agent definition."""
+
+    type: str = "agent_toolset_20260401"
+
+
+class ClaudeManagedConfig(BaseModel):
+    """Top-level claude_managed: block in agent.yaml.
+
+    Only read when deploy.cloud == "claude-managed".
+    No container is built — Anthropic manages the runtime entirely.
+    """
+
+    environment: ClaudeManagedEnvironmentConfig = Field(
+        default_factory=ClaudeManagedEnvironmentConfig
+    )
+    tools: list[ClaudeManagedToolConfig] = Field(
+        default_factory=lambda: [ClaudeManagedToolConfig()]
+    )
+
+
 class AgentConfig(BaseModel):
     """The complete agent configuration parsed from agent.yaml."""
 
@@ -226,6 +254,7 @@ class AgentConfig(BaseModel):
     crewai: CrewAIConfig | None = None
     google_adk: GoogleADKConfig | None = None
     claude_sdk: ClaudeSDKConfig = Field(default_factory=ClaudeSDKConfig)
+    claude_managed: ClaudeManagedConfig | None = None
 
     @field_validator("name")
     @classmethod

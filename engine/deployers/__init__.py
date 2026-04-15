@@ -6,9 +6,11 @@ Maps cloud types to their deployer implementations.
 from __future__ import annotations
 
 from engine.config_parser import CloudType
+from engine.deployers.aws_app_runner import AWSAppRunnerDeployer
 from engine.deployers.aws_ecs import AWSECSDeployer
 from engine.deployers.azure_container_apps import AzureContainerAppsDeployer
 from engine.deployers.base import BaseDeployer
+from engine.deployers.claude_managed import ClaudeManagedDeployer
 from engine.deployers.docker_compose import DockerComposeDeployer
 from engine.deployers.gcp_cloudrun import GCPCloudRunDeployer
 from engine.deployers.kubernetes import KubernetesDeployer
@@ -19,6 +21,7 @@ DEPLOYERS: dict[CloudType, type[BaseDeployer]] = {
     CloudType.azure: AzureContainerAppsDeployer,
     CloudType.gcp: GCPCloudRunDeployer,
     CloudType.kubernetes: KubernetesDeployer,
+    CloudType.claude_managed: ClaudeManagedDeployer,
 }
 
 # Maps runtime strings (from deploy.runtime) to deployer classes.
@@ -27,6 +30,8 @@ RUNTIME_DEPLOYERS: dict[str, type[BaseDeployer]] = {
     "cloudrun": GCPCloudRunDeployer,
     "ecs-fargate": AWSECSDeployer,
     "ecs": AWSECSDeployer,
+    "app-runner": AWSAppRunnerDeployer,
+    "apprunner": AWSAppRunnerDeployer,
     "container-apps": AzureContainerAppsDeployer,
     "eks": KubernetesDeployer,
     "gke": KubernetesDeployer,

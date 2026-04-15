@@ -26,6 +26,91 @@ console = Console()
 API_BASE = os.environ.get("GARDEN_API_URL", "http://localhost:8000")
 
 
+# ---------------------------------------------------------------------------
+# Claude Managed Agents helpers
+# ---------------------------------------------------------------------------
+
+
+def _is_managed_agent_endpoint(endpoint_url: str) -> bool:
+    """Return True if the endpoint is a Claude Managed Agent (anthropic:// scheme)."""
+    return endpoint_url.startswith("anthropic://agents/")
+
+
+def _parse_managed_endpoint(endpoint_url: str) -> tuple[str, str]:
+    """Parse anthropic://agents/{agent_id}?env={env_id} → (agent_id, env_id)."""
+    from urllib.parse import parse_qs, urlparse
+
+    parsed = urlparse(endpoint_url)
+    agent_id = parsed.netloc + parsed.path  # "agents/agent_abc123"
+    # Strip leading "agents/" if present
+    if agent_id.startswith("agents/"):
+        agent_id = agent_id[len("agents/"):]
+    env_id = parse_qs(parsed.query).get("env", [""])[0]
+    return agent_id, env_id
+
+
+def _get_agent_endpoint(agent_name: str) -> str | None:
+    """Look up the deployed endpoint URL for an agent from the registry API."""
+    try:
+        with _get_client() as client:
+            response = client.get(f"/api/v1/agents/{agent_name}")
+            if response.status_code == 200:
+                data = response.json().get("data", {})
+                return data.get("endpoint_url") or data.get("endpoint")
+    except Exception:
+        pass
+    return None
+
+
+async def _chat_via_managed_agent(
+    agent_id: str,
+    environment_id: str,
+    message: str,
+    verbose: bool = False,
+) -> str:
+    """Create a session and stream events for a Claude Managed Agent.
+
+    Returns the full assistant response text.
+    """
+    try:
+        from anthropic import Anthropic
+    except ImportError as exc:
+        raise RuntimeError(
+            "anthropic SDK not installed. Run: pip install anthropic"
+        ) from exc
+
+    client = Anthropic()
+
+    session = client.beta.sessions.create(
+        agent=agent_id,
+        environment_id=environment_id,
+        title="agentbreeder chat session",
+    )
+
+    response_text = ""
+    with client.beta.sessions.events.stream(session.id) as stream:
+        client.beta.sessions.events.send(
+            session.id,
+            events=[
+                {
+                    "type": "user.message",
+                    "content": [{"type": "text", "text": message}],
+                }
+            ],
+        )
+        for event in stream:
+            if event.type == "agent.message":
+                for block in event.content:
+                    if hasattr(block, "text"):
+                        response_text += block.text
+                        if verbose:
+                            print(block.text, end="", flush=True)
+            elif event.type == "session.status_idle":
+                break
+
+    return response_text
+
+
 def _get_client() -> httpx.Client:
     """Create an httpx client with the configured base URL."""
     return httpx.Client(base_url=API_BASE, timeout=120.0)
@@ -91,6 +176,13 @@ def _run_interactive(
     total_cost = 0.0
     turn_count = 0
 
+    # Detect Claude Managed Agents endpoint
+    managed_agent_id: str | None = None
+    managed_env_id: str | None = None
+    endpoint_url = _get_agent_endpoint(agent_name)
+    if endpoint_url and _is_managed_agent_endpoint(endpoint_url):
+        managed_agent_id, managed_env_id = _parse_managed_endpoint(endpoint_url)
+
     console.print()
     console.print(
         Panel(
@@ -142,46 +234,65 @@ def _run_interactive(
         # Add to conversation history
         conversation.append({"role": "user", "content": user_input})
 
-        # Call the API
-        try:
-            with _get_client() as client:
-                response = client.post(
-                    "/api/v1/playground/chat",
-                    json={
-                        "agent_id": agent_name,
-                        "message": user_input,
-                        "model_override": model,
-                        "conversation_history": conversation[:-1],
-                    },
-                )
-                response.raise_for_status()
-                data = response.json()["data"]
+        # Call the agent — Claude Managed Agents use the Anthropic sessions API;
+        # all other targets use the local playground API.
+        tool_calls: list[Any] = []
+        token_count = 0
+        cost_estimate = 0.0
+        latency_ms = 0
+        model_used = ""
 
-        except httpx.ConnectError:
-            console.print()
-            console.print(f"  [red]Cannot connect to API at {API_BASE}.[/red]")
-            console.print(
-                "  [dim]Ensure the server is running: uvicorn api.main:app --port 8000[/dim]"
-            )
-            console.print()
-            raise typer.Exit(code=1) from None
-
-        except httpx.HTTPStatusError as exc:
-            detail = ""
+        if managed_agent_id and managed_env_id:
             try:
-                detail = exc.response.json().get("detail", str(exc))
-            except Exception:
-                detail = str(exc)
-            console.print(f"\n  [red]Error: {detail}[/red]\n")
-            continue
+                import asyncio
 
-        # Extract response data
-        assistant_msg = data.get("response", "")
-        tool_calls = data.get("tool_calls", [])
-        token_count = data.get("token_count", 0)
-        cost_estimate = data.get("cost_estimate", 0.0)
-        latency_ms = data.get("latency_ms", 0)
-        model_used = data.get("model_used", "")
+                assistant_msg = asyncio.run(
+                    _chat_via_managed_agent(
+                        managed_agent_id, managed_env_id, user_input, verbose
+                    )
+                )
+            except RuntimeError as exc:
+                console.print(f"\n  [red]Managed Agent error: {exc}[/red]\n")
+                continue
+        else:
+            try:
+                with _get_client() as client:
+                    response = client.post(
+                        "/api/v1/playground/chat",
+                        json={
+                            "agent_id": agent_name,
+                            "message": user_input,
+                            "model_override": model,
+                            "conversation_history": conversation[:-1],
+                        },
+                    )
+                    response.raise_for_status()
+                    data = response.json()["data"]
+
+            except httpx.ConnectError:
+                console.print()
+                console.print(f"  [red]Cannot connect to API at {API_BASE}.[/red]")
+                console.print(
+                    "  [dim]Ensure the server is running: uvicorn api.main:app --port 8000[/dim]"
+                )
+                console.print()
+                raise typer.Exit(code=1) from None
+
+            except httpx.HTTPStatusError as exc:
+                detail = ""
+                try:
+                    detail = exc.response.json().get("detail", str(exc))
+                except Exception:
+                    detail = str(exc)
+                console.print(f"\n  [red]Error: {detail}[/red]\n")
+                continue
+
+            assistant_msg = data.get("response", "")
+            tool_calls = data.get("tool_calls", [])
+            token_count = data.get("token_count", 0)
+            cost_estimate = data.get("cost_estimate", 0.0)
+            latency_ms = data.get("latency_ms", 0)
+            model_used = data.get("model_used", "")
 
         # Track totals
         total_tokens += token_count

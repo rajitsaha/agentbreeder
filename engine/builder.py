@@ -152,15 +152,23 @@ class DeployEngine:
             raise
 
         # Step 4: Container Build
+        # Claude Managed Agents run on Anthropic's infrastructure — no container needed.
         step4 = PipelineStep("Build container", 4)
         step4.start()
         self._notify(step4)
         try:
-            runtime = get_runtime(config.framework)
-            validation = runtime.validate(config_path.parent, config)
-            if not validation.valid:
-                raise BuildError("Validation failed:\n" + "\n".join(validation.errors))
-            image = runtime.build(config_path.parent, config)
+            if config.deploy.cloud == CloudType.claude_managed:
+                logger.info(
+                    "Skipping container build for cloud: claude-managed — "
+                    "Anthropic manages the runtime"
+                )
+                image = None
+            else:
+                runtime = get_runtime(config.framework)
+                validation = runtime.validate(config_path.parent, config)
+                if not validation.valid:
+                    raise BuildError("Validation failed:\n" + "\n".join(validation.errors))
+                image = runtime.build(config_path.parent, config)
             step4.complete()
             self._notify(step4)
         except Exception as e:
