@@ -2839,6 +2839,101 @@ Full spec: `docs/superpowers/specs/2026-04-14-agent-architect-skill-design.md`
 
 ---
 
+## Milestone M36 — TypeScript SDK Parity
+
+**Release:** v1.8 (TypeScript SDK Parity)
+**Theme:** Bring `@agentbreeder/sdk` (TypeScript) to full feature parity with `agentbreeder-sdk` (Python), closing the ~40% gap in module coverage, `Agent` class methods, and developer experience.
+**Status:** Planned
+**GitHub Issue:** [#55](https://github.com/rajitsaha/agentbreeder/issues/55)
+**Design Doc:** [`docs/superpowers/plans/2026-04-15-typescript-sdk-parity.md`](docs/superpowers/plans/2026-04-15-typescript-sdk-parity.md)
+
+### Background
+
+The TypeScript SDK was introduced in v1.1 (M30.2) as an initial scaffold. It has the core `Agent` builder, orchestration classes, and basic types — but was never brought to full parity with the Python SDK as the Python SDK grew. Three whole modules are missing (`memory.ts`, `mcp.ts`, `validation.ts`), eight `Agent` class methods are absent, `Tool.fromFunction()` is not implemented, the README is a single-line placeholder, and no TypeScript usage examples exist. This creates a first-class/second-class split that undermines "Define Once. Deploy Anywhere" for TypeScript developers.
+
+### M36.1 — Missing Modules
+
+**Issue:** [#55](https://github.com/rajitsaha/agentbreeder/issues/55) | **Priority: P2**
+
+- [ ] **`sdk/typescript/src/memory.ts`** — `Memory` builder class + `MemoryConfig` interface:
+  - `Memory.bufferWindow(maxMessages?, opts?)` → sliding window backend
+  - `Memory.buffer(opts?)` → simple in-memory backend
+  - `Memory.postgresql(opts?)` → PostgreSQL persistent backend
+  - `memory.toConfig()` → returns `MemoryConfig`
+- [ ] **`sdk/typescript/src/mcp.ts`** — `MCPServe` class for building MCP tool servers:
+  - `server.tool(fn, schema, opts?)` → register a function as an MCP tool (explicit schema required; TypeScript has no runtime type reflection)
+  - `server.toolNames` → list of registered tool names
+  - `server.run()` → start stdio MCP server via `@modelcontextprotocol/sdk` (optional peer dep)
+- [ ] **`sdk/typescript/src/validation.ts`** — standalone `validateAgent(agent)` exported function (delegates to `agent.validate()`)
+- [ ] Add `@modelcontextprotocol/sdk` as optional peer dependency in `package.json`
+- [ ] Add `@types/node` dev dependency + `node` types in `tsconfig.json` for `fs/promises`
+
+### M36.2 — Agent Class Method Gaps
+
+**Issue:** [#55](https://github.com/rajitsaha/agentbreeder/issues/55) | **Priority: P2**
+
+Eight methods present in Python `Agent` are absent in TypeScript `Agent`:
+
+- [ ] **`withMemory(backend, opts?)`** — configure conversation memory backend
+- [ ] **`use(middleware)`** — register a middleware function (runs on every turn)
+- [ ] **`on(event, handler)`** — register event hook: `tool_call | turn_start | turn_end | error`
+- [ ] **`get state()`** — mutable shared state dict (persists across turns within a session)
+- [ ] **`route(message, context)`** — overrideable method; return tool/agent name or null (subclass pattern)
+- [ ] **`selectTools(message)`** — overrideable method; return subset of tools based on message (subclass pattern)
+- [ ] **`static fromYaml(yaml)`** — deserialize from YAML string
+- [ ] **`static fromFile(path)`** — async, reads file then calls `fromYaml`
+- [ ] **`save(path)`** — async, writes `toYaml()` to file
+- [ ] **`deploy(target?)`** — async, calls `deploy()` from `deploy.ts`
+
+### M36.3 — Tool.fromFunction()
+
+**Issue:** [#55](https://github.com/rajitsaha/agentbreeder/issues/55) | **Priority: P2**
+
+- [ ] **`Tool.fromFunction(fn, schema)`** — create a `Tool` from a named function with an explicit JSON Schema
+  - Python auto-derives schema from type hints via `inspect`; TypeScript requires explicit schema (no runtime type reflection)
+  - `fn.name` used as tool name (can be overridden via options)
+  - Used in `examples/sdk-ts-advanced/agent.ts` and `MCPServe`
+
+### M36.4 — Types and Exports
+
+**Issue:** [#55](https://github.com/rajitsaha/agentbreeder/issues/55) | **Priority: P2**
+
+- [ ] Add `memory?: MemoryConfig` to `AgentConfig` interface in `types.ts`
+- [ ] Export `Memory`, `MCPServe`, `validateAgent`, `MemoryConfig` from `index.ts`
+
+### M36.5 — Developer Experience
+
+**Issue:** [#55](https://github.com/rajitsaha/agentbreeder/issues/55) | **Priority: P2**
+
+- [ ] **`sdk/typescript/README.md`** — full README: installation, quickstart, complete API reference table, parity table vs Python SDK, link to examples
+- [ ] **`examples/sdk-ts-basic/agent.ts`** — TypeScript equivalent of `examples/sdk-basic/agent.py`
+- [ ] **`examples/sdk-ts-advanced/agent.ts`** — TypeScript equivalent of `examples/sdk-advanced/agent.py` (demonstrates `Tool.fromFunction`, middleware, event hooks, subclassed routing, `MCPServe`)
+
+### M36.6 — Tests
+
+- [ ] Extend `sdk/typescript/tests/agent.test.ts` — tests for all 10 new `Agent` methods
+- [ ] Create `sdk/typescript/tests/memory.test.ts` — `Memory` factory methods + `MemoryConfig` shape
+- [ ] Create `sdk/typescript/tests/mcp.test.ts` — `MCPServe` tool registration, `toolNames`, chaining
+- [ ] Create `sdk/typescript/tests/tool.test.ts` — `Tool.fromFunction()` name derivation + schema
+- [ ] Create `sdk/typescript/tests/validation.test.ts` — `validateAgent()` for valid/invalid configs
+- [ ] All existing tests (`agent.test.ts`, `orchestration.test.ts`) pass unchanged
+
+### M36 Acceptance Criteria
+
+- [ ] `memory.ts`, `mcp.ts`, `validation.ts` — all three new modules created and exported
+- [ ] All 10 missing `Agent` methods implemented and tested
+- [ ] `Tool.fromFunction()` implemented with explicit schema parameter
+- [ ] `AgentConfig` interface includes `memory?: MemoryConfig`
+- [ ] `sdk/typescript/README.md` is complete (not a placeholder)
+- [ ] `examples/sdk-ts-basic/agent.ts` and `examples/sdk-ts-advanced/agent.ts` created
+- [ ] `npm run typecheck` — no TypeScript errors
+- [ ] `npm run test` — all Vitest tests pass (including all new tests)
+- [ ] `npm run build` — produces clean `dist/` with `.js`, `.cjs`, `.d.ts` for all new modules
+- [ ] Existing `agent.test.ts` and `orchestration.test.ts` pass without modification
+- [ ] Gate workflow passes
+
+---
+
 ## Execution Plan — Next 4 Releases
 
 | Release | Milestone | Theme | Key Work | Issues | Est. |
@@ -2848,6 +2943,7 @@ Full spec: `docs/superpowers/specs/2026-04-14-agent-architect-skill-design.md`
 | **v1.5** | M33 | Multi-Cloud | AWS ECS, Azure Container Apps, Kubernetes deployers | [#34](https://github.com/rajitsaha/agentbreeder/issues/34) | ~5d |
 | **v1.6** | M34 | Framework Depth | LangGraph HITL+persistence, OAI Agents handoffs, runtime OTel tracing | [#39](https://github.com/rajitsaha/agentbreeder/issues/39) [#40](https://github.com/rajitsaha/agentbreeder/issues/40) [#41](https://github.com/rajitsaha/agentbreeder/issues/41) | ~5d |
 | **v1.7** | M35 | Agent Architect Skill | /agent-build advisory mode: framework, model, RAG, memory, MCP/A2A, deploy, eval recommendations + IDE config file generation | [#49](https://github.com/rajitsaha/agentbreeder/issues/49) | ✅ Done |
+| **v1.8** | M36 | TypeScript SDK Parity | memory.ts, mcp.ts, validation.ts; 10 missing Agent methods; Tool.fromFunction; TS examples + full README | [#55](https://github.com/rajitsaha/agentbreeder/issues/55) | ~6d |
 
 **Recommended sequencing rationale:**
 - M25 first — unblocks users who picked CrewAI/Claude SDK/ADK in the init wizard today
@@ -2855,8 +2951,9 @@ Full spec: `docs/superpowers/specs/2026-04-14-agent-architect-skill-design.md`
 - M33 next — multi-cloud is the #1 product differentiator gap
 - M34 next — improves depth of existing runtimes; high value but not a blocker to new users
 - M35 last in this batch — highest DX impact; builds on top of all runtime and deploy work being stable
+- M36 next — closes the TypeScript/Python SDK parity gap; unblocks Node.js developers on the Full Code tier
 
 ---
 
-*Last updated: April 14, 2026*
-*Status: v0.1–v1.2 complete (M1–M23). v1.3 in progress — M24 (Model Gateway), M26 (AgentOps dashboard), M27 (Production Hardening), M31 (Full Code Orchestration SDK) done; M25 (additional SDK runtime builders) remaining — tracked in #35–#38. v1.4 in progress — M32 (Package Distribution): code complete, manual infra setup remaining. v1.5 done — M33 (Multi-Cloud Deployers: AWS App Runner + Claude Managed Agents) shipped in #52. v1.6 planned — M34 (Framework Depth: LangGraph HITL+persistence, OAI Agents handoffs, runtime OTel tracing) tracked in #39–#41. v1.7 done — M35 (Agent Architect Skill: /agent-build advisory mode + IDE config generation) shipped in #50. Open issues: 2 | Closed: 18.*
+*Last updated: April 15, 2026*
+*Status: v0.1–v1.2 complete (M1–M23). v1.3 in progress — M24 (Model Gateway), M26 (AgentOps dashboard), M27 (Production Hardening), M31 (Full Code Orchestration SDK) done; M25 (additional SDK runtime builders) remaining — tracked in #35–#38. v1.4 in progress — M32 (Package Distribution): code complete, manual infra setup remaining. v1.5 done — M33 (Multi-Cloud Deployers: AWS App Runner + Claude Managed Agents) shipped in #52. v1.6 planned — M34 (Framework Depth: LangGraph HITL+persistence, OAI Agents handoffs, runtime OTel tracing) tracked in #39–#41. v1.7 done — M35 (Agent Architect Skill: /agent-build advisory mode + IDE config generation) shipped in #50. v1.8 planned — M36 (TypeScript SDK Parity: memory/mcp/validation modules, 10 missing Agent methods, Tool.fromFunction, TS examples + README) tracked in #55. Open issues: 3 | Closed: 18.*
