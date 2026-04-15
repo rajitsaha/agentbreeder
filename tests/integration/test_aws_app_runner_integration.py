@@ -29,7 +29,6 @@ async def test_app_runner_full_deploy_and_teardown() -> None:
     """Deploy the langgraph example agent to App Runner, verify health, then tear down."""
     from pathlib import Path
 
-    from engine.builder import DeployEngine
     from engine.config_parser import (
         AccessConfig,
         AgentConfig,

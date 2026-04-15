@@ -266,7 +266,6 @@ class AWSAppRunnerDeployer(BaseDeployer):
                 "AccessRoleArn": ar.access_role_arn
             }
 
-        scaling = config.deploy.scaling
         return {
             "ServiceName": config.name,
             "SourceConfiguration": {"ImageRepository": image_config},
@@ -418,7 +417,8 @@ class AWSAppRunnerDeployer(BaseDeployer):
             if not events:
                 return [f"No logs found in log group '{log_group}'"]
             return [
-                f"{datetime.utcfromtimestamp(e['timestamp'] / 1000).isoformat()} {e['message'].rstrip()}"
+                f"{datetime.utcfromtimestamp(e['timestamp'] / 1000).isoformat()} "
+                f"{e['message'].rstrip()}"
                 for e in events
             ]
         except Exception as exc:

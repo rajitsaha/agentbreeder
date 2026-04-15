@@ -22,7 +22,6 @@ from engine.config_parser import (
     ResourceConfig,
     ScalingConfig,
 )
-from engine.deployers.base import DeployResult
 
 # ---------------------------------------------------------------------------
 # Helpers

@@ -3,7 +3,8 @@
 Requires a valid ANTHROPIC_API_KEY with managed-agents-2026-04-01 beta access.
 
 Run:
-    RUN_CLAUDE_MANAGED_INTEGRATION_TESTS=1 pytest tests/integration/test_claude_managed_integration.py -v -s
+    RUN_CLAUDE_MANAGED_INTEGRATION_TESTS=1 \
+        pytest tests/integration/test_claude_managed_integration.py -v -s
 """
 
 from __future__ import annotations

@@ -77,10 +77,10 @@ class ClaudeManagedDeployer(BaseDeployer):
         """
         try:
             client = _get_anthropic_client()
-        except ImportError:
+        except ImportError as err:
             raise ImportError(
                 "anthropic SDK is not installed. Run: pip install anthropic"
-            )
+            ) from err
 
         cm_config = config.claude_managed
         tools = (
