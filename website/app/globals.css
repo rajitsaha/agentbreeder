@@ -54,3 +54,8 @@ body {
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--bg-elevated); border-radius: 3px; }
+
+@keyframes ab-pulse {
+  0%, 100% { opacity: 0.7; }
+  50%       { opacity: 0.15; }
+}
