@@ -37,12 +37,12 @@ dependencies = [
     "redis>=5.0.0",
     "PyJWT[crypto]>=2.8.0",
     "bcrypt>=4.0.0",
-    "python-multipart>=0.0.7",
+    "python-multipart>=0.0.26",
 ]
 
 [project.optional-dependencies]
 dev = [
-    "pytest>=8.0.0",
+    "pytest>=9.0.3",
     "pytest-asyncio>=0.23.0",
     "pytest-cov>=4.1.0",
     "ruff>=0.3.0",
