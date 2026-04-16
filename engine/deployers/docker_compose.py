@@ -23,6 +23,8 @@ logger = logging.getLogger(__name__)
 AGENTBREEDER_DIR = Path.home() / ".agentbreeder"
 STATE_FILE = AGENTBREEDER_DIR / "state.json"
 BASE_PORT = 8080
+OLLAMA_CONTAINER_NAME = "agentbreeder-ollama"
+OLLAMA_NETWORK_NAME = "agentbreeder-net"
 
 
 class DockerComposeDeployer(BaseDeployer):
@@ -45,6 +47,60 @@ class DockerComposeDeployer(BaseDeployer):
         self._state["next_port"] = port + 1
         self._save_state()
         return port
+
+    async def _ensure_network(self, client: object) -> None:
+        """Create agentbreeder-net bridge network if it doesn't already exist."""
+        import docker
+
+        try:
+            client.networks.get(OLLAMA_NETWORK_NAME)  # type: ignore[union-attr]
+        except docker.errors.NotFound:
+            client.networks.create(OLLAMA_NETWORK_NAME, driver="bridge")  # type: ignore[union-attr]
+            logger.info("Created Docker network: %s", OLLAMA_NETWORK_NAME)
+
+    async def _ensure_ollama_sidecar(self, client: object) -> None:
+        """Start the Ollama sidecar container if it is not already running."""
+        import docker
+
+        try:
+            container = client.containers.get(OLLAMA_CONTAINER_NAME)  # type: ignore[union-attr]
+            if container.status == "running":
+                logger.info("Ollama sidecar already running: %s", OLLAMA_CONTAINER_NAME)
+                return
+            logger.info("Restarting stopped Ollama container: %s", OLLAMA_CONTAINER_NAME)
+            container.start()
+        except docker.errors.NotFound:
+            logger.info("Starting Ollama sidecar container...")
+            client.containers.run(  # type: ignore[union-attr]
+                "ollama/ollama",
+                name=OLLAMA_CONTAINER_NAME,
+                ports={"11434/tcp": 11434},
+                volumes={"ollama_data": {"bind": "/root/.ollama", "mode": "rw"}},
+                network=OLLAMA_NETWORK_NAME,
+                detach=True,
+                remove=False,
+            )
+            logger.info("Ollama sidecar started: %s", OLLAMA_CONTAINER_NAME)
+
+    async def _pull_ollama_model(self, client: object, model_tag: str) -> None:
+        """Pull the Ollama model inside the sidecar via docker exec."""
+        logger.info("Pulling Ollama model: %s (this may take several minutes)", model_tag)
+        container = client.containers.get(OLLAMA_CONTAINER_NAME)  # type: ignore[union-attr]
+        for _ in range(30):
+            exit_code, _ = container.exec_run(["ollama", "list"])
+            if exit_code == 0:
+                break
+            await asyncio.sleep(1)
+        exit_code, output = container.exec_run(["ollama", "pull", model_tag], stream=False)
+        if exit_code != 0:
+            logger.warning(
+                "ollama pull %s exited %d: %s",
+                model_tag,
+                exit_code,
+                output.decode(errors="replace"),
+            )
+        else:
+            logger.info("Pulled Ollama model: %s", model_tag)
 
     async def provision(self, config: AgentConfig) -> InfraResult:
         port = self._allocate_port()
@@ -112,16 +168,26 @@ class DockerComposeDeployer(BaseDeployer):
             container_env["OPENTELEMETRY_ENDPOINT"] = otel
         container_env.update(config.deploy.env_vars)
 
+        # For ollama/ models: start Ollama sidecar and pull model weights before the agent
+        if config.model.primary.startswith("ollama/"):
+            await self._ensure_network(client)
+            await self._ensure_ollama_sidecar(client)
+            model_tag = config.model.primary.split("/", 1)[1]  # e.g. "gemma3:27b"
+            await self._pull_ollama_model(client, model_tag)
+            container_env["OLLAMA_BASE_URL"] = f"http://{OLLAMA_CONTAINER_NAME}:11434"
+
         # Run the container
         logger.info("Starting container: %s on port %d", container_name, port)
-        container = client.containers.run(
-            image.tag,
-            name=container_name,
-            ports={"8080/tcp": port},
-            environment=container_env,
-            detach=True,
-            remove=False,
-        )
+        run_kwargs: dict = {
+            "name": container_name,
+            "ports": {"8080/tcp": port},
+            "environment": container_env,
+            "detach": True,
+            "remove": False,
+        }
+        if config.model.primary.startswith("ollama/"):
+            run_kwargs["network"] = OLLAMA_NETWORK_NAME
+        container = client.containers.run(image.tag, **run_kwargs)
 
         endpoint_url = f"http://localhost:{port}"
         self._state["agents"][config.name] = {

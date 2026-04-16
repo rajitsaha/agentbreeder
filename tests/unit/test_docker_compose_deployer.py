@@ -247,3 +247,136 @@ class TestDockerComposeDeployerDeploy:
 
         assert health.healthy is True
         assert health.checks["reachable"] is True
+
+    @pytest.mark.asyncio
+    async def test_deploy_starts_ollama_sidecar_for_ollama_model(self, tmp_path: Path) -> None:
+        """When model is ollama/*, deploy() must start the Ollama sidecar container."""
+        import docker
+
+        from engine.deployers.docker_compose import DockerComposeDeployer
+        from engine.runtimes.base import ContainerImage
+
+        mock_client = MagicMock()
+        mock_client.images.build.return_value = (MagicMock(), [])
+        mock_client.containers.get.side_effect = docker.errors.NotFound("not found")
+        mock_client.containers.run.return_value = MagicMock(id="cid")
+        mock_client.networks.get.side_effect = docker.errors.NotFound("no net")
+        mock_client.networks.create.return_value = MagicMock()
+
+        config = _make_config(model={"primary": "ollama/gemma3:27b"})
+        image = ContainerImage(
+            tag="test:1.0.0", dockerfile_content="FROM python", context_dir=tmp_path
+        )
+        deployer = DockerComposeDeployer()
+
+        with patch("docker.from_env", return_value=mock_client):
+            with patch.object(deployer, "_pull_ollama_model", new_callable=AsyncMock) as mock_pull:
+                await deployer.deploy(config, image)
+
+        sidecar_run_calls = [
+            c for c in mock_client.containers.run.call_args_list if "ollama/ollama" in str(c)
+        ]
+        assert len(sidecar_run_calls) >= 1, "Ollama sidecar was not started"
+        mock_pull.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_deploy_injects_ollama_base_url_in_container_env(self, tmp_path: Path) -> None:
+        """For ollama/ models, OLLAMA_BASE_URL must be in the agent container env."""
+        import docker
+
+        from engine.deployers.docker_compose import OLLAMA_CONTAINER_NAME, DockerComposeDeployer
+        from engine.runtimes.base import ContainerImage
+
+        mock_client = MagicMock()
+        mock_client.images.build.return_value = (MagicMock(), [])
+        mock_client.containers.get.side_effect = docker.errors.NotFound("not found")
+        mock_client.containers.run.return_value = MagicMock(id="cid")
+        mock_client.networks.get.side_effect = docker.errors.NotFound("no net")
+        mock_client.networks.create.return_value = MagicMock()
+
+        config = _make_config(model={"primary": "ollama/gemma3:27b"})
+        image = ContainerImage(
+            tag="test:1.0.0", dockerfile_content="FROM python", context_dir=tmp_path
+        )
+        deployer = DockerComposeDeployer()
+
+        with patch("docker.from_env", return_value=mock_client):
+            with patch.object(deployer, "_pull_ollama_model", new_callable=AsyncMock):
+                await deployer.deploy(config, image)
+
+        # Find agent container run call (not sidecar)
+        agent_run_calls = [
+            c for c in mock_client.containers.run.call_args_list if "ollama/ollama" not in str(c)
+        ]
+        assert agent_run_calls, "Agent container was not started"
+        env_arg = agent_run_calls[0].kwargs.get("environment", {})
+        assert "OLLAMA_BASE_URL" in env_arg
+        assert OLLAMA_CONTAINER_NAME in env_arg["OLLAMA_BASE_URL"]
+
+    @pytest.mark.asyncio
+    async def test_deploy_skips_ollama_sidecar_for_non_ollama_model(self, tmp_path: Path) -> None:
+        """For non-ollama models, deploy() must NOT start the Ollama sidecar."""
+        import docker
+
+        from engine.deployers.docker_compose import DockerComposeDeployer
+        from engine.runtimes.base import ContainerImage
+
+        mock_client = MagicMock()
+        mock_client.images.build.return_value = (MagicMock(), [])
+        mock_client.containers.get.side_effect = docker.errors.NotFound("not found")
+        mock_client.containers.run.return_value = MagicMock(id="cid")
+
+        config = _make_config(model={"primary": "claude-sonnet-4"})
+        image = ContainerImage(
+            tag="test:1.0.0", dockerfile_content="FROM python", context_dir=tmp_path
+        )
+        deployer = DockerComposeDeployer()
+
+        with patch("docker.from_env", return_value=mock_client):
+            await deployer.deploy(config, image)
+
+        ollama_runs = [
+            c for c in mock_client.containers.run.call_args_list if "ollama/ollama" in str(c)
+        ]
+        assert len(ollama_runs) == 0, "Ollama sidecar was incorrectly started"
+
+    @pytest.mark.asyncio
+    async def test_deploy_does_not_restart_running_ollama_sidecar(self, tmp_path: Path) -> None:
+        """If Ollama sidecar is already running, deploy() must not start it again."""
+        import docker
+
+        from engine.deployers.docker_compose import OLLAMA_CONTAINER_NAME, DockerComposeDeployer
+        from engine.runtimes.base import ContainerImage
+
+        # Sidecar container already exists and is running
+        running_sidecar = MagicMock()
+        running_sidecar.status = "running"
+        running_sidecar.name = OLLAMA_CONTAINER_NAME
+
+        def containers_get_side_effect(name: str) -> MagicMock:
+            if name == OLLAMA_CONTAINER_NAME:
+                return running_sidecar
+            raise docker.errors.NotFound("not found")
+
+        mock_client = MagicMock()
+        mock_client.images.build.return_value = (MagicMock(), [])
+        mock_client.containers.get.side_effect = containers_get_side_effect
+        mock_client.containers.run.return_value = MagicMock(id="cid")
+        mock_client.networks.get.return_value = MagicMock()  # network already exists
+
+        config = _make_config(model={"primary": "ollama/gemma3:27b"})
+        image = ContainerImage(
+            tag="test:1.0.0", dockerfile_content="FROM python", context_dir=tmp_path
+        )
+        deployer = DockerComposeDeployer()
+
+        with patch("docker.from_env", return_value=mock_client):
+            with patch.object(deployer, "_pull_ollama_model", new_callable=AsyncMock):
+                await deployer.deploy(config, image)
+
+        # Only one containers.run call — for the agent, not a new Ollama sidecar
+        ollama_start_calls = [
+            c for c in mock_client.containers.run.call_args_list
+            if "ollama/ollama" in str(c)
+        ]
+        assert len(ollama_start_calls) == 0, "Ollama sidecar was restarted when already running"
