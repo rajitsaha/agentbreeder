@@ -53,3 +53,8 @@ dashboard/.env
 dashboard/test-results/
 site/
 .superpowers/
+
+# Generated / local-only files
+.cache/
+.playwright-mcp/
+.claude/scheduled_tasks.lock
