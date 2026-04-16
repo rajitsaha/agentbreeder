@@ -10,6 +10,26 @@ This project follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) an
 
 ---
 
+## [1.8.0] — 2026-04-16
+
+### Added
+
+#### Ollama / LiteLLM Support Across All Runtimes (#63, #64, #65, #66)
+- **LangGraph, OpenAI Agents, Custom runtimes**: `litellm>=1.40.0` added to requirements when `model: ollama/*`; `OLLAMA_BASE_URL` injected into Dockerfile ENV block
+- **OpenAI Agents server**: startup routes to Ollama's OpenAI-compatible endpoint (`AsyncOpenAI(base_url=OLLAMA_BASE_URL/v1)`) for `ollama/` models; standard path unchanged
+- **CrewAI runtime + server**: `litellm>=1.40.0` dep for Ollama models; `agent.llm.base_url` set to `OLLAMA_BASE_URL` at startup
+- **Google ADK runtime + server**: `SERVER_LOADER_CONTENT` and lifespan both use `LiteLlm(model, api_base=OLLAMA_BASE_URL)` for non-Gemini models; resolves #66 (no `agent.py` workaround needed)
+- **Claude SDK validation**: `validate()` rejects `ollama/*` models with a clear error pointing to compatible frameworks
+- **DockerComposeDeployer**: auto-starts `ollama/ollama` sidecar, creates `agentbreeder-net` Docker network, runs `ollama pull` before agent starts — resolves #64, #65
+
+### Fixed
+- **`Dockerfile.cli` version pin**: uses `ARG VERSION` + `pip install "agentbreeder==${VERSION}"` — eliminates race condition between parallel build-images and publish-pypi CI jobs
+
+### Examples
+- `examples/ai-news-digest/`: Google ADK + Ollama Gemma3:27b daily news digest — fetches HN, ArXiv, RSS; synthesises with Gemma; emails via Gmail SMTP
+
+---
+
 ## [1.7.0] — 2026-04-14
 
 ### Added
