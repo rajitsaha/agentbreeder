@@ -72,6 +72,8 @@ services:
       GARDEN_ENV: development
       SECRET_KEY: change-me-in-production
       JWT_SECRET_KEY: change-me-in-production
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
     depends_on:
       postgres:
         condition: service_healthy
