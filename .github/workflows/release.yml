@@ -179,6 +179,8 @@ jobs:
           file: ./Dockerfile.cli
           push: true
           platforms: linux/amd64,linux/arm64
+          build-args: |
+            VERSION=${{ steps.version.outputs.version }}
           tags: |
             rajits/agentbreeder-cli:${{ steps.version.outputs.version }}
             rajits/agentbreeder-cli:latest
