@@ -92,15 +92,34 @@ async def startup() -> None:
     except ImportError:
         pass
 
-    # Set the default OpenAI API key so nested runner contexts don't lose it
     import os as _os
 
-    from agents import set_default_openai_key
+    agent_model = _os.getenv("AGENT_MODEL", "")
 
-    api_key = _os.getenv("OPENAI_API_KEY")
-    if api_key:
-        set_default_openai_key(api_key)
-        logger.info("Default OpenAI API key configured")
+    if agent_model.startswith("ollama/"):
+        # Configure OpenAI Agents SDK to use Ollama's OpenAI-compatible endpoint
+        from agents import set_default_openai_client
+        from openai import AsyncOpenAI
+
+        ollama_base_url = _os.getenv("OLLAMA_BASE_URL", "http://agentbreeder-ollama:11434")
+        model_name = agent_model.split("/", 1)[1]  # strip "ollama/" prefix
+        ollama_client = AsyncOpenAI(
+            base_url=f"{ollama_base_url}/v1",
+            api_key="ollama",  # Ollama doesn't require a real key
+        )
+        set_default_openai_client(ollama_client)
+        logger.info(
+            "Configured OpenAI Agents SDK to use Ollama: model=%s base_url=%s/v1",
+            model_name,
+            ollama_base_url,
+        )
+    else:
+        from agents import set_default_openai_key
+
+        api_key = _os.getenv("OPENAI_API_KEY")
+        if api_key:
+            set_default_openai_key(api_key)
+            logger.info("Default OpenAI API key configured")
 
 
 @app.get("/health", response_model=HealthResponse)

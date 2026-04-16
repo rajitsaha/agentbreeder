@@ -238,3 +238,14 @@ class TestOpenAIAgentsRuntimeRequirements:
         image = runtime.build(tmp_path, config)
         dockerfile = (image.context_dir / "Dockerfile").read_text()
         assert "OLLAMA_BASE_URL" in dockerfile
+
+
+def test_server_template_handles_ollama_model() -> None:
+    """Server template must reference OLLAMA_BASE_URL and detect ollama/ prefix."""
+    from pathlib import Path
+
+    template = (
+        Path(__file__).parent.parent.parent / "engine/runtimes/templates/openai_agents_server.py"
+    ).read_text()
+    assert "OLLAMA_BASE_URL" in template
+    assert "ollama/" in template or "startswith" in template
