@@ -10,15 +10,10 @@ Return type is list[dict] throughout — JSON-serialisable, ADK-compatible.
 from __future__ import annotations
 
 import logging
-import os
-import smtplib
+import re
 import xml.etree.ElementTree as ET
-from datetime import UTC, datetime
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
 from html.parser import HTMLParser
 
-import feedparser
 import httpx
 
 logger = logging.getLogger(__name__)
@@ -93,5 +88,52 @@ def fetch_hackernews(limit: int = 5) -> list[dict]:
             "url": url,
             "points": hit.get("points", 0),
             "source": "hackernews",
+        })
+    return items
+
+
+# ---------------------------------------------------------------------------
+# Tool 2: fetch_arxiv
+# ---------------------------------------------------------------------------
+
+def fetch_arxiv(limit: int = 5) -> list[dict]:
+    """Fetch latest AI/ML research papers from ArXiv.
+
+    Args:
+        limit: Maximum number of papers to return.
+
+    Returns:
+        List of dicts with keys: title, url, summary, source.
+        Returns [] on network error.
+    """
+    params = {
+        "search_query": "cat:cs.AI OR cat:cs.LG",
+        "sortBy": "submittedDate",
+        "sortOrder": "descending",
+        "max_results": limit,
+    }
+    try:
+        resp = httpx.get(_ARXIV_API, params=params, timeout=15.0)
+        resp.raise_for_status()
+    except httpx.TimeoutException:
+        logger.warning("ArXiv API timed out")
+        return []
+    except httpx.HTTPError as exc:
+        logger.warning("ArXiv API error: %s", exc)
+        return []
+
+    root = ET.fromstring(resp.text)
+    items = []
+    for entry in root.findall(f"{{{_ARXIV_NS}}}entry")[:limit]:
+        raw_id = entry.findtext(f"{{{_ARXIV_NS}}}id", "")
+        url = raw_id.replace("http://", "https://")
+        if url:
+            url = re.sub(r"v\d+$", "", url)
+        summary = entry.findtext(f"{{{_ARXIV_NS}}}summary", "").strip()
+        items.append({
+            "title": entry.findtext(f"{{{_ARXIV_NS}}}title", "").strip(),
+            "url": url,
+            "summary": summary[:300],
+            "source": "arxiv",
         })
     return items
