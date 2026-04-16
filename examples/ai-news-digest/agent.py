@@ -19,10 +19,8 @@ import time
 from datetime import date
 
 import schedule
-
 from google.adk.agents import Agent
 from google.adk.models.lite_llm import LiteLlm as LiteLlmModel
-
 from tools.impl import fetch_arxiv, fetch_hackernews, fetch_rss, send_email
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
@@ -58,6 +56,7 @@ If a source returned no results, note it briefly and continue.
 # ---------------------------------------------------------------------------
 # Tool wrappers (same impl, ADK-compatible signatures)
 # ---------------------------------------------------------------------------
+
 
 def _fetch_hackernews(limit: int = 5) -> list[dict]:
     """Fetch top AI stories from Hacker News."""
@@ -101,6 +100,7 @@ root_agent = Agent(
 # Local runner (--once / --schedule)
 # ---------------------------------------------------------------------------
 
+
 async def _run_digest() -> None:
     """Invoke the agent with the digest prompt."""
     from google.adk.runners import Runner
@@ -125,6 +125,7 @@ async def _run_digest() -> None:
 
 def _run_once() -> None:
     import asyncio
+
     asyncio.run(_run_digest())
 
 
@@ -132,7 +133,9 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="AI News Digest Agent")
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("--once", action="store_true", help="Run digest immediately and exit")
-    group.add_argument("--schedule", action="store_true", help="Run as daemon, fire daily at DIGEST_HOUR")
+    group.add_argument(
+        "--schedule", action="store_true", help="Run as daemon, fire daily at DIGEST_HOUR"
+    )
     args = parser.parse_args()
 
     if args.once:

@@ -1,4 +1,5 @@
 """Integration and structural tests for the AI news digest agent."""
+
 from __future__ import annotations
 
 import shutil
@@ -20,14 +21,13 @@ def _agentbreeder_cmd() -> str:
         if candidate.exists():
             return str(candidate)
     raise FileNotFoundError(
-        "agentbreeder not found on PATH or in Python bin dir. "
-        "Run: pip install -e <repo-root>"
+        "agentbreeder not found on PATH or in Python bin dir. Run: pip install -e <repo-root>"
     )
 
 
 def test_agent_yaml_passes_agentbreeder_validate():
     """agentbreeder validate must exit 0 on the agent directory."""
-    result = subprocess.run(
+    result = subprocess.run(  # noqa: S603
         [_agentbreeder_cmd(), "validate", str(AGENT_DIR / "agent.yaml")],
         cwd=AGENT_DIR,
         capture_output=True,
