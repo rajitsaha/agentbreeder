@@ -10,15 +10,10 @@ Return type is list[dict] throughout — JSON-serialisable, ADK-compatible.
 from __future__ import annotations
 
 import logging
-import os
 import re
-import smtplib
 import xml.etree.ElementTree as ET
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
 from html.parser import HTMLParser
 
-import feedparser
 import httpx
 
 logger = logging.getLogger(__name__)
@@ -149,93 +144,3 @@ def fetch_arxiv(limit: int = 5) -> list[dict]:
             }
         )
     return items
-
-
-# ---------------------------------------------------------------------------
-# Tool 3: fetch_rss
-# ---------------------------------------------------------------------------
-
-
-def fetch_rss(limit: int = 5) -> list[dict]:
-    """Fetch AI industry news from TechCrunch, Wired, and VentureBeat RSS feeds.
-
-    Args:
-        limit: Maximum total items to return (spread across feeds).
-
-    Returns:
-        List of dicts with keys: title, url, summary, source.
-        Deduplicates by URL. Skips feeds that fail -- never raises.
-    """
-    seen_urls: set[str] = set()
-    items: list[dict] = []
-
-    for feed_url in _RSS_FEEDS:
-        try:
-            parsed = feedparser.parse(feed_url)
-            for entry in parsed.entries:
-                url = getattr(entry, "link", "")
-                if not url or url in seen_urls:
-                    continue
-                seen_urls.add(url)
-                raw_summary = getattr(entry, "summary", "")
-                items.append(
-                    {
-                        "title": getattr(entry, "title", ""),
-                        "url": url,
-                        "summary": _strip_html(raw_summary)[:300],
-                        "source": "rss",
-                    }
-                )
-        except Exception as exc:
-            logger.warning("RSS feed %s failed: %s", feed_url, exc)
-
-    return items[:limit]
-
-
-# ---------------------------------------------------------------------------
-# Tool 4: send_email
-# ---------------------------------------------------------------------------
-
-
-def send_email(subject: str, body: str) -> dict:
-    """Send the digest email to all configured recipients via Gmail SMTP.
-
-    Reads all configuration from environment variables.
-
-    Args:
-        subject: Email subject line.
-        body: Plain-text email body (the digest).
-
-    Returns:
-        Dict with key 'sent_to' (int) -- number of recipients emailed.
-
-    Raises:
-        ValueError: If SMTP_USER or RECIPIENT_EMAILS env vars are not set.
-        smtplib.SMTPAuthenticationError: If Gmail credentials are wrong.
-    """
-    smtp_user = os.environ.get("SMTP_USER")
-    if not smtp_user:
-        raise ValueError("SMTP_USER env var is required (your Gmail address)")
-
-    smtp_password = os.environ.get("SMTP_PASSWORD", "")
-    recipient_str = os.environ.get("RECIPIENT_EMAILS")
-    if not recipient_str:
-        raise ValueError("RECIPIENT_EMAILS env var is required (comma-separated list)")
-
-    smtp_host = os.environ.get("SMTP_HOST", "smtp.gmail.com")
-    smtp_port = int(os.environ.get("SMTP_PORT", "587"))
-    recipients = [r.strip() for r in recipient_str.split(",") if r.strip()]
-
-    msg = MIMEMultipart("alternative")
-    msg["Subject"] = subject
-    msg["From"] = smtp_user
-    msg["To"] = ", ".join(recipients)
-    msg.attach(MIMEText(body, "plain"))
-
-    with smtplib.SMTP(smtp_host, smtp_port) as server:
-        server.starttls()
-        server.login(smtp_user, smtp_password)
-        server.sendmail(smtp_user, recipients, msg.as_string())
-
-    logger.info("Digest emailed to %d recipients", len(recipients))
-    return {"sent_to": len(recipients)}

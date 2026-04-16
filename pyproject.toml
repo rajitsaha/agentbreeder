@@ -196,3 +196,4 @@ ignore = [
 "tests/**" = ["N803", "N806", "PT006", "PT011", "PT019", "PT028"]
 "api/**" = ["PT028"]
 "templates/**" = ["N999"]
+"examples/**" = ["E501", "S314"]  # examples are educational code, not production

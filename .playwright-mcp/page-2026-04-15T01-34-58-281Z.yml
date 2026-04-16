@@ -1,0 +1,253 @@
+- generic [active] [ref=e1]:
+  - navigation [ref=e2]:
+    - link "agentbreeder" [ref=e4] [cursor=pointer]:
+      - /url: /
+      - img [ref=e5]
+      - generic [ref=e17]: agentbreeder
+    - list [ref=e19]:
+      - listitem [ref=e20]:
+        - link "Docs" [ref=e21] [cursor=pointer]:
+          - /url: /docs
+      - listitem [ref=e22]:
+        - link "Examples" [ref=e23] [cursor=pointer]:
+          - /url: /docs/quickstart
+      - listitem [ref=e24]:
+        - link "Blog" [ref=e25] [cursor=pointer]:
+          - /url: /blog
+    - generic [ref=e26]:
+      - link "★ GitHub" [ref=e27] [cursor=pointer]:
+        - /url: https://github.com/rajitsaha/agentbreeder
+      - link "Get Started →" [ref=e28] [cursor=pointer]:
+        - /url: /docs
+  - main [ref=e29]:
+    - generic [ref=e30]:
+      - generic [ref=e31]:
+        - paragraph [ref=e32]: // open source · apache 2.0
+        - heading "Build agents. Deploy anywhere. Govern free." [level=1] [ref=e33]:
+          - text: Build agents.
+          - text: Deploy anywhere.
+          - text: Govern free.
+        - paragraph [ref=e34]: One YAML file. Any framework. Any cloud. Governance, RBAC, cost tracking and audit trail — automatic on every deploy.
+        - generic [ref=e35]:
+          - generic [ref=e36]: $
+          - generic [ref=e37]: pip install agentbreeder
+          - button "copy" [ref=e38]
+        - generic [ref=e39]:
+          - link "Read the docs →" [ref=e40] [cursor=pointer]:
+            - /url: /docs
+          - link "★ Star on GitHub" [ref=e41] [cursor=pointer]:
+            - /url: https://github.com/rajitsaha/agentbreeder
+      - generic [ref=e42]:
+        - generic [ref=e43]:
+          - generic [ref=e44]:
+            - generic [ref=e45]: agent.yaml
+            - generic [ref=e46]: ready to deploy
+          - generic [ref=e48]:
+            - generic [ref=e50]: "# identity"
+            - generic [ref=e52]: "name: customer-support-agent"
+            - generic [ref=e54]: "version: 1.0.0"
+            - generic [ref=e56]: "team: customer-success"
+            - generic [ref=e58]: "framework: langgraph"
+            - generic [ref=e60]: "# model config"
+            - generic [ref=e62]: "model:"
+            - generic [ref=e64]: "primary: claude-sonnet-4"
+            - generic [ref=e66]: "fallback: gpt-4o"
+            - generic [ref=e68]: "temperature: 0.7"
+            - generic [ref=e70]: "# deploy to any cloud"
+            - generic [ref=e72]: "deploy:"
+            - generic [ref=e74]: "cloud: gcp"
+            - generic [ref=e76]: "runtime: cloud-run"
+        - generic [ref=e77]:
+          - generic [ref=e82]: terminal
+          - generic [ref=e83]:
+            - text: $ agentbreeder deploy
+            - generic [ref=e84]: ✓ Validating agent.yaml
+            - generic [ref=e85]: ✓ Building container image
+            - generic [ref=e86]: ✓ Deploying to GCP Cloud Run
+            - generic [ref=e87]: ✓ Registered in org registry
+            - text: → https://support-v1-abc.run.app
+    - generic [ref=e88]:
+      - generic [ref=e89]: Works with every major framework
+      - generic [ref=e90]:
+        - generic [ref=e91]: LangGraph
+        - generic [ref=e92]: CrewAI
+        - generic [ref=e93]: Claude SDK
+        - generic [ref=e94]: Google ADK
+        - generic [ref=e95]: OpenAI Agents
+        - generic [ref=e96]: Custom
+    - generic [ref=e98]:
+      - paragraph [ref=e99]: Agent Architect
+      - heading "From idea to deployed agent" [level=2] [ref=e100]
+      - paragraph [ref=e101]:
+        - text: Not sure which framework, model, or RAG setup is right? Run
+        - code [ref=e102]: /agent-build
+        - text: in Claude Code — it interviews you, recommends the full stack, and scaffolds a production-ready project.
+      - generic [ref=e103]:
+        - generic [ref=e108]: agent-architect-demo
+        - generic [ref=e110]:
+          - generic [ref=e111]:
+            - generic [ref=e112]: Advisory Interview
+            - generic [ref=e114]: $ /agent-build
+          - generic [ref=e116]: Generated Project
+        - generic [ref=e117]:
+          - generic [ref=e124]: Step
+          - generic [ref=e125]: Invoke /agent-build
+    - generic [ref=e127]:
+      - paragraph [ref=e128]: Deploy Anywhere
+      - heading "One command. Every cloud." [level=2] [ref=e129]
+      - paragraph [ref=e130]:
+        - code [ref=e131]: agentbreeder deploy
+        - text: runs the same 8-step atomic pipeline regardless of target — Local Docker, AWS App Runner, ECS Fargate, GCP Cloud Run, Azure Container Apps, or Anthropic Claude Managed Agents.
+      - generic [ref=e132]:
+        - generic [ref=e137]: agentbreeder-deploy
+        - generic [ref=e139]:
+          - generic [ref=e141]: Deploy Pipeline
+          - generic [ref=e142]:
+            - generic [ref=e143]: Deployment Targets
+            - generic [ref=e144]:
+              - generic [ref=e145]:
+                - generic [ref=e147]: pending
+                - generic [ref=e148]: Local
+                - generic [ref=e149]: Docker Compose
+                - generic [ref=e150]: localhost:8080
+              - generic [ref=e151]:
+                - generic [ref=e153]: pending
+                - generic [ref=e154]: App Runner
+                - generic [ref=e155]: AWS · Serverless
+                - generic [ref=e156]: abc.us-east-1.awsapprunner.com
+              - generic [ref=e157]:
+                - generic [ref=e159]: pending
+                - generic [ref=e160]: ECS Fargate
+                - generic [ref=e161]: AWS · Container
+                - generic [ref=e162]: agent.company.internal
+              - generic [ref=e163]:
+                - generic [ref=e165]: pending
+                - generic [ref=e166]: Cloud Run
+                - generic [ref=e167]: GCP · Serverless
+                - generic [ref=e168]: agent-abc.a.run.app
+              - generic [ref=e169]:
+                - generic [ref=e171]: pending
+                - generic [ref=e172]: Container Apps
+                - generic [ref=e173]: Azure · Serverless
+                - generic [ref=e174]: agent.azurecontainerapps.io
+              - generic [ref=e175]:
+                - generic [ref=e177]: pending
+                - generic [ref=e178]: Claude Managed
+                - generic [ref=e179]: Anthropic
+                - generic [ref=e180]: anthropic://agt_01…
+        - generic [ref=e181]:
+          - generic [ref=e182]: Status
+          - generic [ref=e183]: Starting…
+      - generic [ref=e184]:
+        - generic [ref=e185]:
+          - generic [ref=e186]: ✓
+          - generic [ref=e187]: Registered in org registry
+        - generic [ref=e188]:
+          - generic [ref=e189]: ✓
+          - generic [ref=e190]: RBAC enforced
+        - generic [ref=e191]:
+          - generic [ref=e192]: ✓
+          - generic [ref=e193]: Cost attributed to team
+        - generic [ref=e194]:
+          - generic [ref=e195]: ✓
+          - generic [ref=e196]: Audit log written
+    - generic [ref=e197]:
+      - paragraph [ref=e198]: Why AgentBreeder
+      - heading "Everything you need to ship agents" [level=2] [ref=e199]
+      - paragraph [ref=e200]: Stop reinventing deployment, governance, and observability for every agent. AgentBreeder handles it automatically.
+      - generic [ref=e201]:
+        - generic [ref=e202]:
+          - generic [ref=e203]: 🔌
+          - heading "Framework Agnostic" [level=3] [ref=e204]
+          - paragraph [ref=e205]: LangGraph, CrewAI, Claude SDK, Google ADK, OpenAI Agents. One pipeline for all frameworks — no lock-in.
+        - generic [ref=e206]:
+          - generic [ref=e207]: ☁️
+          - heading "Multi-Cloud" [level=3] [ref=e208]
+          - paragraph [ref=e209]: GCP Cloud Run and local Docker Compose today. AWS ECS planned. Same command, any cloud.
+        - generic [ref=e210]:
+          - generic [ref=e211]: 🔒
+          - heading "Auto Governance" [level=3] [ref=e212]
+          - paragraph [ref=e213]: RBAC, cost attribution, audit trail, and org registry registration happen automatically on every deploy.
+        - generic [ref=e214]:
+          - generic [ref=e215]: 🗂️
+          - heading "Shared Registry" [level=3] [ref=e216]
+          - paragraph [ref=e217]: Agents, prompts, tools, MCP servers, models — one org-wide catalog. Search and reuse across teams.
+        - generic [ref=e218]:
+          - generic [ref=e219]: 🎯
+          - heading "Three Builder Tiers" [level=3] [ref=e220]
+          - paragraph [ref=e221]: No Code → Low Code → Full Code. Start visual, eject to YAML, eject to SDK. No lock-in at any level.
+        - generic [ref=e222]:
+          - generic [ref=e223]: 🔗
+          - heading "Multi-Agent Orchestration" [level=3] [ref=e224]
+          - paragraph [ref=e225]: 6 orchestration strategies — router, sequential, parallel, supervisor, hierarchical, fan-out — via YAML or SDK.
+    - generic [ref=e226]:
+      - paragraph [ref=e227]: How it works
+      - heading "From YAML to production in 3 steps" [level=2] [ref=e228]
+      - paragraph [ref=e229]: No infrastructure expertise required. AgentBreeder handles the entire deploy pipeline.
+      - generic [ref=e230]:
+        - generic [ref=e231]:
+          - paragraph [ref=e232]: 01 ──
+          - heading "Define your agent" [level=3] [ref=e233]
+          - paragraph [ref=e234]:
+            - text: Write
+            - code [ref=e235]: agent.yaml
+            - text: with your model, tools, prompts, and deploy config. Schema-validated, human-readable, version-controlled.
+          - generic [ref=e236]: →
+        - generic [ref=e237]:
+          - paragraph [ref=e238]: 02 ──
+          - heading "Run one command" [level=3] [ref=e239]
+          - paragraph [ref=e240]:
+            - code [ref=e241]: agentbreeder deploy
+            - text: validates, builds a container, provisions infra, and deploys to your cloud in under 5 minutes.
+          - generic [ref=e242]: →
+        - generic [ref=e243]:
+          - paragraph [ref=e244]: 03 ──
+          - heading "Governance is automatic" [level=3] [ref=e245]
+          - paragraph [ref=e246]: Your agent is live, registered in the org registry, RBAC enforced, costs attributed, audit trail written. Nothing extra to configure.
+  - contentinfo [ref=e247]:
+    - generic [ref=e248]:
+      - generic [ref=e249]:
+        - generic [ref=e250]:
+          - link "agentbreeder" [ref=e251] [cursor=pointer]:
+            - /url: /
+            - img [ref=e252]
+            - generic [ref=e264]: agentbreeder
+          - paragraph [ref=e265]: Open-source platform for building, deploying, and governing enterprise AI agents.
+        - generic [ref=e266]:
+          - heading "Docs" [level=4] [ref=e267]
+          - link "Getting Started" [ref=e268] [cursor=pointer]:
+            - /url: /docs
+          - link "agent.yaml" [ref=e269] [cursor=pointer]:
+            - /url: /docs/agent-yaml
+          - link "CLI Reference" [ref=e270] [cursor=pointer]:
+            - /url: /docs/cli-reference
+          - link "SDK" [ref=e271] [cursor=pointer]:
+            - /url: /docs/orchestration-sdk
+          - link "Migrations" [ref=e272] [cursor=pointer]:
+            - /url: /docs/migrations/overview
+        - generic [ref=e273]:
+          - heading "Open Source" [level=4] [ref=e274]
+          - link "GitHub ↗" [ref=e275] [cursor=pointer]:
+            - /url: https://github.com/rajitsaha/agentbreeder
+          - link "PyPI ↗" [ref=e276] [cursor=pointer]:
+            - /url: https://pypi.org/project/agentbreeder/
+          - link "Docker Hub ↗" [ref=e277] [cursor=pointer]:
+            - /url: https://hub.docker.com/u/rajits
+          - link "npm ↗" [ref=e278] [cursor=pointer]:
+            - /url: https://www.npmjs.com/package/@agentbreeder/sdk
+          - link "Homebrew ↗" [ref=e279] [cursor=pointer]:
+            - /url: https://github.com/rajitsaha/homebrew-agentbreeder
+        - generic [ref=e280]:
+          - heading "Community" [level=4] [ref=e281]
+          - link "Twitter ↗" [ref=e282] [cursor=pointer]:
+            - /url: https://twitter.com
+          - link "LinkedIn ↗" [ref=e283] [cursor=pointer]:
+            - /url: https://www.linkedin.com/in/rajsaha/
+          - link "Issues ↗" [ref=e284] [cursor=pointer]:
+            - /url: https://github.com/rajitsaha/agentbreeder/issues
+      - generic [ref=e285]:
+        - paragraph [ref=e286]: © 2026 Rajit Saha & AgentBreeder Contributors — Apache License 2.0
+        - generic [ref=e287]: v1.4.0
+  - button "Open Next.js Dev Tools" [ref=e293] [cursor=pointer]:
+    - img [ref=e294]
+  - alert [ref=e297]
