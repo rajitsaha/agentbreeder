@@ -278,10 +278,11 @@ class AWSAppRunnerDeployer(BaseDeployer):
             },
         }
 
-    async def deploy(self, config: AgentConfig, image: ContainerImage) -> DeployResult:
+    async def deploy(self, config: AgentConfig, image: ContainerImage | None) -> DeployResult:
         """Push the image to ECR and create / update the App Runner service."""
         assert self._ar_config is not None, "provision() must be called before deploy()"
         assert self._image_uri is not None, "provision() must be called before deploy()"
+        assert image is not None, "ContainerImage required for App Runner deployer"
 
         await self._push_image(image, self._image_uri)
 

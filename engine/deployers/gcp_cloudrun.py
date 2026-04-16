@@ -345,7 +345,7 @@ class GCPCloudRunDeployer(BaseDeployer):
 
         logger.info("Image pushed successfully: %s", image_uri)
 
-    async def deploy(self, config: AgentConfig, image: ContainerImage) -> DeployResult:
+    async def deploy(self, config: AgentConfig, image: ContainerImage | None) -> DeployResult:
         """Build, push, and deploy the agent to Cloud Run.
 
         Steps:
@@ -362,6 +362,7 @@ class GCPCloudRunDeployer(BaseDeployer):
             self._image_uri = _get_artifact_registry_image_uri(gcp, config.name, config.version)
 
         # Step 1: Push image to Artifact Registry
+        assert image is not None, "ContainerImage required for GCP Cloud Run deployer"
         await self._push_image(image, self._image_uri)
 
         # Step 2: Create or update Cloud Run service

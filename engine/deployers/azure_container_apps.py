@@ -396,7 +396,7 @@ class AzureContainerAppsDeployer(BaseDeployer):
 
         return body
 
-    async def deploy(self, config: AgentConfig, image: ContainerImage) -> DeployResult:
+    async def deploy(self, config: AgentConfig, image: ContainerImage | None) -> DeployResult:
         """Build, push, and deploy the agent to Azure Container Apps.
 
         Steps:
@@ -413,6 +413,7 @@ class AzureContainerAppsDeployer(BaseDeployer):
             self._image_uri = _get_acr_image_uri(azure, config.name, config.version)
 
         # Step 1: Push image to ACR
+        assert image is not None, "ContainerImage required for Azure Container Apps deployer"
         await self._push_image(image, self._image_uri)
 
         # Step 2: Get the managed environment resource ID

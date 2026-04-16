@@ -127,7 +127,7 @@ class ClaudeManagedDeployer(BaseDeployer):
             },
         )
 
-    async def deploy(self, config: AgentConfig, image: ContainerImage) -> DeployResult:
+    async def deploy(self, config: AgentConfig, image: ContainerImage | None) -> DeployResult:
         """Return the anthropic:// endpoint. Container image is ignored.
 
         provision() must be called first to create the agent and environment.

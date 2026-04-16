@@ -443,7 +443,7 @@ class AWSECSDeployer(BaseDeployer):
         )
         logger.info("ECS service '%s' is stable", config.name)
 
-    async def deploy(self, config: AgentConfig, image: ContainerImage) -> DeployResult:
+    async def deploy(self, config: AgentConfig, image: ContainerImage | None) -> DeployResult:
         """Build, push, and deploy the agent to ECS Fargate.
 
         Steps:
@@ -461,6 +461,7 @@ class AWSECSDeployer(BaseDeployer):
             self._image_uri = _get_ecr_image_uri(aws, config.name, config.version)
 
         # Step 1: Push image to ECR
+        assert image is not None, "ContainerImage required for ECS deployer"
         await self._push_image(image, self._image_uri)
 
         # Step 2: Register task definition

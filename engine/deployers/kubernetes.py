@@ -338,7 +338,7 @@ class KubernetesDeployer(BaseDeployer):
             },
         )
 
-    async def deploy(self, config: AgentConfig, image: ContainerImage) -> DeployResult:
+    async def deploy(self, config: AgentConfig, image: ContainerImage | None) -> DeployResult:
         """Build the Docker image and apply Deployment, Service, and (optional) HPA.
 
         Steps:
@@ -357,6 +357,7 @@ class KubernetesDeployer(BaseDeployer):
         image_name = _resolve_image_name(config, k8s)
 
         # Step 1: Build Docker image
+        assert image is not None, "ContainerImage required for Kubernetes deployer"
         await self._build_docker_image(image, image_name)
 
         # Steps 2-4: Apply Kubernetes manifests

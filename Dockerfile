@@ -21,6 +21,10 @@ COPY alembic.ini ./
 # Install Python dependencies
 RUN pip install --no-cache-dir .
 
+# Run as non-root user
+RUN useradd -m -u 1000 appuser
+USER appuser
+
 EXPOSE 8000
 
 # Run API server

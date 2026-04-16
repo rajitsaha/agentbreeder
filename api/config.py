@@ -25,6 +25,9 @@ class Settings(BaseSettings):  # type: ignore[misc,unused-ignore]
     jwt_algorithm: str = "HS256"
     access_token_expire_minutes: int = 1440
 
+    # CORS — restrict in production via CORS_ORIGINS env var (comma-separated)
+    cors_origins: list[str] = ["*"]
+
     # Integrations
     litellm_base_url: str = "http://localhost:4000"
 

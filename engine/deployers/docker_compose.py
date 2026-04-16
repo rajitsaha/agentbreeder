@@ -63,7 +63,7 @@ class DockerComposeDeployer(BaseDeployer):
             resource_ids={"port": str(port)},
         )
 
-    async def deploy(self, config: AgentConfig, image: ContainerImage) -> DeployResult:
+    async def deploy(self, config: AgentConfig, image: ContainerImage | None) -> DeployResult:
         """Build the Docker image and run the container."""
         try:
             import docker
@@ -72,6 +72,7 @@ class DockerComposeDeployer(BaseDeployer):
             raise RuntimeError(msg) from e
 
         client = docker.from_env()
+        assert image is not None, "ContainerImage required for Docker Compose deployer"
         agent_state = self._state.get("agents", {}).get(config.name, {})
         port = agent_state.get("port", self._allocate_port())
 

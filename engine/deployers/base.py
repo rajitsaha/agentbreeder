@@ -52,7 +52,7 @@ class BaseDeployer(ABC):
         ...
 
     @abstractmethod
-    async def deploy(self, config: AgentConfig, image: ContainerImage) -> DeployResult:
+    async def deploy(self, config: AgentConfig, image: ContainerImage | None) -> DeployResult:
         """Build and deploy the agent container."""
         ...
 
