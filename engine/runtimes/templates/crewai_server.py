@@ -191,6 +191,13 @@ async def startup() -> None:
                     agent.llm.model = _agent_model
                     if _agent_temperature is not None:
                         agent.llm.temperature = float(_agent_temperature)
+                    # For Ollama models, set base_url so LiteLLM routes correctly
+                    if _agent_model.startswith("ollama/"):
+                        _ollama_url = os.getenv(
+                            "OLLAMA_BASE_URL", "http://agentbreeder-ollama:11434"
+                        )
+                        agent.llm.base_url = _ollama_url
+                        logger.info("Configured CrewAI agent LLM for Ollama: %s", _ollama_url)
                 except Exception:
                     pass
 

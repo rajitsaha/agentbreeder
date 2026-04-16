@@ -330,3 +330,24 @@ class TestCrewAIServerModelConfig:
     def test_server_template_references_agent_temperature_env(self) -> None:
         server_text = Path("engine/runtimes/templates/crewai_server.py").read_text()
         assert "AGENT_TEMPERATURE" in server_text
+
+    def test_get_requirements_adds_litellm_for_ollama_model(self) -> None:
+        runtime = CrewAIRuntime()
+        config = _make_config(model={"primary": "ollama/llama3:8b"})
+        reqs = runtime.get_requirements(config)
+        assert any("litellm" in r for r in reqs)
+
+    def test_get_requirements_no_litellm_for_non_ollama_model(self) -> None:
+        runtime = CrewAIRuntime()
+        config = _make_config(model={"primary": "gpt-4o"})
+        reqs = runtime.get_requirements(config)
+        assert not any("litellm" in r for r in reqs)
+
+    def test_server_template_sets_ollama_base_url(self) -> None:
+        """CrewAI server template must set agent.llm.base_url for ollama/ models."""
+        template = (
+            Path(__file__).parent.parent.parent
+            / "engine/runtimes/templates/crewai_server.py"
+        ).read_text()
+        assert "OLLAMA_BASE_URL" in template
+        assert "base_url" in template

@@ -144,7 +144,7 @@ class CrewAIRuntime(RuntimeBuilder):
         return "uvicorn server:app --host 0.0.0.0 --port 8080"
 
     def get_requirements(self, config: AgentConfig) -> list[str]:
-        return [
+        deps = [
             "crewai>=0.80.0",
             "crewai-tools>=0.4.0",
             "fastapi>=0.110.0",
@@ -152,3 +152,6 @@ class CrewAIRuntime(RuntimeBuilder):
             "httpx>=0.27.0",
             "pydantic>=2.0.0",
         ]
+        if config.model.primary.startswith("ollama/"):
+            deps.append("litellm>=1.40.0")
+        return deps
