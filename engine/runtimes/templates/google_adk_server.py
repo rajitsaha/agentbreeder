@@ -215,8 +215,19 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:  # noqa: ARG001
 
     if agent_model and hasattr(_agent, "model"):
         try:
-            _agent.model = agent_model
-            logger.info("Applied AGENT_MODEL override: %s", agent_model)
+            if "/" in agent_model and not agent_model.startswith("gemini"):
+                from google.adk.models.lite_llm import LiteLlm
+
+                ollama_url = os.getenv("OLLAMA_BASE_URL", "http://agentbreeder-ollama:11434")
+                _agent.model = LiteLlm(model=agent_model, api_base=ollama_url)
+                logger.info(
+                    "Applied LiteLlm model override: model=%s api_base=%s",
+                    agent_model,
+                    ollama_url,
+                )
+            else:
+                _agent.model = agent_model
+                logger.info("Applied AGENT_MODEL override: %s", agent_model)
         except Exception:
             logger.warning("Could not set AGENT_MODEL on agent — proceeding with agent default")
 

@@ -232,6 +232,27 @@ class TestGoogleADKRuntimeEntrypoint:
 
 
 class TestGoogleADKRuntimeRequirements:
+    def test_get_requirements_adds_litellm_for_ollama_model(self) -> None:
+        from engine.runtimes.google_adk import GoogleADKRuntime
+
+        config = _make_config(model={"primary": "ollama/gemma3:27b"})
+        runtime = GoogleADKRuntime()
+        reqs = runtime.get_requirements(config)
+        assert any("litellm" in r for r in reqs)
+
+    def test_server_loader_uses_litellm_for_ollama_model(self) -> None:
+        from engine.runtimes.google_adk import SERVER_LOADER_CONTENT
+
+        assert "LiteLlm" in SERVER_LOADER_CONTENT
+        assert "ollama/" in SERVER_LOADER_CONTENT or "startswith" in SERVER_LOADER_CONTENT
+
+    def test_server_template_uses_litellm_for_model_override(self) -> None:
+        template = (
+            Path(__file__).parent.parent.parent / "engine/runtimes/templates/google_adk_server.py"
+        ).read_text()
+        assert "LiteLlm" in template
+        assert "OLLAMA_BASE_URL" in template
+
     def test_get_requirements_includes_google_adk(self) -> None:
         runtime = GoogleADKRuntime()
         config = _make_config()

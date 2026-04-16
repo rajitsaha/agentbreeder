@@ -58,9 +58,20 @@ def load_agent_from_yaml(yaml_path: str) -> Any:
     with open(yaml_path) as f:
         data = yaml.safe_load(f)
 
+    raw_model = data.get("model", "gemini-2.0-flash")
+    if "/" in raw_model and not raw_model.startswith("gemini"):
+        import os as _os
+        from google.adk.models.lite_llm import LiteLlm
+        model_arg = LiteLlm(
+            model=raw_model,
+            api_base=_os.environ.get("OLLAMA_BASE_URL", "http://localhost:11434"),
+        )
+    else:
+        model_arg = raw_model
+
     return Agent(
         name=data.get("name", "yaml-agent"),
-        model=data.get("model", "gemini-2.0-flash"),
+        model=model_arg,
         description=data.get("description", ""),
         instruction=data.get("instruction", ""),
     )
@@ -222,4 +233,7 @@ class GoogleADKRuntime(RuntimeBuilder):
         # Add GCS dep when artifact_service=gcs
         if config.google_adk and config.google_adk.artifact_service.value == "gcs":
             deps.append("google-cloud-storage>=2.0.0")
+        # Add LiteLLM for non-Gemini models (e.g. ollama/)
+        if "/" in config.model.primary and not config.model.primary.startswith("gemini"):
+            deps.append("litellm>=1.40.0")
         return deps
