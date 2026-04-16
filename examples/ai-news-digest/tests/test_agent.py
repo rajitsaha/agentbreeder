@@ -9,6 +9,9 @@ from pathlib import Path
 
 AGENT_DIR = Path(__file__).parent.parent
 
+# Make `examples/ai-news-digest/` importable so `from agent import root_agent` works
+sys.path.insert(0, str(AGENT_DIR))
+
 
 def _agentbreeder_cmd() -> str:
     """Return the agentbreeder executable path, checking PATH and the Python bin dir."""
@@ -40,7 +43,6 @@ def test_agent_yaml_passes_agentbreeder_validate():
 
 def test_root_agent_exported():
     """agent.py must export a variable named root_agent."""
-    sys.path.insert(0, str(AGENT_DIR))
     from agent import root_agent
 
     assert root_agent is not None
@@ -49,7 +51,6 @@ def test_root_agent_exported():
 
 def test_root_agent_has_four_tools():
     """root_agent must have exactly 4 tools registered."""
-    sys.path.insert(0, str(AGENT_DIR))
     from agent import root_agent
 
     assert len(root_agent.tools) == 4

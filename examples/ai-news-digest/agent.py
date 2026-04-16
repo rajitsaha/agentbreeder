@@ -60,20 +60,17 @@ If a source returned no results, note it briefly and continue.
 
 def _fetch_hackernews(limit: int = 5) -> list[dict]:
     """Fetch top AI stories from Hacker News."""
-    count = int(os.environ.get("NEWS_COUNT", "15")) // 3
-    return fetch_hackernews(limit=count)
+    return fetch_hackernews(limit=limit)
 
 
 def _fetch_arxiv(limit: int = 5) -> list[dict]:
     """Fetch latest AI/ML papers from ArXiv cs.AI + cs.LG."""
-    count = int(os.environ.get("NEWS_COUNT", "15")) // 3
-    return fetch_arxiv(limit=count)
+    return fetch_arxiv(limit=limit)
 
 
 def _fetch_rss(limit: int = 5) -> list[dict]:
     """Fetch AI industry news from TechCrunch, Wired, VentureBeat RSS."""
-    count = int(os.environ.get("NEWS_COUNT", "15")) // 3
-    return fetch_rss(limit=count)
+    return fetch_rss(limit=limit)
 
 
 def _send_email(subject: str, body: str) -> dict:
