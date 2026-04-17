@@ -4,7 +4,11 @@ LABEL org.opencontainers.image.source="https://github.com/rajitsaha/agentbreeder
 LABEL org.opencontainers.image.description="AgentBreeder CLI for CI/CD pipelines"
 
 ARG VERSION
-RUN pip install --no-cache-dir "agentbreeder==${VERSION}"
+RUN if [ -n "$VERSION" ]; then \
+      pip install --no-cache-dir "agentbreeder==${VERSION}"; \
+    else \
+      pip install --no-cache-dir agentbreeder; \
+    fi
 
 ENTRYPOINT ["agentbreeder"]
 CMD ["--help"]
