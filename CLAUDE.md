@@ -662,6 +662,27 @@ async def test_deploy_validates_rbac_before_building():
 
 ---
 
+## 🔄 Cross-Repo Sync (Standing Instruction)
+
+AgentBreeder ships across **three repositories** that must stay in sync at all times:
+
+| Repo | Path | Role |
+|------|------|------|
+| `agentbreeder` (this repo) | `/Users/rajit/personal-github/agentbreeder` | OSS CLI + engine + connectors — source of truth |
+| `agentbreeder-cloud` | `/Users/rajit/personal-github/agentbreeder-cloud` | SaaS managed platform — deploys on top of agentbreeder packages |
+| `website` | `website/` subdirectory | agent-breeder.com marketing + docs site |
+
+**Rules — before closing any PR:**
+- **Schema change** (`agent.yaml`, API shape, CLI flags): grep `agentbreeder-cloud` for affected fields and update them
+- **New connector or feature**: check if `agentbreeder-cloud` needs to expose it
+- **Version bump**: update `website/components/footer.tsx` version badge, update features/docs pages
+- **Breaking change**: `agentbreeder-cloud` must get a companion PR before or alongside
+
+> The cloud project uses `agentbreeder` packages as its deploy infrastructure.
+> A silent break in OSS will silently break Cloud. The website going stale misrepresents the product.
+
+---
+
 ## 🎯 When Adding a New Feature
 
 1. **Check the ROADMAP.md** — is this feature planned? Which milestone?
