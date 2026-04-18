@@ -61,3 +61,6 @@ site/
 # Claude Code internal tooling (settings, skills, memory — not for contributors)
 .claude/
 .remember/
+
+# Internal research and competitive intelligence — not for public repo
+research/
