@@ -6,7 +6,14 @@ for both fast path and advisory path flows.
 
 from pathlib import Path
 
+import pytest
+
 SKILL_FILE = Path(__file__).parents[2] / ".claude/commands/agent-build.md"
+
+pytestmark = pytest.mark.skipif(
+    not SKILL_FILE.exists(),
+    reason="agent-build.md is gitignored — run these tests locally only",
+)
 
 
 def skill_content() -> str:
