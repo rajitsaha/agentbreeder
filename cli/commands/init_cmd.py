@@ -6,6 +6,7 @@ Supports all six frameworks with working example code.
 
 from __future__ import annotations
 
+import asyncio
 import os
 import re
 from collections.abc import Callable
@@ -19,6 +20,8 @@ from rich.rule import Rule
 from rich.table import Table
 
 from engine.config_parser import validate_config
+from engine.providers.models import ProviderConfig, ProviderType
+from engine.providers.ollama_provider import OllamaProvider
 
 console = Console()
 
@@ -527,6 +530,82 @@ def _validate_email(email: str) -> str | None:
     return None
 
 
+def _gather_model_suggestions() -> list[str]:
+    """Collect up to 5 model suggestions from locally available providers.
+
+    Returns a list of model strings formatted as 'ollama/<name>' or
+    'openrouter/<provider>/<model>'.  Returns an empty list when neither
+    Ollama nor OpenRouter is reachable.
+    """
+    suggestions: list[str] = []
+
+    # --- Ollama ---
+    try:
+        ollama_available = asyncio.run(OllamaProvider.detect())
+        if ollama_available and len(suggestions) < 5:
+            provider = OllamaProvider(
+                ProviderConfig(provider_type=ProviderType.ollama)
+            )
+            ollama_models = asyncio.run(provider.list_models())
+            asyncio.run(provider.close())
+            for m in ollama_models[: 5 - len(suggestions)]:
+                suggestions.append(f"ollama/{m.name}")
+    except Exception:
+        pass
+
+    # --- OpenRouter (use cached registry scan if available) ---
+    if len(suggestions) < 5 and os.environ.get("OPENROUTER_API_KEY"):
+        registry_path = Path.home() / ".agentbreeder" / "registry" / "models.json"
+        if registry_path.exists():
+            try:
+                import json
+
+                registry: dict = json.loads(registry_path.read_text())
+                or_entries = [
+                    v for v in registry.values() if v.get("source") == "openrouter"
+                ]
+                for entry in or_entries[: 5 - len(suggestions)]:
+                    model_id: str = entry.get("name", "")
+                    if model_id:
+                        suggestions.append(f"openrouter/{model_id}")
+            except Exception:
+                pass
+
+    return suggestions[:5]
+
+
+def _prompt_model_suggestion(default_model: str) -> str:
+    """Show local model suggestions and let the user pick one or keep the default.
+
+    Returns the chosen model string (either a suggestion or *default_model*).
+    """
+    suggestions = _gather_model_suggestions()
+    if not suggestions:
+        return default_model
+
+    console.print("\n  [bold]Model suggestions (from local providers)[/bold]\n")
+    for i, model in enumerate(suggestions, start=1):
+        console.print(f"  [dim]{i}.[/dim] {model}")
+    keep_num = len(suggestions) + 1
+    console.print(f"  [dim]{keep_num}.[/dim] Keep default ([dim]{default_model}[/dim])")
+
+    while True:
+        console.print()
+        raw = console.input(f"  [bold]Enter number (1-{keep_num}): [/bold]").strip()
+        try:
+            choice = int(raw)
+            if choice == keep_num:
+                console.print(f"  [green]✓[/green] {default_model}")
+                return default_model
+            if 1 <= choice <= len(suggestions):
+                selected = suggestions[choice - 1]
+                console.print(f"  [green]✓[/green] {selected}")
+                return selected
+        except ValueError:
+            pass
+        console.print(f"  [red]Please enter a number between 1 and {keep_num}[/red]")
+
+
 # ─── Main command ────────────────────────────────────────────────────
 
 
@@ -567,6 +646,10 @@ def init(
 
     # ── Step 2: Cloud ────────────────────────────────────────────
     cloud = _prompt_selection("Where will it run?", CLOUDS)
+
+    # ── Step 2b: Model (optional local provider suggestions) ────
+    if not json_output:
+        framework["model"] = _prompt_model_suggestion(framework["model"])
 
     # ── Step 3: Details ──────────────────────────────────────────
     console.print("\n  [bold]Project details[/bold]\n")

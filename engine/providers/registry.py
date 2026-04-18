@@ -79,7 +79,7 @@ def create_provider_from_env(
         config.api_key = os.environ.get("GOOGLE_AI_API_KEY")
     elif provider_type == ProviderType.openrouter:
         config.api_key = os.environ.get("OPENROUTER_API_KEY")
-        config.base_url = os.environ.get("OPENROUTER_BASE_URL")
+        config.base_url = os.environ.get("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1")
 
     return create_provider(config)
 
