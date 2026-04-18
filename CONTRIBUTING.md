@@ -1,21 +1,40 @@
 # Contributing to AgentBreeder
 
-Thank you for your interest in contributing to AgentBreeder! We welcome contributions of all kinds — code, documentation, bug reports, feature ideas, and agent templates.
+AgentBreeder is an open-source platform for deploying, governing, and orchestrating enterprise AI agents. Every contribution — whether it's a new cloud deployer, a framework runtime, a community template, or a typo fix — makes the platform better for everyone.
+
+Read [CLAUDE.md](CLAUDE.md) before diving in. It's the authoritative guide to how this codebase is structured and what the architecture principles are.
 
 ---
 
 ## Ways to Contribute
 
-| Contribution | Difficulty | Impact | Where |
-|-------------|:----------:|:------:|-------|
-| Report a bug | Easy | High | [GitHub Issues](https://github.com/rajitsaha/agentbreeder/issues) |
-| Fix a `good first issue` | Easy | Medium | [Issues labeled `good first issue`](https://github.com/rajitsaha/agentbreeder/issues?q=label%3A%22good+first+issue%22) |
-| Add a cloud deployer | Medium | Very High | `engine/deployers/` |
-| Add a framework runtime | Medium | Very High | `engine/runtimes/` |
-| Add a connector | Medium | High | `connectors/` |
-| Create an agent template (Seed) | Easy | Medium | `examples/templates/` |
-| Improve documentation | Easy | High | `docs/` |
-| Suggest a feature | Easy | Medium | [GitHub Discussions](https://github.com/rajitsaha/agentbreeder/discussions) |
+| Contribution | Difficulty | Impact |
+|---|:---:|:---:|
+| Report a bug | Easy | High |
+| Fix a [`good first issue`](https://github.com/rajitsaha/agentbreeder/issues?q=label%3A%22good+first+issue%22) | Easy | Medium |
+| Add an agent template to the Marketplace | Easy | High |
+| Improve documentation | Easy | High |
+| Add a connector (LiteLLM, OpenRouter, MCP) | Medium | High |
+| Add a framework runtime (`engine/runtimes/`) | Medium | Very High |
+| Add a cloud deployer (`engine/deployers/`) | Medium | Very High |
+| Add an orchestration strategy | Hard | Very High |
+| Suggest a feature | Easy | Medium |
+
+Browse open issues at [github.com/rajitsaha/agentbreeder/issues](https://github.com/rajitsaha/agentbreeder/issues) or start a discussion at [github.com/rajitsaha/agentbreeder/discussions](https://github.com/rajitsaha/agentbreeder/discussions).
+
+---
+
+## Security Vulnerabilities
+
+**Do not open a public GitHub issue for security vulnerabilities.**
+
+Report them privately at **saha.rajit@gmail.com** with the subject line `[SECURITY] AgentBreeder`. Include:
+- Description of the vulnerability
+- Steps to reproduce
+- Affected versions
+- Potential impact
+
+You'll receive a response within 48 hours. We follow responsible disclosure and will credit reporters in release notes.
 
 ---
 
@@ -24,7 +43,7 @@ Thank you for your interest in contributing to AgentBreeder! We welcome contribu
 ### Prerequisites
 
 - Python 3.11+
-- Node.js 18+ (for dashboard)
+- Node.js 18+ (dashboard only)
 - Docker & Docker Compose
 - Git
 
@@ -40,20 +59,15 @@ python -m venv venv && source venv/bin/activate
 pip install -e ".[dev]"
 cp .env.example .env
 
-# Start local services
+# Start local services (Postgres, Redis)
 docker compose up -d
 
-# Verify
+# Verify everything works
 pytest tests/unit/
 agentbreeder --help
 
-# Frontend (optional)
+# Dashboard (optional)
 cd dashboard && npm install && npm run dev
-
-# Docs site (optional)
-pip install -e ".[docs]"
-mkdocs serve          # preview at http://localhost:8001
-mkdocs build          # build static site to ./site/
 ```
 
 ---
@@ -63,67 +77,81 @@ mkdocs build          # build static site to ./site/
 Full standards are in [CLAUDE.md](CLAUDE.md). The essentials:
 
 ### Python
-- Type hints on all functions
-- Pydantic for data validation
-- Async for all I/O
-- `ruff check . && ruff format .` for linting
-- `mypy .` for type checking
-- Never use `print()` — use the logger
+- Type hints on every function
+- Pydantic for all data validation — no raw dicts
+- `async` for all I/O — never block the event loop
+- `logger.info(...)` instead of `print()`
+- Never bare `except:` — always catch specific exceptions
+
+```bash
+ruff check . && ruff format .   # lint + format
+mypy .                           # type checking
+```
 
 ### TypeScript / React
-- No `any` types
-- React Query for API calls
+- No `any` — type everything
+- React Query for all API calls
 - Tailwind CSS — no inline styles
 - Always handle loading, empty, and error states
 
 ### Tests
-- Every feature needs tests: unit (minimum), integration (for API changes), E2E (for dashboard)
-- Coverage target: **85%+ on changed files** (project-wide baseline: 87%)
-- Test naming: `test_[unit]_[scenario]_[expected_result]`
-- Tests must run in < 100ms each (mock all external dependencies)
-- SDK changes also need TypeScript tests in `sdk/typescript/tests/`
+
+Every feature needs:
+- Unit tests (`tests/unit/`) — required
+- Integration tests (`tests/integration/`) — required for API changes
+- E2E tests (`tests/e2e/`) — required for dashboard changes
+
+```bash
+pytest tests/unit/                     # fast, no external deps
+pytest tests/integration/              # requires docker compose up
+pytest tests/e2e/ --headed             # Playwright
+pytest --cov=. --cov-report=html       # coverage report
+```
+
+Target: **85%+ coverage on changed files**. Tests must run in under 100ms each — mock all external dependencies.
 
 ---
 
-## Commit & PR Conventions
+## Pull Request Process
 
 ### Branch naming
-
 ```
 feat/add-azure-deployer
-fix/yaml-parser-error-message
+fix/yaml-parser-error-messages
 docs/update-cli-reference
+chore/bump-fastapi
 ```
 
 ### Commit messages
 
 Use [Conventional Commits](https://www.conventionalcommits.org/):
-
 ```
 feat: add Azure Container Apps deployer
 fix: improve YAML validation error messages
-docs: update CLI reference for agentbreeder search
+docs: update agentbreeder search reference
 chore: bump FastAPI to 0.110
 ```
 
-### Pull Request checklist
+### Before opening a PR
 
-Before submitting a PR, verify:
-
-- [ ] All existing tests pass (`pytest tests/unit/`)
+- [ ] `pytest tests/unit/` passes
+- [ ] `ruff check . && ruff format .` clean
+- [ ] `mypy .` clean
 - [ ] New tests written for your changes
-- [ ] Linting passes (`ruff check . && ruff format .`)
-- [ ] Type checking passes (`mypy .`)
-- [ ] If you changed `agent.yaml` schema → update JSON Schema + docs
-- [ ] If you changed the registry schema → write an Alembic migration
-- [ ] If you added a deployer or runtime → add to supported stack table in README
-- [ ] If you changed a CLI command → update help text
+- [ ] If you changed `agent.yaml` schema → updated JSON Schema at `engine/schema/agent.schema.json`
+- [ ] If you changed the DB schema → wrote an Alembic migration
+- [ ] If you added a deployer or runtime → added to README supported stack table
+- [ ] If you changed a CLI command → updated help text
+
+PRs are reviewed within 48 hours. Changes to `engine/` require two maintainer approvals. All other changes require one.
 
 ---
 
-## Adding a Cloud Deployer
+## Extension Points
 
-This is one of the highest-impact contributions. Each deployer is a self-contained module.
+### Adding a Cloud Deployer
+
+Cloud deployers live in `engine/deployers/`. Each is self-contained.
 
 1. Read the interface: `engine/deployers/base.py`
 2. Study the reference: `engine/deployers/gcp_cloudrun.py`
@@ -131,85 +159,81 @@ This is one of the highest-impact contributions. Each deployer is a self-contain
    - `provision()` — create cloud infrastructure
    - `deploy()` — deploy the agent container
    - `health_check()` — verify the agent is running
-   - `teardown()` — clean up resources
-   - `get_logs()` — retrieve agent logs
+   - `teardown()` — clean up all resources
+   - `get_logs()` — stream agent logs
 4. Register in `engine/deployers/__init__.py`
-5. Add unit tests in `tests/unit/deployers/`
-6. Add integration test with mocked cloud API
-7. Add example config to `examples/`
-8. Update the supported stack table in README
+5. Add unit + integration tests
+6. Add an example in `examples/`
+7. Update the supported stack table in README
 
-See the `build:deployer` skill in [AGENT.md](AGENT.md) for a detailed prompt.
+### Adding a Framework Runtime
 
----
-
-## Adding a Framework Runtime
+Framework runtimes live in `engine/runtimes/`. Each abstracts one agent framework.
 
 1. Read the interface: `engine/runtimes/base.py`
 2. Study the reference: `engine/runtimes/langgraph.py`
 3. Create `engine/runtimes/your_framework.py` implementing:
-   - `validate()` — check agent code is valid
-   - `build()` — generate Dockerfile and build container
-   - `get_entrypoint()` — framework-specific startup command
-   - `get_requirements()` — dependencies to inject
+   - `validate()` — verify agent code is framework-valid
+   - `build()` — generate Dockerfile and build image
+   - `get_entrypoint()` — framework startup command
+   - `get_requirements()` — Python dependencies
 4. Add a working example in `examples/your-framework-agent/`
 5. Register in `engine/__init__.py`
-6. Add to the `agent.yaml` JSON Schema enum
+6. Add the framework name to `engine/schema/agent.schema.json` enum
 7. Write unit tests
-8. Update README
 
-See the `build:runtime` skill in [AGENT.md](AGENT.md) for a detailed prompt.
+### Adding an Orchestration Strategy
 
----
+1. Add the strategy to `VALID_STRATEGIES` in `sdk/python/agenthub/orchestration.py`
+2. Add it to `OrchestrationStrategy` enum in `engine/orchestration_parser.py`
+3. Add it to `engine/schema/orchestration.schema.json`
+4. Implement `_execute_<strategy>()` in `engine/orchestrator.py`
+5. Add the example in `examples/orchestration/`
+6. Write unit tests
 
-## Adding an Orchestration Pattern
+### Adding a Connector
 
-The Full Code Orchestration SDK (`sdk/python/agenthub/orchestration.py` and `sdk/typescript/src/orchestration.ts`) supports six strategies. To add a new strategy or extend an existing class:
-
-1. Add the strategy name to `VALID_STRATEGIES` in `orchestration.py`
-2. Add it to the `OrchestrationStrategy` enum in `engine/orchestration_parser.py`
-3. Add it to the JSON Schema at `engine/schema/orchestration.schema.json`
-4. Implement execution logic in `engine/orchestrator.py` (`_execute_<strategy>` method)
-5. Add a subclass in the SDK (Python + TypeScript) if the strategy has a distinct builder API
-6. Write unit tests (see `tests/unit/test_sdk_orchestration.py` for the pattern)
-7. Add an example in `examples/orchestration/`
-
-The SDK builder, engine executor, and CLI/API all share the same `orchestration.yaml` format — changes to the schema flow through all three.
-
----
-
-## Adding a Connector
+Connectors live in `connectors/` and passively ingest external resources into the registry.
 
 1. Read the interface: `connectors/base.py`
-2. Study references: `connectors/litellm/` and `connectors/mcp_scanner/`
-3. Create `connectors/your_tool/connector.py`
-4. Include a `README.md` in your connector directory with setup instructions
-5. Write unit tests with mocked external API responses
+2. Create `connectors/your_tool/connector.py` implementing `scan()` and `is_available()`
+3. Include a `README.md` with setup instructions
+4. Write unit tests with mocked external API responses
+
+### Seeding the Marketplace
+
+The community template library is one of the highest-leverage contributions. A great template dramatically reduces time-to-first-agent for others.
+
+A good template:
+- Solves a real, specific use case (e.g. "GitHub PR reviewer", "Zendesk tier-1 support", "SQL analyst")
+- Works out of the box with the example `.env` values substituted
+- Includes a `README.md` explaining what it does, what credentials it needs, and how to customize it
+- Has a tested `agent.yaml` with all required fields
+
+Add templates to `examples/templates/` and open a PR with the label `marketplace:template`.
 
 ---
 
 ## Issue Labels
 
 | Label | Meaning |
-|-------|---------|
-| `milestone:v0.1` | Required for first release |
-| `milestone:v0.2` | Planned for v0.2 |
+|---|---|
 | `good first issue` | Approachable for new contributors |
-| `help wanted` | Community help needed |
-| `deployer:aws` / `deployer:gcp` | Cloud deployer work |
-| `runtime:langgraph` / `runtime:crewai` | Framework runtime work |
-| `area:cli` / `area:dashboard` / `area:registry` | Component area |
-| `type:bug` / `type:feature` / `type:perf` | Change type |
+| `help wanted` | Maintainers want community input |
+| `deployer:aws` / `deployer:gcp` / `deployer:azure` | Cloud deployer work |
+| `runtime:langgraph` / `runtime:crewai` / `runtime:claude-sdk` | Framework runtime work |
+| `area:cli` / `area:dashboard` / `area:registry` / `area:engine` | Component area |
+| `type:bug` / `type:feature` / `type:perf` / `type:docs` | Change type |
 | `priority:p0` / `priority:p1` / `priority:p2` | Priority level |
+| `marketplace:template` | New community agent template |
 
 ---
 
-## Review Process
+## Code of Conduct
 
-- Maintainers aim to review PRs within 48 hours
-- Changes to `engine/` require two approvals; everything else requires one
-- Feedback is constructive — we're all building this together
-- If your PR is blocked, we'll explain why and help you get it merged
+We follow the [Contributor Covenant](https://www.contributor-covenant.org/version/2/1/code_of_conduct/). Be constructive, be kind, assume good intent. Harassment or discrimination of any kind will not be tolerated.
+
+Report conduct issues to **saha.rajit@gmail.com**.
 
 ---
 
