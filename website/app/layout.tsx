@@ -16,7 +16,7 @@ export const metadata: Metadata = {
     siteName: 'AgentBreeder',
     type: 'website',
     url: 'https://agent-breeder.com',
-    images: [{ url: '/og.png', width: 1200, height: 630 }],
+    images: [{ url: '/og.png', width: 1280, height: 640 }],
   },
   twitter: {
     card: 'summary_large_image',
