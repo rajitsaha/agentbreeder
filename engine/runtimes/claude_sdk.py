@@ -65,9 +65,9 @@ class ClaudeSDKRuntime(RuntimeBuilder):
                 return True
         # Also check claude_managed.tools if deploy is claude-managed
         if hasattr(config, "claude_managed") and config.claude_managed:
-            managed_tools = config.claude_managed.get("tools", [])
+            managed_tools = config.claude_managed.tools
             for mt in managed_tools:
-                if mt.get("type", "").startswith(self.COMPUTER_USE_TOOL_PREFIX):
+                if mt.type.startswith(self.COMPUTER_USE_TOOL_PREFIX):
                     return True
         return False
 

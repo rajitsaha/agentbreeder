@@ -68,7 +68,7 @@ def provision_aws_identity(agent_name: str, config: IdentityConfig) -> Provision
     logger.info("Provisioning AWS IAM role: %s", role_name)
 
     try:
-        import boto3  # type: ignore[import]
+        import boto3
     except ImportError:
         logger.warning(
             "boto3 not installed — skipping AWS identity provisioning for '%s'", agent_name
@@ -159,7 +159,7 @@ def provision_gcp_identity(
     logger.info("Provisioning GCP Service Account: %s", sa_email)
 
     try:
-        from googleapiclient import discovery  # type: ignore[import]
+        from googleapiclient import discovery
     except ImportError:
         logger.warning(
             "google-api-python-client not installed — skipping GCP identity provisioning for '%s'",

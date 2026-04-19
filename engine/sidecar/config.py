@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import os
 from dataclasses import dataclass, field
+from typing import Any
 
 
 @dataclass
@@ -26,7 +27,7 @@ class SidecarConfig:
     health_port: int = 8090
 
     @classmethod
-    def from_deploy_config(cls, deploy_sidecar: dict | None) -> SidecarConfig:
+    def from_deploy_config(cls, deploy_sidecar: dict[str, Any] | None) -> SidecarConfig:
         """Build a SidecarConfig from the deploy.sidecar dict in agent.yaml.
 
         Returns a default (enabled) config if deploy_sidecar is None.

@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import copy
 import logging
+from typing import Any
 
 from .config import SidecarConfig
 
@@ -22,7 +23,7 @@ logger = logging.getLogger(__name__)
 SIDECAR_NAME = "agentbreeder-sidecar"
 
 
-def inject_sidecar(task_definition: dict, config: SidecarConfig) -> dict:
+def inject_sidecar(task_definition: dict[str, Any], config: SidecarConfig) -> dict[str, Any]:
     """Inject the sidecar container into an ECS task definition dict.
 
     The sidecar is appended to containerDefinitions with essential=False so that
@@ -42,14 +43,14 @@ def inject_sidecar(task_definition: dict, config: SidecarConfig) -> dict:
         return task_definition
 
     result = copy.deepcopy(task_definition)
-    containers: list[dict] = result.setdefault("containerDefinitions", [])
+    containers: list[dict[str, Any]] = result.setdefault("containerDefinitions", [])
 
     # Idempotency guard
     if any(c.get("name") == SIDECAR_NAME for c in containers):
         logger.debug("Sidecar already present in task definition — skipping injection")
         return result
 
-    sidecar_container: dict = {
+    sidecar_container: dict[str, Any] = {
         "name": SIDECAR_NAME,
         "image": config.image,
         "essential": False,
@@ -75,7 +76,7 @@ def inject_sidecar(task_definition: dict, config: SidecarConfig) -> dict:
     return result
 
 
-def inject_cloudrun_sidecar(service_spec: dict, config: SidecarConfig) -> dict:
+def inject_cloudrun_sidecar(service_spec: dict[str, Any], config: SidecarConfig) -> dict[str, Any]:
     """Inject the sidecar container into a Cloud Run service spec dict.
 
     The sidecar is appended to spec.template.spec.containers.  Cloud Run
@@ -99,14 +100,14 @@ def inject_cloudrun_sidecar(service_spec: dict, config: SidecarConfig) -> dict:
     spec = result.setdefault("spec", {})
     template = spec.setdefault("template", {})
     tmpl_spec = template.setdefault("spec", {})
-    containers: list[dict] = tmpl_spec.setdefault("containers", [])
+    containers: list[dict[str, Any]] = tmpl_spec.setdefault("containers", [])
 
     # Idempotency guard
     if any(c.get("name") == SIDECAR_NAME for c in containers):
         logger.debug("Sidecar already present in Cloud Run spec — skipping injection")
         return result
 
-    sidecar: dict = {
+    sidecar: dict[str, Any] = {
         "name": SIDECAR_NAME,
         "image": config.image,
         "env": [

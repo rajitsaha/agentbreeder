@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import logging
 import os
+from typing import Any
 
 from fastapi import FastAPI
 
@@ -29,12 +30,12 @@ _guardrails = [g for g in os.getenv("AB_GUARDRAILS", "").split(",") if g]
 # --- OTel initialisation (best-effort) ---
 _tracer = None
 try:
-    from opentelemetry import trace  # type: ignore[import]
-    from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import (  # type: ignore[import]
+    from opentelemetry import trace
+    from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import (
         OTLPSpanExporter,
     )
-    from opentelemetry.sdk.trace import TracerProvider  # type: ignore[import]
-    from opentelemetry.sdk.trace.export import BatchSpanProcessor  # type: ignore[import]
+    from opentelemetry.sdk.trace import TracerProvider
+    from opentelemetry.sdk.trace.export import BatchSpanProcessor
 
     _provider = TracerProvider()
     _provider.add_span_processor(BatchSpanProcessor(OTLPSpanExporter(endpoint=_otel_endpoint)))
@@ -46,7 +47,7 @@ except Exception as exc:  # noqa: BLE001
 
 
 @app.get("/health")
-def health() -> dict:
+def health() -> dict[str, Any]:
     """Liveness probe for ECS health checks and Cloud Run startup probes."""
     return {
         "status": "ok",
@@ -58,7 +59,7 @@ def health() -> dict:
 
 
 @app.post("/trace")
-async def receive_trace(payload: dict) -> dict:
+async def receive_trace(payload: dict[str, Any]) -> dict[str, Any]:
     """Accept a trace event from the agent container and record an OTel span.
 
     Expected payload shape:
@@ -77,7 +78,7 @@ async def receive_trace(payload: dict) -> dict:
 
 
 @app.post("/cost")
-async def record_cost(payload: dict) -> dict:
+async def record_cost(payload: dict[str, Any]) -> dict[str, Any]:
     """Accept a cost/token event from the agent container.
 
     Emits a structured log entry and (when OTel is available) a span attribute.

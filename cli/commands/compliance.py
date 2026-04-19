@@ -67,7 +67,7 @@ def _build_report_locally(
         )
 
         req = ReportRequest(
-            standard=standard,  # type: ignore[arg-type]
+            standard=standard,
             team=team,
             period_start=period_start,
             period_end=period_end,
