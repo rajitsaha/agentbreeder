@@ -32,6 +32,22 @@ except ImportError:
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("agentbreeder.agent")
 
+# Model string prefixes that route through LiteLLM instead of the native SDK.
+_LITELLM_PREFIXES = (
+    "ollama/",
+    "groq/",
+    "bedrock/",
+    "openai/",
+    "anthropic/",
+    "huggingface/",
+    "vertex_ai/",
+    "azure/",
+    "cohere/",
+    "mistral/",
+    "together_ai/",
+    "replicate/",
+)
+
 app = FastAPI(
     title="AgentBreeder Agent",
     description="Deployed by AgentBreeder",
@@ -191,13 +207,17 @@ async def startup() -> None:
                     agent.llm.model = _agent_model
                     if _agent_temperature is not None:
                         agent.llm.temperature = float(_agent_temperature)
-                    # For Ollama models, set base_url so LiteLLM routes correctly
+                    # For Ollama models, set base_url so LiteLLM routes correctly.
+                    # Other LiteLLM-prefixed models (groq/, bedrock/, etc.) route
+                    # via their own API keys — no custom base_url needed.
                     if _agent_model.startswith("ollama/"):
                         _ollama_url = os.getenv(
                             "OLLAMA_BASE_URL", "http://agentbreeder-ollama:11434"
                         )
                         agent.llm.base_url = _ollama_url
                         logger.info("Configured CrewAI agent LLM for Ollama: %s", _ollama_url)
+                    elif _agent_model.startswith(_LITELLM_PREFIXES):
+                        logger.info("LiteLLM-prefixed model; routing via provider API key")
                 except Exception:
                     pass
 

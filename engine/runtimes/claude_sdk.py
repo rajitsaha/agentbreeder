@@ -16,6 +16,7 @@ from engine.runtimes.base import (
     ContainerImage,
     RuntimeBuilder,
     RuntimeValidationResult,
+    _is_litellm_model,
 )
 
 logger = logging.getLogger(__name__)
@@ -56,14 +57,14 @@ class ClaudeSDKRuntime(RuntimeBuilder):
     def validate(self, agent_dir: Path, config: AgentConfig) -> RuntimeValidationResult:
         errors: list[str] = []
 
-        # Reject non-Claude models early
-        if config.model.primary.startswith("ollama/"):
+        # Reject non-Claude models early — Claude SDK is Anthropic-only
+        if _is_litellm_model(config.model.primary):
             errors.append(
                 f"Claude SDK only supports Claude (Anthropic) models. "
                 f"Received: '{config.model.primary}'. "
                 "Switch to a Claude model (e.g. 'claude-sonnet-4') or use a different "
                 "framework (langgraph, crewai, openai_agents, google_adk, or custom) "
-                "for local Ollama models."
+                "for non-Anthropic models."
             )
             return RuntimeValidationResult(valid=False, errors=errors)
 

@@ -19,6 +19,22 @@ from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
 logging.basicConfig(level=logging.INFO)
+
+# Model string prefixes that route through LiteLLM instead of the OpenAI native SDK.
+_LITELLM_PREFIXES = (
+    "ollama/",
+    "groq/",
+    "bedrock/",
+    "openai/",
+    "anthropic/",
+    "huggingface/",
+    "vertex_ai/",
+    "azure/",
+    "cohere/",
+    "mistral/",
+    "together_ai/",
+    "replicate/",
+)
 logger = logging.getLogger("agentbreeder.agent")
 
 app = FastAPI(

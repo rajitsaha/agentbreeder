@@ -13,6 +13,35 @@ from pydantic import BaseModel
 
 from engine.config_parser import AgentConfig
 
+# Model string prefixes that indicate LiteLLM should handle routing instead of the
+# framework's native SDK.  Any model string starting with one of these values will
+# have litellm>=1.40.0 added to its requirements and, where applicable, the server
+# template will route the call through LiteLLM instead of the native client.
+LITELLM_PREFIXES: tuple[str, ...] = (
+    "ollama/",
+    "groq/",
+    "bedrock/",
+    "openai/",
+    "anthropic/",
+    "huggingface/",
+    "vertex_ai/",
+    "azure/",
+    "cohere/",
+    "mistral/",
+    "together_ai/",
+    "replicate/",
+)
+
+
+def _is_litellm_model(model: str) -> bool:
+    """Return True if the model string should be routed through LiteLLM."""
+    return model.startswith(LITELLM_PREFIXES)
+
+
+def _get_litellm_requirements() -> list[str]:
+    """Return the pip dependencies needed for LiteLLM model routing."""
+    return ["litellm>=1.40.0"]
+
 
 class RuntimeValidationResult(BaseModel):
     """Result of validating agent code for a specific framework."""

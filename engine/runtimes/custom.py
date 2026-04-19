@@ -17,6 +17,8 @@ from engine.runtimes.base import (
     ContainerImage,
     RuntimeBuilder,
     RuntimeValidationResult,
+    _get_litellm_requirements,
+    _is_litellm_model,
     build_env_block,
 )
 
@@ -166,6 +168,6 @@ class CustomRuntime(RuntimeBuilder):
             "httpx>=0.27.0",
             "pydantic>=2.0.0",
         ]
-        if config.model.primary.startswith("ollama/"):
-            deps.append("litellm>=1.40.0")
+        if _is_litellm_model(config.model.primary):
+            deps.extend(_get_litellm_requirements())
         return deps

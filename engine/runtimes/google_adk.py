@@ -20,6 +20,8 @@ from engine.runtimes.base import (
     ContainerImage,
     RuntimeBuilder,
     RuntimeValidationResult,
+    _get_litellm_requirements,
+    _is_litellm_model,
     build_env_block,
 )
 
@@ -233,7 +235,6 @@ class GoogleADKRuntime(RuntimeBuilder):
         # Add GCS dep when artifact_service=gcs
         if config.google_adk and config.google_adk.artifact_service.value == "gcs":
             deps.append("google-cloud-storage>=2.0.0")
-        # Add LiteLLM for non-Gemini models (e.g. ollama/)
-        if "/" in config.model.primary and not config.model.primary.startswith("gemini"):
-            deps.append("litellm>=1.40.0")
+        if _is_litellm_model(config.model.primary):
+            deps.extend(_get_litellm_requirements())
         return deps

@@ -32,6 +32,22 @@ from engine.tool_bridge import to_adk_tools
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("agentbreeder.agent")
 
+# Model string prefixes that route through LiteLLM instead of the native Gemini SDK.
+_LITELLM_PREFIXES = (
+    "ollama/",
+    "groq/",
+    "bedrock/",
+    "openai/",
+    "anthropic/",
+    "huggingface/",
+    "vertex_ai/",
+    "azure/",
+    "cohere/",
+    "mistral/",
+    "together_ai/",
+    "replicate/",
+)
+
 
 class InvokeRequest(BaseModel):
     input: str
@@ -215,16 +231,20 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:  # noqa: ARG001
 
     if agent_model and hasattr(_agent, "model"):
         try:
-            if "/" in agent_model and not agent_model.startswith("gemini"):
+            if agent_model.startswith(_LITELLM_PREFIXES):
                 from google.adk.models.lite_llm import LiteLlm
 
-                ollama_url = os.getenv("OLLAMA_BASE_URL", "http://agentbreeder-ollama:11434")
-                _agent.model = LiteLlm(model=agent_model, api_base=ollama_url)
-                logger.info(
-                    "Applied LiteLlm model override: model=%s api_base=%s",
-                    agent_model,
-                    ollama_url,
-                )
+                if agent_model.startswith("ollama/"):
+                    ollama_url = os.getenv("OLLAMA_BASE_URL", "http://agentbreeder-ollama:11434")
+                    _agent.model = LiteLlm(model=agent_model, api_base=ollama_url)
+                    logger.info(
+                        "Applied LiteLlm model override (Ollama): model=%s api_base=%s",
+                        agent_model,
+                        ollama_url,
+                    )
+                else:
+                    _agent.model = LiteLlm(model=agent_model)
+                    logger.info("Applied LiteLlm model override: model=%s", agent_model)
             else:
                 _agent.model = agent_model
                 logger.info("Applied AGENT_MODEL override: %s", agent_model)

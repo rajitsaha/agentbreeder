@@ -7,6 +7,7 @@ from pathlib import Path
 
 from engine.config_parser import AgentConfig, FrameworkType
 from engine.runtimes import get_runtime
+from engine.runtimes.base import LITELLM_PREFIXES, _get_litellm_requirements, _is_litellm_model
 from engine.runtimes.langgraph import LangGraphRuntime
 
 
@@ -208,3 +209,59 @@ class TestLangGraphRuntime:
         image = runtime.build(tmp_path, config)
         dockerfile = (image.context_dir / "Dockerfile").read_text()
         assert "OLLAMA_BASE_URL" not in dockerfile
+
+
+class TestLiteLLMHelpers:
+    def test_is_litellm_model_true_for_ollama(self) -> None:
+        assert _is_litellm_model("ollama/gemma3:27b") is True
+
+    def test_is_litellm_model_true_for_groq(self) -> None:
+        assert _is_litellm_model("groq/llama3-8b-8192") is True
+
+    def test_is_litellm_model_true_for_bedrock(self) -> None:
+        assert _is_litellm_model("bedrock/claude-3") is True
+
+    def test_is_litellm_model_true_for_azure(self) -> None:
+        assert _is_litellm_model("azure/gpt-4o") is True
+
+    def test_is_litellm_model_true_for_cohere(self) -> None:
+        assert _is_litellm_model("cohere/command-r") is True
+
+    def test_is_litellm_model_true_for_mistral(self) -> None:
+        assert _is_litellm_model("mistral/mistral-large") is True
+
+    def test_is_litellm_model_false_for_native_openai(self) -> None:
+        assert _is_litellm_model("gpt-4o") is False
+
+    def test_is_litellm_model_false_for_gemini(self) -> None:
+        assert _is_litellm_model("gemini-2.0-flash") is False
+
+    def test_is_litellm_model_false_for_claude(self) -> None:
+        assert _is_litellm_model("claude-sonnet-4") is False
+
+    def test_get_litellm_requirements_returns_litellm(self) -> None:
+        reqs = _get_litellm_requirements()
+        assert any("litellm" in r for r in reqs)
+
+    def test_litellm_prefixes_covers_major_providers(self) -> None:
+        expected = {"ollama/", "groq/", "bedrock/", "azure/", "cohere/", "mistral/"}
+        assert expected.issubset(set(LITELLM_PREFIXES))
+
+
+class TestLiteLLMRequirementsAcrossRuntimes:
+    """All runtimes should add litellm for any LiteLLM-prefixed model, not just ollama/."""
+
+    def test_langgraph_adds_litellm_for_groq_model(self) -> None:
+        runtime = LangGraphRuntime()
+        config = _make_config(model={"primary": "groq/llama3-8b-8192"})
+        assert any("litellm" in r for r in runtime.get_requirements(config))
+
+    def test_langgraph_adds_litellm_for_bedrock_model(self) -> None:
+        runtime = LangGraphRuntime()
+        config = _make_config(model={"primary": "bedrock/claude-3"})
+        assert any("litellm" in r for r in runtime.get_requirements(config))
+
+    def test_langgraph_no_litellm_for_native_model(self) -> None:
+        runtime = LangGraphRuntime()
+        config = _make_config(model={"primary": "gpt-4o"})
+        assert not any("litellm" in r for r in runtime.get_requirements(config))
