@@ -2957,5 +2957,5 @@ Eight methods present in Python `Agent` are absent in TypeScript `Agent`:
 
 ---
 
-*Last updated: April 17, 2026*
+*Last updated: April 19, 2026 — 11 open issues, 31 closed*
 *Status: v0.1–v1.2 complete (M1–M23). v1.3–v1.7 done — model gateway, AgentOps, production hardening, multi-cloud, framework depth, agent architect skill (/agent-build) all shipped. v1.8 done — SMTP + news connectors (HackerNews, ArXiv, RSS), agentbreeder schedule cron command, Ollama + OpenRouter wired into scan/init, 3000 unit tests at 95% coverage. v1.9 planned — M36 (TypeScript SDK Parity: memory/mcp/validation modules, 10 missing Agent methods, Tool.fromFunction) tracked in #55. Open issues: 11 | Closed: 27.*
