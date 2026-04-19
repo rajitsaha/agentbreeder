@@ -2960,8 +2960,92 @@ Eight methods present in Python `Agent` are absent in TypeScript `Agent`:
 
 ---
 
-*Last updated: April 19, 2026 — 12 open issues, 31 closed*
-*Status: v0.1–v1.2 complete (M1–M23). v1.3–v1.7 done — model gateway, AgentOps, production hardening, multi-cloud, framework depth, agent architect skill (/agent-build) all shipped. v1.8 done — SMTP + news connectors (HackerNews, ArXiv, RSS), agentbreeder schedule cron command, Ollama + OpenRouter wired into scan/init, 3000 unit tests at 95% coverage. v1.9 planned — M36 (TypeScript SDK Parity) tracked in #55. v2.0 planned — M38 (Exhaustive Live Docker E2E Suite: 96 tests, 12 spec files) tracked in #78. Open issues: 12 | Closed: 31.*
+## Cloud Integration Milestones (v2.1 – v2.5)
+
+These milestones build the OSS modules that power [AgentBreeder Cloud](https://github.com/rajitsaha/agentbreeder-cloud).  
+Every module ships here first; Cloud adds managed hosting on top.  
+Full plan: [`docs/cloud-integration-plan.md`](docs/cloud-integration-plan.md)
+
+| Release | Milestone | Module | Purpose | Cloud Phase |
+|---------|-----------|--------|---------|-------------|
+| **v2.1** | M-C1 | `agentbreeder.rag` | Document ingestion (PDF/XLSX/CSV/DOCX/web) → chunking → pgvector embeddings → retrieval tool | Cloud Phase 2 (RAG Builder) |
+| **v2.1** | M-C3 | `agentbreeder.connectors.db` | SQL/NoSQL query tool (Postgres, MySQL, BigQuery, Snowflake) + NL→SQL + read-only enforcement | Cloud Phase 2 (DB Connector) |
+| **v2.2** | M-C2 | `agentbreeder.rag.graph` | GraphRAG: entity extraction → knowledge graph → Leiden communities → local/global/hybrid search | Cloud Phase 2 (GraphRAG + Graph Explorer) |
+| **v2.3** | M-C4 | `agentbreeder.eval.online` | Async live response scoring (faithfulness, helpfulness, safety) via Claude Haiku as judge | Cloud Phase 4 (Online Eval) |
+| **v2.3** | M-C5 | `agentbreeder.eval.offline` | Golden dataset + parallel regression runner + CI gate (`--fail-under`) + exact/semantic/LLM-judge metrics | Cloud Phase 4 (Offline Eval + CI gate) |
+| **v2.4** | M-C6 | `agentbreeder.guide` | Spec parser + Claude Sonnet agent config generator + safety guardrails + test case generator | Cloud Phase 3 (Agent Guide) |
+| **v2.4** | M-C7 | `agentbreeder.serving` | Per-agent REST server: Chat API (streaming SSE), webhook (HMAC), batch (async 1000 inputs) | Cloud Phase 3 (Chat API + widget) |
+| **v2.5** | M-C8 | `agentbreeder.sessions` | AgentState checkpointing (GCS + Redis), pause/resume, long-running agents (hours/days) | Cloud Phase 3 (Sessions dashboard) |
+| **v2.5** | M-C9 | `agentbreeder.memory` | Long-term cross-session memory: Fact/Preference/Event/Relationship + pgvector semantic search | Cloud Phase 4 (Memory Browser) |
+| **v2.5** | M-C10 | `agentbreeder.engine.spawner` | `spawn_agent()` tool: runtime subagent creation, max depth 3, OTel parent→child spans | Cloud Phase 4 (Subagent traces) |
+
+### v2.1 — RAG Pipeline + DB Connector
+
+```
+agentbreeder/
+  rag/                    # new package
+    ingestion/            # PDF, XLSX, CSV, DOCX, web, DB table
+    chunking/             # semantic, fixed-size, tabular
+    embedding/            # OpenAI, Google, Ollama
+    store/pgvector.py     # Cloud SQL pgvector
+    retriever.py
+    tool.py               # rag_search agent tool
+  connectors/db/          # new connector
+    connector.py          # SQLAlchemy async + adapters
+    adapters/             # postgres, mysql, bigquery, snowflake, supabase
+    query_builder.py      # NL → SQL (LLM) + read-only validation
+    tool.py               # db_query + db_schema agent tools
+```
+
+**New deps:** `pymupdf`, `openpyxl`, `pandas`, `pgvector`, `asyncpg`, `aiomysql`
+
+### v2.2 — GraphRAG
+
+```
+agentbreeder/rag/graph/   # new subpackage (install as agentbreeder[graphrag])
+  extractor.py            # LLM entity + relationship extraction (Haiku, concurrent)
+  builder.py              # NetworkX graph + entity dedup (fuzzy + embedding similarity)
+  community.py            # Leiden via graspologic
+  summarizer.py           # LLM community summaries
+  lazy.py                 # LazyGraphRAG (cheap index, on-the-fly graph)
+  store/                  # postgres.py (default) + neo4j.py (Enterprise)
+  search/                 # local, global, hybrid, auto
+  tool.py                 # graph_search agent tool
+```
+
+**New deps (optional):** `graspologic`, `networkx`, `rapidfuzz`, `neo4j`
+
+### v2.3 — Eval Framework
+
+```
+agentbreeder/eval/
+  online/                 # scorer, metrics, store, alert
+  offline/                # suite, runner, metrics/, reporter, ci_gate
+```
+
+**CLI:** `agentbreeder eval run --suite my-suite --agent my-agent --fail-under 0.90`
+
+### v2.4 — Agent Guide + Serving
+
+```
+agentbreeder/
+  guide/                  # spec_parser, generator, validator, test_generator, guardrails
+  serving/                # server, endpoints/chat+webhook+batch, session, streaming
+```
+
+### v2.5 — Long-Running Agents
+
+```
+agentbreeder/
+  sessions/               # checkpoint, resume, manager, store/gcs+redis
+  memory/                 # store, backends/pgvector+redis, extractor, tool
+  engine/spawner.py       # spawn_agent() tool
+```
+
+---
+
+*Last updated: 2026-04-18 — 12 open issues, 31 closed*
+*Status: v0.1–v1.2 complete (M1–M23). v1.3–v1.7 done. v1.8 done (connectors + schedule + Ollama/OpenRouter). v1.9 planned (M36 TypeScript SDK Parity). v2.0 planned (M38 E2E suite). v2.1–v2.5 planned (Cloud integration modules — see above). Open issues: 12 | Closed: 31.*
 
 ## Milestone M38 — Exhaustive Live Docker E2E Test Suite
 
