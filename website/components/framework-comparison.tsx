@@ -28,6 +28,8 @@ interface Row {
   crewai: CellValue;
   openai: CellValue;
   googleadk: CellValue;
+  claudesdk: CellValue;
+  mastra: CellValue;
   bedrock: CellValue;
   note?: string;
 }
@@ -35,56 +37,57 @@ interface Row {
 const ROWS: Row[] = [
   {
     feature: 'Framework agnostic',
-    agentbreeder: 'yes', langgraph: 'no', crewai: 'no', openai: 'no', googleadk: 'no', bedrock: 'no',
-    note: 'Run LangGraph, CrewAI, ADK, or your own code — same pipeline',
+    agentbreeder: 'yes', langgraph: 'no', crewai: 'no', openai: 'no', googleadk: 'no', claudesdk: 'no', mastra: 'no', bedrock: 'no',
+    note: 'Run LangGraph, CrewAI, ADK, Mastra, Claude SDK, or your own code — same pipeline',
   },
   {
     feature: 'Cloud agnostic (AWS + GCP + Azure)',
-    agentbreeder: 'yes', langgraph: 'partial', crewai: 'partial', openai: 'no', googleadk: 'no', bedrock: 'no',
-    note: 'Bedrock = AWS only · ADK = GCP preferred · OpenAI = OpenAI cloud',
+    agentbreeder: 'yes', langgraph: 'partial', crewai: 'partial', openai: 'no', googleadk: 'no', claudesdk: 'partial', mastra: 'yes', bedrock: 'no',
+    note: 'Bedrock = AWS only · ADK = GCP preferred · OpenAI = OpenAI cloud · Mastra = runs anywhere',
   },
   {
     feature: 'No-code visual builder',
-    agentbreeder: 'yes', langgraph: 'no', crewai: 'no', openai: 'partial', googleadk: 'no', bedrock: 'partial',
+    agentbreeder: 'yes', langgraph: 'no', crewai: 'no', openai: 'partial', googleadk: 'no', claudesdk: 'no', mastra: 'no', bedrock: 'partial',
   },
   {
     feature: 'YAML low-code config',
-    agentbreeder: 'yes', langgraph: 'no', crewai: 'no', openai: 'no', googleadk: 'no', bedrock: 'no',
+    agentbreeder: 'yes', langgraph: 'no', crewai: 'no', openai: 'no', googleadk: 'no', claudesdk: 'no', mastra: 'no', bedrock: 'no',
   },
   {
     feature: 'Full-code SDK',
-    agentbreeder: 'yes', langgraph: 'yes', crewai: 'yes', openai: 'yes', googleadk: 'yes', bedrock: 'yes',
+    agentbreeder: 'yes', langgraph: 'yes', crewai: 'yes', openai: 'yes', googleadk: 'yes', claudesdk: 'yes', mastra: 'yes', bedrock: 'yes',
   },
   {
     feature: 'Built-in RBAC & governance',
-    agentbreeder: 'yes', langgraph: 'no', crewai: 'no', openai: 'partial', googleadk: 'no', bedrock: 'partial',
+    agentbreeder: 'yes', langgraph: 'no', crewai: 'no', openai: 'partial', googleadk: 'no', claudesdk: 'no', mastra: 'no', bedrock: 'partial',
     note: 'Governance is a side effect of deploying, not a separate project',
   },
   {
     feature: 'Cost attribution per team',
-    agentbreeder: 'yes', langgraph: 'no', crewai: 'no', openai: 'partial', googleadk: 'no', bedrock: 'partial',
+    agentbreeder: 'yes', langgraph: 'no', crewai: 'no', openai: 'partial', googleadk: 'no', claudesdk: 'no', mastra: 'no', bedrock: 'partial',
   },
   {
     feature: 'Immutable audit log',
-    agentbreeder: 'yes', langgraph: 'no', crewai: 'no', openai: 'no', googleadk: 'no', bedrock: 'partial',
+    agentbreeder: 'yes', langgraph: 'no', crewai: 'no', openai: 'no', googleadk: 'no', claudesdk: 'no', mastra: 'no', bedrock: 'partial',
   },
   {
     feature: 'Shared org-wide registry',
-    agentbreeder: 'yes', langgraph: 'no', crewai: 'no', openai: 'no', googleadk: 'no', bedrock: 'no',
+    agentbreeder: 'yes', langgraph: 'no', crewai: 'no', openai: 'no', googleadk: 'no', claudesdk: 'no', mastra: 'no', bedrock: 'no',
     note: 'Agents, prompts, tools, RAGs, MCPs — discoverable across all teams',
   },
   {
     feature: 'Multi-language (Python + TS + Java)',
-    agentbreeder: 'yes', langgraph: 'no', crewai: 'no', openai: 'partial', googleadk: 'no', bedrock: 'partial',
-    note: 'Most frameworks are Python-only',
+    agentbreeder: 'yes', langgraph: 'no', crewai: 'no', openai: 'partial', googleadk: 'no', claudesdk: 'partial', mastra: 'no', bedrock: 'partial',
+    note: 'Mastra = TypeScript only · Claude SDK = Python + TS · most others = Python only',
   },
   {
     feature: 'MCP server support',
-    agentbreeder: 'yes', langgraph: 'partial', crewai: 'partial', openai: 'yes', googleadk: 'partial', bedrock: 'no',
+    agentbreeder: 'yes', langgraph: 'partial', crewai: 'partial', openai: 'yes', googleadk: 'partial', claudesdk: 'yes', mastra: 'yes', bedrock: 'no',
   },
   {
     feature: 'Open source (Apache 2.0)',
-    agentbreeder: 'yes', langgraph: 'yes', crewai: 'yes', openai: 'no', googleadk: 'yes', bedrock: 'no',
+    agentbreeder: 'yes', langgraph: 'yes', crewai: 'yes', openai: 'no', googleadk: 'yes', claudesdk: 'partial', mastra: 'yes', bedrock: 'no',
+    note: 'Claude SDK is MIT-licensed; Claude models are proprietary',
   },
 ];
 
@@ -97,6 +100,8 @@ const COLS: { key: keyof Omit<Row, 'feature' | 'note'>; label: string; highlight
   { key: 'crewai',       label: 'CrewAI',        highlight: false },
   { key: 'openai',       label: 'OpenAI Agents', highlight: false },
   { key: 'googleadk',    label: 'Google ADK',    highlight: false },
+  { key: 'claudesdk',    label: 'Claude SDK',    highlight: false },
+  { key: 'mastra',       label: 'Mastra',        highlight: false },
   { key: 'bedrock',      label: 'AWS Bedrock',   highlight: false },
 ];
 
