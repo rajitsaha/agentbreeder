@@ -7,6 +7,9 @@ tags: ["enterprise", "ai-agents", "open-source", "platform-engineering", "govern
 image: "/blog/why-i-built-agentbreeder/hero.png"
 ---
 
+import { ArchitectureLayers } from '@/components/architecture-layers';
+import { FrameworkComparison } from '@/components/framework-comparison';
+
 I was in a planning meeting where six engineering teams presented their AI agent strategies.
 
 Six teams. Six different answers.
@@ -106,6 +109,12 @@ Governance should not be an afterthought bolted on after deployment. It should b
 
 ---
 
+## How AgentBreeder Compares to Existing Frameworks
+
+Before diving into the architecture, here is how AgentBreeder stacks up against the frameworks your teams are already debating. The key insight: every existing tool is excellent at the layer it was designed for — but none of them solve the coordination problem above that layer.
+
+<FrameworkComparison />
+
 ## Why "Just Pick One Framework" Does Not Work
 
 The standard advice from consultants and blog posts is to standardize on one framework. Pick LangGraph. Pick CrewAI. Make a decision and enforce it.
@@ -135,6 +144,8 @@ Write one `agent.yaml`. Deploy to any cloud. Govern automatically. Done.
 ### The Five-Layer Architecture
 
 AgentBreeder is built in five layers, each solving one dimension of the fragmentation problem.
+
+<ArchitectureLayers />
 
 #### Layer 1: The Governed Marketplace
 
