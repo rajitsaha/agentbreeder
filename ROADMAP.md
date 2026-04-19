@@ -3044,7 +3044,7 @@ agentbreeder/
 
 ---
 
-*Last updated: 2026-04-18 — 12 open issues, 31 closed*
+*Last updated: 2026-04-19 — 12 open issues, 31 closed*
 *Status: v0.1–v1.2 complete (M1–M23). v1.3–v1.7 done. v1.8 done (connectors + schedule + Ollama/OpenRouter). v1.9 planned (M36 TypeScript SDK Parity). v2.0 planned (M38 E2E suite). v2.1–v2.5 planned (Cloud integration modules — see above). Open issues: 12 | Closed: 31.*
 
 ## Milestone M38 — Exhaustive Live Docker E2E Test Suite
