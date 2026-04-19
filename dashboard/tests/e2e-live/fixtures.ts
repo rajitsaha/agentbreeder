@@ -93,7 +93,8 @@ export const test = base.extend<LiveFixtures>({
     await ctx.close();
   },
 
-  api: async (_fixtures, use) => {
+  // eslint-disable-next-line no-empty-pattern
+  api: async ({}, use) => {
     const state = readState();
     const clients: Record<Role, ApiClient> = {
       admin: makeApiClient(state.adminToken),
@@ -103,7 +104,8 @@ export const test = base.extend<LiveFixtures>({
     await use((role: Role) => clients[role]);
   },
 
-  state: async (_fixtures, use) => {
+  // eslint-disable-next-line no-empty-pattern
+  state: async ({}, use) => {
     await use(readState());
   },
 });
