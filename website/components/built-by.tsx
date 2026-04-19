@@ -2,7 +2,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 
 const CAREER_HIGHLIGHTS = [
-  { label: '23+ years', desc: 'architecting enterprise data platforms' },
+  { label: '23+ years', desc: 'industry experience with distributed systems & data infrastructure' },
   { label: '8 companies', desc: 'Oracle · IBM · Yahoo · Teradata · VMware · LendingClub · Experian · Udemy' },
 ];
 
@@ -68,7 +68,7 @@ export function BuiltBy() {
               </span>
             </div>
             <p className="mb-4 text-[13px]" style={{ color: 'var(--accent)' }}>
-              Head of Data Intelligence Platform · Udemy
+              Director of Data Intelligence Platform · Udemy
             </p>
             <p className="mb-4 text-[14px] leading-[1.75]" style={{ color: 'var(--text-muted)' }}>
               Spent 20 years making data platforms bigger and faster. Then decided smarter was more interesting.

@@ -167,7 +167,7 @@ export default async function BlogPostPage({ params }: Props) {
               </span>
             </div>
             <p className="mb-2 text-[12px]" style={{ color: 'var(--accent)' }}>
-              Head of Data Intelligence Platform · Udemy
+              Director of Data Intelligence Platform · Udemy
             </p>
             <p className="text-[13px] leading-relaxed" style={{ color: 'var(--text-muted)' }}>
               20+ years turning passive data warehouses into active, agent-driven systems. Built AgentBreeder to solve the deployment problem he kept hitting in production.
