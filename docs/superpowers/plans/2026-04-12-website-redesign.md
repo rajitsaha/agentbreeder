@@ -386,7 +386,7 @@ const NAV_LINKS = [
   { href: '/blog', label: 'Blog' },
 ];
 
-const GITHUB_URL = 'https://github.com/rajitsaha/agentbreeder';
+const GITHUB_URL = 'https://github.com/agentbreeder/agentbreeder';
 
 export function Nav({ docsSearch = false }: { docsSearch?: boolean }) {
   return (
@@ -611,7 +611,7 @@ export function Hero() {
             Read the docs →
           </Link>
           <a
-            href="https://github.com/rajitsaha/agentbreeder"
+            href="https://github.com/agentbreeder/agentbreeder"
             target="_blank"
             rel="noopener noreferrer"
             className="rounded-lg border px-5 py-2.5 text-sm no-underline transition-colors"
@@ -945,16 +945,16 @@ const LINKS = {
     { label: 'Migrations', href: '/docs/migrations/overview' },
   ],
   'Open Source': [
-    { label: 'GitHub ↗', href: 'https://github.com/rajitsaha/agentbreeder' },
+    { label: 'GitHub ↗', href: 'https://github.com/agentbreeder/agentbreeder' },
     { label: 'PyPI ↗', href: 'https://pypi.org/project/agentbreeder/' },
     { label: 'Docker Hub ↗', href: 'https://hub.docker.com/u/rajits' },
     { label: 'npm ↗', href: 'https://www.npmjs.com/package/@agentbreeder/sdk' },
-    { label: 'Homebrew ↗', href: 'https://github.com/rajitsaha/homebrew-agentbreeder' },
+    { label: 'Homebrew ↗', href: 'https://github.com/agentbreeder/homebrew-agentbreeder' },
   ],
   Community: [
     { label: 'Twitter ↗', href: 'https://twitter.com' },
     { label: 'LinkedIn ↗', href: 'https://www.linkedin.com/in/rajsaha/' },
-    { label: 'Issues ↗', href: 'https://github.com/rajitsaha/agentbreeder/issues' },
+    { label: 'Issues ↗', href: 'https://github.com/agentbreeder/agentbreeder/issues' },
   ],
 };
 

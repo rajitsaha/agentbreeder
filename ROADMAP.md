@@ -1875,18 +1875,18 @@ Each example is a complete, working agent with `agent.yaml`, source code, `requi
 
 | SDK | Example | Runtime Builder | Priority | Issue | Notes |
 |-----|---------|----------------|----------|-------|-------|
-| **CrewAI** | `examples/crewai-agent/` | `engine/runtimes/crewai.py` | **P1** | [#35](https://github.com/rajitsaha/agentbreeder/issues/35) | 25k+ stars; sequential + hierarchical crews |
-| **Claude SDK** | `examples/claude-sdk-agent/` | `engine/runtimes/claude_sdk.py` | **P1** | [#36](https://github.com/rajitsaha/agentbreeder/issues/36) | Anthropic-native; streaming + tool use required |
-| **Google ADK** | `examples/google-adk-agent/` | `engine/runtimes/google_adk.py` | **P1** | [#37](https://github.com/rajitsaha/agentbreeder/issues/37) | Gemini-native; natural pairing with GCP Cloud Run |
-| **Custom (BYOF)** | via init scaffold | `engine/runtimes/custom.py` | **P2** | [#38](https://github.com/rajitsaha/agentbreeder/issues/38) | BYO Dockerfile or thin wrapper; bridge for unsupported frameworks |
+| **CrewAI** | `examples/crewai-agent/` | `engine/runtimes/crewai.py` | **P1** | [#35](https://github.com/agentbreeder/agentbreeder/issues/35) | 25k+ stars; sequential + hierarchical crews |
+| **Claude SDK** | `examples/claude-sdk-agent/` | `engine/runtimes/claude_sdk.py` | **P1** | [#36](https://github.com/agentbreeder/agentbreeder/issues/36) | Anthropic-native; streaming + tool use required |
+| **Google ADK** | `examples/google-adk-agent/` | `engine/runtimes/google_adk.py` | **P1** | [#37](https://github.com/agentbreeder/agentbreeder/issues/37) | Gemini-native; natural pairing with GCP Cloud Run |
+| **Custom (BYOF)** | via init scaffold | `engine/runtimes/custom.py` | **P2** | [#38](https://github.com/agentbreeder/agentbreeder/issues/38) | BYO Dockerfile or thin wrapper; bridge for unsupported frameworks |
 
 #### Feature Depth Gaps — Existing Runtimes (v1.6 → M34)
 
 | Gap | Runtime | Priority | Issue | Notes |
 |-----|---------|----------|-------|-------|
-| Subgraphs, HITL breakpoints, persistence checkpointers | LangGraph | **P1** | [#39](https://github.com/rajitsaha/agentbreeder/issues/39) | Core LangGraph production features; `PostgresSaver` for stateful agents |
-| Agent handoffs, nested agent patterns | OpenAI Agents | **P1** | [#40](https://github.com/rajitsaha/agentbreeder/issues/40) | Primary value prop of OAI Agents SDK; `HandoffOutputItem` handling |
-| Per-framework OTel tracing (LLM calls, tool use, agent steps) | All runtimes | **P1** | [#41](https://github.com/rajitsaha/agentbreeder/issues/41) | Required for AgentOps dashboard and cost attribution to work at runtime |
+| Subgraphs, HITL breakpoints, persistence checkpointers | LangGraph | **P1** | [#39](https://github.com/agentbreeder/agentbreeder/issues/39) | Core LangGraph production features; `PostgresSaver` for stateful agents |
+| Agent handoffs, nested agent patterns | OpenAI Agents | **P1** | [#40](https://github.com/agentbreeder/agentbreeder/issues/40) | Primary value prop of OAI Agents SDK; `HandoffOutputItem` handling |
+| Per-framework OTel tracing (LLM calls, tool use, agent steps) | All runtimes | **P1** | [#41](https://github.com/agentbreeder/agentbreeder/issues/41) | Required for AgentOps dashboard and cost attribution to work at runtime |
 
 #### Later SDKs (post v1.6)
 
@@ -1911,13 +1911,13 @@ Each example is a complete, working agent with `agent.yaml`, source code, `requi
 - [x] Integration test per runtime: build container, start, verify `/health` responds
 
 #### 13.3 — Additional SDKs (M25 — v1.3 remaining work)
-- [ ] `engine/runtimes/crewai.py` — CrewAI runtime builder ([#35](https://github.com/rajitsaha/agentbreeder/issues/35))
+- [ ] `engine/runtimes/crewai.py` — CrewAI runtime builder ([#35](https://github.com/agentbreeder/agentbreeder/issues/35))
 - [ ] `engine/runtimes/templates/crewai_server.py` — CrewAI FastAPI server template
-- [ ] `engine/runtimes/claude_sdk.py` — Claude SDK runtime builder ([#36](https://github.com/rajitsaha/agentbreeder/issues/36))
+- [ ] `engine/runtimes/claude_sdk.py` — Claude SDK runtime builder ([#36](https://github.com/agentbreeder/agentbreeder/issues/36))
 - [ ] `engine/runtimes/templates/claude_sdk_server.py` — Claude SDK server template (streaming + tool use)
-- [ ] `engine/runtimes/google_adk.py` — Google ADK runtime builder ([#37](https://github.com/rajitsaha/agentbreeder/issues/37))
+- [ ] `engine/runtimes/google_adk.py` — Google ADK runtime builder ([#37](https://github.com/agentbreeder/agentbreeder/issues/37))
 - [ ] `engine/runtimes/templates/google_adk_server.py` — Google ADK server template (ADC auth)
-- [ ] `engine/runtimes/custom.py` — Custom (BYOF) runtime builder ([#38](https://github.com/rajitsaha/agentbreeder/issues/38))
+- [ ] `engine/runtimes/custom.py` — Custom (BYOF) runtime builder ([#38](https://github.com/agentbreeder/agentbreeder/issues/38))
 - [ ] `engine/runtimes/templates/custom_server.py` — thin wrapper for BYO agents
 - [ ] `examples/crewai-agent/` — CrewAI multi-agent crew example
 - [ ] `examples/claude-sdk-agent/` — Anthropic Claude SDK example (tool use + streaming)
@@ -2628,17 +2628,17 @@ Three production Docker images:
 ### M32.5 — Homebrew Tap
 
 Homebrew distribution for macOS/Linux:
-- [ ] Create repo `rajitsaha/homebrew-agentbreeder` (manual step)
+- [ ] Create repo `agentbreeder/homebrew-agentbreeder` (manual step)
 - [x] Write `Formula/agentbreeder.rb` (Python virtualenv formula)
 - [x] Create Homebrew update workflow in `release.yml`
-- [ ] Test `brew tap rajitsaha/agentbreeder && brew install agentbreeder`
+- [ ] Test `brew tap agentbreeder/agentbreeder && brew install agentbreeder`
 - [ ] Document migration path to Homebrew core
 - [ ] Add `HOMEBREW_TAP_TOKEN` to GitHub Secrets (manual step)
 
 ### M32.6 — Namespace & URL Cleanup
 
 Align all public-facing names:
-- [x] Fix `pyproject.toml` Repository URL → `https://github.com/rajitsaha/agentbreeder`
+- [x] Fix `pyproject.toml` Repository URL → `https://github.com/agentbreeder/agentbreeder`
 - [x] Fix `pyproject.toml` Documentation URL → `https://agent-breeder.com`
 - [ ] Register `agentbreeder` and `agentbreeder-sdk` names on PyPI (manual step)
 - [ ] Register `agentbreeder` org on Docker Hub (manual step)
@@ -2651,7 +2651,7 @@ Align all public-facing names:
 **Release:** v1.5 (Multi-Cloud)
 **Theme:** Make AgentBreeder genuinely multi-cloud by implementing AWS ECS Fargate, Azure Container Apps, and general Kubernetes deployers.
 **Status:** Planned
-**GitHub Issue:** [#34](https://github.com/rajitsaha/agentbreeder/issues/34)
+**GitHub Issue:** [#34](https://github.com/agentbreeder/agentbreeder/issues/34)
 
 ### Background
 
@@ -2728,7 +2728,7 @@ AgentBreeder's core promise is "Multi-cloud first — AWS and GCP as equal first
 **Release:** v1.6 (Framework Depth)
 **Theme:** Close all feature gaps in existing runtimes and wire up per-agent observability so the AgentOps dashboard and cost tracking work end-to-end for deployed agents.
 **Status:** Planned
-**GitHub Issues:** [#39](https://github.com/rajitsaha/agentbreeder/issues/39) [#40](https://github.com/rajitsaha/agentbreeder/issues/40) [#41](https://github.com/rajitsaha/agentbreeder/issues/41)
+**GitHub Issues:** [#39](https://github.com/agentbreeder/agentbreeder/issues/39) [#40](https://github.com/agentbreeder/agentbreeder/issues/40) [#41](https://github.com/agentbreeder/agentbreeder/issues/41)
 
 ### Background
 
@@ -2736,7 +2736,7 @@ LangGraph and OpenAI Agents SDK are the two fully implemented runtimes. Both dep
 
 ### M34.1 — LangGraph: Subgraphs, HITL, and Persistence
 
-**Issue:** [#39](https://github.com/rajitsaha/agentbreeder/issues/39) | **Priority: P1**
+**Issue:** [#39](https://github.com/agentbreeder/agentbreeder/issues/39) | **Priority: P1**
 
 - [ ] **Checkpointer auto-selection** in `langgraph_server.py`:
   - `MemorySaver` when `DATABASE_URL` is not set (dev/local)
@@ -2753,7 +2753,7 @@ LangGraph and OpenAI Agents SDK are the two fully implemented runtimes. Both dep
 
 ### M34.2 — OpenAI Agents SDK: Handoffs and Nested Agents
 
-**Issue:** [#40](https://github.com/rajitsaha/agentbreeder/issues/40) | **Priority: P1**
+**Issue:** [#40](https://github.com/agentbreeder/agentbreeder/issues/40) | **Priority: P1**
 
 - [ ] **`HandoffOutputItem` extraction** in `openai_agents_server.py`: unwrap `RunResult.new_items` to find the final agent's text output
 - [ ] **Response schema update**: `/invoke` returns `{"output": "...", "agent": "<name>", "handoffs": [...]}`  — additive, backwards compatible
@@ -2765,7 +2765,7 @@ LangGraph and OpenAI Agents SDK are the two fully implemented runtimes. Both dep
 
 ### M34.3 — Per-Framework Runtime Tracing
 
-**Issue:** [#41](https://github.com/rajitsaha/agentbreeder/issues/41) | **Priority: P1**
+**Issue:** [#41](https://github.com/agentbreeder/agentbreeder/issues/41) | **Priority: P1**
 
 - [ ] `engine/runtimes/templates/_tracing.py` — shared OTel init utility:
   - `MemorySaver` / no-op tracer when `OPENTELEMETRY_ENDPOINT` not set (zero breakage for existing deploys)
@@ -2847,7 +2847,7 @@ Full spec: `docs/superpowers/specs/2026-04-14-agent-architect-skill-design.md`
 **Release:** v1.8 (TypeScript SDK Parity)
 **Theme:** Bring `@agentbreeder/sdk` (TypeScript) to full feature parity with `agentbreeder-sdk` (Python), closing the ~40% gap in module coverage, `Agent` class methods, and developer experience.
 **Status:** Planned
-**GitHub Issue:** [#55](https://github.com/rajitsaha/agentbreeder/issues/55)
+**GitHub Issue:** [#55](https://github.com/agentbreeder/agentbreeder/issues/55)
 **Design Doc:** [`docs/superpowers/plans/2026-04-15-typescript-sdk-parity.md`](docs/superpowers/plans/2026-04-15-typescript-sdk-parity.md)
 
 ### Background
@@ -2856,7 +2856,7 @@ The TypeScript SDK was introduced in v1.1 (M30.2) as an initial scaffold. It has
 
 ### M36.1 — Missing Modules
 
-**Issue:** [#55](https://github.com/rajitsaha/agentbreeder/issues/55) | **Priority: P2**
+**Issue:** [#55](https://github.com/agentbreeder/agentbreeder/issues/55) | **Priority: P2**
 
 - [ ] **`sdk/typescript/src/memory.ts`** — `Memory` builder class + `MemoryConfig` interface:
   - `Memory.bufferWindow(maxMessages?, opts?)` → sliding window backend
@@ -2873,7 +2873,7 @@ The TypeScript SDK was introduced in v1.1 (M30.2) as an initial scaffold. It has
 
 ### M36.2 — Agent Class Method Gaps
 
-**Issue:** [#55](https://github.com/rajitsaha/agentbreeder/issues/55) | **Priority: P2**
+**Issue:** [#55](https://github.com/agentbreeder/agentbreeder/issues/55) | **Priority: P2**
 
 Eight methods present in Python `Agent` are absent in TypeScript `Agent`:
 
@@ -2890,7 +2890,7 @@ Eight methods present in Python `Agent` are absent in TypeScript `Agent`:
 
 ### M36.3 — Tool.fromFunction()
 
-**Issue:** [#55](https://github.com/rajitsaha/agentbreeder/issues/55) | **Priority: P2**
+**Issue:** [#55](https://github.com/agentbreeder/agentbreeder/issues/55) | **Priority: P2**
 
 - [ ] **`Tool.fromFunction(fn, schema)`** — create a `Tool` from a named function with an explicit JSON Schema
   - Python auto-derives schema from type hints via `inspect`; TypeScript requires explicit schema (no runtime type reflection)
@@ -2899,14 +2899,14 @@ Eight methods present in Python `Agent` are absent in TypeScript `Agent`:
 
 ### M36.4 — Types and Exports
 
-**Issue:** [#55](https://github.com/rajitsaha/agentbreeder/issues/55) | **Priority: P2**
+**Issue:** [#55](https://github.com/agentbreeder/agentbreeder/issues/55) | **Priority: P2**
 
 - [ ] Add `memory?: MemoryConfig` to `AgentConfig` interface in `types.ts`
 - [ ] Export `Memory`, `MCPServe`, `validateAgent`, `MemoryConfig` from `index.ts`
 
 ### M36.5 — Developer Experience
 
-**Issue:** [#55](https://github.com/rajitsaha/agentbreeder/issues/55) | **Priority: P2**
+**Issue:** [#55](https://github.com/agentbreeder/agentbreeder/issues/55) | **Priority: P2**
 
 - [ ] **`sdk/typescript/README.md`** — full README: installation, quickstart, complete API reference table, parity table vs Python SDK, link to examples
 - [ ] **`examples/sdk-ts-basic/agent.ts`** — TypeScript equivalent of `examples/sdk-basic/agent.py`
@@ -2941,13 +2941,13 @@ Eight methods present in Python `Agent` are absent in TypeScript `Agent`:
 
 | Release | Milestone | Theme | Key Work | Issues | Est. |
 |---------|-----------|-------|----------|--------|------|
-| **v1.3** | M25 | Complete Enterprise SDK support | CrewAI, Claude SDK, Google ADK, Custom runtime builders | [#35](https://github.com/rajitsaha/agentbreeder/issues/35) [#36](https://github.com/rajitsaha/agentbreeder/issues/36) [#37](https://github.com/rajitsaha/agentbreeder/issues/37) [#38](https://github.com/rajitsaha/agentbreeder/issues/38) | ~3d |
+| **v1.3** | M25 | Complete Enterprise SDK support | CrewAI, Claude SDK, Google ADK, Custom runtime builders | [#35](https://github.com/agentbreeder/agentbreeder/issues/35) [#36](https://github.com/agentbreeder/agentbreeder/issues/36) [#37](https://github.com/agentbreeder/agentbreeder/issues/37) [#38](https://github.com/agentbreeder/agentbreeder/issues/38) | ~3d |
 | **v1.4** | M32 | Distribution | PyPI/Docker Hub/Homebrew infra setup (code done) | — | ~1d |
-| **v1.5** | M33 | Multi-Cloud | AWS ECS, Azure Container Apps, Kubernetes deployers | [#34](https://github.com/rajitsaha/agentbreeder/issues/34) | ~5d |
-| **v1.6** | M34 | Framework Depth | LangGraph HITL+persistence, OAI Agents handoffs, runtime OTel tracing | [#39](https://github.com/rajitsaha/agentbreeder/issues/39) [#40](https://github.com/rajitsaha/agentbreeder/issues/40) [#41](https://github.com/rajitsaha/agentbreeder/issues/41) | ~5d |
-| **v1.7** | M35 | Agent Architect Skill | /agent-build advisory mode: framework, model, RAG, memory, MCP/A2A, deploy, eval recommendations + IDE config file generation | [#49](https://github.com/rajitsaha/agentbreeder/issues/49) | ✅ Done |
-| **v1.8** | M36 | TypeScript SDK Parity | memory.ts, mcp.ts, validation.ts; 10 missing Agent methods; Tool.fromFunction; TS examples + full README | [#55](https://github.com/rajitsaha/agentbreeder/issues/55) | ~6d |
-| **v2.0** | M38 | Quality & Testing | Live Docker Playwright suite: 96 tests across providers, prompts, tools, RAG, MCP, agents, execution, tracing, evals, costs, RBAC | [#78](https://github.com/rajitsaha/agentbreeder/issues/78) | ~3d |
+| **v1.5** | M33 | Multi-Cloud | AWS ECS, Azure Container Apps, Kubernetes deployers | [#34](https://github.com/agentbreeder/agentbreeder/issues/34) | ~5d |
+| **v1.6** | M34 | Framework Depth | LangGraph HITL+persistence, OAI Agents handoffs, runtime OTel tracing | [#39](https://github.com/agentbreeder/agentbreeder/issues/39) [#40](https://github.com/agentbreeder/agentbreeder/issues/40) [#41](https://github.com/agentbreeder/agentbreeder/issues/41) | ~5d |
+| **v1.7** | M35 | Agent Architect Skill | /agent-build advisory mode: framework, model, RAG, memory, MCP/A2A, deploy, eval recommendations + IDE config file generation | [#49](https://github.com/agentbreeder/agentbreeder/issues/49) | ✅ Done |
+| **v1.8** | M36 | TypeScript SDK Parity | memory.ts, mcp.ts, validation.ts; 10 missing Agent methods; Tool.fromFunction; TS examples + full README | [#55](https://github.com/agentbreeder/agentbreeder/issues/55) | ~6d |
+| **v2.0** | M38 | Quality & Testing | Live Docker Playwright suite: 96 tests across providers, prompts, tools, RAG, MCP, agents, execution, tracing, evals, costs, RBAC | [#78](https://github.com/agentbreeder/agentbreeder/issues/78) | ~3d |
 
 **Recommended sequencing rationale:**
 - M25 first — unblocks users who picked CrewAI/Claude SDK/ADK in the init wizard today
@@ -2962,7 +2962,7 @@ Eight methods present in Python `Agent` are absent in TypeScript `Agent`:
 
 ## Cloud Integration Milestones (v2.1 – v2.5)
 
-These milestones build the OSS modules that power [AgentBreeder Cloud](https://github.com/rajitsaha/agentbreeder-cloud).  
+These milestones build the OSS modules that power [AgentBreeder Cloud](https://github.com/agentbreeder/agentbreeder-cloud).  
 Every module ships here first; Cloud adds managed hosting on top.  
 Full plan: [`docs/cloud-integration-plan.md`](docs/cloud-integration-plan.md)
 
@@ -3057,7 +3057,7 @@ M38 adds a second test suite that runs against the live Docker stack (real Postg
 
 **Design spec:** `docs/superpowers/specs/2026-04-18-playwright-live-docker-test-suite-design.md`  
 **Implementation plan:** `docs/superpowers/plans/2026-04-18-playwright-live-docker-test-suite.md`  
-**GitHub issue:** [#78](https://github.com/rajitsaha/agentbreeder/issues/78)
+**GitHub issue:** [#78](https://github.com/agentbreeder/agentbreeder/issues/78)
 
 ### M38.1 — Infrastructure
 

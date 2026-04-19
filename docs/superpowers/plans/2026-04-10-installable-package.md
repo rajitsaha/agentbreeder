@@ -33,7 +33,7 @@ In every file listed above, replace `open-agentbreeder` with `rajitsaha`. There 
 
 Specific replacements:
 ```
-open-agentbreeder/agentbreeder  →  rajitsaha/agentbreeder
+open-agentbreeder/agentbreeder  →  agentbreeder/agentbreeder
 open-agentbreeder.github.io     →  rajitsaha.github.io
 ```
 
@@ -104,8 +104,8 @@ dependencies = [
 mcp = ["mcp>=1.0.0"]
 
 [project.urls]
-Homepage = "https://github.com/rajitsaha/agentbreeder"
-Repository = "https://github.com/rajitsaha/agentbreeder"
+Homepage = "https://github.com/agentbreeder/agentbreeder"
+Repository = "https://github.com/agentbreeder/agentbreeder"
 Documentation = "https://agent-breeder.com"
 
 [tool.hatch.build.targets.wheel]
@@ -117,7 +117,7 @@ packages = ["agenthub"]
 ```markdown
 # agentbreeder-sdk
 
-The lightweight Python SDK for [AgentBreeder](https://github.com/rajitsaha/agentbreeder) — define, validate, and deploy AI agents programmatically.
+The lightweight Python SDK for [AgentBreeder](https://github.com/agentbreeder/agentbreeder) — define, validate, and deploy AI agents programmatically.
 
 ## Install
 
@@ -252,7 +252,7 @@ git commit -m "feat: split SDK out of main package, depend on agentbreeder-sdk"
 ```dockerfile
 FROM python:3.12-slim
 
-LABEL org.opencontainers.image.source="https://github.com/rajitsaha/agentbreeder"
+LABEL org.opencontainers.image.source="https://github.com/agentbreeder/agentbreeder"
 LABEL org.opencontainers.image.description="AgentBreeder CLI for CI/CD pipelines"
 
 RUN pip install --no-cache-dir agentbreeder
@@ -327,7 +327,7 @@ RUN npm run build
 
 FROM nginx:alpine
 
-LABEL org.opencontainers.image.source="https://github.com/rajitsaha/agentbreeder"
+LABEL org.opencontainers.image.source="https://github.com/agentbreeder/agentbreeder"
 LABEL org.opencontainers.image.description="AgentBreeder Dashboard"
 
 COPY --from=build /app/dist /usr/share/nginx/html
@@ -472,7 +472,7 @@ Add at the end of the workflow:
         uses: mislav/bump-homebrew-formula-action@v3
         with:
           formula-name: agentbreeder
-          homebrew-tap: rajitsaha/homebrew-agentbreeder
+          homebrew-tap: agentbreeder/homebrew-agentbreeder
           download-url: https://files.pythonhosted.org/packages/source/a/agentbreeder/agentbreeder-${{ needs.build-python.outputs.version }}.tar.gz
         env:
           COMMITTER_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
@@ -542,7 +542,7 @@ git commit -m "feat: add SDK and CLI image builds to CI pipeline"
 - Create: `homebrew/Formula/agentbreeder.rb` (staged locally, for reference — actual repo is separate)
 - Create: `homebrew/README.md`
 
-Note: The actual Homebrew tap lives in a separate repo (`rajitsaha/homebrew-agentbreeder`). This task creates the formula files locally so they can be pushed to that repo.
+Note: The actual Homebrew tap lives in a separate repo (`agentbreeder/homebrew-agentbreeder`). This task creates the formula files locally so they can be pushed to that repo.
 
 - [ ] **Step 1: Create local `homebrew/` directory**
 
@@ -557,7 +557,7 @@ class Agentbreeder < Formula
   include Language::Python::Virtualenv
 
   desc "Define Once. Deploy Anywhere. Govern Automatically."
-  homepage "https://github.com/rajitsaha/agentbreeder"
+  homepage "https://github.com/agentbreeder/agentbreeder"
   url "https://files.pythonhosted.org/packages/source/a/agentbreeder/agentbreeder-0.1.0.tar.gz"
   sha256 "PLACEHOLDER_SHA256"
   license "Apache-2.0"
@@ -580,12 +580,12 @@ end
 ```markdown
 # homebrew-agentbreeder
 
-Homebrew tap for [AgentBreeder](https://github.com/rajitsaha/agentbreeder).
+Homebrew tap for [AgentBreeder](https://github.com/agentbreeder/agentbreeder).
 
 ## Install
 
 ```bash
-brew tap rajitsaha/agentbreeder
+brew tap agentbreeder/agentbreeder
 brew install agentbreeder
 ```
 
@@ -635,7 +635,7 @@ pip install agentbreeder-sdk
 ### Homebrew (macOS / Linux)
 
 ```bash
-brew tap rajitsaha/agentbreeder
+brew tap agentbreeder/agentbreeder
 brew install agentbreeder
 ```
 

@@ -4,7 +4,7 @@
 
 **Goal:** Bring `@agentbreeder/sdk` (TypeScript) to full feature parity with `agentbreeder-sdk` (Python). The TypeScript SDK exists but covers only ~60% of the Python SDK's surface area — three whole modules are missing (`memory.ts`, `mcp.ts`, `validation.ts`), eight `Agent` class methods are absent (file I/O, middleware, event hooks, programmatic deploy), `Tool.fromFunction()` is not implemented, the README is a single-line placeholder, and no TypeScript examples exist.
 
-**GitHub Issue:** [#55](https://github.com/rajitsaha/agentbreeder/issues/55)
+**GitHub Issue:** [#55](https://github.com/agentbreeder/agentbreeder/issues/55)
 
 **Architecture:** All additions are purely additive — no existing TypeScript SDK APIs change. The `Memory` and `MCPServe` classes mirror the Python equivalents in shape, with TypeScript-idiomatic adaptations (explicit schemas instead of runtime type reflection; `async`/`Promise` for file I/O). The `MCPServe` class uses `@modelcontextprotocol/sdk` as an optional peer dependency, matching the Python SDK's optional `mcp>=1.0.0` extra.
 

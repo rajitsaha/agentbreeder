@@ -10,11 +10,11 @@ const LINKS = {
     { label: 'Migrations', href: '/docs/migrations/overview' },
   ],
   'Open Source': [
-    { label: 'GitHub ↗', href: 'https://github.com/rajitsaha/agentbreeder' },
+    { label: 'GitHub ↗', href: 'https://github.com/agentbreeder/agentbreeder' },
     { label: 'PyPI ↗', href: 'https://pypi.org/project/agentbreeder/' },
     { label: 'Docker Hub ↗', href: 'https://hub.docker.com/u/rajits' },
     { label: 'npm ↗', href: 'https://www.npmjs.com/package/@agentbreeder/sdk' },
-    { label: 'Homebrew ↗', href: 'https://github.com/rajitsaha/homebrew-agentbreeder' },
+    { label: 'Homebrew ↗', href: 'https://github.com/agentbreeder/homebrew-agentbreeder' },
   ],
   Blog: [
     { label: 'Why I Built AgentBreeder', href: '/blog/why-i-built-agentbreeder' },
@@ -23,7 +23,7 @@ const LINKS = {
   Community: [
     { label: 'Twitter ↗', href: 'https://twitter.com' },
     { label: 'LinkedIn ↗', href: 'https://www.linkedin.com/in/rajsaha/' },
-    { label: 'Issues ↗', href: 'https://github.com/rajitsaha/agentbreeder/issues' },
+    { label: 'Issues ↗', href: 'https://github.com/agentbreeder/agentbreeder/issues' },
   ],
 };
 

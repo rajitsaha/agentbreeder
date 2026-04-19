@@ -1,6 +1,6 @@
 FROM python:3.12-slim
 
-LABEL org.opencontainers.image.source="https://github.com/rajitsaha/agentbreeder"
+LABEL org.opencontainers.image.source="https://github.com/agentbreeder/agentbreeder"
 LABEL org.opencontainers.image.description="AgentBreeder CLI for CI/CD pipelines"
 
 ARG VERSION

@@ -1,10 +1,10 @@
 # AgentBreeder OSS — Cloud Integration Plan
 
 **Date:** 2026-04-18  
-**Purpose:** Documents all OSS modules that must be built to power [AgentBreeder Cloud](https://github.com/rajitsaha/agentbreeder-cloud).  
+**Purpose:** Documents all OSS modules that must be built to power [AgentBreeder Cloud](https://github.com/agentbreeder/agentbreeder-cloud).  
 **Rule:** Every capability goes into OSS first. Cloud adds managed hosting, multi-tenancy, and billing on top.
 
-Full architecture: [agentbreeder-cloud/docs/superpowers/specs/2026-04-18-north-star-architecture.md](https://github.com/rajitsaha/agentbreeder-cloud/blob/main/docs/superpowers/specs/2026-04-18-north-star-architecture.md)
+Full architecture: [agentbreeder-cloud/docs/superpowers/specs/2026-04-18-north-star-architecture.md](https://github.com/agentbreeder/agentbreeder-cloud/blob/main/docs/superpowers/specs/2026-04-18-north-star-architecture.md)
 
 ---
 
@@ -49,7 +49,7 @@ agentbreeder.engine.spawner       ← dynamic subagent spawning at runtime
 
 **ROADMAP milestone:** v2.1  
 **Cloud unblocks:** RAG Builder (Phase 2), Agent Guide (Phase 3)  
-**Cloud issues:** [#14](https://github.com/rajitsaha/agentbreeder-cloud/issues/14)
+**Cloud issues:** [#14](https://github.com/agentbreeder/agentbreeder-cloud/issues/14)
 
 ```
 agentbreeder/rag/
@@ -89,8 +89,8 @@ agentbreeder/rag/
 
 **ROADMAP milestone:** v2.2  
 **Cloud unblocks:** Graph Explorer UI, GraphRAG search in Agent Builder  
-**Cloud issues:** [#50](https://github.com/rajitsaha/agentbreeder-cloud/issues/50) [#51](https://github.com/rajitsaha/agentbreeder-cloud/issues/51) [#52](https://github.com/rajitsaha/agentbreeder-cloud/issues/52) [#53](https://github.com/rajitsaha/agentbreeder-cloud/issues/53)  
-**Full spec:** [2026-04-18-graphrag-design.md](https://github.com/rajitsaha/agentbreeder-cloud/blob/main/docs/superpowers/specs/2026-04-18-graphrag-design.md)
+**Cloud issues:** [#50](https://github.com/agentbreeder/agentbreeder-cloud/issues/50) [#51](https://github.com/agentbreeder/agentbreeder-cloud/issues/51) [#52](https://github.com/agentbreeder/agentbreeder-cloud/issues/52) [#53](https://github.com/agentbreeder/agentbreeder-cloud/issues/53)  
+**Full spec:** [2026-04-18-graphrag-design.md](https://github.com/agentbreeder/agentbreeder-cloud/blob/main/docs/superpowers/specs/2026-04-18-graphrag-design.md)
 
 **Why:** Naive vector RAG fails on multi-hop queries (*"all decisions involving team X"*) and global questions (*"main themes across all tickets"*). GraphRAG adds a knowledge graph layer with 3.4× accuracy improvement on these query types.
 
@@ -126,7 +126,7 @@ Install as: `pip install agentbreeder[graphrag]`
 
 **ROADMAP milestone:** v2.1  
 **Cloud unblocks:** DB Connector Manager (Phase 2)  
-**Cloud issue:** [#15](https://github.com/rajitsaha/agentbreeder-cloud/issues/15)
+**Cloud issue:** [#15](https://github.com/agentbreeder/agentbreeder-cloud/issues/15)
 
 ```
 agentbreeder/connectors/db/
@@ -151,7 +151,7 @@ agentbreeder/connectors/db/
 
 **ROADMAP milestone:** v2.3  
 **Cloud unblocks:** Online Eval dashboard, score alerts (Phase 4)  
-**Cloud issue:** [#16](https://github.com/rajitsaha/agentbreeder-cloud/issues/16)
+**Cloud issue:** [#16](https://github.com/agentbreeder/agentbreeder-cloud/issues/16)
 
 ```
 agentbreeder/eval/
@@ -171,7 +171,7 @@ agentbreeder/eval/
 
 **ROADMAP milestone:** v2.3  
 **Cloud unblocks:** Offline Eval suites, CI gate, GitHub App (Phase 4)  
-**Cloud issue:** [#17](https://github.com/rajitsaha/agentbreeder-cloud/issues/17)
+**Cloud issue:** [#17](https://github.com/agentbreeder/agentbreeder-cloud/issues/17)
 
 ```
 agentbreeder/eval/
@@ -196,7 +196,7 @@ agentbreeder/eval/
 
 **ROADMAP milestone:** v2.4  
 **Cloud unblocks:** Agent Guide UI (Phase 3)  
-**Cloud issue:** [#18](https://github.com/rajitsaha/agentbreeder-cloud/issues/18)
+**Cloud issue:** [#18](https://github.com/agentbreeder/agentbreeder-cloud/issues/18)
 
 The killer feature: paste a business requirement in plain English, get a production-ready agent config. No competitor has this.
 
@@ -237,7 +237,7 @@ Output (agentbreeder YAML):
 
 **ROADMAP milestone:** v2.4  
 **Cloud unblocks:** Chat API, chatbot widget (Phase 3)  
-**Cloud issue:** [#19](https://github.com/rajitsaha/agentbreeder-cloud/issues/19)
+**Cloud issue:** [#19](https://github.com/agentbreeder/agentbreeder-cloud/issues/19)
 
 ```
 agentbreeder/serving/
@@ -258,7 +258,7 @@ agentbreeder/serving/
 
 **ROADMAP milestone:** v2.5  
 **Cloud unblocks:** Sessions Dashboard, long-running agent support (Phase 3)  
-**Cloud issues:** [#45](https://github.com/rajitsaha/agentbreeder-cloud/issues/45) [#48](https://github.com/rajitsaha/agentbreeder-cloud/issues/48)
+**Cloud issues:** [#45](https://github.com/agentbreeder/agentbreeder-cloud/issues/45) [#48](https://github.com/agentbreeder/agentbreeder-cloud/issues/48)
 
 Enables agents to run for hours, survive disconnections, and resume from mid-task state.
 
@@ -282,7 +282,7 @@ agentbreeder/sessions/
 
 **ROADMAP milestone:** v2.5  
 **Cloud unblocks:** Memory Browser UI (Phase 4)  
-**Cloud issues:** [#46](https://github.com/rajitsaha/agentbreeder-cloud/issues/46) [#49](https://github.com/rajitsaha/agentbreeder-cloud/issues/49)
+**Cloud issues:** [#46](https://github.com/agentbreeder/agentbreeder-cloud/issues/46) [#49](https://github.com/agentbreeder/agentbreeder-cloud/issues/49)
 
 Agents remember facts, preferences, and events across separate sessions.
 
@@ -305,7 +305,7 @@ agentbreeder/memory/
 
 **ROADMAP milestone:** v2.5  
 **Cloud unblocks:** Subagent execution graph in traces (Phase 4)  
-**Cloud issue:** [#47](https://github.com/rajitsaha/agentbreeder-cloud/issues/47)
+**Cloud issue:** [#47](https://github.com/agentbreeder/agentbreeder-cloud/issues/47)
 
 Orchestrator agents create specialist subagents at runtime — not pre-wired in a composer.
 

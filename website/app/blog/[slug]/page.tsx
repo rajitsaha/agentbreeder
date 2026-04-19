@@ -205,7 +205,7 @@ export default async function BlogPostPage({ params }: Props) {
               Get Started →
             </Link>
             <a
-              href="https://github.com/rajitsaha/agentbreeder"
+              href="https://github.com/agentbreeder/agentbreeder"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-1.5 rounded-lg border px-4 py-2 text-sm no-underline transition-colors hover:text-white"

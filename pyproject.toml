@@ -85,7 +85,7 @@ agentbreeder = "cli.main:app"
 
 [project.urls]
 Homepage = "https://agent-breeder.com"
-Repository = "https://github.com/rajitsaha/agentbreeder"
+Repository = "https://github.com/agentbreeder/agentbreeder"
 Documentation = "https://agent-breeder.com"
 
 [tool.hatch.version]

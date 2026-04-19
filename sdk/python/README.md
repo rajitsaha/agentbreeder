@@ -1,6 +1,6 @@
 # agentbreeder-sdk
 
-The official Python SDK for [AgentBreeder](https://github.com/rajitsaha/agentbreeder) — define, validate, and deploy AI agents programmatically.
+The official Python SDK for [AgentBreeder](https://github.com/agentbreeder/agentbreeder) — define, validate, and deploy AI agents programmatically.
 
 ## Installation
 
@@ -87,6 +87,6 @@ See [`sdk/typescript/`](../../sdk/typescript/README.md) for full documentation.
 ## Links
 
 - [Documentation](https://agent-breeder.com)
-- [GitHub](https://github.com/rajitsaha/agentbreeder)
+- [GitHub](https://github.com/agentbreeder/agentbreeder)
 - [agent.yaml reference](https://agent-breeder.com/agent-yaml)
 - [TypeScript SDK on npm](https://www.npmjs.com/package/@agentbreeder/sdk)

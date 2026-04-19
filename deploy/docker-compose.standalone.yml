@@ -3,7 +3,7 @@
 # platform with a single curl + docker compose command.
 #
 # Usage:
-#   curl -O https://raw.githubusercontent.com/rajitsaha/agentbreeder/main/deploy/docker-compose.standalone.yml
+#   curl -O https://raw.githubusercontent.com/agentbreeder/agentbreeder/main/deploy/docker-compose.standalone.yml
 #   docker compose -f docker-compose.standalone.yml up -d
 #
 # Dashboard: http://localhost:3001

@@ -408,7 +408,7 @@ jobs:
       - name: Checkout homebrew tap
         uses: actions/checkout@v4
         with:
-          repository: rajitsaha/homebrew-agentbreeder
+          repository: agentbreeder/homebrew-agentbreeder
           token: ${{ secrets.HOMEBREW_TAP_TOKEN }}
           path: homebrew-tap
 

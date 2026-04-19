@@ -44,7 +44,7 @@ Expected before fix: `FAIL: unversioned install`
 ```dockerfile
 FROM python:3.12-slim
 
-LABEL org.opencontainers.image.source="https://github.com/rajitsaha/agentbreeder"
+LABEL org.opencontainers.image.source="https://github.com/agentbreeder/agentbreeder"
 LABEL org.opencontainers.image.description="AgentBreeder CLI for CI/CD pipelines"
 
 ARG VERSION
@@ -117,9 +117,9 @@ Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>"
 ## Task 2: Create Homebrew Formula Stub
 
 **Files:**
-- Create: `Formula/agentbreeder.rb` (in the `rajitsaha/homebrew-agentbreeder` tap repo — **not** in this repo)
+- Create: `Formula/agentbreeder.rb` (in the `agentbreeder/homebrew-agentbreeder` tap repo — **not** in this repo)
 
-The `update-homebrew` CI job (`.github/workflows/release.yml`) checks out `rajitsaha/homebrew-agentbreeder` and runs regex replacements on `Formula/agentbreeder.rb`. If the file doesn't exist, the workflow fails. The stub just needs to have the right regex-parseable structure — it will be overwritten by CI on first release.
+The `update-homebrew` CI job (`.github/workflows/release.yml`) checks out `agentbreeder/homebrew-agentbreeder` and runs regex replacements on `Formula/agentbreeder.rb`. If the file doesn't exist, the workflow fails. The stub just needs to have the right regex-parseable structure — it will be overwritten by CI on first release.
 
 - [ ] **Step 1: Create the tap repo on GitHub**
 
@@ -128,7 +128,7 @@ Go to https://github.com/new and create a public repo named `homebrew-agentbreed
 - [ ] **Step 2: Clone the tap repo locally**
 
 ```bash
-git clone git@github.com:rajitsaha/homebrew-agentbreeder.git /tmp/homebrew-agentbreeder
+git clone git@github.com:agentbreeder/homebrew-agentbreeder.git /tmp/homebrew-agentbreeder
 cd /tmp/homebrew-agentbreeder
 mkdir -p Formula
 ```
@@ -140,7 +140,7 @@ class Agentbreeder < Formula
   include Language::Python::Virtualenv
 
   desc "Define Once. Deploy Anywhere. — AgentBreeder CLI"
-  homepage "https://github.com/rajitsaha/agentbreeder"
+  homepage "https://github.com/agentbreeder/agentbreeder"
   url "https://files.pythonhosted.org/packages/placeholder/agentbreeder-0.0.0.tar.gz"
   sha256 "0000000000000000000000000000000000000000000000000000000000000000"
   license "Apache-2.0"
@@ -176,8 +176,8 @@ git push origin main
 - [ ] **Step 5: Verify the tap works**
 
 ```bash
-brew tap rajitsaha/agentbreeder
-brew info rajitsaha/agentbreeder/agentbreeder
+brew tap agentbreeder/agentbreeder
+brew info agentbreeder/agentbreeder/agentbreeder
 # Should print formula info — not an error about missing formula
 ```
 
@@ -201,7 +201,7 @@ These steps require actions in external systems. They only need to be done once.
 
 - [ ] **3b: Create GitHub Environment named `pypi`**
 
-  1. Go to https://github.com/rajitsaha/agentbreeder → Settings → Environments → New environment
+  1. Go to https://github.com/agentbreeder/agentbreeder → Settings → Environments → New environment
   2. Name it exactly `pypi` (case-sensitive — matches `release.yml`)
   3. No protection rules needed (PyPI OIDC handles the auth)
   4. Save.
@@ -217,7 +217,7 @@ These steps require actions in external systems. They only need to be done once.
      - Description: `agentbreeder-ci`
      - Permissions: Read, Write, Delete
      - Copy the token
-  4. Go to https://github.com/rajitsaha/agentbreeder → Settings → Secrets and variables → Actions
+  4. Go to https://github.com/agentbreeder/agentbreeder → Settings → Secrets and variables → Actions
   5. Add secrets:
      - `DOCKERHUB_USERNAME` = `rajits`
      - `DOCKERHUB_TOKEN` = (the token from step 3)
@@ -229,7 +229,7 @@ These steps require actions in external systems. They only need to be done once.
   3. Expiration: No expiration (or 1 year — your call)
   4. Scopes: check `repo` only
   5. Generate and copy the token
-  6. Go to https://github.com/rajitsaha/agentbreeder → Settings → Secrets → Actions
+  6. Go to https://github.com/agentbreeder/agentbreeder → Settings → Secrets → Actions
   7. Add secret: `HOMEBREW_TAP_TOKEN` = (the token from step 5)
 
 - [ ] **3e: Create npm org + package + NPM_TOKEN secret**
@@ -238,7 +238,7 @@ These steps require actions in external systems. They only need to be done once.
   2. Create org `agentbreeder` (needed for `@agentbreeder/sdk` scoped package)
   3. Go to Access Tokens → Generate New Token → Automation (for CI)
   4. Copy the token
-  5. Go to https://github.com/rajitsaha/agentbreeder → Settings → Secrets → Actions
+  5. Go to https://github.com/agentbreeder/agentbreeder → Settings → Secrets → Actions
   6. Add secret: `NPM_TOKEN` = (the token from step 4)
 
 - [ ] **3f: Smoke-test the full release pipeline**
@@ -251,7 +251,7 @@ These steps require actions in external systems. They only need to be done once.
   git push origin v0.1.0-rc1
   ```
 
-  Watch https://github.com/rajitsaha/agentbreeder/actions — all jobs should go green:
+  Watch https://github.com/agentbreeder/agentbreeder/actions — all jobs should go green:
   - `pre-release-check` → `build-python` / `build-sdk` / `build-images` / `build-ts-sdk`
   - `github-release` → `publish-sdk-pypi` → `publish-pypi` → `update-homebrew`
   - `publish-npm` (parallel with above)
@@ -260,7 +260,7 @@ These steps require actions in external systems. They only need to be done once.
   ```bash
   pip install agentbreeder==0.1.0rc1   # should install
   docker pull rajits/agentbreeder-cli:0.1.0rc1   # should pull
-  brew tap rajitsaha/agentbreeder && brew install agentbreeder  # should install
+  brew tap agentbreeder/agentbreeder && brew install agentbreeder  # should install
   npm install @agentbreeder/sdk@0.1.0-rc1  # should install
   ```
 

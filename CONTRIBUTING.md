@@ -11,7 +11,7 @@ Read [CLAUDE.md](CLAUDE.md) before diving in. It's the authoritative guide to ho
 | Contribution | Difficulty | Impact |
 |---|:---:|:---:|
 | Report a bug | Easy | High |
-| Fix a [`good first issue`](https://github.com/rajitsaha/agentbreeder/issues?q=label%3A%22good+first+issue%22) | Easy | Medium |
+| Fix a [`good first issue`](https://github.com/agentbreeder/agentbreeder/issues?q=label%3A%22good+first+issue%22) | Easy | Medium |
 | Add an agent template to the Marketplace | Easy | High |
 | Improve documentation | Easy | High |
 | Add a connector (LiteLLM, OpenRouter, MCP) | Medium | High |
@@ -20,7 +20,7 @@ Read [CLAUDE.md](CLAUDE.md) before diving in. It's the authoritative guide to ho
 | Add an orchestration strategy | Hard | Very High |
 | Suggest a feature | Easy | Medium |
 
-Browse open issues at [github.com/rajitsaha/agentbreeder/issues](https://github.com/rajitsaha/agentbreeder/issues) or start a discussion at [github.com/rajitsaha/agentbreeder/discussions](https://github.com/rajitsaha/agentbreeder/discussions).
+Browse open issues at [github.com/agentbreeder/agentbreeder/issues](https://github.com/agentbreeder/agentbreeder/issues) or start a discussion at [github.com/agentbreeder/agentbreeder/discussions](https://github.com/agentbreeder/agentbreeder/discussions).
 
 ---
 

@@ -16,7 +16,7 @@ synthesises a grouped digest, and emails it to configured recipients via Gmail.
 
 - `agent.yaml` — model, secrets, env vars
 - `root_agent.yaml` — agent identity + instruction (no Python required once #66 resolved)
-- `agent.py` — workaround until [AgentBreeder #66](https://github.com/rajitsaha/agentbreeder/issues/66) lands
+- `agent.py` — workaround until [AgentBreeder #66](https://github.com/agentbreeder/agentbreeder/issues/66) lands
 - `tools/` — MCP tool server (news fetch + email)
 
 ## Quick start
@@ -66,7 +66,7 @@ agentbreeder deploy --target local
 
 | Issue | Impact | Workaround |
 |-------|--------|------------|
-| [#63](https://github.com/rajitsaha/agentbreeder/issues/63) | Ollama models need manual LiteLlmModel wiring | `agent.py` handles this |
-| [#64](https://github.com/rajitsaha/agentbreeder/issues/64) | Ollama not auto-started by `agentbreeder deploy` | Run `ollama serve` manually |
-| [#65](https://github.com/rajitsaha/agentbreeder/issues/65) | Model weights not auto-pulled | Run `ollama pull gemma3:27b` manually |
-| [#66](https://github.com/rajitsaha/agentbreeder/issues/66) | `root_agent.yaml` can't use Ollama without Python | `agent.py` exists as workaround |
+| [#63](https://github.com/agentbreeder/agentbreeder/issues/63) | Ollama models need manual LiteLlmModel wiring | `agent.py` handles this |
+| [#64](https://github.com/agentbreeder/agentbreeder/issues/64) | Ollama not auto-started by `agentbreeder deploy` | Run `ollama serve` manually |
+| [#65](https://github.com/agentbreeder/agentbreeder/issues/65) | Model weights not auto-pulled | Run `ollama pull gemma3:27b` manually |
+| [#66](https://github.com/agentbreeder/agentbreeder/issues/66) | `root_agent.yaml` can't use Ollama without Python | `agent.py` exists as workaround |

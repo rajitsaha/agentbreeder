@@ -17,7 +17,7 @@ Choose one:
 === "Homebrew"
 
     ```bash
-    brew tap rajitsaha/agentbreeder
+    brew tap agentbreeder/agentbreeder
     brew install agentbreeder
     ```
 
@@ -46,7 +46,7 @@ Choose one:
 === "From source"
 
     ```bash
-    git clone https://github.com/rajitsaha/agentbreeder.git
+    git clone https://github.com/agentbreeder/agentbreeder.git
     cd agentbreeder
     python -m venv venv && source venv/bin/activate
     pip install -e ".[dev]"
@@ -192,7 +192,7 @@ claude_managed:
 If you want the dashboard, registry, and API server running locally:
 
 ```bash
-git clone https://github.com/rajitsaha/agentbreeder.git
+git clone https://github.com/agentbreeder/agentbreeder.git
 cd agentbreeder
 
 python -m venv venv && source venv/bin/activate

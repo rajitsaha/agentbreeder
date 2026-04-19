@@ -174,4 +174,4 @@ If you use the official Python or TypeScript SDKs, they handle versioning automa
 
 ## Questions?
 
-Open an issue at [github.com/rajitsaha/agentbreeder](https://github.com/rajitsaha/agentbreeder/issues) or start a discussion at the Discussions tab.
+Open an issue at [github.com/agentbreeder/agentbreeder](https://github.com/agentbreeder/agentbreeder/issues) or start a discussion at the Discussions tab.

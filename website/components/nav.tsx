@@ -8,7 +8,7 @@ const NAV_LINKS = [
   { href: '/blog', label: 'Blog' },
 ];
 
-const GITHUB_URL = 'https://github.com/rajitsaha/agentbreeder';
+const GITHUB_URL = 'https://github.com/agentbreeder/agentbreeder';
 
 export function Nav({ docsSearch = false }: { docsSearch?: boolean }) {
   return (

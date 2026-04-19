@@ -11,8 +11,8 @@
 [![npm](https://img.shields.io/npm/v/@agentbreeder/sdk?color=red&label=npm)](https://www.npmjs.com/package/@agentbreeder/sdk)
 [![Python](https://img.shields.io/pypi/pyversions/agentbreeder?color=blue)](https://pypi.org/project/agentbreeder/)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
-[![CI](https://github.com/rajitsaha/agentbreeder/actions/workflows/ci.yml/badge.svg)](https://github.com/rajitsaha/agentbreeder/actions/workflows/ci.yml)
-[![Coverage](https://img.shields.io/badge/coverage-96%25-brightgreen)](https://github.com/rajitsaha/agentbreeder/actions)
+[![CI](https://github.com/agentbreeder/agentbreeder/actions/workflows/ci.yml/badge.svg)](https://github.com/agentbreeder/agentbreeder/actions/workflows/ci.yml)
+[![Coverage](https://img.shields.io/badge/coverage-96%25-brightgreen)](https://github.com/agentbreeder/agentbreeder/actions)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
 <br/>
@@ -299,7 +299,7 @@ await agent.deploy();
 ### Homebrew (macOS / Linux)
 
 ```bash
-brew tap rajitsaha/agentbreeder
+brew tap agentbreeder/agentbreeder
 brew install agentbreeder
 ```
 
@@ -308,7 +308,7 @@ brew install agentbreeder
 **Full platform — no repo clone required:**
 
 ```bash
-curl -O https://raw.githubusercontent.com/rajitsaha/agentbreeder/main/deploy/docker-compose.standalone.yml
+curl -O https://raw.githubusercontent.com/agentbreeder/agentbreeder/main/deploy/docker-compose.standalone.yml
 docker compose -f docker-compose.standalone.yml up -d
 ```
 
@@ -343,7 +343,7 @@ agentbreeder deploy agent.yaml --target local
 **Or run from source (contributors):**
 
 ```bash
-git clone https://github.com/rajitsaha/agentbreeder.git
+git clone https://github.com/agentbreeder/agentbreeder.git
 cd agentbreeder
 
 python -m venv venv && source venv/bin/activate
@@ -586,8 +586,8 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for setup instructions and guidelines.
 
 ## Community
 
-- [GitHub Issues](https://github.com/rajitsaha/agentbreeder/issues) — bugs and feature requests
-- [GitHub Discussions](https://github.com/rajitsaha/agentbreeder/discussions) — questions and show & tell
+- [GitHub Issues](https://github.com/agentbreeder/agentbreeder/issues) — bugs and feature requests
+- [GitHub Discussions](https://github.com/agentbreeder/agentbreeder/discussions) — questions and show & tell
 
 ---
 
@@ -608,6 +608,6 @@ Tech executive · 20+ years building enterprise data & ML platforms · Udemy, Le
 
 <br/>
 
-**If AgentBreeder saves you time, [star the repo](https://github.com/rajitsaha/agentbreeder) and share it with your team.**
+**If AgentBreeder saves you time, [star the repo](https://github.com/agentbreeder/agentbreeder) and share it with your team.**
 
 </div>

@@ -1,5 +1,5 @@
 blank_issues_enabled: false
 contact_links:
   - name: Questions & Ideas
-    url: https://github.com/rajitsaha/agentbreeder/discussions
+    url: https://github.com/agentbreeder/agentbreeder/discussions
     about: Ask questions or share ideas in Discussions (not Issues)

@@ -145,12 +145,12 @@ This project follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) an
   - `rajits/agentbreeder-api` — FastAPI backend
   - `rajits/agentbreeder-dashboard` — React frontend
   - `rajits/agentbreeder-cli` — lightweight CLI image for CI/CD pipelines
-- Homebrew: `brew tap rajitsaha/agentbreeder && brew install agentbreeder` via `Formula/agentbreeder.rb` (Python virtualenv pattern)
+- Homebrew: `brew tap agentbreeder/agentbreeder && brew install agentbreeder` via `Formula/agentbreeder.rb` (Python virtualenv pattern)
 
 #### Release Automation
 - `.github/workflows/release.yml`: single workflow publishes to all four distribution channels on each tagged release
 - PyPI publishing via OIDC trusted publishers — no long-lived API tokens required
-- Homebrew formula auto-updated on every release via the `rajitsaha/homebrew-agentbreeder` tap repo
+- Homebrew formula auto-updated on every release via the `agentbreeder/homebrew-agentbreeder` tap repo
 
 ### Changed
 - Both Python packages (`agentbreeder` and `agentbreeder-sdk`) now derive their version from git tags using `hatch-vcs` — no more manual version bumps
@@ -192,7 +192,7 @@ This project follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) an
 
 ---
 
-[Unreleased]: https://github.com/rajitsaha/agentbreeder/compare/v1.5.0...HEAD
-[1.5.0]: https://github.com/rajitsaha/agentbreeder/compare/v1.4.0...v1.5.0
-[1.4.0]: https://github.com/rajitsaha/agentbreeder/compare/v1.0.0...v1.4.0
-[1.0.0]: https://github.com/rajitsaha/agentbreeder/releases/tag/v1.0.0
+[Unreleased]: https://github.com/agentbreeder/agentbreeder/compare/v1.5.0...HEAD
+[1.5.0]: https://github.com/agentbreeder/agentbreeder/compare/v1.4.0...v1.5.0
+[1.4.0]: https://github.com/agentbreeder/agentbreeder/compare/v1.0.0...v1.4.0
+[1.0.0]: https://github.com/agentbreeder/agentbreeder/releases/tag/v1.0.0

@@ -122,7 +122,7 @@ export function Hero() {
             Read the docs →
           </Link>
           <a
-            href="https://github.com/rajitsaha/agentbreeder"
+            href="https://github.com/agentbreeder/agentbreeder"
             target="_blank"
             rel="noopener noreferrer"
             className="rounded-lg border px-5 py-2.5 text-sm no-underline transition-colors"

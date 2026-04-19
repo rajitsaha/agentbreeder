@@ -290,14 +290,14 @@ Test file: `tests/test_tools.py` + `tests/test_agent.py`
 
 | Issue | Title | Priority | Impact |
 |-------|-------|----------|--------|
-| [#63](https://github.com/rajitsaha/agentbreeder/issues/63) | All runtimes break with Ollama/LiteLLM model strings | P0 | Agent fails at runtime without workaround |
-| [#64](https://github.com/rajitsaha/agentbreeder/issues/64) | Auto-inject Ollama sidecar when `model: ollama/*` | P0 | User must run `ollama serve` manually |
-| [#65](https://github.com/rajitsaha/agentbreeder/issues/65) | Auto-pull Ollama model during deploy | P0 | User must run `ollama pull` manually |
-| [#66](https://github.com/rajitsaha/agentbreeder/issues/66) | `root_agent.yaml` + LiteLLM injection (no `agent.py` needed) | P1 | Forces user to write Python for a Low Code use case |
-| [#58](https://github.com/rajitsaha/agentbreeder/issues/58) | News/RSS connector (`connectors/news/`) | P1 | Tool code duplicated per-agent until this exists |
-| [#57](https://github.com/rajitsaha/agentbreeder/issues/57) | SMTP email connector (`connectors/email/smtp.py`) | P1 | Email code duplicated per-agent until this exists |
-| [#61](https://github.com/rajitsaha/agentbreeder/issues/61) | `agentbreeder schedule` CLI command | P2 | Workaround: inline `--schedule` flag |
-| [#60](https://github.com/rajitsaha/agentbreeder/issues/60) | Add `feedparser` to optional deps | P2 | Workaround: list in agent's `tools/requirements.txt` |
+| [#63](https://github.com/agentbreeder/agentbreeder/issues/63) | All runtimes break with Ollama/LiteLLM model strings | P0 | Agent fails at runtime without workaround |
+| [#64](https://github.com/agentbreeder/agentbreeder/issues/64) | Auto-inject Ollama sidecar when `model: ollama/*` | P0 | User must run `ollama serve` manually |
+| [#65](https://github.com/agentbreeder/agentbreeder/issues/65) | Auto-pull Ollama model during deploy | P0 | User must run `ollama pull` manually |
+| [#66](https://github.com/agentbreeder/agentbreeder/issues/66) | `root_agent.yaml` + LiteLLM injection (no `agent.py` needed) | P1 | Forces user to write Python for a Low Code use case |
+| [#58](https://github.com/agentbreeder/agentbreeder/issues/58) | News/RSS connector (`connectors/news/`) | P1 | Tool code duplicated per-agent until this exists |
+| [#57](https://github.com/agentbreeder/agentbreeder/issues/57) | SMTP email connector (`connectors/email/smtp.py`) | P1 | Email code duplicated per-agent until this exists |
+| [#61](https://github.com/agentbreeder/agentbreeder/issues/61) | `agentbreeder schedule` CLI command | P2 | Workaround: inline `--schedule` flag |
+| [#60](https://github.com/agentbreeder/agentbreeder/issues/60) | Add `feedparser` to optional deps | P2 | Workaround: list in agent's `tools/requirements.txt` |
 
 **P0 gap summary:** Three issues (#63, #64, #65) must be resolved before `agentbreeder deploy --target local` works end-to-end with Ollama. Until then, users must manually run Ollama and use an `agent.py` workaround — which contradicts the platform's core promise.
 
