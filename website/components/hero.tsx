@@ -10,14 +10,14 @@ framework: langgraph
 
 # model config
 model:
-  primary: claude-sonnet-4
+  primary: ollama/gemma4
   fallback: gpt-4o
   temperature: 0.7
 
-# deploy to any cloud
+# run locally
 deploy:
-  cloud: gcp
-  runtime: cloud-run`;
+  cloud: local
+  runtime: docker`;
 
 function YamlLine({ line }: { line: string }) {
   const comment = line.match(/^(\s*)(#.*)$/);
@@ -32,7 +32,7 @@ function YamlLine({ line }: { line: string }) {
   const kv = line.match(/^(\s*)([a-z_]+)(:)(\s*)(.*)$/);
   if (kv) {
     const [, indent, key, colon, space, value] = kv;
-    const isKeyword = ['langgraph', 'crewai', 'claude_sdk', 'google_adk', 'gcp', 'local', 'cloud-run'].includes(value);
+    const isKeyword = ['langgraph', 'crewai', 'claude_sdk', 'google_adk', 'gcp', 'local', 'cloud-run', 'docker', 'ollama'].includes(value);
     const isNumber = /^\d+(\.\d+)?$/.test(value);
     return (
       <span>
@@ -178,30 +178,76 @@ export function Hero() {
               </pre>
             </div>
 
+            {/* Capability grid: MCP · A2A · Prompts · RAG */}
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              {[
+                {
+                  label: 'Prompts',
+                  color: '#f472b6',
+                  icon: '✦',
+                  lines: ['versioned · cached', 'variables · v3'],
+                },
+                {
+                  label: 'RAG',
+                  color: '#fb923c',
+                  icon: '◈',
+                  lines: ['vector · graph', 'hybrid search'],
+                },
+                {
+                  label: 'MCP',
+                  color: '#34d399',
+                  icon: '⬡',
+                  lines: ['4 servers · auto-discover', 'tool registry'],
+                },
+                {
+                  label: 'A2A',
+                  color: '#e879f9',
+                  icon: '⇄',
+                  lines: ['agent-to-agent', 'JSON-RPC · auth'],
+                },
+              ].map(({ label, color, icon, lines }) => (
+                <div
+                  key={label}
+                  className="rounded-xl border px-3.5 py-3"
+                  style={{ background: 'var(--bg-surface)', borderColor: 'var(--border)' }}
+                >
+                  <div className="mb-1.5 flex items-center gap-2">
+                    <span className="text-base" style={{ color }}>{icon}</span>
+                    <span className="text-[12px] font-bold text-white">{label}</span>
+                    <span
+                      className="ml-auto h-1.5 w-1.5 rounded-full animate-pulse"
+                      style={{ background: color }}
+                    />
+                  </div>
+                  {lines.map(l => (
+                    <p key={l} className="font-mono text-[10px] leading-[1.6]" style={{ color: 'var(--text-dim)' }}>{l}</p>
+                  ))}
+                </div>
+              ))}
+            </div>
+
             {/* Terminal deploy output */}
             <div
               className="mt-3 overflow-hidden rounded-xl border"
               style={{ background: 'var(--bg-surface)', borderColor: 'var(--border)' }}
             >
               <div
-                className="flex items-center gap-1.5 border-b px-3.5 py-2.5"
+                className="flex items-center gap-1.5 border-b px-3.5 py-2"
                 style={{ background: 'rgba(255,255,255,0.02)', borderColor: 'var(--border)' }}
               >
-                <div className="h-2.5 w-2.5 rounded-full bg-[#ff5f57]" />
-                <div className="h-2.5 w-2.5 rounded-full bg-[#ffbd2e]" />
-                <div className="h-2.5 w-2.5 rounded-full bg-[#28ca41]" />
-                <span className="mx-auto font-mono text-[11px]" style={{ color: 'var(--text-dim)' }}>
+                <div className="h-2 w-2 rounded-full bg-[#ff5f57]" />
+                <div className="h-2 w-2 rounded-full bg-[#ffbd2e]" />
+                <div className="h-2 w-2 rounded-full bg-[#28ca41]" />
+                <span className="mx-auto font-mono text-[10px]" style={{ color: 'var(--text-dim)' }}>
                   terminal
                 </span>
               </div>
-              <pre className="px-4 py-3.5 font-mono text-xs leading-[1.9] overflow-x-auto">
+              <pre className="px-4 py-3 font-mono text-[11px] leading-[1.8] overflow-x-auto">
                 <span style={{ color: 'var(--accent)' }}>$ </span>
                 <span className="text-white">agentbreeder deploy</span>{'\n'}
-                <span style={{ color: 'var(--text-dim)' }}>✓ Validating agent.yaml{'\n'}</span>
-                <span style={{ color: 'var(--text-dim)' }}>✓ Building container image{'\n'}</span>
-                <span style={{ color: 'var(--text-dim)' }}>✓ Deploying to GCP Cloud Run{'\n'}</span>
-                <span style={{ color: 'var(--text-dim)' }}>✓ Registered in org registry{'\n'}</span>
-                <span style={{ color: '#60a5fa' }}>→ https://support-v1-abc.run.app</span>
+                <span style={{ color: 'var(--text-dim)' }}>✓ Validating · Building · Deploying{'\n'}</span>
+                <span style={{ color: 'var(--text-dim)' }}>✓ Prompts cached · RAG indexed · MCP wired{'\n'}</span>
+                <span style={{ color: '#60a5fa' }}>→ http://localhost:8080/support-v1</span>
               </pre>
             </div>
           </div>
