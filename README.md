@@ -12,6 +12,7 @@
 [![Python](https://img.shields.io/pypi/pyversions/agentbreeder?color=blue)](https://pypi.org/project/agentbreeder/)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![CI](https://github.com/rajitsaha/agentbreeder/actions/workflows/ci.yml/badge.svg)](https://github.com/rajitsaha/agentbreeder/actions/workflows/ci.yml)
+[![Coverage](https://img.shields.io/badge/coverage-96%25-brightgreen)](https://github.com/rajitsaha/agentbreeder/actions)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
 <br/>
@@ -209,6 +210,8 @@ agent.deploy()
 | Python SDK | ✅ |
 | TypeScript SDK | ✅ |
 | Tier mobility (`agentbreeder eject`) | ✅ |
+| Live Docker E2E test suite (97 Playwright tests, 12 spec domains) | ✅ |
+| 96% source coverage (3,374 unit + integration tests) | ✅ |
 
 ---
 
@@ -442,7 +445,7 @@ agentbreeder/
 ├── sdk/typescript/     # TypeScript SDK (npm install @agentbreeder/sdk)
 ├── connectors/         # LiteLLM, OpenRouter, MCP scanner
 ├── dashboard/          # React + TypeScript + Tailwind
-├── tests/              # 2,378 unit tests + Playwright E2E
+├── tests/              # 3,374 unit tests + Playwright E2E (live Docker suite)
 └── examples/           # Working examples per framework + orchestration
 ```
 

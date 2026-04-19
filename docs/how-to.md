@@ -1150,3 +1150,55 @@ docker run -d -p 8000:8000 rajits/agentbreeder-api
 # Then dashboard
 docker run -d -p 3001:3001 rajits/agentbreeder-dashboard
 ```
+
+---
+
+## Run the Test Suite
+
+AgentBreeder ships with three test layers. Run them in order for a complete quality signal.
+
+### Unit tests (fast, no Docker needed)
+
+```bash
+pytest tests/unit/ -q
+```
+
+3,374 tests covering the engine, deployers, runtime server templates, CLI commands, API routes, registry services, SDK, and connectors. Runs in ~2 minutes locally.
+
+### Integration tests (requires Docker stack)
+
+```bash
+docker compose -f deploy/docker-compose.yml up -d
+pytest tests/integration/ -q
+```
+
+95 tests hitting the real Postgres + FastAPI stack — no mocks for internal services.
+
+### Live E2E tests (full Playwright suite against Docker)
+
+```bash
+docker compose -f deploy/docker-compose.yml up -d
+
+cd dashboard
+
+# Headless (CI-style)
+npm run test:e2e:live
+
+# Watch mode — see tests run in Chrome
+npm run test:e2e:live:ui
+
+# Debug a specific spec
+npm run test:e2e:live:debug -- --grep "provider"
+```
+
+97 Playwright tests across 12 feature domains. The global setup creates isolated test users and teams; teardown removes them. See `dashboard/tests/e2e-live/` for all specs.
+
+### Coverage
+
+```bash
+pytest tests/unit/ tests/integration/ \
+  --cov=api --cov=engine --cov=cli --cov=registry --cov=connectors --cov=sdk \
+  --cov-report=term-missing
+
+# Current baseline: 96% source coverage
+```
