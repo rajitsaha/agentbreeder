@@ -3119,4 +3119,6 @@ The following issues were filed ahead of the HN launch targeting operational qua
 | #87 | Benchmarks: Make Benchmark Results Public and Reproducible | enhancement, benchmarks, transparency |
 | #88 | Connectors: Document Supported Integrations and Add E2E Tests | documentation, testing, connectors |
 
-**Note:** Issues #79 and #83 are partially resolved — multi-cloud website copy has been corrected and `agentbreeder validate` already exists in the CLI.
+**Note:** Issue #79 is now closed — multi-cloud website copy fully corrected in commit 4901c83. Issue #83 is partially resolved — `agentbreeder validate` already exists in the CLI.
+
+**Issue tracker:** 10 open · 43 closed — *Last updated: April 2026*
