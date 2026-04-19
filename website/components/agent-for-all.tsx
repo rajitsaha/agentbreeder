@@ -462,7 +462,7 @@ export function AgentForAll() {
                 display: 'grid', gridTemplateColumns: '1fr 1fr',
                 gap: '5px 8px', marginBottom: 18,
               }}>
-                {CLOUDS.map(({ label, color }) => (
+                {CLOUDS.map(({ label }) => (
                   <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11 }}>
                     <span style={{ color: '#3fb950' }}>✓</span>
                     <span style={{ color: '#e4e4e7' }}>{label}</span>

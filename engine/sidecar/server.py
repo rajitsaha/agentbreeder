@@ -37,9 +37,7 @@ try:
     from opentelemetry.sdk.trace.export import BatchSpanProcessor  # type: ignore[import]
 
     _provider = TracerProvider()
-    _provider.add_span_processor(
-        BatchSpanProcessor(OTLPSpanExporter(endpoint=_otel_endpoint))
-    )
+    _provider.add_span_processor(BatchSpanProcessor(OTLPSpanExporter(endpoint=_otel_endpoint)))
     trace.set_tracer_provider(_provider)
     _tracer = trace.get_tracer("agentbreeder.sidecar")
     logger.info("OTel tracer initialised — exporting to %s", _otel_endpoint)
@@ -70,11 +68,7 @@ async def receive_trace(payload: dict) -> dict:
         }
     """
     if _tracer is not None:
-        from opentelemetry import trace  # type: ignore[import]
-
-        with _tracer.start_as_current_span(
-            payload.get("operation", "agent.call")
-        ) as span:
+        with _tracer.start_as_current_span(payload.get("operation", "agent.call")) as span:
             for key, value in payload.get("attributes", {}).items():
                 span.set_attribute(key, str(value))
     else:

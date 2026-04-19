@@ -142,7 +142,7 @@ export function RegistryLifecycle() {
     let holdTimer: ReturnType<typeof setTimeout>;
 
     function resetForTab(ti: number) {
-      const tab = TABS[ti];
+      const _tab = TABS[ti]; void _tab;
       const id = TAB_IDS[ti];
 
       if (titleRef.current) titleRef.current.textContent = TITLES[id];

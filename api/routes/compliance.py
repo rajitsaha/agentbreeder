@@ -190,7 +190,9 @@ def _build_iso27001_report(request: ReportRequest) -> dict:
             "description": "ISO 27001 Annex A.9 — Access Control",
             "note": "DEMO DATA — replace with live registry query in production",
             "evidence": {
-                "access_control_policy": "RBAC enforced at deploy time via AgentBreeder governance engine",
+                "access_control_policy": (
+                    "RBAC enforced at deploy time via AgentBreeder governance engine"
+                ),
                 "user_access_management": {
                     "provisioning_process": "Team-based RBAC via AgentBreeder teams API",
                     "privileged_access_management": "Admin role with restricted endpoints",
@@ -217,11 +219,15 @@ def _build_iso27001_report(request: ReportRequest) -> dict:
             },
         },
         "A14_system_acquisition": {
-            "description": "ISO 27001 Annex A.14 — System Acquisition, Development and Maintenance",
+            "description": (
+                "ISO 27001 Annex A.14 — System Acquisition, Development and Maintenance"
+            ),
             "note": "DEMO DATA",
             "evidence": {
                 "secure_development_policy": "GitHub Actions CI/CD with automated security checks",
-                "change_control_procedures": "PR-based workflow via agentbreeder submit/review/publish",
+                "change_control_procedures": (
+                    "PR-based workflow via agentbreeder submit/review/publish"
+                ),
                 "technical_vulnerability_management": {
                     "dependency_scanning": True,
                     "last_scan": str(request.period_end),

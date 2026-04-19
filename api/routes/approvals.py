@@ -13,8 +13,7 @@ with a Redis-backed queue or database table (see models/ for the migration path)
 from __future__ import annotations
 
 import uuid
-from datetime import datetime, timezone
-from typing import Optional
+from datetime import UTC, datetime
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
@@ -36,10 +35,10 @@ class ApprovalRequest(BaseModel):
 class ApprovalResponse(BaseModel):
     approval_id: str
     status: str  # pending | approved | rejected | timed_out
-    agent_name: Optional[str] = None
-    tool_name: Optional[str] = None
-    decided_by: Optional[str] = None
-    decided_at: Optional[datetime] = None
+    agent_name: str | None = None
+    tool_name: str | None = None
+    decided_by: str | None = None
+    decided_at: datetime | None = None
 
 
 @router.post("/", response_model=ApprovalResponse)
@@ -57,7 +56,7 @@ async def request_approval(request: ApprovalRequest) -> ApprovalResponse:
         "tool_name": request.tool_name,
         "tool_args": request.tool_args,
         "requested_by": request.requested_by,
-        "created_at": datetime.now(timezone.utc).isoformat(),
+        "created_at": datetime.now(UTC).isoformat(),
         "timeout_minutes": request.timeout_minutes,
         "decided_by": None,
         "decided_at": None,
@@ -71,7 +70,7 @@ async def request_approval(request: ApprovalRequest) -> ApprovalResponse:
 
 
 @router.get("/", response_model=list[ApprovalResponse])
-async def list_approvals(status: Optional[str] = None) -> list[ApprovalResponse]:
+async def list_approvals(status: str | None = None) -> list[ApprovalResponse]:
     """List approval requests, optionally filtered by status."""
     items = list(_approval_queue.values())
     if status:
@@ -112,12 +111,10 @@ async def approve(approval_id: str, decided_by: str = "operator") -> ApprovalRes
         raise HTTPException(status_code=404, detail="Approval request not found")
     entry = _approval_queue[approval_id]
     if entry["status"] != "pending":
-        raise HTTPException(
-            status_code=409, detail=f"Approval is already '{entry['status']}'"
-        )
+        raise HTTPException(status_code=409, detail=f"Approval is already '{entry['status']}'")
     entry["status"] = "approved"
     entry["decided_by"] = decided_by
-    entry["decided_at"] = datetime.now(timezone.utc).isoformat()
+    entry["decided_at"] = datetime.now(UTC).isoformat()
     return ApprovalResponse(
         approval_id=entry["approval_id"],
         status=entry["status"],
@@ -135,12 +132,10 @@ async def reject(approval_id: str, decided_by: str = "operator") -> ApprovalResp
         raise HTTPException(status_code=404, detail="Approval request not found")
     entry = _approval_queue[approval_id]
     if entry["status"] != "pending":
-        raise HTTPException(
-            status_code=409, detail=f"Approval is already '{entry['status']}'"
-        )
+        raise HTTPException(status_code=409, detail=f"Approval is already '{entry['status']}'")
     entry["status"] = "rejected"
     entry["decided_by"] = decided_by
-    entry["decided_at"] = datetime.now(timezone.utc).isoformat()
+    entry["decided_at"] = datetime.now(UTC).isoformat()
     return ApprovalResponse(
         approval_id=entry["approval_id"],
         status=entry["status"],

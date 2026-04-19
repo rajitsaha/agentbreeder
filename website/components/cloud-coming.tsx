@@ -83,7 +83,7 @@ const CLOUD_FEATURES = [
   {
     icon: '🌐',
     title: 'Multi-cloud by default',
-    desc: 'Deploy to AWS, GCP, or Azure with one flag. Failover between clouds automatically when regions degrade.',
+    desc: 'Deploy to AWS, GCP, or Azure with one flag — same agent.yaml, same governance, same CLI.',
   },
   {
     icon: '🏪',
@@ -178,77 +178,6 @@ export function CloudComing() {
               </p>
             </div>
           ))}
-        </div>
-
-        {/* Pricing preview */}
-        <div
-          className="mb-10 overflow-hidden rounded-2xl border"
-          style={{ borderColor: 'rgba(167,139,250,0.20)', background: 'var(--bg-surface)' }}
-        >
-          <div
-            className="border-b px-8 py-5"
-            style={{ borderColor: 'rgba(167,139,250,0.15)', background: 'rgba(167,139,250,0.04)' }}
-          >
-            <p className="text-[11px] font-semibold uppercase tracking-[1.5px]" style={{ color: '#a78bfa' }}>
-              Pricing preview
-            </p>
-          </div>
-          <div className="grid grid-cols-3 divide-x" style={{ borderColor: 'var(--border)' }}>
-            {[
-              {
-                name: 'Starter',
-                price: 'Free',
-                sub: 'forever',
-                features: ['3 agents', '10k runs / mo', 'Community support', 'OSS CLI included'],
-                color: 'var(--accent)',
-                highlight: false,
-              },
-              {
-                name: 'Pro',
-                price: '$49',
-                sub: 'per seat / mo',
-                features: ['Unlimited agents', '500k runs / mo', 'Cost dashboards', 'RBAC + audit trail', 'Priority support'],
-                color: '#c084fc',
-                highlight: true,
-              },
-              {
-                name: 'Enterprise',
-                price: 'Custom',
-                sub: 'contact us',
-                features: ['SSO + SCIM', 'Private VPC deploy', 'SLA + dedicated CSM', 'On-prem option', 'Custom contracts'],
-                color: '#fb923c',
-                highlight: false,
-              },
-            ].map(({ name, price, sub, features, color, highlight }) => (
-              <div
-                key={name}
-                className="relative px-8 py-7"
-                style={highlight ? { background: 'rgba(167,139,250,0.04)' } : {}}
-              >
-                {highlight && (
-                  <span
-                    className="absolute right-5 top-5 rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider"
-                    style={{ background: 'rgba(167,139,250,0.15)', color: '#c084fc' }}
-                  >
-                    Most popular
-                  </span>
-                )}
-                <p className="mb-1 text-sm font-bold text-white">{name}</p>
-                <p className="mb-0.5 text-3xl font-black" style={{ color, letterSpacing: '-1px' }}>
-                  {price}
-                </p>
-                <p className="mb-5 text-xs" style={{ color: 'var(--text-dim)' }}>{sub}</p>
-                <ul className="space-y-2">
-                  {features.map(f => (
-                    <li key={f} className="flex items-center gap-2 text-sm" style={{ color: 'var(--text-muted)' }}>
-                      <span style={{ color }}>✓</span>
-                      {f}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
         </div>
 
         {/* Waitlist CTA */}

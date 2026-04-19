@@ -72,7 +72,7 @@ export function Hero() {
           className="mb-5 font-mono text-[11px] uppercase tracking-[1.5px]"
           style={{ color: 'var(--text-dim)' }}
         >
-          // open source · apache 2.0
+          {/* open source · apache 2.0 */}
         </p>
         <h1
           className="mb-5 text-[54px] font-black leading-[1.08] text-white"

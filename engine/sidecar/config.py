@@ -7,7 +7,6 @@ from __future__ import annotations
 
 import os
 from dataclasses import dataclass, field
-from typing import Optional
 
 
 @dataclass
@@ -20,16 +19,14 @@ class SidecarConfig:
     enabled: bool = True
     image: str = "rajits/agentbreeder-sidecar:latest"
     otel_endpoint: str = field(
-        default_factory=lambda: os.getenv(
-            "OPENTELEMETRY_ENDPOINT", "http://localhost:4317"
-        )
+        default_factory=lambda: os.getenv("OPENTELEMETRY_ENDPOINT", "http://localhost:4317")
     )
     guardrails: list[str] = field(default_factory=list)
     cost_tracking: bool = True
     health_port: int = 8090
 
     @classmethod
-    def from_deploy_config(cls, deploy_sidecar: Optional[dict]) -> "SidecarConfig":
+    def from_deploy_config(cls, deploy_sidecar: dict | None) -> SidecarConfig:
         """Build a SidecarConfig from the deploy.sidecar dict in agent.yaml.
 
         Returns a default (enabled) config if deploy_sidecar is None.

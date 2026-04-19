@@ -3099,3 +3099,24 @@ Three test users (`e2e-admin`, `e2e-member`, `e2e-viewer`) and two teams (`e2e-t
 - [ ] Global setup + teardown leave the database clean (no orphaned `e2e-*` records)
 - [ ] Existing 145 mocked CI tests (`npm run test:e2e`) are unaffected
 - [ ] LiteLLM fake model (`fake/gpt-4`) is the only LLM called — no real API costs in CI
+
+---
+
+## Pre-Launch Quality & Accuracy Issues (April 2026)
+
+The following issues were filed ahead of the HN launch targeting operational quality, trust, and accuracy. They are not feature milestones — they are pre-conditions for a credible public launch.
+
+| Issue | Title | Labels |
+|-------|-------|--------|
+| #79 | Clarify OSS Scope: Multi-Cloud Claims vs. Reality | documentation, good first issue |
+| #80 | Registry: Seed with Real, Verified Agents at Launch | enhancement, registry |
+| #81 | Eval Framework: Expose Evals as First-Class Public Feature | enhancement, feature, priority |
+| #82 | Tier Mobility: Validate and Document the Tier Promotion Logic | bug, testing, governance |
+| #83 | agent.yaml Schema: Add Strict Validation with Clear Error Messages | enhancement, dx, cli |
+| #84 | Docker/Self-Host: Test and Document Cold-Start Deployment | documentation, devops, good first issue |
+| #85 | SDK: Publish to PyPI with Version Pinning and Changelog | enhancement, sdk, release |
+| #86 | Security: Add Automated Secret Scanning to CI Pipeline | security, ci |
+| #87 | Benchmarks: Make Benchmark Results Public and Reproducible | enhancement, benchmarks, transparency |
+| #88 | Connectors: Document Supported Integrations and Add E2E Tests | documentation, testing, connectors |
+
+**Note:** Issues #79 and #83 are partially resolved — multi-cloud website copy has been corrected and `agentbreeder validate` already exists in the CLI.

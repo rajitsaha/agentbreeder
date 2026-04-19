@@ -17,7 +17,6 @@ from engine.deployers.identity import (
     provision_gcp_identity,
 )
 
-
 # ---------------------------------------------------------------------------
 # IdentityConfig defaults
 # ---------------------------------------------------------------------------
@@ -165,11 +164,10 @@ def test_provision_gcp_identity_exception() -> None:
         # from the identity module's namespace, then restoring it.
         import engine.deployers.identity as _identity_mod
 
-        original = getattr(_identity_mod, "discovery", None)  # may not exist at module level
         # The function does `from googleapiclient import discovery` inside the try block.
         # We can't patch module-level bindings that don't exist, so instead we patch
-        # the builtins.__import__ to intercept the import call.
-        real_import = __builtins__.__import__ if hasattr(__builtins__, "__import__") else __import__  # type: ignore[union-attr]
+        # builtins.__import__ to intercept the import call.
+        _ = getattr(_identity_mod, "discovery", None)  # noqa: F841 — side-effect check only
 
         import builtins
 
@@ -191,9 +189,10 @@ def test_provision_gcp_identity_exception() -> None:
         from googleapiclient import discovery as _real_discovery
 
         mock_build = MagicMock()
-        mock_build.return_value.projects.return_value.serviceAccounts.return_value.create.return_value.execute.side_effect = RuntimeError(
-            "SA create failed"
-        )
+        # noqa: E501 — chain split across intermediate variable to stay within line limit
+        _projects = mock_build.return_value.projects.return_value
+        _sa_create = _projects.serviceAccounts.return_value.create.return_value
+        _sa_create.execute.side_effect = RuntimeError("SA create failed")
         with patch.object(_real_discovery, "build", mock_build):
             result = provision_gcp_identity("my-agent", "my-project", config)
         assert result.created is False

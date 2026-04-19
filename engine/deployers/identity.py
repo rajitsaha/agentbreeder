@@ -28,7 +28,6 @@ from __future__ import annotations
 import json
 import logging
 from dataclasses import dataclass, field
-from typing import Optional
 
 logger = logging.getLogger(__name__)
 
@@ -40,7 +39,7 @@ class IdentityConfig:
     create: bool = False
     permissions: list[str] = field(default_factory=list)
     roles: list[str] = field(default_factory=list)
-    boundary: Optional[str] = None
+    boundary: str | None = None
 
 
 @dataclass
@@ -49,8 +48,8 @@ class ProvisionedIdentity:
 
     cloud: str
     agent_name: str
-    identity_arn: Optional[str] = None  # AWS IAM Role ARN
-    service_account_email: Optional[str] = None  # GCP Service Account email
+    identity_arn: str | None = None  # AWS IAM Role ARN
+    service_account_email: str | None = None  # GCP Service Account email
     created: bool = False
 
 
@@ -120,9 +119,7 @@ def provision_aws_identity(agent_name: str, config: IdentityConfig) -> Provision
                 else:
                     action = perm
                     resource = "*"
-                statements.append(
-                    {"Effect": "Allow", "Action": [action], "Resource": resource}
-                )
+                statements.append({"Effect": "Allow", "Action": [action], "Resource": resource})
             policy_doc = {"Version": "2012-10-17", "Statement": statements}
             iam.put_role_policy(
                 RoleName=role_name,
@@ -178,7 +175,9 @@ def provision_gcp_identity(
                 "accountId": sa_id,
                 "serviceAccount": {
                     "displayName": f"AgentBreeder agent: {agent_name}",
-                    "description": f"Per-agent Service Account for AgentBreeder agent '{agent_name}'",
+                    "description": (
+                        f"Per-agent Service Account for AgentBreeder agent '{agent_name}'"
+                    ),
                 },
             },
         ).execute()
@@ -186,26 +185,22 @@ def provision_gcp_identity(
         # Bind IAM roles to the Service Account if provided
         if config.roles:
             crm = discovery.build("cloudresourcemanager", "v1")
-            policy_resp = crm.projects().getIamPolicy(
-                resource=project_id, body={"options": {"requestedPolicyVersion": 1}}
-            ).execute()
+            policy_resp = (
+                crm.projects()
+                .getIamPolicy(resource=project_id, body={"options": {"requestedPolicyVersion": 1}})
+                .execute()
+            )
             policy = policy_resp
             member = f"serviceAccount:{sa_email}"
             for role in config.roles:
                 # Find or create binding
-                binding = next(
-                    (b for b in policy.get("bindings", []) if b["role"] == role), None
-                )
+                binding = next((b for b in policy.get("bindings", []) if b["role"] == role), None)
                 if binding:
                     if member not in binding["members"]:
                         binding["members"].append(member)
                 else:
-                    policy.setdefault("bindings", []).append(
-                        {"role": role, "members": [member]}
-                    )
-            crm.projects().setIamPolicy(
-                resource=project_id, body={"policy": policy}
-            ).execute()
+                    policy.setdefault("bindings", []).append({"role": role, "members": [member]})
+            crm.projects().setIamPolicy(resource=project_id, body={"policy": policy}).execute()
             logger.debug("Bound %d IAM role(s) to %s", len(config.roles), sa_email)
 
         logger.info("Created GCP Service Account: %s", sa_email)

@@ -5,8 +5,6 @@ Issue #73: Auto-inject OTel observability sidecar.
 
 from __future__ import annotations
 
-import pytest
-
 from engine.sidecar import SidecarConfig, inject_cloudrun_sidecar, inject_sidecar
 from engine.sidecar.config import SidecarConfig as SidecarConfigDirect
 
@@ -46,9 +44,7 @@ def test_inject_sidecar_idempotent() -> None:
     config = SidecarConfig(enabled=True)
     result = inject_sidecar(inject_sidecar(task_def, config), config)
 
-    sidecar_containers = [
-        c for c in result["containerDefinitions"] if c["name"] == SIDECAR_NAME
-    ]
+    sidecar_containers = [c for c in result["containerDefinitions"] if c["name"] == SIDECAR_NAME]
     assert len(sidecar_containers) == 1
 
 
@@ -138,11 +134,7 @@ def test_inject_cloudrun_preserves_existing_containers() -> None:
     """Existing containers should not be removed when the sidecar is injected."""
     service_spec = {
         "spec": {
-            "template": {
-                "spec": {
-                    "containers": [{"name": "agent", "image": "my-agent:latest"}]
-                }
-            }
+            "template": {"spec": {"containers": [{"name": "agent", "image": "my-agent:latest"}]}}
         }
     }
     result = inject_cloudrun_sidecar(service_spec, SidecarConfig(enabled=True))

@@ -70,9 +70,7 @@ class GrafanaConnector(BaseConnector):
                     headers=self._headers(),
                 )
                 if resp.status_code != 200:
-                    logger.warning(
-                        "Grafana dashboard scan returned %d", resp.status_code
-                    )
+                    logger.warning("Grafana dashboard scan returned %d", resp.status_code)
                     return []
                 dashboards: list[dict[str, Any]] = resp.json()
                 return [
@@ -113,9 +111,7 @@ class GrafanaConnector(BaseConnector):
             metric = event.get("metric", "invocation")
             value = event.get("value", 1)
             label_key = f'{{source="agentbreeder",agent="{agent}",env="{env}",metric="{metric}"}}'
-            log_line = (
-                f'metric="{metric}" value={value} agent="{agent}" env="{env}"'
-            )
+            log_line = f'metric="{metric}" value={value} agent="{agent}" env="{env}"'
             streams.setdefault(label_key, []).append([now_ns, log_line])
 
         payload = {
@@ -139,9 +135,7 @@ class GrafanaConnector(BaseConnector):
                         resp.text,
                     )
                 else:
-                    logger.debug(
-                        "Pushed %d metric events to Grafana Loki", len(events)
-                    )
+                    logger.debug("Pushed %d metric events to Grafana Loki", len(events))
         except httpx.HTTPError as exc:
             logger.error("Grafana push_metrics failed: %s", exc)
 
@@ -169,7 +163,10 @@ class GrafanaConnector(BaseConnector):
                 "status": {"code": 2 if trace.get("error") else 1},
                 "attributes": [
                     {"key": "agent", "value": {"stringValue": trace.get("agent", "unknown")}},
-                    {"key": "framework", "value": {"stringValue": trace.get("framework", "unknown")}},
+                    {
+                        "key": "framework",
+                        "value": {"stringValue": trace.get("framework", "unknown")},
+                    },
                     {"key": "env", "value": {"stringValue": trace.get("env", "production")}},
                     {"key": "service.name", "value": {"stringValue": "agentbreeder"}},
                 ],
@@ -215,9 +212,7 @@ class GrafanaConnector(BaseConnector):
                         resp.text,
                     )
                 else:
-                    logger.debug(
-                        "Pushed %d traces to Grafana Tempo", len(traces)
-                    )
+                    logger.debug("Pushed %d traces to Grafana Tempo", len(traces))
         except httpx.HTTPError as exc:
             logger.error("Grafana push_traces failed: %s", exc)
 

@@ -76,7 +76,7 @@ const ROWS: Row[] = [
     note: 'Agents, prompts, tools, RAGs, MCPs — discoverable across all teams',
   },
   {
-    feature: 'Multi-language (Python + TS + Java)',
+    feature: 'Multi-language (Python + TypeScript)',
     agentbreeder: 'yes', langgraph: 'no', crewai: 'no', openai: 'partial', googleadk: 'no', claudesdk: 'partial', mastra: 'no', bedrock: 'partial',
     note: 'Mastra = TypeScript only · Claude SDK = Python + TS · most others = Python only',
   },

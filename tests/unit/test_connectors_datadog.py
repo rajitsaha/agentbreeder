@@ -1,7 +1,8 @@
 """Unit tests for the Datadog observability connector."""
 
-import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
+
+import pytest
 
 from connectors.datadog import DatadogConnector
 
@@ -131,9 +132,7 @@ async def test_scan_returns_empty_on_http_error():
     connector = DatadogConnector(api_key="test-key")
     with patch("httpx.AsyncClient") as mock_client:
         mock_client.return_value.__aenter__ = AsyncMock(
-            return_value=MagicMock(
-                get=AsyncMock(side_effect=httpx.HTTPError("timeout"))
-            )
+            return_value=MagicMock(get=AsyncMock(side_effect=httpx.HTTPError("timeout")))
         )
         mock_client.return_value.__aexit__ = AsyncMock(return_value=False)
         results = await connector.scan()

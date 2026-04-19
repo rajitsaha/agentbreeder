@@ -6,7 +6,6 @@ import json
 import sys
 from datetime import date, timedelta
 from pathlib import Path
-from typing import Optional
 
 import typer
 from rich.console import Console
@@ -62,8 +61,8 @@ def _build_report_locally(
     # Falls back to a lightweight in-process build if the API is not importable.
     try:
         from api.routes.compliance import (
-            ReportRequest,
             _BUILDERS,
+            ReportRequest,
             _build_summary,
         )
 
@@ -108,7 +107,7 @@ def export_report(
         "-s",
         help="Compliance standard: soc2, hipaa, gdpr, iso27001",
     ),
-    team: Optional[str] = typer.Option(
+    team: str | None = typer.Option(
         None,
         "--team",
         "-t",
@@ -119,7 +118,7 @@ def export_report(
         "--since",
         help="Look-back period: e.g. 90d, 30d, 6m, 1y",
     ),
-    output: Optional[str] = typer.Option(
+    output: str | None = typer.Option(
         None,
         "--output",
         "-o",
@@ -151,7 +150,7 @@ def export_report(
         period_start = _parse_since(since)
     except (typer.BadParameter, ValueError) as exc:
         console.print(f"[red]{exc}[/red]")
-        raise typer.Exit(code=1)
+        raise typer.Exit(code=1) from exc
 
     period_end = date.today()
 
@@ -208,5 +207,6 @@ def list_standards() -> None:
     console.print()
     console.print(table)
     console.print(
-        "\n  Run [cyan]agentbreeder compliance export --standard <standard>[/cyan] to generate a report.\n"
+        "\n  Run [cyan]agentbreeder compliance export --standard <standard>[/cyan]"
+        " to generate a report.\n"
     )

@@ -15,7 +15,7 @@ AgentBreeder is an **open-source platform** for building, deploying, and governi
 
 **What makes it unique:**
 - Framework-agnostic (LangGraph, CrewAI, Claude SDK, OpenAI Agents, Google ADK, Custom)
-- Multi-cloud first (AWS ECS/Lambda/EKS and GCP Cloud Run/GKE as equal first-class targets)
+- Multi-cloud first (AWS ECS Fargate/App Runner/EKS, GCP Cloud Run/GKE, Azure Container Apps, and Kubernetes as equal first-class targets)
 - Governance is a **side effect** of deploying, not extra configuration
 - Shared org-wide registry for agents, prompts, tools/MCP servers, models, knowledge bases
 - **Three builder tiers** for both agent development AND agent orchestration:
@@ -110,10 +110,16 @@ agentbreeder/
 │   │   ├── registry.py         # Provider registry + fallback chains
 │   │   └── models.py           # Provider data models
 │   ├── deployers/
-│   │   ├── base.py             # Abstract deployer interface
-│   │   ├── docker_compose.py   # Local Docker Compose deployer
-│   │   ├── gcp_cloudrun.py     # GCP Cloud Run deployer
-│   │   └── mcp_sidecar.py      # MCP sidecar container injection
+│   │   ├── base.py                  # Abstract deployer interface
+│   │   ├── docker_compose.py        # Local Docker Compose deployer
+│   │   ├── gcp_cloudrun.py          # GCP Cloud Run deployer
+│   │   ├── aws_ecs.py               # AWS ECS Fargate deployer
+│   │   ├── aws_app_runner.py        # AWS App Runner deployer
+│   │   ├── azure_container_apps.py  # Azure Container Apps deployer
+│   │   ├── kubernetes.py            # Kubernetes deployer (EKS/GKE/AKS/self-hosted)
+│   │   ├── claude_managed.py        # Claude Managed Agents deployer
+│   │   ├── identity.py              # Per-agent cloud IAM identity provisioner
+│   │   └── mcp_sidecar.py           # MCP sidecar container injection
 │   ├── runtimes/               # Framework-specific container builders
 │   │   ├── base.py             # Runtime builder interface
 │   │   ├── langgraph.py        # LangGraph runtime

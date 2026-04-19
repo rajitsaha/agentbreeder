@@ -68,9 +68,7 @@ class DatadogConnector(BaseConnector):
                     headers=self._headers(),
                 )
                 if resp.status_code != 200:
-                    logger.warning(
-                        "Datadog monitor scan returned %d", resp.status_code
-                    )
+                    logger.warning("Datadog monitor scan returned %d", resp.status_code)
                     return []
                 monitors: list[dict[str, Any]] = resp.json()
                 return [

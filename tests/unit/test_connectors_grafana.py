@@ -1,7 +1,8 @@
 """Unit tests for the Grafana observability connector."""
 
-import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
+
+import pytest
 
 from connectors.grafana import GrafanaConnector
 from connectors.grafana.connector import _parse_label_selector, _to_hex
@@ -9,9 +10,7 @@ from connectors.grafana.connector import _parse_label_selector, _to_hex
 
 @pytest.mark.asyncio
 async def test_is_available_true():
-    connector = GrafanaConnector(
-        endpoint="http://grafana:3000", api_key="glsa_test"
-    )
+    connector = GrafanaConnector(endpoint="http://grafana:3000", api_key="glsa_test")
     with patch("httpx.AsyncClient") as mock_client:
         mock_resp = MagicMock()
         mock_resp.status_code = 200
@@ -24,9 +23,7 @@ async def test_is_available_true():
 
 @pytest.mark.asyncio
 async def test_is_available_false():
-    connector = GrafanaConnector(
-        endpoint="http://grafana:3000", api_key="bad-key"
-    )
+    connector = GrafanaConnector(endpoint="http://grafana:3000", api_key="bad-key")
     with patch("httpx.AsyncClient") as mock_client:
         mock_resp = MagicMock()
         mock_resp.status_code = 401
@@ -41,9 +38,7 @@ async def test_is_available_false():
 async def test_is_available_http_error():
     import httpx
 
-    connector = GrafanaConnector(
-        endpoint="http://unreachable:3000", api_key="key"
-    )
+    connector = GrafanaConnector(endpoint="http://unreachable:3000", api_key="key")
     with patch("httpx.AsyncClient") as mock_client:
         mock_client.return_value.__aenter__ = AsyncMock(
             return_value=MagicMock(
@@ -56,9 +51,7 @@ async def test_is_available_http_error():
 
 @pytest.mark.asyncio
 async def test_scan_returns_dashboards():
-    connector = GrafanaConnector(
-        endpoint="http://grafana:3000", api_key="glsa_test"
-    )
+    connector = GrafanaConnector(endpoint="http://grafana:3000", api_key="glsa_test")
     with patch("httpx.AsyncClient") as mock_client:
         mock_resp = MagicMock()
         mock_resp.status_code = 200
@@ -80,9 +73,7 @@ async def test_scan_returns_dashboards():
 
 @pytest.mark.asyncio
 async def test_scan_returns_empty_on_api_error():
-    connector = GrafanaConnector(
-        endpoint="http://grafana:3000", api_key="glsa_test"
-    )
+    connector = GrafanaConnector(endpoint="http://grafana:3000", api_key="glsa_test")
     with patch("httpx.AsyncClient") as mock_client:
         mock_resp = MagicMock()
         mock_resp.status_code = 500
@@ -98,14 +89,10 @@ async def test_scan_returns_empty_on_api_error():
 async def test_scan_returns_empty_on_http_error():
     import httpx
 
-    connector = GrafanaConnector(
-        endpoint="http://grafana:3000", api_key="glsa_test"
-    )
+    connector = GrafanaConnector(endpoint="http://grafana:3000", api_key="glsa_test")
     with patch("httpx.AsyncClient") as mock_client:
         mock_client.return_value.__aenter__ = AsyncMock(
-            return_value=MagicMock(
-                get=AsyncMock(side_effect=httpx.HTTPError("timeout"))
-            )
+            return_value=MagicMock(get=AsyncMock(side_effect=httpx.HTTPError("timeout")))
         )
         mock_client.return_value.__aexit__ = AsyncMock(return_value=False)
         results = await connector.scan()
@@ -114,9 +101,7 @@ async def test_scan_returns_empty_on_http_error():
 
 @pytest.mark.asyncio
 async def test_push_metrics_calls_loki_api():
-    connector = GrafanaConnector(
-        endpoint="http://grafana:3000", api_key="glsa_test"
-    )
+    connector = GrafanaConnector(endpoint="http://grafana:3000", api_key="glsa_test")
     events = [{"metric": "latency", "value": 100, "agent": "my-agent", "env": "production"}]
     with patch("httpx.AsyncClient") as mock_client:
         mock_resp = MagicMock()
@@ -132,9 +117,7 @@ async def test_push_metrics_calls_loki_api():
 
 @pytest.mark.asyncio
 async def test_push_metrics_formats_loki_streams():
-    connector = GrafanaConnector(
-        endpoint="http://grafana:3000", api_key="glsa_test"
-    )
+    connector = GrafanaConnector(endpoint="http://grafana:3000", api_key="glsa_test")
     events = [
         {"metric": "latency", "value": 300, "agent": "search-agent", "env": "production"},
         {"metric": "cost_usd", "value": 0.002, "agent": "search-agent", "env": "production"},
@@ -158,9 +141,7 @@ async def test_push_metrics_formats_loki_streams():
 
 @pytest.mark.asyncio
 async def test_push_metrics_empty_list_skips_api():
-    connector = GrafanaConnector(
-        endpoint="http://grafana:3000", api_key="glsa_test"
-    )
+    connector = GrafanaConnector(endpoint="http://grafana:3000", api_key="glsa_test")
     with patch("httpx.AsyncClient") as mock_client:
         await connector.push_metrics([])
         mock_client.assert_not_called()
@@ -168,9 +149,7 @@ async def test_push_metrics_empty_list_skips_api():
 
 @pytest.mark.asyncio
 async def test_push_traces_calls_tempo_api():
-    connector = GrafanaConnector(
-        endpoint="http://grafana:3000", api_key="glsa_test"
-    )
+    connector = GrafanaConnector(endpoint="http://grafana:3000", api_key="glsa_test")
     traces = [
         {
             "trace_id": 111,
@@ -195,9 +174,7 @@ async def test_push_traces_calls_tempo_api():
 
 @pytest.mark.asyncio
 async def test_push_traces_otlp_format():
-    connector = GrafanaConnector(
-        endpoint="http://grafana:3000", api_key="glsa_test"
-    )
+    connector = GrafanaConnector(endpoint="http://grafana:3000", api_key="glsa_test")
     traces = [
         {
             "trace_id": 12345,
@@ -235,9 +212,7 @@ async def test_push_traces_otlp_format():
 
 @pytest.mark.asyncio
 async def test_push_traces_empty_list_skips_api():
-    connector = GrafanaConnector(
-        endpoint="http://grafana:3000", api_key="glsa_test"
-    )
+    connector = GrafanaConnector(endpoint="http://grafana:3000", api_key="glsa_test")
     with patch("httpx.AsyncClient") as mock_client:
         await connector.push_traces([])
         mock_client.assert_not_called()
@@ -249,16 +224,12 @@ def test_name_property():
 
 
 def test_trailing_slash_stripped_from_endpoint():
-    connector = GrafanaConnector(
-        endpoint="http://grafana:3000/", api_key="key"
-    )
+    connector = GrafanaConnector(endpoint="http://grafana:3000/", api_key="key")
     assert connector._endpoint == "http://grafana:3000"
 
 
 def test_headers_include_auth_and_org():
-    connector = GrafanaConnector(
-        endpoint="http://grafana:3000", api_key="glsa_abc", org_id="42"
-    )
+    connector = GrafanaConnector(endpoint="http://grafana:3000", api_key="glsa_abc", org_id="42")
     headers = connector._headers()
     assert headers["Authorization"] == "Bearer glsa_abc"
     assert headers["X-Scope-OrgID"] == "42"

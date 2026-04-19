@@ -98,7 +98,8 @@ class ClaudeSDKRuntime(RuntimeBuilder):
                 return RuntimeValidationResult(valid=False, errors=errors)
             # computer_use agents are managed by Anthropic — no container is built
             logger.info(
-                "Computer use tools detected for agent '%s' — targeting Anthropic Managed Agents runtime",
+                "Computer use tools detected for agent '%s'"
+                " — targeting Anthropic Managed Agents runtime",
                 config.name,
             )
             return RuntimeValidationResult(valid=True, errors=[])

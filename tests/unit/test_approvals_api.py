@@ -5,7 +5,6 @@ Issue #69: Human-in-the-loop approval patterns.
 
 from __future__ import annotations
 
-import pytest
 from fastapi.testclient import TestClient
 
 from api.main import app

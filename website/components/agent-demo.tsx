@@ -320,9 +320,11 @@ export function AgentDemo() {
             gap: 10,
           }}>
             <div style={{ display: 'flex', gap: 5 }}>
-              {[dot0, dot1, dot2, dot3, dot4].map((r, i) => (
-                <div key={i} ref={r} style={dotStyle} />
-              ))}
+              <div ref={dot0} style={dotStyle} />
+              <div ref={dot1} style={dotStyle} />
+              <div ref={dot2} style={dotStyle} />
+              <div ref={dot3} style={dotStyle} />
+              <div ref={dot4} style={dotStyle} />
             </div>
             <span style={{ fontSize: 11, color: '#8b949e' }}>Step</span>
             <span ref={nameRef} style={{ fontSize: 11, color: '#e6edf3', marginLeft: 'auto' }}>

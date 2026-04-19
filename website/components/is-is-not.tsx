@@ -9,7 +9,7 @@ const IS_ITEMS = [
   },
   {
     title: 'Multi-cloud by default',
-    body: 'AWS, GCP, Azure, Databricks, Kubernetes, or local Docker — one agent.yaml, any target, no rewrites.',
+    body: 'AWS, GCP, Azure, Kubernetes, or local Docker — one agent.yaml, any target, no rewrites.',
   },
   {
     title: 'An org-wide shared registry',
@@ -40,7 +40,7 @@ const IS_NOT_ITEMS = [
   },
   {
     title: 'Not a Python-only platform',
-    body: 'Unlike most agent frameworks, AgentBreeder supports Python, TypeScript, and will support Java and Kotlin — because your teams are not all Python shops.',
+    body: 'Unlike most agent frameworks, AgentBreeder supports both Python and TypeScript — because your teams are not all Python shops.',
   },
   {
     title: 'Not a research project',

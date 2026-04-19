@@ -78,7 +78,7 @@ export function BuiltBy() {
             <p className="text-[14px] leading-[1.75]" style={{ color: 'var(--text-muted)' }}>
               The pattern across 8 companies and 23 years: architect it, build the MVP personally, hand it to a
               great team to scale. Passive data warehouses had a good run. Active, agent-driven systems are what
-              comes next — and that's what I'm building now.
+              comes next — and that&apos;s what I&apos;m building now.
             </p>
 
             {/* Stats row */}

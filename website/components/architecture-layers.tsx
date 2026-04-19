@@ -24,7 +24,7 @@ const LAYERS = [
     accentDim: 'rgba(96,165,250,0.10)',
     accentBorder: 'rgba(96,165,250,0.22)',
     description: 'Build in the language your team already uses',
-    items: ['Python', 'TypeScript', 'Java', 'Kotlin', 'Go'],
+    items: ['Python', 'TypeScript'],
   },
   {
     number: 4,
@@ -42,7 +42,7 @@ const LAYERS = [
     accentDim: 'rgba(34,211,238,0.10)',
     accentBorder: 'rgba(34,211,238,0.22)',
     description: 'Any cloud, any runtime — same agent.yaml, zero rewrites',
-    items: ['AWS (ECS / EKS / Lambda)', 'GCP (Cloud Run / GKE)', 'Azure (Container Apps)', 'Databricks', 'Kubernetes', 'Local (Docker)'],
+    items: ['AWS (ECS Fargate / EKS)', 'GCP (Cloud Run / GKE)', 'Azure (Container Apps)', 'Kubernetes', 'Local (Docker)'],
   },
 ];
 
