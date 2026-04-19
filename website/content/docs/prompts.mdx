@@ -122,6 +122,49 @@ prompts:
 
 Variables are passed at runtime via your agent's context or via explicit `variables` config on the agent.
 
+### SDK Usage
+
+<Tabs items={['Python', 'TypeScript']}>
+  <Tab value="Python">
+```python
+from agenthub import Agent
+
+agent = (
+    Agent("support-agent")
+        .with_framework("claude_sdk")
+        .with_prompts(system="prompts/support-system-v3")   # registry ref
+        # or inline:
+        # .with_prompts(system="You are a {{role}} support agent.")
+        .with_deploy(cloud="aws", runtime="app-runner")
+)
+```
+  </Tab>
+  <Tab value="TypeScript">
+```typescript
+import { Agent } from "@agentbreeder/sdk";
+
+const agent = new Agent("support-agent")
+  .withFramework("claude_sdk")
+  .withPrompts({ system: "prompts/support-system-v3" })
+  .withDeploy({ cloud: "aws", runtime: "app-runner" });
+```
+  </Tab>
+</Tabs>
+
+### Prompt Caching (Claude SDK)
+
+When using the Claude SDK framework, set `prompt_caching: true` to enable Anthropic's prompt caching for the system prompt. Caching applies when the system prompt is at least 8 192 tokens (Sonnet) — repeated requests with the same cached prefix are significantly cheaper and faster.
+
+```yaml
+framework: claude_sdk
+
+prompts:
+  system: prompts/support-system-v3   # large, stable system prompt
+
+claude_sdk:
+  prompt_caching: true
+```
+
 ---
 
 ## Step 4 — Test Before Deploying

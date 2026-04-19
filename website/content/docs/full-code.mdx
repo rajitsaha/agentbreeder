@@ -48,7 +48,7 @@ The SDK supports all 6 frameworks. Pass the framework name as a string — Agent
 
 ## Supported Deployment Targets
 
-All 6 deployment targets available via `.with_deploy()`:
+All 7 deployment targets available via `.with_deploy()`:
 
 | `cloud` | Default `runtime` | Also supports |
 |---------|------------------|---------------|
@@ -63,7 +63,7 @@ All 6 deployment targets available via `.with_deploy()`:
 
 ## Python SDK
 
-### Install and basic deploy
+### Install and full-featured deploy
 
 ```python
 from agenthub import Agent
@@ -71,8 +71,10 @@ from agenthub import Agent
 agent = (
     Agent("support-agent")
         .with_version("1.0.0")
+        .with_description("Handles tier-1 customer support")
         .with_team("customer-success")
         .with_owner("alice@company.com")
+        .with_tags(["support", "zendesk", "production"])
         .with_framework("langgraph")
         .with_model(
             primary="claude-sonnet-4",
@@ -83,10 +85,22 @@ agent = (
             "tools/zendesk-mcp",
             "tools/order-lookup",
         ])
+        .with_knowledge_bases([
+            "kb/product-docs",
+            "kb/return-policy",
+        ])
+        .with_prompts(system="prompts/support-system-v3")
+        .with_guardrails(["pii_detection", "hallucination_check", "content_filter"])
+        .with_access(
+            visibility="team",
+            allowed_callers=["team:engineering", "team:customer-success"],
+            require_approval=False,
+        )
         .with_deploy(
             cloud="aws",
-            runtime="app-runner",   # or: ecs-fargate, cloud-run, container-apps, claude-managed
+            runtime="app-runner",
             region="us-east-1",
+            scaling={"min": 1, "max": 10, "target_cpu": 70},
             secrets=["ZENDESK_API_KEY", "OPENAI_API_KEY"],
         )
 )
@@ -153,6 +167,8 @@ agent = (
         .with_framework_config(GoogleADKConfig(
             session_backend="database",
             memory_service="vertex_ai_bank",
+            artifact_service="gcs",
+            gcs_bucket="my-agent-artifacts",
         ))
         .with_deploy(cloud="gcp", runtime="cloud-run")
 )
@@ -211,7 +227,7 @@ result = agent.deploy()
 print(result.endpoint)
 ```
 
-### Generate agent.yaml from SDK
+### Generate and validate agent.yaml
 
 ```python
 agent.to_yaml("agent.yaml")       # export for YAML-based workflows
@@ -227,8 +243,10 @@ import { Agent } from "@agentbreeder/sdk";
 
 const agent = new Agent("support-agent", {
   version: "1.0.0",
+  description: "Handles tier-1 customer support",
   team: "customer-success",
   owner: "alice@company.com",
+  tags: ["support", "zendesk", "production"],
 })
   .withFramework("langgraph")
   .withModel({
@@ -237,6 +255,10 @@ const agent = new Agent("support-agent", {
     temperature: 0.7,
   })
   .withTools(["tools/zendesk-mcp", "tools/order-lookup"])
+  .withKnowledgeBases(["kb/product-docs", "kb/return-policy"])
+  .withPrompts({ system: "prompts/support-system-v3" })
+  .withGuardrails(["pii_detection", "hallucination_check"])
+  .withAccess({ visibility: "team", allowedCallers: ["team:engineering"] })
   .withDeploy({
     cloud: "aws",
     runtime: "app-runner",
@@ -268,7 +290,7 @@ pipeline = (
         .add_agent("triage",     Agent("triage-agent").with_model("claude-haiku-4-5"))
         .add_agent("specialist", Agent("specialist-agent").with_model("claude-sonnet-4"))
         .add_agent("escalation", Agent("escalation-agent").with_model("claude-opus-4"))
-        .with_strategy("router")          # router | sequential | parallel | supervisor
+        .with_strategy("router")          # router | sequential | parallel | supervisor | hierarchical | fan-out
         .with_routing(lambda ctx: (
             "specialist" if ctx.intent in ("billing", "technical")
             else "escalation" if ctx.priority == "urgent"
@@ -290,6 +312,37 @@ Supported strategies:
 | `supervisor` | One agent manages sub-agents dynamically |
 | `hierarchical` | Tree of supervisors and workers |
 | `fan-out` | One input split across N agents, results aggregated |
+
+---
+
+## Agent-to-Agent (A2A) Calls
+
+Agents deployed with AgentBreeder automatically expose an A2A endpoint. Call other agents directly:
+
+```python
+from agenthub.a2a import A2AClient
+
+# Discover agents in your org registry
+client = A2AClient()
+agents = client.list()   # returns all A2A-enabled agents
+
+# Call another agent
+response = client.call(
+    agent="specialist-agent",
+    message="Customer is asking about order #12345",
+    context={"team": "customer-success"},
+)
+print(response.text)
+```
+
+Restrict which agents can call yours via `access.allowed_callers` in agent.yaml:
+
+```yaml
+access:
+  allowed_callers:
+    - team:engineering
+    - agent:triage-agent
+```
 
 ---
 
@@ -329,14 +382,14 @@ agentbreeder deploy agent.yaml \
 
 ## All Frameworks × All Deployment Targets
 
-| | Local | App Runner | ECS Fargate | Cloud Run | Container Apps | Claude Managed |
-|---|:---:|:---:|:---:|:---:|:---:|:---:|
-| **LangGraph** | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| **OpenAI Agents** | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| **Claude SDK** | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| **CrewAI** | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| **Google ADK** | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| **Custom** | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| | Local | App Runner | ECS Fargate | Cloud Run | Container Apps | Kubernetes | Claude Managed |
+|---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| **LangGraph** | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| **OpenAI Agents** | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| **Claude SDK** | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| **CrewAI** | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| **Google ADK** | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| **Custom** | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 
 <Callout type="info" title="Claude Managed + any framework">
   The `claude-managed` deployment target works with every framework. When framework is set to anything other than `claude_sdk`, AgentBreeder wraps your agent in a Claude-managed container adapter automatically.
@@ -349,7 +402,11 @@ agentbreeder deploy agent.yaml \
 | What | Where |
 |------|-------|
 | Orchestration strategies | [Orchestration SDK →](orchestration-sdk) |
+| Agent-to-agent protocol | [A2A Guide →](how-to#a2a) |
 | All `agent.yaml` fields | [agent.yaml Reference →](agent-yaml) |
 | All CLI commands | [CLI Reference →](cli-reference) |
+| MCP server setup | [MCP Servers →](mcp-servers) |
+| RAG & knowledge bases | [RAG →](rag) |
+| Versioned prompts | [Prompts →](prompts) |
 | Start with the dashboard | [No Code →](no-code) |
 | Write plain YAML | [Low Code →](low-code) |

@@ -288,6 +288,37 @@ At deploy time, AgentBreeder:
 3. Injects the sidecar alongside the agent container
 4. Configures the agent to communicate with the sidecar via the configured transport
 
+### SDK Usage
+
+<Tabs items={['Python', 'TypeScript']}>
+  <Tab value="Python">
+```python
+from agenthub import Agent
+
+agent = (
+    Agent("support-agent")
+        .with_framework("langgraph")
+        .with_tools([
+            "mcp-servers/zendesk",      # MCP server
+            "mcp-servers/slack",
+            "tools/order-lookup",       # regular function tool
+        ])
+        .with_deploy(cloud="aws", runtime="app-runner")
+)
+```
+  </Tab>
+  <Tab value="TypeScript">
+```typescript
+import { Agent } from "@agentbreeder/sdk";
+
+const agent = new Agent("support-agent")
+  .withFramework("langgraph")
+  .withTools(["mcp-servers/zendesk", "mcp-servers/slack", "tools/order-lookup"])
+  .withDeploy({ cloud: "aws", runtime: "app-runner" });
+```
+  </Tab>
+</Tabs>
+
 ---
 
 ## Update a Registered Server

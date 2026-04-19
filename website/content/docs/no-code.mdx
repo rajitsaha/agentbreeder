@@ -32,7 +32,7 @@ Every framework works in the dashboard. Pick the one that fits your use case fro
 
 ## Supported Deployment Targets
 
-All deployment targets are available from the "Deploy to" dropdown. No cloud credentials to configure manually — connect your cloud account once in Settings, then deploy anywhere.
+All deployment targets are available from the **Deploy to** dropdown. Connect your cloud account once in Settings — then deploy anywhere without manual credential configuration.
 
 | Target | What it runs on | Best for |
 |--------|----------------|----------|
@@ -41,6 +41,7 @@ All deployment targets are available from the "Deploy to" dropdown. No cloud cre
 | **AWS ECS Fargate** | Container orchestration on AWS | High-traffic, VPC-controlled |
 | **GCP Cloud Run** | Serverless containers on Google Cloud | Google Workspace integrations |
 | **Azure Container Apps** | Serverless containers on Azure | Microsoft ecosystem teams |
+| **Kubernetes** | EKS / GKE / AKS / self-hosted | Existing K8s clusters, advanced networking |
 | **Claude Managed** | Anthropic-managed runtime | Zero infrastructure — Anthropic handles everything |
 
 ---
@@ -75,9 +76,10 @@ The builder asks you for:
 | **Name** | Slug-friendly name (e.g. `support-agent`) |
 | **Framework** | Choose from the 6 supported frameworks |
 | **Model** | Primary model + optional fallback |
-| **Tools** | Search and add MCP servers or built-in tools from the registry |
-| **Knowledge Bases** | Optional — attach RAG indexes |
+| **Tools / MCP Servers** | Search and add MCP servers or built-in tools from the registry |
+| **Knowledge Bases** | Optional — attach RAG indexes for semantic or hybrid search |
 | **Prompts** | Select a versioned system prompt from the registry, or write inline |
+| **Guardrails** | Optional — PII detection, hallucination check, content filter |
 | **Deploy to** | Target cloud and region |
 | **Team** | Assigns RBAC and cost attribution automatically |
 
@@ -108,6 +110,45 @@ The endpoint URL appears in the dashboard. You can immediately:
 
 ---
 
+## MCP Servers
+
+The dashboard has a built-in MCP server registry. From the agent builder:
+
+1. Click **Add Tool → Search MCP Servers**
+2. Browse your org's registered MCP servers or auto-discover from your connected cloud
+3. Click **Add** — the server is wired in as a sidecar automatically on deploy
+
+You can also run `agentbreeder scan` from the CLI to discover locally running MCP servers and publish them to the registry for the dashboard to find.
+
+---
+
+## Multi-Agent Orchestration (Visual Canvas)
+
+The dashboard includes a ReactFlow-based drag-and-drop canvas for building multi-agent pipelines — no code required.
+
+To open the canvas:
+1. Click **New Orchestration** in the top-right corner
+2. Drag agents from the registry onto the canvas
+3. Draw connections between them to define the flow
+4. Set the orchestration strategy (router, sequential, parallel, supervisor)
+5. Click **Deploy Orchestration**
+
+The canvas generates an `orchestration.yaml` behind the scenes. At any point, click **View YAML** to see it.
+
+---
+
+## Human-in-the-Loop Approvals
+
+For sensitive workflows, you can require a human to approve before an agent proceeds:
+
+1. Open the agent builder → **Advanced → Approvals**
+2. Enable **Require HITL approval**
+3. Set the approvers (team or individuals)
+
+When the agent hits an approval step, it pauses and sends a notification. The approver sees the pending action in the dashboard and can approve or reject.
+
+---
+
 ## Editing an Agent
 
 Open an agent from the registry → click **Edit** → change any field → **Redeploy**.
@@ -134,8 +175,8 @@ The exported YAML is identical to what the dashboard used. Nothing is hidden.
 
 ```
 No Code (Dashboard)
-  └─▶  View YAML          → copy into your IDE → Low Code
-  └─▶  agentbreeder eject → full SDK scaffold  → Full Code
+  └─▶  View YAML            → copy into your IDE    → Low Code
+  └─▶  agentbreeder eject   → full SDK scaffold      → Full Code
 ```
 
 You can always go deeper — you never lose what you built. See [Full Code →](full-code).
@@ -146,14 +187,14 @@ You can always go deeper — you never lose what you built. See [Full Code →](
 
 Every combination works. This matrix applies to No Code, Low Code, and Full Code equally.
 
-| | Local | App Runner | ECS Fargate | Cloud Run | Container Apps | Claude Managed |
-|---|:---:|:---:|:---:|:---:|:---:|:---:|
-| **LangGraph** | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| **OpenAI Agents** | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| **Claude SDK** | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| **CrewAI** | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| **Google ADK** | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| **Custom** | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| | Local | App Runner | ECS Fargate | Cloud Run | Container Apps | Kubernetes | Claude Managed |
+|---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| **LangGraph** | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| **OpenAI Agents** | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| **Claude SDK** | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| **CrewAI** | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| **Google ADK** | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| **Custom** | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 
 <Callout type="info" title="Claude Managed note">
   When deploying to `claude-managed`, no container is built — Anthropic manages the runtime. The framework field is still required and controls how the agent logic is structured inside the managed environment.
@@ -170,3 +211,4 @@ Every combination works. This matrix applies to No Code, Low Code, and Full Code
 | All `agent.yaml` fields | [agent.yaml Reference →](agent-yaml) |
 | Deploy from the CLI | [Quickstart →](quickstart) |
 | All CLI commands | [CLI Reference →](cli-reference) |
+| Multi-agent orchestration | [Orchestration SDK →](orchestration-sdk) |

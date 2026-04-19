@@ -82,7 +82,7 @@ Define the JSON Schema for the tool's inputs:
 
 ## Step 2 — Register
 
-<Tabs items={['Dashboard', 'API', 'Python SDK']}>
+<Tabs items={['Dashboard', 'API', 'Python SDK', 'TypeScript SDK']}>
   <Tab value="Dashboard">
 Go to **Registry → Tools → New Tool**. Fill in:
 - **Name** — slug-friendly (e.g., `order-lookup`)
@@ -143,7 +143,28 @@ agent = (
 )
 ```
   </Tab>
+  <Tab value="TypeScript SDK">
+```typescript
+import { Agent } from "@agentbreeder/sdk";
+
+const agent = new Agent("support-agent")
+  .withFramework("langgraph")
+  .withTools(["tools/order-lookup", "tools/zendesk-mcp"])
+  .withDeploy({ cloud: "aws", runtime: "app-runner" });
+```
+  </Tab>
 </Tabs>
+
+### Auto-Discover Tools with Scan
+
+Run `agentbreeder scan` to discover tools from MCP servers and model gateways on your machine. Discovered tools are auto-registered in the registry and immediately usable as `tools/` refs:
+
+```bash
+agentbreeder scan
+# Found MCP servers:
+#   zendesk    stdio  ./.mcp.json  (3 tools)
+#   slack      stdio  ./.mcp.json  (5 tools)
+```
 
 ---
 

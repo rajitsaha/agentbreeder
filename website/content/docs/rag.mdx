@@ -197,6 +197,51 @@ knowledge_bases:
   You can attach multiple knowledge bases to one agent. Each base is queried independently and the top-k results from all bases are merged and ranked before being included in the agent's context window.
 </Callout>
 
+### SDK Usage
+
+<Tabs items={['Python', 'TypeScript']}>
+  <Tab value="Python">
+```python
+from agenthub import Agent
+
+agent = (
+    Agent("support-agent")
+        .with_framework("claude_sdk")
+        .with_knowledge_bases([
+            "kb/product-docs",
+            "kb/return-policy",
+        ])
+        .with_deploy(cloud="aws", runtime="app-runner")
+)
+```
+  </Tab>
+  <Tab value="TypeScript">
+```typescript
+import { Agent } from "@agentbreeder/sdk";
+
+const agent = new Agent("support-agent")
+  .withFramework("claude_sdk")
+  .withKnowledgeBases(["kb/product-docs", "kb/return-policy"])
+  .withDeploy({ cloud: "aws", runtime: "app-runner" });
+```
+  </Tab>
+</Tabs>
+
+---
+
+## Search Backends
+
+AgentBreeder supports three retrieval approaches:
+
+| Backend | How it works | When to use |
+|---------|-------------|-------------|
+| **Vector** | Dense embedding similarity (cosine) | Semantic queries, paraphrase matching |
+| **Full-text** | BM25 keyword search | Exact term matching, IDs, codes |
+| **Hybrid** | Weighted combination of vector + full-text | Default — best of both worlds |
+| **Graph** | Entity-relationship traversal over a knowledge graph | Linked entities, structured knowledge bases, multi-hop reasoning |
+
+Hybrid (vector + full-text) is the default and works well for most document-based knowledge bases. Graph search is available when your knowledge base is structured as an entity graph.
+
 ---
 
 ## Chunking Strategies

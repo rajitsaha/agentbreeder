@@ -71,33 +71,75 @@ my-agent/
 
 ### 3. Edit agent.yaml
 
+Here is a fully-featured example showing all major sections:
+
 ```yaml
+# Identity
 name: support-agent
 version: 1.0.0
+description: "Handles tier-1 customer support"
 team: customer-success
 owner: alice@company.com
-framework: langgraph             # langgraph | openai_agents | claude_sdk | crewai | google_adk | custom
+tags: [support, zendesk, production]
 
+# Framework
+framework: langgraph   # langgraph | openai_agents | claude_sdk | crewai | google_adk | custom
+
+# Model
 model:
-  primary: claude-sonnet-4       # any model in your registry
-  fallback: gpt-4o               # used if primary is unavailable
+  primary: claude-sonnet-4      # any model in your registry
+  fallback: gpt-4o              # used if primary is unavailable
   temperature: 0.7
+  max_tokens: 4096
 
+# Tools & MCP Servers
 tools:
-  - ref: tools/zendesk-mcp       # from your org's tool registry
+  - ref: tools/zendesk-mcp      # from your org's tool registry
   - ref: tools/order-lookup
 
+# Knowledge Bases (RAG)
+knowledge_bases:
+  - ref: kb/product-docs
+  - ref: kb/return-policy
+
+# Versioned Prompts
+prompts:
+  system: prompts/support-system-v3   # registry ref (versioned, cached)
+
+# Guardrails
+guardrails:
+  - pii_detection           # strip PII from outputs
+  - hallucination_check     # flag low-confidence responses
+  - content_filter          # block harmful content
+
+# Deployment
 deploy:
-  cloud: aws                     # aws | gcp | azure | kubernetes | local | claude-managed
-  runtime: app-runner            # default for aws: ecs-fargate; also: app-runner
+  cloud: aws                # aws | gcp | azure | kubernetes | local | claude-managed
+  runtime: app-runner       # default for aws: ecs-fargate; also: app-runner
   region: us-east-1
   scaling:
     min: 1
     max: 10
+    target_cpu: 70
+  resources:
+    cpu: "1"
+    memory: "2Gi"
+  env_vars:
+    LOG_LEVEL: info
   secrets:
     - ZENDESK_API_KEY
     - OPENAI_API_KEY
+
+# Access Control
+access:
+  visibility: team              # public | team | private
+  allowed_callers:
+    - team:engineering
+    - team:customer-success
+  require_approval: false
 ```
+
+For the full field reference see [agent.yaml Reference →](agent-yaml).
 
 ### 4. Validate
 
@@ -109,7 +151,7 @@ Runs three checks: YAML syntax, JSON Schema, and semantic validation (framework 
 
 ### 5. Deploy
 
-<Tabs items={['Local', 'AWS App Runner', 'AWS ECS Fargate', 'GCP Cloud Run', 'Azure Container Apps', 'Claude Managed']}>
+<Tabs items={['Local', 'AWS App Runner', 'AWS ECS Fargate', 'GCP Cloud Run', 'Azure Container Apps', 'Kubernetes', 'Claude Managed']}>
   <Tab value="Local">
 ```bash
 agentbreeder deploy agent.yaml --target local
@@ -120,7 +162,7 @@ agentbreeder deploy agent.yaml --target local
 agentbreeder deploy agent.yaml --target app-runner --region us-east-1
 ```
 
-Required in `deploy.env_vars`:
+Required in `deploy`:
 ```yaml
 deploy:
   cloud: aws
@@ -135,7 +177,7 @@ deploy:
 agentbreeder deploy agent.yaml --target ecs-fargate --region us-east-1
 ```
 
-Required in `deploy.env_vars`:
+Required in `deploy`:
 ```yaml
 deploy:
   cloud: aws
@@ -156,6 +198,13 @@ Set `GOOGLE_APPLICATION_CREDENTIALS` and `GOOGLE_CLOUD_PROJECT` in your environm
 ```bash
 agentbreeder deploy agent.yaml --target container-apps
 ```
+  </Tab>
+  <Tab value="Kubernetes">
+```bash
+agentbreeder deploy agent.yaml --target kubernetes
+```
+
+Works with EKS, GKE, AKS, and self-hosted clusters. Ensure your `kubectl` context is pointed at the target cluster.
   </Tab>
   <Tab value="Claude Managed">
 ```bash
@@ -199,8 +248,10 @@ claude_sdk:
 ```yaml
 google_adk:
   session_backend: memory           # "memory" | "database" | "vertex_ai"
+  session_db_url: ""                # required if session_backend is "database"
   memory_service: memory            # "memory" | "vertex_ai_bank" | "vertex_ai_rag"
   artifact_service: memory          # "memory" | "gcs"
+  gcs_bucket: ""                    # required if artifact_service is "gcs"
 ```
 
 ### Claude Managed
@@ -217,12 +268,20 @@ claude_managed:
 
 ## Common Workflows
 
-### Check status after deploy
+### Check status and interact
 
 ```bash
 agentbreeder status
 agentbreeder logs my-agent --follow
 agentbreeder chat my-agent
+```
+
+### Search and inspect the registry
+
+```bash
+agentbreeder search "support"          # search across all agents, tools, prompts, models
+agentbreeder list                      # list all your deployed agents
+agentbreeder describe my-agent         # detailed info about one agent
 ```
 
 ### Roll back
@@ -231,18 +290,41 @@ agentbreeder chat my-agent
 agentbreeder deploy agent.yaml --version 1.0.0
 ```
 
+### Schedule a recurring run
+
+```bash
+agentbreeder schedule my-agent --cron "0 9 * * 1-5"    # weekdays at 9am
+```
+
+### Run evaluations
+
+```bash
+agentbreeder eval my-agent --suite evals/support.yaml
+```
+
+### Manage secrets
+
+```bash
+agentbreeder secret set ZENDESK_API_KEY           # stores in your configured backend
+agentbreeder secret list
+agentbreeder secret delete ZENDESK_API_KEY
+```
+
+Supported secret backends: environment variables, AWS Secrets Manager, GCP Secret Manager, HashiCorp Vault.
+
+### Discover available models and MCP servers
+
+```bash
+agentbreeder scan                         # discovers local MCP servers + models
+agentbreeder scan --provider ollama       # Ollama models
+agentbreeder scan --provider openrouter   # OpenRouter models
+agentbreeder scan --provider litellm      # LiteLLM gateway
+```
+
 ### Tear down
 
 ```bash
 agentbreeder teardown my-agent
-```
-
-### Scan for available models and MCP servers
-
-```bash
-agentbreeder scan                    # discovers all local MCP servers + models
-agentbreeder scan --provider ollama  # Ollama models
-agentbreeder scan --provider openrouter
 ```
 
 ---
@@ -252,7 +334,7 @@ agentbreeder scan --provider openrouter
 When you need custom routing, state machines, or programmatic control:
 
 ```bash
-agentbreeder eject --to sdk
+agentbreeder eject my-agent --to code
 ```
 
 This generates a Python or TypeScript SDK project from your `agent.yaml`. Your YAML is preserved as the source of truth — the SDK wraps it with full programmatic access. See [Full Code →](full-code).
@@ -261,14 +343,14 @@ This generates a Python or TypeScript SDK project from your `agent.yaml`. Your Y
 
 ## All Frameworks × All Deployment Targets
 
-| | Local | App Runner | ECS Fargate | Cloud Run | Container Apps | Claude Managed |
-|---|:---:|:---:|:---:|:---:|:---:|:---:|
-| **LangGraph** | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| **OpenAI Agents** | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| **Claude SDK** | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| **CrewAI** | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| **Google ADK** | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| **Custom** | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| | Local | App Runner | ECS Fargate | Cloud Run | Container Apps | Kubernetes | Claude Managed |
+|---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| **LangGraph** | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| **OpenAI Agents** | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| **Claude SDK** | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| **CrewAI** | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| **Google ADK** | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| **Custom** | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 
 ---
 
@@ -278,6 +360,9 @@ This generates a Python or TypeScript SDK project from your `agent.yaml`. Your Y
 |------|-------|
 | All `agent.yaml` fields | [agent.yaml Reference →](agent-yaml) |
 | All CLI commands | [CLI Reference →](cli-reference) |
+| MCP server setup | [MCP Servers →](mcp-servers) |
+| RAG & knowledge bases | [RAG →](rag) |
+| Versioned prompts | [Prompts →](prompts) |
 | Multi-agent orchestration | [Orchestration SDK →](orchestration-sdk) |
 | Full Python/TypeScript SDK | [Full Code →](full-code) |
 | No-code dashboard UI | [No Code →](no-code) |
