@@ -1,6 +1,6 @@
 <div align="center">
 
-# AgentBreeder
+# AgentBreeder™
 
 ### Stop wrangling agents. Start shipping them.
 

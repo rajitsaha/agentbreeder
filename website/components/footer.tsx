@@ -68,7 +68,7 @@ export function Footer() {
           style={{ borderColor: 'var(--border)' }}
         >
           <p className="text-xs" style={{ color: 'var(--text-dim)' }}>
-            © 2026 Rajit Saha & AgentBreeder Contributors — Apache License 2.0
+            © 2026 Rajit Saha. AgentBreeder™ is a trademark pending registration. Apache License 2.0
           </p>
           <span
             className="rounded border px-2.5 py-0.5 font-mono text-[11px] font-semibold"
