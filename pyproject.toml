@@ -108,6 +108,13 @@ warn_unused_configs = true
 ignore_missing_imports = true
 plugins = ["pydantic.mypy"]
 
+[[tool.mypy.overrides]]
+module = [
+    "engine.deployers.gcp_cloudrun",
+    "engine.runtimes.templates.google_adk_server",
+]
+disallow_untyped_calls = false
+
 # Pydantic plugin settings
 [tool.pydantic-mypy]
 init_forbid_extra = false

@@ -600,7 +600,7 @@ class GCPCloudRunDeployer(BaseDeployer):
         try:
             from google.cloud import logging as cloud_logging
 
-            client = cloud_logging.Client(project=gcp.project_id)  # type: ignore[no-untyped-call]
+            client = cloud_logging.Client(project=gcp.project_id)
 
             filter_str = (
                 f'resource.type="cloud_run_revision" '
@@ -610,7 +610,7 @@ class GCPCloudRunDeployer(BaseDeployer):
             if since:
                 filter_str += f' timestamp>="{since.isoformat()}Z"'
 
-            entries = client.list_entries(  # type: ignore[no-untyped-call]
+            entries = client.list_entries(
                 filter_=filter_str,
                 order_by="timestamp desc",
                 max_results=100,
