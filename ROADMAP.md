@@ -24,6 +24,7 @@
 | **v1.7** | Agent Architect Skill | `/agent-build` advisory mode: framework, model, RAG, memory, MCP/A2A, deploy, eval recommendations + IDE config generation | M35 | Done |
 | **v1.8** | Connectors & Scheduling | SMTP email connector, HackerNews/ArXiv/RSS news connectors, `agentbreeder schedule` cron command, Ollama + OpenRouter wired into `scan` and `init` | M37 | Done |
 | **v1.9** | TypeScript SDK Parity | memory.ts, mcp.ts, validation.ts; 10 missing Agent methods; Tool.fromFunction; TS examples + full README | M36 | Planned |
+| **v2.0** | Quality & Testing | Exhaustive live Docker Playwright suite: providers, prompts, tools, RAG, MCP, agents (no-code + low-code), execution, tracing, evals, costs, RBAC — 96 tests, 12 spec files | M38 | Planned |
 
 ---
 
@@ -2946,6 +2947,7 @@ Eight methods present in Python `Agent` are absent in TypeScript `Agent`:
 | **v1.6** | M34 | Framework Depth | LangGraph HITL+persistence, OAI Agents handoffs, runtime OTel tracing | [#39](https://github.com/rajitsaha/agentbreeder/issues/39) [#40](https://github.com/rajitsaha/agentbreeder/issues/40) [#41](https://github.com/rajitsaha/agentbreeder/issues/41) | ~5d |
 | **v1.7** | M35 | Agent Architect Skill | /agent-build advisory mode: framework, model, RAG, memory, MCP/A2A, deploy, eval recommendations + IDE config file generation | [#49](https://github.com/rajitsaha/agentbreeder/issues/49) | ✅ Done |
 | **v1.8** | M36 | TypeScript SDK Parity | memory.ts, mcp.ts, validation.ts; 10 missing Agent methods; Tool.fromFunction; TS examples + full README | [#55](https://github.com/rajitsaha/agentbreeder/issues/55) | ~6d |
+| **v2.0** | M38 | Quality & Testing | Live Docker Playwright suite: 96 tests across providers, prompts, tools, RAG, MCP, agents, execution, tracing, evals, costs, RBAC | [#78](https://github.com/rajitsaha/agentbreeder/issues/78) | ~3d |
 
 **Recommended sequencing rationale:**
 - M25 first — unblocks users who picked CrewAI/Claude SDK/ADK in the init wizard today
@@ -2954,8 +2956,62 @@ Eight methods present in Python `Agent` are absent in TypeScript `Agent`:
 - M34 next — improves depth of existing runtimes; high value but not a blocker to new users
 - M35 last in this batch — highest DX impact; builds on top of all runtime and deploy work being stable
 - M36 next — closes the TypeScript/Python SDK parity gap; unblocks Node.js developers on the Full Code tier
+- M38 next — exhaustive live Docker E2E coverage; proves the full product chain works end-to-end
 
 ---
 
-*Last updated: April 19, 2026 — 11 open issues, 31 closed*
-*Status: v0.1–v1.2 complete (M1–M23). v1.3–v1.7 done — model gateway, AgentOps, production hardening, multi-cloud, framework depth, agent architect skill (/agent-build) all shipped. v1.8 done — SMTP + news connectors (HackerNews, ArXiv, RSS), agentbreeder schedule cron command, Ollama + OpenRouter wired into scan/init, 3000 unit tests at 95% coverage. v1.9 planned — M36 (TypeScript SDK Parity: memory/mcp/validation modules, 10 missing Agent methods, Tool.fromFunction) tracked in #55. Open issues: 11 | Closed: 27.*
+*Last updated: April 19, 2026 — 12 open issues, 31 closed*
+*Status: v0.1–v1.2 complete (M1–M23). v1.3–v1.7 done — model gateway, AgentOps, production hardening, multi-cloud, framework depth, agent architect skill (/agent-build) all shipped. v1.8 done — SMTP + news connectors (HackerNews, ArXiv, RSS), agentbreeder schedule cron command, Ollama + OpenRouter wired into scan/init, 3000 unit tests at 95% coverage. v1.9 planned — M36 (TypeScript SDK Parity) tracked in #55. v2.0 planned — M38 (Exhaustive Live Docker E2E Suite: 96 tests, 12 spec files) tracked in #78. Open issues: 12 | Closed: 31.*
+
+## Milestone M38 — Exhaustive Live Docker E2E Test Suite
+
+### Background
+
+AgentBreeder has 145 Playwright tests that mock the backend API. These prove the UI renders correctly but don't prove the full product chain works — that a prompt saved to the registry actually shows up in the agent builder picker, that a pgvector RAG index actually gets created and queried, or that traces recorded during a playground run actually appear in the tracing dashboard.
+
+M38 adds a second test suite that runs against the live Docker stack (real Postgres + Redis + FastAPI + LiteLLM). It covers every major user-facing feature end-to-end with real data persistence.
+
+**Design spec:** `docs/superpowers/specs/2026-04-18-playwright-live-docker-test-suite-design.md`  
+**Implementation plan:** `docs/superpowers/plans/2026-04-18-playwright-live-docker-test-suite.md`  
+**GitHub issue:** [#78](https://github.com/rajitsaha/agentbreeder/issues/78)
+
+### M38.1 — Infrastructure
+
+- `dashboard/playwright.config.live.ts` — separate Playwright project targeting live Docker
+- `dashboard/tests/e2e-live/global.setup.ts` — creates 3 RBAC test users + 2 teams + LiteLLM fake provider
+- `dashboard/tests/e2e-live/global.teardown.ts` — deletes all `e2e-*` resources after every run
+- `dashboard/tests/e2e-live/fixtures.ts` — `adminPage`, `memberPage`, `viewerPage`, `api(role)` helpers
+- `dashboard/tests/e2e-live/helpers.ts` — `waitForToast`, `fillYamlEditor`, `openSandbox`, `pollUntil`
+- `npm run test:e2e:live` script added to `dashboard/package.json`
+
+### M38.2 — Feature Domain Specs
+
+| Spec | Tests | Scope |
+|------|-------|-------|
+| `01-providers.spec.ts` | 10 | Register OpenAI, Anthropic, Gemini, Vertex AI, OpenRouter, Ollama (real ping), LiteLLM; deregister one |
+| `02-prompts.spec.ts` | 7 | Create, version (v1→v2), test panel via LiteLLM fake, global search, agent builder picker |
+| `03-tools.spec.ts` | 6 | Create with JSON schema, sandbox execute, verify result panel, agent builder picker |
+| `04-rag.spec.ts` | 6 | Create pgvector index, upload doc, wait for ingestion, test search query, agent builder picker |
+| `05-mcp-servers.spec.ts` | 7 | Register two servers, view tools list, deregister one, agent builder picker |
+| `06-agents-nocode.spec.ts` | 9 | Visual builder: attach prompt + tool + RAG + MCP, YAML round-trip, register |
+| `07-agents-lowcode.spec.ts` | 6 | YAML editor: paste agent.yaml, validate, visual toggle, register |
+| `08-agent-execution.spec.ts` | 6 | Playground: send messages, verify token badges, conversation history, model override |
+| `09-tracing.spec.ts` | 6 | Trace list, span tree, latency + token counts, agent name filter, date range filter |
+| `10-evals.spec.ts` | 8 | Dataset creation, 3 test cases, eval run, wait for completion, scores, side-by-side comparison |
+| `11-costs.spec.ts` | 6 | Spend chart, team/agent filters, token count verification, budget alert creation |
+| `12-rbac.spec.ts` | 18 | Admin/member/viewer across prompts, tools, RAG, MCP, agents, costs, audit log, teams |
+
+### M38.3 — RBAC Coverage
+
+Three test users (`e2e-admin`, `e2e-member`, `e2e-viewer`) and two teams (`e2e-team-alpha`, `e2e-team-beta`) are created in global setup. RBAC tests verify:
+- Viewer: read-only across all asset types (no edit/execute/upload/deregister buttons)
+- Member: can edit/execute within their team; cannot access cross-team resources
+- Admin: full access including audit log and team creation
+
+### M38 Acceptance Criteria
+
+- [ ] `npm run test:e2e:live` exits 0 on a fresh Docker stack with Ollama running
+- [ ] All 96 tests pass
+- [ ] Global setup + teardown leave the database clean (no orphaned `e2e-*` records)
+- [ ] Existing 145 mocked CI tests (`npm run test:e2e`) are unaffected
+- [ ] LiteLLM fake model (`fake/gpt-4`) is the only LLM called — no real API costs in CI
