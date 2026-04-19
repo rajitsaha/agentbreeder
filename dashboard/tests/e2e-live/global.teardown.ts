@@ -36,6 +36,9 @@ teardown('clean up all e2e-* test data', async () => {
   }
   const state = JSON.parse(readFileSync(statePath, 'utf-8'));
   const token: string = state.adminToken;
+  if (!token || typeof token !== 'string' || !token.trim()) {
+    throw new Error('Invalid or missing adminToken in .e2e-state.json — cannot clean up');
+  }
 
   const endpoints = [
     '/api/v1/agents',

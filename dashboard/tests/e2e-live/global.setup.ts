@@ -1,5 +1,5 @@
 import { test as setup } from '@playwright/test';
-import { writeFileSync, mkdirSync } from 'fs';
+import { writeFileSync, mkdirSync, rmSync } from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -19,7 +19,7 @@ async function registerUser(email: string, password: string, name: string, team 
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, password, name, team }),
   });
-  if (!res.ok && res.status !== 409 && res.status !== 400) {
+  if (!res.ok && res.status !== 409) {
     throw new Error(`Register failed for ${email}: ${res.status} ${await res.text()}`);
   }
 }
@@ -32,7 +32,9 @@ async function loginUser(email: string, password: string): Promise<string> {
   });
   if (!res.ok) throw new Error(`Login failed for ${email}: ${res.status} ${await res.text()}`);
   const body = await res.json();
-  return body.access_token ?? body.data?.access_token;
+  const token = body.access_token ?? body.data?.access_token;
+  if (!token) throw new Error(`Login succeeded but no token in response for ${email}`);
+  return token;
 }
 
 async function apiPost(path: string, token: string, body: unknown) {
@@ -50,6 +52,8 @@ async function apiPost(path: string, token: string, body: unknown) {
 }
 
 setup('provision test users, teams, and provider', async ({ page }) => {
+  const authDir = path.resolve(__dirname, '../../../.auth');
+  try {
   // 1. Register all three users
   await registerUser(ADMIN_EMAIL, ADMIN_PASSWORD, 'E2E Admin', 'e2e-team-alpha');
   await registerUser(MEMBER_EMAIL, MEMBER_PASSWORD, 'E2E Member', 'e2e-team-alpha');
@@ -63,16 +67,16 @@ setup('provision test users, teams, and provider', async ({ page }) => {
   // 3. Save admin browser auth state
   await page.goto('/');
   await page.evaluate((tok) => localStorage.setItem('ag-token', tok), adminToken);
-  mkdirSync(path.resolve(__dirname, '../../../.auth'), { recursive: true });
-  await page.context().storageState({ path: path.resolve(__dirname, '../../../.auth/admin.json') });
+  mkdirSync(authDir, { recursive: true });
+  await page.context().storageState({ path: path.join(authDir, 'admin.json') });
 
   // 4. Save member browser auth state
   await page.evaluate((tok) => localStorage.setItem('ag-token', tok), memberToken);
-  await page.context().storageState({ path: path.resolve(__dirname, '../../../.auth/member.json') });
+  await page.context().storageState({ path: path.join(authDir, 'member.json') });
 
   // 5. Save viewer browser auth state
   await page.evaluate((tok) => localStorage.setItem('ag-token', tok), viewerToken);
-  await page.context().storageState({ path: path.resolve(__dirname, '../../../.auth/viewer.json') });
+  await page.context().storageState({ path: path.join(authDir, 'viewer.json') });
 
   // 6. Create e2e-team-alpha
   let teamAlphaId: string;
@@ -129,4 +133,9 @@ setup('provision test users, teams, and provider', async ({ page }) => {
   );
 
   console.log('Global setup complete:', JSON.stringify({ teamAlphaId, teamBetaId, litellmProviderId }));
+  } catch (error) {
+    console.error('Setup failed — removing stale auth files:', error);
+    rmSync(authDir, { recursive: true, force: true });
+    throw error;
+  }
 });

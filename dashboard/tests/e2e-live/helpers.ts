@@ -23,6 +23,7 @@ export async function openSandbox(page: Page, agentName: string): Promise<void> 
   await page.goto('/playground');
   await page.waitForLoadState('networkidle');
   const selector = page.getByRole('combobox').or(page.locator('[data-testid="agent-selector"]')).first();
+  await expect(selector).toBeVisible({ timeout: 5_000 });
   await selector.click();
   await page.getByRole('option', { name: agentName }).click();
 }
@@ -36,7 +37,10 @@ export async function pollUntil(
   const deadline = Date.now() + timeoutMs;
   while (Date.now() < deadline) {
     if (await fn()) return;
-    await new Promise((r) => setTimeout(r, intervalMs));
+    const remaining = deadline - Date.now();
+    if (remaining > 0) {
+      await new Promise((r) => setTimeout(r, Math.min(intervalMs, remaining)));
+    }
   }
   throw new Error(`pollUntil timed out after ${timeoutMs}ms`);
 }
