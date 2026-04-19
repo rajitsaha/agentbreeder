@@ -7,8 +7,12 @@ function wait(ms: number) {
 }
 
 const TARGETS = [
-  { label: 'Local',      detail: 'Docker Compose',   color: '#22c55e', endpoint: 'localhost:8080' },
-  { label: 'Cloud Run',  detail: 'GCP · Serverless', color: '#4285f4', endpoint: 'agent-abc.a.run.app' },
+  { label: 'Local',       detail: 'Docker Compose',        color: '#22c55e', endpoint: 'localhost:8080' },
+  { label: 'Cloud Run',   detail: 'GCP · Serverless',      color: '#4285f4', endpoint: 'agent-abc.a.run.app' },
+  { label: 'ECS Fargate', detail: 'AWS · Serverless',      color: '#ff9900', endpoint: 'ecs.us-east-1.aws' },
+  { label: 'App Runner',  detail: 'AWS · Managed',         color: '#ff9900', endpoint: 'apprunner.aws.com' },
+  { label: 'Azure',       detail: 'Container Apps',        color: '#0078d4', endpoint: 'agent.azurecontainerapps.io' },
+  { label: 'Kubernetes',  detail: 'EKS / GKE / AKS',      color: '#326ce5', endpoint: 'k8s.cluster.local' },
 ] as const;
 
 const PIPELINE = [
@@ -164,14 +168,22 @@ export function DeployAnywhere() {
   const stepRef  = useRef<HTMLSpanElement>(null);
   const statsRef = useRef<HTMLDivElement>(null);
 
-  // One set of refs per target card — must match TARGETS.length exactly
+  // One set of refs per target card — must match TARGETS.length exactly (6)
   const card0  = useRef<HTMLDivElement>(null);  const badge0  = useRef<HTMLSpanElement>(null);  const ep0  = useRef<HTMLDivElement>(null);  const pulse0  = useRef<HTMLDivElement>(null);
   const card1  = useRef<HTMLDivElement>(null);  const badge1  = useRef<HTMLSpanElement>(null);  const ep1  = useRef<HTMLDivElement>(null);  const pulse1  = useRef<HTMLDivElement>(null);
+  const card2  = useRef<HTMLDivElement>(null);  const badge2  = useRef<HTMLSpanElement>(null);  const ep2  = useRef<HTMLDivElement>(null);  const pulse2  = useRef<HTMLDivElement>(null);
+  const card3  = useRef<HTMLDivElement>(null);  const badge3  = useRef<HTMLSpanElement>(null);  const ep3  = useRef<HTMLDivElement>(null);  const pulse3  = useRef<HTMLDivElement>(null);
+  const card4  = useRef<HTMLDivElement>(null);  const badge4  = useRef<HTMLSpanElement>(null);  const ep4  = useRef<HTMLDivElement>(null);  const pulse4  = useRef<HTMLDivElement>(null);
+  const card5  = useRef<HTMLDivElement>(null);  const badge5  = useRef<HTMLSpanElement>(null);  const ep5  = useRef<HTMLDivElement>(null);  const pulse5  = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const cards: CardState[] = [
       { card: card0.current!, badge: badge0.current!, endpointEl: ep0.current!, pulseEl: pulse0.current! },
       { card: card1.current!, badge: badge1.current!, endpointEl: ep1.current!, pulseEl: pulse1.current! },
+      { card: card2.current!, badge: badge2.current!, endpointEl: ep2.current!, pulseEl: pulse2.current! },
+      { card: card3.current!, badge: badge3.current!, endpointEl: ep3.current!, pulseEl: pulse3.current! },
+      { card: card4.current!, badge: badge4.current!, endpointEl: ep4.current!, pulseEl: pulse4.current! },
+      { card: card5.current!, badge: badge5.current!, endpointEl: ep5.current!, pulseEl: pulse5.current! },
     ];
     const signal = { cancelled: false };
     runLoop(termRef.current!, progRef.current!, stepRef.current!, cards, statsRef.current!, signal);
@@ -181,6 +193,10 @@ export function DeployAnywhere() {
   const allRefs = [
     { card: card0, badge: badge0, ep: ep0, pulse: pulse0 },
     { card: card1, badge: badge1, ep: ep1, pulse: pulse1 },
+    { card: card2, badge: badge2, ep: ep2, pulse: pulse2 },
+    { card: card3, badge: badge3, ep: ep3, pulse: pulse3 },
+    { card: card4, badge: badge4, ep: ep4, pulse: pulse4 },
+    { card: card5, badge: badge5, ep: ep5, pulse: pulse5 },
   ];
 
   return (
