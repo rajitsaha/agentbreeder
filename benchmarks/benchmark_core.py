@@ -23,7 +23,7 @@ import yaml
 from engine.config_parser import parse_config as parse_agent_config
 from engine.config_parser import validate_config as validate_agent
 from engine.orchestration_parser import parse_orchestration, validate_orchestration
-from sdk.python.agenthub.orchestration import (
+from agenthub.orchestration import (
     FanOut,
     Orchestration,
     Pipeline,
