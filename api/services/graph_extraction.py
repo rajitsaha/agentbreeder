@@ -10,6 +10,7 @@ Provides:
 
 from __future__ import annotations
 
+import asyncio
 import hashlib
 import json
 import logging
@@ -30,18 +31,25 @@ _extraction_cache: dict[str, tuple[list[GraphNode], list[GraphEdge]]] = {}
 async def extract_entities(
     text: str,
     model: str = DEFAULT_ENTITY_MODEL,
-    cache: dict[str, tuple] | None = None,
+    cache: dict[str, tuple[list[GraphNode], list[GraphEdge]]] | None = None,
 ) -> tuple[list[GraphNode], list[GraphEdge]]:
     """Extract entities and relationships from a text chunk using an LLM.
 
     Uses module-level cache by default. Pass cache={} to use a fresh cache.
     Returns ([], []) on LLM failure (never raises).
+
+    Note: returned GraphNode/GraphEdge objects always have chunk_ids=[].
+    The caller must append the source chunk_id after calling this function.
     """
     # Use module-level cache if none provided
-    active_cache: dict[str, tuple] = _extraction_cache if cache is None else cache
+    active_cache: dict[str, tuple[list[GraphNode], list[GraphEdge]]] = (
+        _extraction_cache if cache is None else cache
+    )
 
-    # Cache key: SHA-256 of (text + model)
-    cache_key = hashlib.sha256(f"{text}|{model}".encode()).hexdigest()
+    # Cache key: SHA-256 of JSON-serialised (text, model) to avoid pipe-char collisions
+    cache_key = hashlib.sha256(
+        json.dumps({"text": text, "model": model}, sort_keys=True).encode()
+    ).hexdigest()
 
     if cache_key in active_cache:
         return active_cache[cache_key]
@@ -62,22 +70,23 @@ async def extract_entities_batch(
     texts: list[str],
     model: str = DEFAULT_ENTITY_MODEL,
     batch_size: int = 5,
-    cache: dict[str, tuple] | None = None,
+    cache: dict[str, tuple[list[GraphNode], list[GraphEdge]]] | None = None,
 ) -> list[tuple[list[GraphNode], list[GraphEdge]]]:
-    """Extract entities from multiple chunks, batching into groups of batch_size.
+    """Extract entities from multiple chunks concurrently.
 
-    Calls extract_entities() per chunk (which handles caching internally).
+    batch_size controls max concurrent API calls (semaphore limit).
+    Uses extract_entities() per chunk with shared cache.
     Returns list of (nodes, edges) tuples in same order as input texts.
     """
-    results: list[tuple[list[GraphNode], list[GraphEdge]]] = []
+    if not texts:
+        return []
+    semaphore = asyncio.Semaphore(batch_size)
 
-    for i in range(0, len(texts), batch_size):
-        batch = texts[i : i + batch_size]
-        for text in batch:
-            result = await extract_entities(text, model=model, cache=cache)
-            results.append(result)
+    async def _extract_with_semaphore(text: str) -> tuple[list[GraphNode], list[GraphEdge]]:
+        async with semaphore:
+            return await extract_entities(text, model=model, cache=cache)
 
-    return results
+    return list(await asyncio.gather(*[_extract_with_semaphore(t) for t in texts]))
 
 
 async def _call_claude(text: str, model: str) -> dict[str, Any]:
@@ -137,7 +146,7 @@ async def _call_claude(text: str, model: str) -> dict[str, Any]:
     except json.JSONDecodeError as e:
         logger.warning("Entity extraction: failed to parse JSON response: %s", e)
         return {"entities": [], "relationships": []}
-    except (httpx.HTTPError, httpx.TimeoutException) as e:
+    except httpx.HTTPError as e:
         logger.warning("Entity extraction: HTTP error calling Claude API: %s", e)
         return {"entities": [], "relationships": []}
     except (KeyError, IndexError) as e:
@@ -251,7 +260,7 @@ def _normalize_entity_name(name: str) -> str:
     return " ".join(name.strip().lower().split())
 
 
-def get_extraction_cache() -> dict[str, tuple]:
+def get_extraction_cache() -> dict[str, tuple[list[GraphNode], list[GraphEdge]]]:
     """Return the module-level extraction cache (for inspection/testing)."""
     return _extraction_cache
 
