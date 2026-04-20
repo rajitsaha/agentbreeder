@@ -9,6 +9,7 @@ Provides:
 
 from __future__ import annotations
 
+import copy
 import logging
 from collections import deque
 
@@ -45,6 +46,8 @@ class GraphStore:
         self._edges: dict[str, dict[str, GraphEdge]] = {}
         # _entity_name_index: dict[index_id, dict[normalized_name, node_id]]
         self._entity_name_index: dict[str, dict[str, str]] = {}
+        # _triple_index: dict[index_id, dict[triple_key, edge_id]] — O(1) dedup
+        self._triple_index: dict[str, dict[tuple[str, str, str], str]] = {}
 
     # ------------------------------------------------------------------
     # Internal helpers
@@ -58,6 +61,8 @@ class GraphStore:
             self._edges[index_id] = {}
         if index_id not in self._entity_name_index:
             self._entity_name_index[index_id] = {}
+        if index_id not in self._triple_index:
+            self._triple_index[index_id] = {}
 
     # ------------------------------------------------------------------
     # Node operations
@@ -86,6 +91,9 @@ class GraphStore:
             # Update description if incoming is non-empty
             if node.description:
                 existing.description = node.description
+            # Update entity_type if incoming is non-empty
+            if node.entity_type:
+                existing.entity_type = node.entity_type
             # Update embedding if provided
             if node.embedding is not None:
                 existing.embedding = node.embedding
@@ -110,7 +118,8 @@ class GraphStore:
 
     def get_node(self, index_id: str, node_id: str) -> GraphNode | None:
         """Return node by id, or None if not found."""
-        return self._nodes.get(index_id, {}).get(node_id)
+        node = self._nodes.get(index_id, {}).get(node_id)
+        return copy.deepcopy(node) if node else None
 
     # ------------------------------------------------------------------
     # Edge operations
@@ -126,26 +135,23 @@ class GraphStore:
         self._ensure_index(index_id)
 
         edges = self._edges[index_id]
-
-        # Scan for duplicate triple — O(n) is fine at in-memory scale
         triple_key = (edge.subject_id, edge.predicate, edge.object_id)
-        for existing in edges.values():
-            if (
-                existing.subject_id == edge.subject_id
-                and existing.predicate == edge.predicate
-                and existing.object_id == edge.object_id
-            ):
-                # Merge
-                existing.chunk_ids = list(set(existing.chunk_ids) | set(edge.chunk_ids))
-                existing.weight = (existing.weight + edge.weight) / 2.0
-                logger.debug(
-                    "GraphStore: merged edge triple %s (index=%s)",
-                    triple_key,
-                    index_id,
-                )
-                return existing
+
+        if triple_key in self._triple_index.get(index_id, {}):
+            existing_id = self._triple_index[index_id][triple_key]
+            existing = self._edges[index_id][existing_id]
+            # Merge chunk_ids and average weight
+            existing.chunk_ids = list(set(existing.chunk_ids) | set(edge.chunk_ids))
+            existing.weight = (existing.weight + edge.weight) / 2.0
+            logger.debug(
+                "GraphStore: merged edge triple %s (index=%s)",
+                triple_key,
+                index_id,
+            )
+            return existing
 
         # New edge
+        self._triple_index.setdefault(index_id, {})[triple_key] = edge.id
         edges[edge.id] = edge
         logger.debug(
             "GraphStore: inserted edge id=%s triple=%s (index=%s)",
@@ -157,7 +163,8 @@ class GraphStore:
 
     def get_edge(self, index_id: str, edge_id: str) -> GraphEdge | None:
         """Return edge by id, or None if not found."""
-        return self._edges.get(index_id, {}).get(edge_id)
+        edge = self._edges.get(index_id, {}).get(edge_id)
+        return copy.deepcopy(edge) if edge else None
 
     # ------------------------------------------------------------------
     # Traversal
@@ -188,8 +195,7 @@ class GraphStore:
             if edge.object_id in adjacency:
                 adjacency[edge.object_id].add(edge.subject_id)
 
-        seeds = set(node_ids)
-        visited: set[str] = set(seeds)
+        visited: set[str] = set(node_ids)
         # BFS queue: (node_id, depth)
         queue: deque[tuple[str, int]] = deque()
         for nid in node_ids:
@@ -208,7 +214,7 @@ class GraphStore:
                     result_ids.append(neighbor_id)
                     queue.append((neighbor_id, depth + 1))
 
-        return [nodes[nid] for nid in result_ids]
+        return [copy.deepcopy(nodes[nid]) for nid in result_ids]
 
     # ------------------------------------------------------------------
     # Subgraph deletion
@@ -227,6 +233,7 @@ class GraphStore:
         self._nodes.pop(index_id, None)
         self._edges.pop(index_id, None)
         self._entity_name_index.pop(index_id, None)
+        self._triple_index.pop(index_id, None)
         logger.debug("GraphStore: deleted subgraph for index=%s (existed=%s)", index_id, existed)
         return existed
 
@@ -257,6 +264,7 @@ class GraphStore:
 
         Filter by entity_type if provided. Returns (nodes_page, total_count).
         """
+        # Order is insertion order (CPython 3.7+); not stable across upserts
         all_nodes = list(self._nodes.get(index_id, {}).values())
         if entity_type is not None:
             all_nodes = [n for n in all_nodes if n.entity_type == entity_type]
@@ -276,6 +284,7 @@ class GraphStore:
 
         Filter by predicate if provided. Returns (edges_page, total_count).
         """
+        # Order is insertion order (CPython 3.7+); not stable across upserts
         all_edges = list(self._edges.get(index_id, {}).values())
         if predicate is not None:
             all_edges = [e for e in all_edges if e.predicate == predicate]
