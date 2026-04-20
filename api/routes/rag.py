@@ -8,6 +8,7 @@ from typing import Any
 from fastapi import APIRouter, File, HTTPException, Query, UploadFile
 
 from api.models.schemas import ApiMeta, ApiResponse
+from api.services.graph_store import get_graph_store
 from api.services.rag_service import get_rag_store
 
 logger = logging.getLogger(__name__)
@@ -208,7 +209,6 @@ async def get_index_graph_metadata(index_id: str) -> ApiResponse[dict]:
     if idx.index_type.value not in ("graph", "hybrid"):
         raise HTTPException(status_code=400, detail="Index is not a graph or hybrid type")
 
-    from api.services.graph_store import get_graph_store
     graph_store = get_graph_store()
 
     # Entity type breakdown
@@ -223,7 +223,7 @@ async def get_index_graph_metadata(index_id: str) -> ApiResponse[dict]:
     return ApiResponse(data={
         "index_id": index_id,
         "index_type": idx.index_type.value,
-        "node_count": graph_store.node_count(index_id),
+        "node_count": len(all_nodes),
         "edge_count": graph_store.edge_count(index_id),
         "entity_types": [{"type": t, "count": c} for t, c in sorted(entity_types.items())],
         "top_entities": [{"entity": n.entity, "type": n.entity_type, "chunk_count": len(n.chunk_ids)} for n in top_entities],
@@ -249,7 +249,6 @@ async def list_index_entities(
     if idx.index_type.value not in ("graph", "hybrid"):
         raise HTTPException(status_code=400, detail="Index is not a graph or hybrid type")
 
-    from api.services.graph_store import get_graph_store
     graph_store = get_graph_store()
     nodes, total = graph_store.list_nodes(index_id, page=page, per_page=per_page, entity_type=entity_type)
 
@@ -278,7 +277,6 @@ async def list_index_relationships(
     if idx.index_type.value not in ("graph", "hybrid"):
         raise HTTPException(status_code=400, detail="Index is not a graph or hybrid type")
 
-    from api.services.graph_store import get_graph_store
     graph_store = get_graph_store()
 
     # Resolve subject/object entity names for each edge
