@@ -1,11 +1,12 @@
-"""RAG Service — Vector index management with in-memory store.
+"""RAG Service — Vector/Graph/Hybrid index management with in-memory store.
 
 Provides:
-- CRUD for vector indexes (in-memory, pgvector-ready schema)
+- CRUD for RAG indexes (vector, graph, hybrid) (in-memory, pgvector-ready schema)
 - File ingestion: PDF, TXT, MD, CSV, JSON -> chunk -> embed -> index
 - Chunking strategies: fixed-size, recursive text splitter
 - Embedding: OpenAI text-embedding-3-small, Ollama nomic-embed-text
 - Search: cosine similarity + optional tsvector full-text (hybrid)
+- Graph: entity extraction, relationship mapping, multi-hop traversal
 - Ingestion progress tracking
 """
 
@@ -44,9 +45,16 @@ class EmbeddingModel(StrEnum):
     ollama_nomic = "ollama/nomic-embed-text"
 
 
+class IndexType(StrEnum):
+    vector = "vector"
+    graph = "graph"
+    hybrid = "hybrid"
+
+
 class IngestJobStatus(StrEnum):
     pending = "pending"
     chunking = "chunking"
+    extracting_entities = "extracting_entities"
     embedding = "embedding"
     indexing = "indexing"
     completed = "completed"
@@ -65,8 +73,51 @@ class DocumentChunk:
 
 
 @dataclass
-class VectorIndex:
-    """In-memory vector index."""
+class GraphNode:
+    """A knowledge graph node representing a named entity."""
+
+    id: str
+    entity: str
+    entity_type: str
+    description: str
+    chunk_ids: list[str]
+    embedding: list[float] | None = None
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "id": self.id,
+            "entity": self.entity,
+            "entity_type": self.entity_type,
+            "description": self.description,
+            "chunk_ids": self.chunk_ids,
+        }
+
+
+@dataclass
+class GraphEdge:
+    """A directed relationship between two graph nodes."""
+
+    id: str
+    subject_id: str
+    predicate: str
+    object_id: str
+    chunk_ids: list[str]
+    weight: float = 1.0
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "id": self.id,
+            "subject_id": self.subject_id,
+            "predicate": self.predicate,
+            "object_id": self.object_id,
+            "chunk_ids": self.chunk_ids,
+            "weight": self.weight,
+        }
+
+
+@dataclass
+class RAGIndex:
+    """In-memory RAG index supporting vector, graph, and hybrid retrieval."""
 
     id: str
     name: str
@@ -82,6 +133,13 @@ class VectorIndex:
     created_at: str = ""
     updated_at: str = ""
     chunks: list[DocumentChunk] = field(default_factory=list)
+    # Graph-specific fields
+    index_type: IndexType = IndexType.vector
+    entity_model: str = "claude-haiku-4-5-20251001"
+    max_hops: int = 2
+    relationship_types: list[str] = field(default_factory=list)
+    node_count: int = 0
+    edge_count: int = 0
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -98,7 +156,17 @@ class VectorIndex:
             "chunk_count": self.chunk_count,
             "created_at": self.created_at,
             "updated_at": self.updated_at,
+            "index_type": self.index_type.value,
+            "entity_model": self.entity_model,
+            "max_hops": self.max_hops,
+            "relationship_types": self.relationship_types,
+            "node_count": self.node_count,
+            "edge_count": self.edge_count,
         }
+
+
+# Backwards-compatible alias
+VectorIndex = RAGIndex
 
 
 @dataclass
@@ -491,7 +559,7 @@ class RAGStore:
     """
 
     def __init__(self) -> None:
-        self._indexes: dict[str, VectorIndex] = {}
+        self._indexes: dict[str, RAGIndex] = {}
         self._jobs: dict[str, IngestJob] = {}
 
     # --- Index CRUD ---
@@ -505,11 +573,15 @@ class RAGStore:
         chunk_size: int = 512,
         chunk_overlap: int = 64,
         source: str = "manual",
-    ) -> VectorIndex:
+        index_type: str = "vector",
+        entity_model: str = "claude-haiku-4-5-20251001",
+        max_hops: int = 2,
+        relationship_types: list[str] | None = None,
+    ) -> RAGIndex:
         index_id = str(uuid.uuid4())
         now = datetime.now(UTC).isoformat()
         dimensions = EMBEDDING_DIMENSIONS.get(embedding_model, 768)
-        idx = VectorIndex(
+        idx = RAGIndex(
             id=index_id,
             name=name,
             description=description,
@@ -521,14 +593,18 @@ class RAGStore:
             source=source,
             created_at=now,
             updated_at=now,
+            index_type=IndexType(index_type),
+            entity_model=entity_model,
+            max_hops=max_hops,
+            relationship_types=relationship_types if relationship_types is not None else [],
         )
         self._indexes[index_id] = idx
         return idx
 
-    def get_index(self, index_id: str) -> VectorIndex | None:
+    def get_index(self, index_id: str) -> RAGIndex | None:
         return self._indexes.get(index_id)
 
-    def list_indexes(self, page: int = 1, per_page: int = 20) -> tuple[list[VectorIndex], int]:
+    def list_indexes(self, page: int = 1, per_page: int = 20) -> tuple[list[RAGIndex], int]:
         all_indexes = sorted(self._indexes.values(), key=lambda x: x.created_at, reverse=True)
         total = len(all_indexes)
         start = (page - 1) * per_page
