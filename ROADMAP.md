@@ -24,7 +24,7 @@
 | **v1.7** | Agent Architect Skill | `/agent-build` advisory mode: framework, model, RAG, memory, MCP/A2A, deploy, eval recommendations + IDE config generation | M35 | Done |
 | **v1.8** | Connectors & Scheduling | SMTP email connector, HackerNews/ArXiv/RSS news connectors, `agentbreeder schedule` cron command, Ollama + OpenRouter wired into `scan` and `init` | M37 | Done |
 | **v1.9** | TypeScript SDK Parity | memory.ts, mcp.ts, validation.ts; 10 missing Agent methods; Tool.fromFunction; TS examples + full README | M36 | Planned |
-| **v2.0** | Quality & Testing | Exhaustive live Docker Playwright suite: providers, prompts, tools, RAG, MCP, agents (no-code + low-code), execution, tracing, evals, costs, RBAC — 96 tests, 12 spec files | M38 | Planned |
+| **v2.0** | Quality & Testing | Exhaustive live Docker Playwright suite: providers, prompts, tools, RAG, MCP, agents (no-code + low-code), execution, tracing, evals, costs, RBAC — 104 tests, 15 spec files | M38 | Done |
 
 ---
 
@@ -2947,7 +2947,7 @@ Eight methods present in Python `Agent` are absent in TypeScript `Agent`:
 | **v1.6** | M34 | Framework Depth | LangGraph HITL+persistence, OAI Agents handoffs, runtime OTel tracing | [#39](https://github.com/agentbreeder/agentbreeder/issues/39) [#40](https://github.com/agentbreeder/agentbreeder/issues/40) [#41](https://github.com/agentbreeder/agentbreeder/issues/41) | ~5d |
 | **v1.7** | M35 | Agent Architect Skill | /agent-build advisory mode: framework, model, RAG, memory, MCP/A2A, deploy, eval recommendations + IDE config file generation | [#49](https://github.com/agentbreeder/agentbreeder/issues/49) | ✅ Done |
 | **v1.8** | M36 | TypeScript SDK Parity | memory.ts, mcp.ts, validation.ts; 10 missing Agent methods; Tool.fromFunction; TS examples + full README | [#55](https://github.com/agentbreeder/agentbreeder/issues/55) | ~6d |
-| **v2.0** | M38 | Quality & Testing | Live Docker Playwright suite: 96 tests across providers, prompts, tools, RAG, MCP, agents, execution, tracing, evals, costs, RBAC | [#78](https://github.com/agentbreeder/agentbreeder/issues/78) | ~3d |
+| **v2.0** | M38 | Quality & Testing | Live Docker Playwright suite: 104 tests across providers, prompts, tools, RAG, MCP, agents, execution, tracing, evals, costs, RBAC | [#78](https://github.com/agentbreeder/agentbreeder/issues/78) | ✅ Done |
 
 **Recommended sequencing rationale:**
 - M25 first — unblocks users who picked CrewAI/Claude SDK/ADK in the init wizard today
@@ -3045,7 +3045,7 @@ agentbreeder/
 ---
 
 *Last updated: 2026-04-19 — 10 open issues, 43 closed*
-*Status: v0.1–v1.2 complete (M1–M23). v1.3–v1.7 done. v1.8 done (connectors + schedule + Ollama/OpenRouter). v1.9 planned (M36 TypeScript SDK Parity). v2.0 planned (M38 E2E suite). v2.1–v2.5 planned (Cloud integration modules — see above). Open issues: 12 | Closed: 31.*
+*Status: v0.1–v1.2 complete (M1–M23). v1.3–v1.7 done. v1.8 done (connectors + schedule + Ollama/OpenRouter). v1.9 planned (M36 TypeScript SDK Parity). v2.0 done (M38 E2E suite — 104 tests, 15 spec files). v2.1–v2.5 planned (Cloud integration modules — see above). Open issues: 10 | Closed: 43.*
 
 ## Milestone M38 — Exhaustive Live Docker E2E Test Suite
 
@@ -3094,11 +3094,11 @@ Three test users (`e2e-admin`, `e2e-member`, `e2e-viewer`) and two teams (`e2e-t
 
 ### M38 Acceptance Criteria
 
-- [ ] `npm run test:e2e:live` exits 0 on a fresh Docker stack with Ollama running
-- [ ] All 96 tests pass
-- [ ] Global setup + teardown leave the database clean (no orphaned `e2e-*` records)
-- [ ] Existing 145 mocked CI tests (`npm run test:e2e`) are unaffected
-- [ ] LiteLLM fake model (`fake/gpt-4`) is the only LLM called — no real API costs in CI
+- [x] `npm run test:e2e:live` exits 0 on a fresh Docker stack with Ollama running
+- [x] All 104 tests pass (95 live + 9 docker, across 15 spec files)
+- [x] Global setup + teardown leave the database clean (no orphaned `e2e-*` records)
+- [x] Existing mocked CI tests (`npm run test:e2e`) are unaffected
+- [x] LiteLLM fake model (`fake/gpt-4`) is the only LLM called — no real API costs in CI
 
 ---
 

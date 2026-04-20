@@ -210,7 +210,7 @@ agent.deploy()
 | Python SDK | ✅ |
 | TypeScript SDK | ✅ |
 | Tier mobility (`agentbreeder eject`) | ✅ |
-| Live Docker E2E test suite (97 Playwright tests, 12 spec domains) | ✅ |
+| Live Docker E2E test suite (104 Playwright tests, 15 spec files) | ✅ |
 | 96% source coverage (3,374 unit + integration tests) | ✅ |
 
 ---

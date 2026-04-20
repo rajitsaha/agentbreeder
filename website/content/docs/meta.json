@@ -17,6 +17,8 @@
     "local-development",
     "evaluations",
     "connectors",
+    "memory",
+    "a2a-protocol",
     "---Core Concepts---",
     "agent-yaml",
     "registry-guide",
