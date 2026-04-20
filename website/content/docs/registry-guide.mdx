@@ -20,6 +20,7 @@ AgentBreeder's **registry** is a shared catalog of reusable resources. Instead o
 | **Knowledge Base** | Vector-indexed documents for RAG retrieval | `kb/product-docs` |
 | **Memory** | Conversation history / state storage config | `memory/session-buffer` |
 | **MCP Server** | Model Context Protocol server with discoverable tools | `mcp/slack-server` |
+| **Model** | Registered LLM with provider, pricing, and capabilities | `models/claude-sonnet-4` |
 | **Agent** | A deployed AI agent | `agents/support-agent` |
 
 **The workflow for every resource is the same:**
@@ -978,7 +979,7 @@ curl http://localhost:8000/api/v1/memory/configs/{config_id}/stats
     The wizard asks 5 questions:
 
     1. **Framework** — LangGraph, OpenAI Agents, Claude SDK, CrewAI, Google ADK, or Custom
-    2. **Cloud target** — Local, AWS, GCP, or Kubernetes
+    2. **Cloud target** — Local, AWS (ECS Fargate / App Runner), GCP (Cloud Run), Azure (Container Apps), Kubernetes, or Claude-managed
     3. **Agent name** — lowercase with hyphens (e.g., `support-agent`)
     4. **Team** — your team name
     5. **Owner email** — who is responsible
@@ -1126,8 +1127,8 @@ agentbreeder deploy agent.yaml --target local
 # Deploy to GCP Cloud Run
 agentbreeder deploy agent.yaml --target cloud-run --region us-central1
 
-# Deploy to AWS ECS
-agentbreeder deploy agent.yaml --target aws --region us-east-1
+# Deploy to AWS ECS Fargate
+agentbreeder deploy agent.yaml --target ecs-fargate --region us-east-1
 ```
 
 The 8-step atomic pipeline runs:

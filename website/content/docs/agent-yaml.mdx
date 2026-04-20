@@ -140,16 +140,23 @@ Each framework supports optional configuration under a top-level key matching th
 ```yaml
 claude_sdk:
   thinking:
-    type: adaptive          # "adaptive" (default) or "enabled"
+    enabled: true           # false (default) — enable adaptive thinking
     effort: high            # "low" | "medium" | "high" (default: "high")
   prompt_caching: true      # Enable prompt caching for long system prompts (default: false)
+  routing:
+    provider: anthropic     # "anthropic" (default) | "vertex_ai" | "bedrock"
+    project_id: ""          # Required for vertex_ai
+    region: ""              # Required for vertex_ai and bedrock
 ```
 
 | Field | Type | Default | Description |
 |-------|------|---------|-------------|
-| `thinking.type` | string | `"adaptive"` | Thinking mode. `"adaptive"` activates thinking when beneficial; `"enabled"` always activates. |
-| `thinking.effort` | string | `"high"` | Thinking compute budget. Maps to `output_config.effort` in the API. |
+| `thinking.enabled` | boolean | `false` | Enable adaptive thinking. When `true`, the agent uses extended thinking for complex queries. |
+| `thinking.effort` | string | `"high"` | Thinking compute budget. One of `"low"`, `"medium"`, `"high"`. Maps to `output_config.effort` in the API. |
 | `prompt_caching` | boolean | `false` | Cache the system prompt via Anthropic's prompt caching API. Reduces latency and cost when the system prompt is reused across many requests. Minimum length thresholds: 8 192 chars for Sonnet models, 16 384 chars for others. |
+| `routing.provider` | string | `"anthropic"` | Provider endpoint: `"anthropic"` (direct), `"vertex_ai"` (GCP), or `"bedrock"` (AWS). |
+| `routing.project_id` | string | — | GCP project ID. Required when `routing.provider` is `"vertex_ai"`. |
+| `routing.region` | string | — | Cloud region. Required when `routing.provider` is `"vertex_ai"` or `"bedrock"`. |
 
 **Environment variables injected by the runtime:**
 
@@ -166,10 +173,20 @@ claude_sdk:
 
 ```yaml
 crewai:
-  # No additional configuration required.
-  # AGENT_MODEL and AGENT_TEMPERATURE are injected automatically
-  # from the top-level model: block.
+  process: sequential       # "sequential" (default) | "hierarchical" | "parallel"
+  manager_llm: gpt-4o       # Required when process=hierarchical
+  verbose: false            # Enable verbose CrewAI output (default: false)
+  memory: false             # Enable crew-level memory (default: false)
+  memory_config: {}         # Advanced memory provider config passed to Crew(memory_config=...)
 ```
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `process` | string | `"sequential"` | Crew execution process. `"hierarchical"` requires `manager_llm`. |
+| `manager_llm` | string | — | Model ref for the manager agent. Required when `process: hierarchical`. |
+| `verbose` | boolean | `false` | Enable verbose output from CrewAI. |
+| `memory` | boolean | `false` | Enable crew-level memory for long-term knowledge. |
+| `memory_config` | object | — | Advanced memory provider config passed directly to `Crew(memory_config=...)`. |
 
 The CrewAI runtime automatically injects `AGENT_MODEL` and `AGENT_TEMPERATURE` from the top-level `model:` block into every agent in the crew. Your `crew.py` does not need to read these environment variables — the runtime sets them on each `agent.llm` object at startup.
 
@@ -192,6 +209,7 @@ google_adk:
   memory_service: memory        # "memory" (default) | "vertex_ai_bank" | "vertex_ai_rag"
   artifact_service: memory      # "memory" (default) | "gcs"
   gcs_bucket: ""                # Required when artifact_service is "gcs"
+  streaming: none               # "none" (default) | "sse" | "bidi"
 ```
 
 | Field | Type | Default | Description |
@@ -201,6 +219,7 @@ google_adk:
 | `memory_service` | string | `"memory"` | Memory persistence service. `"vertex_ai_bank"` and `"vertex_ai_rag"` require `GOOGLE_CLOUD_PROJECT`. |
 | `artifact_service` | string | `"memory"` | Artifact storage service. `"gcs"` requires a GCS bucket name. |
 | `gcs_bucket` | string | — | GCS bucket name for artifact storage. Falls back to `GCS_ARTIFACT_BUCKET` env var. |
+| `streaming` | string | `"none"` | Streaming mode for `RunConfig`. `"sse"` = Server-Sent Events, `"bidi"` = bidirectional streaming. |
 
 **Environment variables injected by the runtime:**
 
@@ -300,15 +319,27 @@ tools:
     type: function
     description: "Search knowledge base"
     schema: {}
+
+  # With Human-in-the-Loop approval
+  - ref: tools/send-email
+    approval:
+      require: true
+      timeout: 30m
+      notify:
+        - slack: "#approvals"
+        - email: admin@company.com
 ```
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `ref` | string | No | Registry reference path. |
 | `name` | string | No | Tool name (for inline definitions). |
-| `type` | string | No | Tool type. Currently only `function`. |
+| `type` | string | No | Tool type: `function`, `computer_use_20260401` (browser/computer use), or `agent_toolset_20260401` (full built-in toolset). |
 | `description` | string | No | Tool description. |
 | `schema` | object | No | OpenAPI-compatible schema. |
+| `approval.require` | boolean | No | If `true`, every call to this tool must be approved by a human before execution. |
+| `approval.timeout` | string | No | How long to wait for human approval (e.g., `30m`, `1h`). |
+| `approval.notify` | array | No | Notification channels. Each item is `{slack: "#channel"}` or `{email: "addr"}`. |
 
 ---
 
@@ -396,8 +427,10 @@ guardrails:
   - pii_detection           # Built-in
   - hallucination_check     # Built-in
   - content_filter          # Built-in
+  - hitl_approve            # Built-in — route every output through human approval queue
   - name: custom_check      # Custom
     endpoint: https://guardrails.company.com/check
+    action: warn            # "block" (default) | "warn" | "hitl_approve"
 ```
 
 **Built-in guardrails:**
@@ -407,13 +440,15 @@ guardrails:
 | `pii_detection` | Strips PII from outputs |
 | `hallucination_check` | Flags low-confidence responses |
 | `content_filter` | Blocks harmful content |
+| `hitl_approve` | Routes every agent output through the human-in-the-loop approval queue |
 
-**Custom guardrails:**
+**Custom guardrail fields:**
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `name` | string | **Yes** | Guardrail name. |
 | `endpoint` | string | No | URL of the guardrail service. |
+| `action` | string | No | Action on trigger: `"block"` (default), `"warn"` (log but pass through), or `"hitl_approve"` (route to approval queue). |
 
 ---
 
@@ -456,6 +491,58 @@ Deployment configuration.
 |-------|------|---------|-------------|
 | `cpu` | string | `"0.5"` | vCPU units. |
 | `memory` | string | `"1Gi"` | Memory allocation. |
+
+#### `deploy.identity`
+
+Auto-creates a dedicated IAM Role (AWS) or Service Account (GCP) scoped to this agent at deploy time.
+
+```yaml
+deploy:
+  cloud: aws
+  identity:
+    create: true
+    permissions:
+      - "s3:GetObject:arn:aws:s3:::my-bucket/*"   # AWS IAM action:resource
+    boundary: "arn:aws:iam::123456789:policy/AgentBoundary"
+```
+
+```yaml
+deploy:
+  cloud: gcp
+  identity:
+    create: true
+    roles:
+      - "roles/storage.objectViewer"   # GCP IAM role
+```
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `create` | boolean | `false` | Auto-create a dedicated IAM role/service account for this agent. |
+| `permissions` | string[] | — | AWS IAM permission strings in `action:resource` format. |
+| `roles` | string[] | — | GCP IAM roles to grant the Service Account. |
+| `boundary` | string | — | AWS IAM permissions boundary ARN — limits the maximum effective permissions. |
+
+#### `deploy.sidecar`
+
+Configure the observability sidecar injected alongside every agent container. The sidecar provides OTel traces, cost attribution, and guardrail enforcement.
+
+```yaml
+deploy:
+  sidecar:
+    enabled: true
+    guardrails:
+      - pii_detection
+      - content_filter
+    otel_endpoint: "http://otel-collector:4317"
+    cost_tracking: true
+```
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `enabled` | boolean | `true` | Inject the AgentBreeder observability sidecar alongside the agent container. |
+| `guardrails` | string[] | — | Guardrails to enforce in the sidecar (runs independently of the agent process). |
+| `otel_endpoint` | string | — | Override the OpenTelemetry collector endpoint. Defaults to `OPENTELEMETRY_ENDPOINT` env var. |
+| `cost_tracking` | boolean | `true` | Enable token-level cost attribution in the sidecar. |
 
 ---
 
@@ -511,6 +598,7 @@ agentbreeder deploy --target cloud-run       # GCP Cloud Run
 agentbreeder deploy --target ecs-fargate     # AWS ECS Fargate
 agentbreeder deploy --target app-runner      # AWS App Runner (no VPC/ALB)
 agentbreeder deploy --target container-apps  # Azure Container Apps
+agentbreeder deploy --target kubernetes      # Kubernetes (EKS/GKE/AKS/self-hosted)
 agentbreeder deploy --target claude-managed  # Anthropic Claude Managed Agents
 ```
 
