@@ -8,7 +8,7 @@
  */
 
 import sharp from 'sharp';
-import { readFileSync, existsSync } from 'fs';
+import { existsSync } from 'fs';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
