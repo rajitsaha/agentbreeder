@@ -18,6 +18,7 @@ class TestBrowserUseConnectorAvailability:
     @pytest.mark.asyncio
     async def test_is_available_when_library_installed(self) -> None:
         import types
+
         fake_module = types.ModuleType("browser_use")
         with patch.dict("sys.modules", {"browser_use": fake_module}):
             connector = BrowserUseConnector()
