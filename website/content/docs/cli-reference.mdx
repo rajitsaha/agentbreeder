@@ -39,7 +39,7 @@ agentbreeder init [OUTPUT_DIR] [--json]
 The wizard prompts for:
 1. Agent name (slug-friendly, validated)
 2. Framework (LangGraph, CrewAI, Claude SDK, OpenAI, ADK, Custom)
-3. Cloud target (Local, AWS, GCP, Kubernetes)
+3. Cloud target (Local, AWS ECS Fargate / App Runner, GCP Cloud Run, Azure Container Apps, Kubernetes, Claude-managed)
 4. Team name
 5. Owner email (auto-detected from git config)
 
@@ -672,6 +672,223 @@ agentbreeder secret migrate --from env --to aws --dry-run   # Preview migration
 agentbreeder secret migrate --from env --to aws             # Migrate to AWS
 agentbreeder secret migrate --from env --to gcp --exclude DEBUG --exclude LOG_LEVEL
 ```
+
+---
+
+### `agentbreeder schedule`
+
+Run an agent on a cron schedule (requires `pip install 'agentbreeder[schedule]'`).
+
+```
+agentbreeder schedule [AGENT_DIR] [--cron EXPR] [--once] [--dry-run]
+```
+
+| Argument / Option | Required | Default | Description |
+|-------------------|----------|---------|-------------|
+| `AGENT_DIR` | No | `.` | Path to agent directory containing `agent.yaml` |
+| `--cron` | Conditional | — | Standard cron expression, e.g. `"0 8 * * *"`. Required unless `--once`. |
+| `--once` | No | `false` | Run immediately once and exit (ignores `--cron`). |
+| `--dry-run` | No | `false` | Print next 5 fire times and exit without running. |
+
+**Examples:**
+```bash
+agentbreeder schedule                          # Run cron schedule from current dir
+agentbreeder schedule ./support-agent --cron "0 9 * * 1-5"  # Weekdays at 9am
+agentbreeder schedule --once                   # Run once immediately
+agentbreeder schedule --dry-run --cron "0 * * * *"  # Preview hourly fire times
+```
+
+---
+
+### `agentbreeder eval`
+
+Run agent evaluations, inspect datasets, and gate deployments on score thresholds.
+
+```
+agentbreeder eval [SUBCOMMAND] [OPTIONS]
+```
+
+#### `agentbreeder eval run`
+
+```
+agentbreeder eval run AGENT_NAME --dataset DATASET_ID [OPTIONS]
+```
+
+| Option | Required | Description |
+|--------|----------|-------------|
+| `--dataset`, `-d` | **Yes** | Dataset ID to run against |
+| `--model`, `-m` | No | Model override for the run |
+| `--temperature`, `-T` | No | Temperature override |
+| `--judge` | No | LLM judge model (`claude-*`, `gpt-*`, `gemini-*`) |
+| `--scorer` | No | Scoring strategy: `exact`, `semantic`, or `judge` |
+| `--json` | No | JSON output |
+
+#### `agentbreeder eval datasets`
+
+List available evaluation datasets.
+
+```
+agentbreeder eval datasets [--team TEAM] [--json]
+```
+
+#### `agentbreeder eval results`
+
+Show results for a specific eval run.
+
+```
+agentbreeder eval results RUN_ID [--json]
+```
+
+#### `agentbreeder eval gate`
+
+Assert a minimum score — useful in CI pipelines before promoting a deployment.
+
+```
+agentbreeder eval gate RUN_ID [--threshold 0.7] [--metrics METRICS] [--json]
+```
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `--threshold`, `-t` | `0.7` | Minimum acceptable score (0.0–1.0). Exits non-zero if below. |
+| `--metrics` | — | Comma-separated list of metrics to check |
+
+#### `agentbreeder eval compare`
+
+Compare two eval runs and flag regressions.
+
+```
+agentbreeder eval compare RUN_A RUN_B [--regression-threshold 0.05] [--json]
+```
+
+**Examples:**
+```bash
+agentbreeder eval run support-agent --dataset support-qa-v2 --scorer judge
+agentbreeder eval datasets --team customer-success
+agentbreeder eval results run-abc123 --json
+agentbreeder eval gate run-abc123 --threshold 0.85        # Fail CI if score < 85%
+agentbreeder eval compare run-baseline run-candidate
+```
+
+---
+
+### `agentbreeder template`
+
+Manage agent templates — browse the community catalog and scaffold agents from templates.
+
+```
+agentbreeder template [SUBCOMMAND] [OPTIONS]
+```
+
+#### `agentbreeder template list`
+
+```
+agentbreeder template list [--category CATEGORY] [--framework FRAMEWORK] [--status STATUS]
+```
+
+#### `agentbreeder template create`
+
+Publish an existing agent as a reusable template.
+
+```
+agentbreeder template create NAME [OPTIONS]
+```
+
+#### `agentbreeder template use`
+
+Scaffold a new agent from a template.
+
+```
+agentbreeder template use NAME [OPTIONS]
+```
+
+**Examples:**
+```bash
+agentbreeder template list                              # All templates
+agentbreeder template list --framework langgraph        # Filter by framework
+agentbreeder template list --category support           # Filter by category
+agentbreeder template use customer-support-starter      # Scaffold from template
+```
+
+---
+
+### `agentbreeder compliance`
+
+Generate compliance evidence report packs for SOC 2 Type II, HIPAA, GDPR, and ISO 27001.
+
+```
+agentbreeder compliance [SUBCOMMAND] [OPTIONS]
+```
+
+#### `agentbreeder compliance generate`
+
+Export a compliance report pack from the audit log and registry.
+
+```
+agentbreeder compliance generate [--standard STANDARD] [--since SINCE] [--format FORMAT] [--output PATH]
+```
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `--standard`, `-s` | all | Standards to include: `soc2`, `hipaa`, `gdpr`, `iso27001` |
+| `--since` | `90d` | Lookback window (e.g., `90d`, `1y`) |
+| `--format` | `json` | Output format: `json` or `pdf` |
+| `--output`, `-o` | `./compliance-report` | Output path |
+
+**Examples:**
+```bash
+agentbreeder compliance generate                          # All standards, last 90 days
+agentbreeder compliance generate --standard soc2          # SOC 2 only
+agentbreeder compliance generate --since 1y --format pdf  # 1-year PDF report
+```
+
+---
+
+### `agentbreeder ui`
+
+Start the AgentBreeder dashboard and API server via Docker Compose.
+
+```
+agentbreeder ui [--logs] [--pull] [--api-port PORT] [--port PORT]
+```
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `--logs` | Off | Tail logs after start (Ctrl+C stops the stack) |
+| `--pull` | Off | Pull latest images before starting |
+| `--api-port` | `8000` | Local port for the API server |
+| `--port` | `3001` | Local port for the dashboard |
+
+---
+
+### `agentbreeder up`
+
+Start the full AgentBreeder platform stack (API + Dashboard + Postgres + Redis + migrations).
+
+```
+agentbreeder up [--yes] [--no-browser] [--env-file PATH] [--build]
+```
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `--yes` | Off | Skip interactive prompts, use defaults |
+| `--no-browser` | Off | Don't open browser after startup |
+| `--env-file` | — | Path to an existing `.env` file |
+| `--build` | Off | Build images from source (instead of using cached images) |
+
+---
+
+### `agentbreeder down`
+
+Stop and remove the platform stack started by `agentbreeder up`.
+
+```
+agentbreeder down [--volumes] [--json]
+```
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `--volumes` | Off | Also remove volumes (deletes database data) |
+| `--json` | Off | JSON output |
 
 ---
 

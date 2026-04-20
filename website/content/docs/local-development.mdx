@@ -12,7 +12,7 @@ This guide covers setting up AgentBreeder for local development and contributing
 | Tool | Version | Purpose |
 |------|---------|---------|
 | Python | 3.11+ | Backend, CLI, engine |
-| Node.js | 22+ | Dashboard frontend |
+| Node.js | 18+ | Dashboard frontend |
 | Docker & Compose | Latest | Local services, container builds |
 | Git | Latest | Version control |
 
@@ -242,19 +242,34 @@ agentbreeder/
 | Activity | `/activity` | Activity feed / audit log |
 | Settings | `/settings` | Org + user settings |
 
-### API Routes (v0.3)
+### API Route Groups
 
-Routes added in v0.3:
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `POST` | `/api/v1/deploys` | Trigger deploy from dashboard |
-| `POST` | `/api/v1/prompts/test` | Test a prompt with model + variables |
+| Method | Endpoint prefix | Description |
+|--------|----------------|-------------|
+| `GET/POST` | `/api/v1/agents` | Agent CRUD + clone, validate, from-yaml |
+| `POST` | `/api/v1/deploys` | Trigger deploy; poll status |
+| `GET/POST` | `/api/v1/prompts` | Prompt registry; `/prompts/test` for live testing |
+| `GET/POST` | `/api/v1/registry/tools` | Tool registry |
+| `GET/POST` | `/api/v1/rag` | RAG indexes, file ingestion, hybrid search |
+| `GET/POST` | `/api/v1/memory` | Memory configs, conversation storage |
+| `GET/POST` | `/api/v1/mcp-servers` | MCP server registry (CRUD, test, discover, execute) |
+| `GET/POST` | `/api/v1/git` | Git workflow + PR review |
+| `GET/POST` | `/api/v1/providers` | LLM provider config |
 | `POST` | `/api/v1/tools/sandbox/execute` | Execute a tool in sandbox |
-| `GET/POST` | `/api/v1/rag/*` | RAG indexes, file ingestion, search |
-| `GET/POST` | `/api/v1/memory/*` | Memory configs, conversation storage |
-| `GET/POST` | `/api/v1/git/*` | Git operations, PR review workflow |
-| `GET/POST` | `/api/v1/providers/*` | Provider configuration |
+| `GET/POST` | `/api/v1/teams` | Team management |
+| `GET` | `/api/v1/costs` | Cost tracking (filterable by team/agent/model) |
+| `GET` | `/api/v1/audit` | Audit trail |
+| `GET/POST` | `/api/v1/tracing` | Distributed tracing |
+| `GET/POST` | `/api/v1/evals` | Agent evaluation |
+| `GET/POST` | `/api/v1/playground` | Chat playground |
+| `GET/POST` | `/api/v1/a2a` | Agent-to-agent (A2A) communication |
+| `GET` | `/api/v1/agentops` | Fleet operations dashboard |
+| `GET` | `/api/v1/gateway` | Model gateway status + proxy |
+| `GET/POST` | `/api/v1/marketplace` | Community marketplace |
+| `GET/POST` | `/api/v1/templates` | Agent templates |
+| `GET/POST` | `/api/v1/orchestrations` | Orchestration management |
+| `GET` | `/api/v1/registry/search` | Cross-entity registry search |
+| `GET` | `/api/v2/agents` | v2 agents endpoint (cursor pagination) |
 
 ## Environment Variables
 
