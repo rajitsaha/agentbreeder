@@ -586,7 +586,7 @@ async def graph_search(
     seed_entity_limit: int = 5,
     vector_weight: float = 0.6,
     graph_weight: float = 0.4,
-) -> list[GraphSearchHit]:
+) -> list[SearchHit]:
     """Graph-augmented search: vector search → seed entities → BFS → merge → rerank.
 
     Steps:
