@@ -1,0 +1,456 @@
+---
+title: GraphRAG — Knowledge Graph-Enhanced Retrieval
+description: Extract entities, build knowledge graphs, and traverse relationships for multi-hop reasoning in agents.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
+
+# GraphRAG — Knowledge Graph-Enhanced Retrieval
+
+GraphRAG extends vector search with entity extraction and relationship traversal. Pure vector search finds semantically similar chunks. GraphRAG finds connected concepts by walking entity relationships — perfect for multi-hop reasoning ("What does AgentBreeder RBAC affect?").
+
+:::note Prerequisites for local GraphRAG
+- **Ollama** installed ([ollama.com](https://ollama.com))
+- `ollama pull qwen2.5:7b` — entity extraction
+- `ollama pull nomic-embed-text` — embeddings
+- Local stack running: `docker compose up -d`
+:::
+
+---
+
+## Vector vs Graph vs Hybrid
+
+| Type | How it works | Best for | Speed | Multi-hop | Exact match |
+|------|-------------|----------|-------|-----------|------------|
+| **Vector** | Semantic similarity in embedding space | General QA, paraphrasing | Fast | ❌ | ❌ |
+| **Full-Text** | BM25 keyword matching | IDs, codes, exact terms | Fast | ❌ | ✅ |
+| **Hybrid** (Vector + Full-Text) | Weighted blend of both | Most use cases | Fast | ❌ | Partial |
+| **Graph** | Entity and relationship traversal | Linked data, multi-hop reasoning | Slower | ✅ | ✅ (exact entities) |
+| **GraphRAG** (Vector + Graph) | Vector search + entity relationships | Complex questions over structured knowledge | Moderate | ✅ | ✅ |
+
+---
+
+## How GraphRAG Works
+
+```
+Your documents (PDF, MD, CSV, JSON)
+        ↓
+   Extraction (LLM: identify entities, relationships)
+        ↓
+   Knowledge Graph (nodes = entities, edges = relationships)
+        ↓
+   Chunking + Embedding (still create vector chunks)
+        ↓
+   Graph + Vector Store (both stored in parallel)
+        ↓
+   Query routing (vector for semantic, graph for traversal)
+        ↓
+   Combined retrieval (vector results + graph-walked results)
+        ↓
+   Agent receives context with linked entity paths
+```
+
+---
+
+## Local Entity Extraction with Ollama
+
+AgentBreeder supports local LLM-based entity extraction via [Ollama](https://ollama.com) — no API key required.
+
+**Prerequisites:**
+```bash
+ollama pull qwen2.5:7b      # entity extraction model
+ollama pull nomic-embed-text # embedding model
+```
+
+**Configure your RAG index to use Ollama:**
+```yaml
+knowledge_bases:
+  - ref: kb/my-docs
+    index_type: graph
+    embedding_model: ollama/nomic-embed-text
+    entity_model: ollama/qwen2.5:7b
+```
+
+AgentBreeder routes any model prefixed with `ollama/` to the local Ollama server at `http://localhost:11434`. Override with the `OLLAMA_BASE_URL` environment variable.
+
+See the complete working example in [`examples/graphrag-ollama-agent/`](https://github.com/agentbreeder/agentbreeder/tree/main/examples/graphrag-ollama-agent).
+
+---
+
+## Step 1 — Create a Graph Index
+
+<Tabs items={['Dashboard', 'API', 'agent.yaml']}>
+  <Tab value="Dashboard">
+Go to **Registry → Knowledge Bases → New Index**. Under **Index Type**, select **Graph** (instead of Vector).
+
+Configure:
+
+| Field | Default | Description |
+|-------|---------|-------------|
+| Name | required | Slug-friendly (e.g., `product-docs`) |
+| Index Type | vector | Choose **graph** for entity extraction |
+| Embedding model | `openai/text-embedding-3-small` | Model used to embed chunks |
+| Entity extraction model | `openai/gpt-4o` | LLM used to extract entities and relationships |
+| Chunk strategy | `recursive` | `fixed_size` or `recursive` (splits on semantic boundaries) |
+| Chunk size | 512 tokens | Number of tokens per chunk |
+| Chunk overlap | 64 tokens | Overlap between adjacent chunks |
+
+Click **Create Index**.
+  </Tab>
+  <Tab value="API">
+```bash
+curl -X POST http://localhost:8000/api/v1/rag/indexes \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "product-docs",
+    "description": "Product documentation with entity relationships",
+    "index_type": "graph",
+    "embedding_model": "ollama/nomic-embed-text",
+    "entity_model": "ollama/qwen2.5:7b",
+    "chunk_strategy": "recursive",
+    "chunk_size": 512,
+    "chunk_overlap": 64,
+    "source": "manual"
+  }'
+```
+
+Response:
+```json
+{
+  "data": {
+    "id": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+    "name": "product-docs",
+    "index_type": "graph",
+    "embedding_model": "ollama/nomic-embed-text",
+    "entity_model": "ollama/qwen2.5:7b",
+    "chunk_strategy": "recursive",
+    "chunk_size": 512,
+    "chunk_overlap": 64,
+    "entity_count": 0,
+    "relationship_count": 0,
+    "document_count": 0,
+    "status": "active",
+    "created_at": "2026-04-14T00:00:00Z"
+  }
+}
+```
+  </Tab>
+  <Tab value="agent.yaml">
+```yaml
+knowledge_bases:
+  - ref: kb/product-docs
+    index_type: graph              # Enable graph mode
+    embedding_model: ollama/nomic-embed-text
+    entity_model: ollama/qwen2.5:7b
+```
+  </Tab>
+</Tabs>
+
+<Callout type="info" title="Entity extraction cost">
+  Entity extraction runs the LLM on every chunk during ingestion. Local models (Ollama) are free. Cloud models (GPT-4o, Claude, etc.) cost per token.
+</Callout>
+
+---
+
+## Step 2 — Ingest Documents
+
+Upload files to build the knowledge graph. Entity extraction happens automatically.
+
+<Tabs items={['Dashboard', 'API']}>
+  <Tab value="Dashboard">
+Open the index → click **Upload Documents** → drag and drop files.
+
+The dashboard shows extraction progress:
+```
+✅ Chunking...           14 chunks from docs/architecture.md
+✅ Entity Extraction...  28 entities found, 42 relationships discovered
+✅ Vector Embedding...   14 chunks embedded
+✅ Graph Construction... graph with 28 nodes, 42 edges built
+✅ Stored               graph index ready
+```
+  </Tab>
+  <Tab value="API">
+```bash
+# Upload one or more files
+curl -X POST http://localhost:8000/api/v1/rag/indexes/{index_id}/ingest \
+  -F "files=@docs/architecture.md" \
+  -F "files=@docs/quickstart.md"
+```
+
+Response (ingestion job):
+```json
+{
+  "data": {
+    "id": "yyyyyyyy-yyyy-yyyy-yyyy-yyyyyyyyyyyy",
+    "index_id": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+    "status": "processing",
+    "total_files": 2,
+    "processed_files": 0,
+    "entities_extracted": 0,
+    "relationships_found": 0,
+    "error": null,
+    "started_at": "2026-04-14T00:00:00Z",
+    "completed_at": null
+  }
+}
+```
+
+Poll for completion:
+```bash
+GET /api/v1/rag/indexes/{index_id}/ingest/{job_id}
+# status: "pending" | "processing" | "completed" | "failed"
+```
+  </Tab>
+</Tabs>
+
+---
+
+## Step 3 — Search the Graph
+
+Test entity-aware retrieval before wiring the index to an agent.
+
+```bash
+curl -X POST http://localhost:8000/api/v1/rag/search \
+  -H "Content-Type: application/json" \
+  -d '{
+    "index_id": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+    "query": "What features does RBAC enable in AgentBreeder?",
+    "search_mode": "graph",
+    "top_k": 5,
+    "max_hops": 2
+  }'
+```
+
+**Query modes:**
+- `vector` — semantic similarity only
+- `graph` — entity traversal up to `max_hops` depth
+- `hybrid` — both, combined ranking (default)
+
+Response:
+```json
+{
+  "data": {
+    "index_id": "xxxxxxxx-...",
+    "query": "What features does RBAC enable in AgentBreeder?",
+    "search_mode": "hybrid",
+    "results": [
+      {
+        "chunk_id": "chunk-001",
+        "text": "RBAC validates team permissions before deploying agents...",
+        "metadata": { "source": "architecture.md" },
+        "entity_path": ["RBAC", "Governance", "Team Permissions"],
+        "vector_score": 0.94,
+        "graph_score": 0.87,
+        "combined_score": 0.91,
+        "hops_from_query": 1
+      },
+      {
+        "chunk_id": "chunk-015",
+        "text": "Teams can restrict who deploys agents in their org...",
+        "metadata": { "source": "quickstart.md" },
+        "entity_path": ["Team Management", "Access Control", "RBAC"],
+        "vector_score": 0.81,
+        "graph_score": 0.92,
+        "combined_score": 0.87,
+        "hops_from_query": 2
+      }
+    ],
+    "total": 2,
+    "entities_mentioned": ["RBAC", "Governance", "Team Permissions", "Access Control"],
+    "relationships": [
+      { "source": "RBAC", "target": "Team Permissions", "type": "enables" },
+      { "source": "Team Permissions", "target": "Access Control", "type": "part_of" }
+    ]
+  }
+}
+```
+
+**Response fields:**
+- `entity_path` — the chain of entities from the query entity to this result
+- `vector_score` — semantic relevance (0–1)
+- `graph_score` — entity relationship strength (0–1)
+- `combined_score` — weighted combination (default: 0.5 each)
+- `hops_from_query` — how many relationships away this entity is from the query entity
+
+---
+
+## Step 4 — Use in agent.yaml
+
+```yaml
+name: architecture-qa-agent
+version: 1.0.0
+framework: claude_sdk
+
+knowledge_bases:
+  - ref: kb/product-docs
+    search_mode: hybrid          # vector | graph | hybrid (default)
+    max_graph_hops: 2            # for graph search
+    top_k: 5
+
+# At runtime, the agent queries the knowledge base and receives
+# both vector-matched chunks and graph-traversed entity paths
+# before sending the user's message to the model.
+```
+
+<Callout type="info" title="Graph search with multiple hops">
+  Setting `max_graph_hops: 3` allows the traversal to go 3 relationships deep. Higher hops = more context but slower retrieval. Start with 1–2 hops for latency-sensitive agents.
+</Callout>
+
+---
+
+## Entity Extraction Configuration
+
+### Built-in Entity Types
+
+AgentBreeder recognizes these entity types by default:
+
+| Type | Examples |
+|------|----------|
+| **PERSON** | Alice, Bob, author names |
+| **ORGANIZATION** | Company, team names (e.g., "customer-success") |
+| **LOCATION** | Cities, regions, cloud regions |
+| **TECHNOLOGY** | Framework names, tool names (e.g., "LangGraph", "OpenAI") |
+| **FEATURE** | Product features (e.g., "RBAC", "Cost Tracking") |
+| **CONCEPT** | Abstract ideas (e.g., "Governance", "Orchestration") |
+
+### Custom Entity Types
+
+Define your own for domain-specific extraction:
+
+```yaml
+knowledge_bases:
+  - ref: kb/legal-docs
+    index_type: graph
+    entity_extraction:
+      custom_types:
+        - name: CONTRACT
+          description: "Legal agreements and contracts"
+        - name: PARTY
+          description: "Signatory organizations or people"
+        - name: OBLIGATION
+          description: "Duties and responsibilities"
+```
+
+---
+
+## Relationship Types
+
+Graph nodes (entities) are connected by typed edges (relationships):
+
+| Relationship | Example | Direction |
+|---|---|---|
+| `part_of` | Feature part_of Agent | Entity → Container |
+| `enables` | RBAC enables Team Access Control | Entity → Feature |
+| `related_to` | Claude related_to Anthropic | Entity ↔ Entity |
+| `depends_on` | Feature depends_on Tool | Entity → Entity |
+| `mentions` | Document mentions Entity | Source → Entity |
+
+Custom relationships can be discovered by the LLM during entity extraction.
+
+---
+
+## Embedding Models for Graph Indexes
+
+The `embedding_model` field accepts any provider/model-id string. For best results with entity extraction:
+
+| Value | Latency | Cost | Best for |
+|-------|---------|------|----------|
+| `ollama/nomic-embed-text` | Instant (local) | Free | Development, offline-first |
+| `openai/text-embedding-3-small` | 100ms | ~$0.02 per 1M tokens | Production, quality/cost balance |
+| `openai/text-embedding-3-large` | 150ms | ~$0.13 per 1M tokens | High-precision graph traversal |
+
+<Callout type="warning" title="Entity extraction model cost">
+  Entity extraction runs a forward pass of your LLM on every chunk. **Budget accordingly:**
+  - `ollama/qwen2.5:7b` (local) — free
+  - `openai/gpt-4o` — ~$0.015 per 1K input tokens
+  - `claude-opus-4` — ~$0.015 per 1K input tokens
+
+  For a 100-chunk document: ~$1–3 per document with cloud LLMs. Local Ollama extraction is free.
+</Callout>
+
+---
+
+## API Reference — Graph Search
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `POST` | `/api/v1/rag/indexes` | Create graph index (with `index_type: "graph"`) |
+| `GET` | `/api/v1/rag/indexes/{id}` | Get index metadata (includes entity/relationship counts) |
+| `POST` | `/api/v1/rag/indexes/{id}/ingest` | Upload files and build graph |
+| `GET` | `/api/v1/rag/indexes/{id}/entities` | List all entities in the graph |
+| `GET` | `/api/v1/rag/indexes/{id}/relationships` | List all relationships in the graph |
+| `POST` | `/api/v1/rag/search` | Search with `search_mode: "graph"` |
+
+---
+
+## Complete Example: GraphRAG with Ollama
+
+See [`examples/graphrag-ollama-agent/`](https://github.com/agentbreeder/agentbreeder/tree/main/examples/graphrag-ollama-agent) for a working example:
+
+```bash
+cd examples/graphrag-ollama-agent
+
+# Start Ollama (if not running)
+ollama serve
+
+# In another terminal, pull models
+ollama pull qwen2.5:7b
+ollama pull nomic-embed-text
+
+# Start the full AgentBreeder stack
+docker compose -d up
+
+# Ingest documents and build the knowledge graph
+python ingest.py
+
+# Chat with the agent
+agentbreeder chat --agent graphrag-demo-agent \
+  "What are the core concepts of GraphRAG?"
+```
+
+---
+
+## Troubleshooting
+
+### "Ollama connection refused"
+**Problem:** Entity extraction can't reach local Ollama.
+
+**Solution:**
+```bash
+# Check Ollama is running
+curl http://localhost:11434/api/tags
+
+# If not, start it
+ollama serve
+
+# Override the endpoint (if Ollama is on a different port)
+export OLLAMA_BASE_URL=http://localhost:11435
+```
+
+### "Entity extraction taking too long"
+**Problem:** Graph building is slow on large documents.
+
+**Solution:**
+- Use a smaller extraction model: `ollama/qwen2.5:7b` instead of `qwen2.5:72b`
+- Reduce `chunk_size` (fewer chunks = fewer extractions)
+- Use `search_mode: "hybrid"` to blend graph + vector for faster queries
+
+### "Graph traversal returns too many results"
+**Problem:** `max_hops: 3` is causing exponential result growth.
+
+**Solution:**
+- Reduce `max_hops` to 1 or 2
+- Use `search_mode: "hybrid"` with lower `graph_weight`
+- Filter results client-side by relationship type
+
+---
+
+## Next Steps
+
+| What | Where |
+|------|-------|
+| Vector RAG basics | [Knowledge Bases →](rag) |
+| Add tools to your agent | [Tools →](tools) |
+| Connect MCP servers | [MCP Servers →](mcp-servers) |
+| Full agent.yaml fields | [agent.yaml Reference →](agent-yaml) |
