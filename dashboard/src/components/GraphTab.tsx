@@ -193,6 +193,7 @@ export function GraphTab({ indexId }: GraphTabProps) {
             </span>
             {entityTypes.length > 0 && (
               <select
+                data-testid="entity-type-filter"
                 className="rounded border border-border bg-background px-1.5 py-0.5 text-xs text-foreground"
                 value={entityTypeFilter}
                 onChange={(e) => {

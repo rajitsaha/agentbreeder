@@ -1,3 +1,4 @@
+import type { Page } from "@playwright/test";
 import { test, expect, apiOk } from "./fixtures";
 
 // ---------------------------------------------------------------------------
@@ -175,12 +176,7 @@ function pagedResponse<T>(payload: {
 }
 
 /** Navigate to /rag, set up the index-list mock, click the index card by name. */
-async function openIndexDetail(
-  page: Parameters<typeof test>[1] extends (args: { authedPage: infer P }) => unknown
-    ? P
-    : never,
-  index: typeof GRAPH_INDEX,
-) {
+async function openIndexDetail(page: Page, index: typeof GRAPH_INDEX) {
   await page.route("**/api/v1/rag/indexes", (route) => {
     if (route.request().method() === "GET") {
       route.fulfill({
@@ -202,11 +198,12 @@ async function openIndexDetail(
   );
 
   await page.goto("/rag");
-  await page.waitForTimeout(300);
+
+  // Wait for the index card to appear before clicking
+  await expect(page.getByText(index.name)).toBeVisible();
 
   // Click the index card
   await page.getByText(index.name).click();
-  await page.waitForTimeout(300);
 }
 
 // ---------------------------------------------------------------------------
@@ -221,8 +218,8 @@ test.describe("GraphRAG — Knowledge Graph tab visibility", () => {
 
   test("Graph tab does NOT appear for vector-type indexes", async ({ authedPage: page }) => {
     await openIndexDetail(page, VECTOR_INDEX);
-    // Wait for the detail view to settle
-    await page.waitForTimeout(300);
+    // Wait for the detail view to fully render before asserting absence
+    await expect(page.getByText(VECTOR_INDEX.name)).toBeVisible();
     await expect(page.getByText("Knowledge Graph")).not.toBeVisible();
   });
 });
@@ -254,11 +251,10 @@ test.describe("GraphRAG — Entity list", () => {
 
     await openIndexDetail(page, GRAPH_INDEX);
 
-    // Click Knowledge Graph tab
+    // Click Knowledge Graph tab and wait for entities to appear
     await page.getByText("Knowledge Graph").click();
-    await page.waitForTimeout(500);
-
     await expect(page.getByText("AgentBreeder")).toBeVisible();
+
     await expect(page.getByText("deploy")).toBeVisible();
   });
 });
@@ -301,20 +297,17 @@ test.describe("GraphRAG — Entity type filter", () => {
 
     await openIndexDetail(page, GRAPH_INDEX);
     await page.getByText("Knowledge Graph").click();
-    await page.waitForTimeout(500);
+
+    // Wait for the initial unfiltered entity list to show AgentBreederCloud
+    await expect(page.getByRole("button", { name: /AgentBreederCloud/i })).toBeVisible();
 
     // Select "concept" from the entity type filter dropdown
-    const filterSelect = page.locator("select").last();
+    const filterSelect = page.locator('[data-testid="entity-type-filter"]');
     await filterSelect.selectOption("concept");
-    await page.waitForTimeout(400);
 
-    // Only concept entities should be visible — "deploy" (action) and
-    // "AgentBreederCloud" (project) should be gone.
+    // Only concept entities should be visible — "AgentBreederCloud" (project) should be gone.
     await expect(page.getByText("AgentBreeder")).toBeVisible();
-    const body = await page.textContent("body");
-    // After filtering, the non-concept entities may not be in the DOM
-    // We check the body text doesn't show the filtered-out "AgentBreederCloud"
-    expect(body?.includes("AgentBreederCloud")).toBeFalsy();
+    await expect(page.getByRole("button", { name: /AgentBreederCloud/i })).not.toBeVisible();
   });
 });
 
@@ -344,12 +337,13 @@ test.describe("GraphRAG — Ego graph SVG", () => {
 
     await openIndexDetail(page, GRAPH_INDEX);
     await page.getByText("Knowledge Graph").click();
-    await page.waitForTimeout(500);
+
+    // Wait for entity list to load before clicking
+    await expect(page.getByRole("button", { name: /AgentBreeder/i }).first()).toBeVisible();
 
     // Click "AgentBreeder" entity in the list
     // The entity list renders buttons — click the first match
     await page.getByRole("button", { name: /AgentBreeder/i }).first().click();
-    await page.waitForTimeout(400);
 
     // An SVG element should be visible (the ego graph)
     await expect(page.locator("svg").first()).toBeVisible();
@@ -386,12 +380,10 @@ test.describe("GraphRAG — Metadata badges", () => {
 
     await openIndexDetail(page, GRAPH_INDEX);
     await page.getByText("Knowledge Graph").click();
-    await page.waitForTimeout(500);
 
     // GRAPH_METADATA has node_count: 5, edge_count: 8
-    // The GraphTab renders these as large font-semibold numbers
-    const body = await page.textContent("body");
-    expect(body?.includes("5")).toBeTruthy();
-    expect(body?.includes("8")).toBeTruthy();
+    // Wait for the metadata badges to appear — the GraphTab renders these as large font-semibold numbers
+    await expect(page.getByText("5")).toBeVisible();
+    await expect(page.getByText("8")).toBeVisible();
   });
 });
