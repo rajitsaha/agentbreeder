@@ -88,7 +88,8 @@ class GraphNode:
     embedding: list[float] | None = None
 
     def to_dict(self) -> dict[str, Any]:
-        # embedding intentionally excluded from wire format; access .embedding directly for similarity
+        # embedding intentionally excluded from wire format;
+        # access .embedding directly for similarity
         return {
             "id": self.id,
             "entity": self.entity,
@@ -760,10 +761,11 @@ class RAGStore:
     ) -> RAGIndex:
         try:
             idx_type = IndexType(index_type)
-        except ValueError:
+        except ValueError as exc:
             raise ValueError(
-                f"Invalid index_type '{index_type}'. Must be one of: {[e.value for e in IndexType]}"
-            )
+                f"Invalid index_type '{index_type}'."
+                f" Must be one of: {[e.value for e in IndexType]}"
+            ) from exc
         index_id = str(uuid.uuid4())
         now = datetime.now(UTC).isoformat()
         dimensions = EMBEDDING_DIMENSIONS.get(embedding_model, 768)
@@ -897,7 +899,7 @@ class RAGStore:
                     extraction_results = await extract_entities_batch(
                         chunk_texts, model=idx.entity_model
                     )
-                    for chunk, (nodes, edges) in zip(all_chunks, extraction_results):
+                    for chunk, (nodes, edges) in zip(all_chunks, extraction_results, strict=True):
                         for node in nodes:
                             node.chunk_ids.append(chunk.id)
                             graph_store.upsert_node(index_id, node)
@@ -909,7 +911,8 @@ class RAGStore:
                     idx.updated_at = datetime.now(UTC).isoformat()
                 except Exception as extraction_err:
                     logger.warning(
-                        "Entity extraction failed for index %s — continuing with vector-only results: %s",
+                        "Entity extraction failed for index %s"
+                        " — continuing with vector-only results: %s",
                         index_id,
                         extraction_err,
                     )

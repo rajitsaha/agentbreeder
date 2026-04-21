@@ -115,10 +115,14 @@ async def _call_claude(text: str, model: str) -> dict[str, Any]:
         "Return JSON with this exact schema:\n"
         "{\n"
         '  "entities": [\n'
-        '    {"entity": "string", "type": "organization|person|concept|location|event|other", "description": "string"}\n'
+        '    {"entity": "string",'
+        ' "type": "organization|person|concept|location|event|other",'
+        ' "description": "string"}\n'
         "  ],\n"
         '  "relationships": [\n'
-        '    {"subject": "entity name", "predicate": "relationship verb", "object": "entity name"}\n'
+        '    {"subject": "entity name",'
+        ' "predicate": "relationship verb",'
+        ' "object": "entity name"}\n'
         "  ]\n"
         "}"
     )
@@ -180,10 +184,14 @@ async def _call_ollama(text: str, model_name: str) -> dict[str, Any]:
         "Return JSON with this exact schema:\n"
         "{\n"
         '  "entities": [\n'
-        '    {"entity": "string", "type": "organization|person|concept|location|event|other", "description": "string"}\n'
+        '    {"entity": "string",'
+        ' "type": "organization|person|concept|location|event|other",'
+        ' "description": "string"}\n'
         "  ],\n"
         '  "relationships": [\n'
-        '    {"subject": "entity name", "predicate": "relationship verb", "object": "entity name"}\n'
+        '    {"subject": "entity name",'
+        ' "predicate": "relationship verb",'
+        ' "object": "entity name"}\n'
         "  ]\n"
         "}"
     )
@@ -248,7 +256,8 @@ def _parse_extraction_result(
         entity_type = entry.get("type")
         if not entity_name or not entity_type:
             logger.debug(
-                "_parse_extraction_result: skipping malformed entity (missing 'entity' or 'type'): %r",
+                "_parse_extraction_result: skipping malformed entity"
+                " (missing 'entity' or 'type'): %r",
                 entry,
             )
             continue
