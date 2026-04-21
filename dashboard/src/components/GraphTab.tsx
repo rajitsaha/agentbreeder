@@ -169,12 +169,16 @@ export function GraphTab({ indexId }: GraphTabProps) {
         <div className="flex items-center gap-4 rounded-md border border-border bg-muted/30 px-4 py-2">
           <div className="text-center">
             <p className="text-xs text-muted-foreground">Entities</p>
-            <p className="text-lg font-semibold">{meta.node_count}</p>
+            <p className="text-lg font-semibold" data-testid="graph-node-count">
+              {meta.node_count}
+            </p>
           </div>
           <div className="h-8 w-px bg-border" />
           <div className="text-center">
             <p className="text-xs text-muted-foreground">Relationships</p>
-            <p className="text-lg font-semibold">{meta.edge_count}</p>
+            <p className="text-lg font-semibold" data-testid="graph-edge-count">
+              {meta.edge_count}
+            </p>
           </div>
           <div className="h-8 w-px bg-border" />
           <div className="flex flex-wrap gap-1">

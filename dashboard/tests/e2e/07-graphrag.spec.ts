@@ -253,9 +253,9 @@ test.describe("GraphRAG — Entity list", () => {
 
     // Click Knowledge Graph tab and wait for entities to appear
     await page.getByText("Knowledge Graph").click();
-    await expect(page.getByText("AgentBreeder")).toBeVisible();
+    await expect(page.getByRole("button", { name: /AgentBreeder concept/i })).toBeVisible();
 
-    await expect(page.getByText("deploy")).toBeVisible();
+    await expect(page.getByRole("button", { name: /deploy action/i })).toBeVisible();
   });
 });
 
@@ -306,7 +306,7 @@ test.describe("GraphRAG — Entity type filter", () => {
     await filterSelect.selectOption("concept");
 
     // Only concept entities should be visible — "AgentBreederCloud" (project) should be gone.
-    await expect(page.getByText("AgentBreeder")).toBeVisible();
+    await expect(page.getByRole("button", { name: /AgentBreeder concept/i })).toBeVisible();
     await expect(page.getByRole("button", { name: /AgentBreederCloud/i })).not.toBeVisible();
   });
 });
@@ -382,8 +382,8 @@ test.describe("GraphRAG — Metadata badges", () => {
     await page.getByText("Knowledge Graph").click();
 
     // GRAPH_METADATA has node_count: 5, edge_count: 8
-    // Wait for the metadata badges to appear — the GraphTab renders these as large font-semibold numbers
-    await expect(page.getByText("5")).toBeVisible();
-    await expect(page.getByText("8")).toBeVisible();
+    // Wait for the metadata count elements to appear
+    await expect(page.locator('[data-testid="graph-node-count"]')).toHaveText("5");
+    await expect(page.locator('[data-testid="graph-edge-count"]')).toHaveText("8");
   });
 });
