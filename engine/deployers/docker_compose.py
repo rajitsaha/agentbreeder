@@ -12,6 +12,7 @@ import logging
 import os
 from datetime import datetime
 from pathlib import Path
+from typing import Any
 
 import httpx
 
@@ -22,7 +23,7 @@ from engine.runtimes.base import ContainerImage
 logger = logging.getLogger(__name__)
 
 
-def _docker_client():
+def _docker_client() -> Any:
     """Return a Docker client, preferring the current user's socket on macOS."""
     import docker
 

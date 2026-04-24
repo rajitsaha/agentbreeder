@@ -1056,11 +1056,11 @@ def quickstart(
         console.print("  [dim]Deploying agents locally...[/dim]")
         for yaml_path in sorted(EXAMPLES_QS.glob("*.yaml")):
             name = yaml_path.stem
-            result = _api_post(
+            deploy_result = _api_post(
                 "/api/v1/deploys",
                 {"agent_yaml": yaml_path.read_text(), "target": "local", "dry_run": False},
             )
-            if result:
+            if deploy_result:
                 _ok(f"Deployed: {name}")
             else:
                 _info(
