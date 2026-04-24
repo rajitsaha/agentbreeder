@@ -142,11 +142,41 @@ agent.deploy()
 
 **Cloud targets** — AWS (ECS Fargate, App Runner) · GCP Cloud Run · Azure Container Apps · Kubernetes · Local Docker · Claude Managed Agents
 
-**LLM providers** — Anthropic · OpenAI · Google · Ollama · LiteLLM · OpenRouter
+**LLM providers** — Anthropic · OpenAI · Google · Ollama (local, free) · LiteLLM · OpenRouter
+
+**RAG & memory** — ChromaDB (vector search) · Neo4j (knowledge graph / GraphRAG) · MCP memory server
+
+**MCP & A2A** — MCP server registry · MCP sidecar injection · Agent-to-Agent (A2A) JSON-RPC protocol · multi-level orchestration
 
 **Platform** — RBAC · cost tracking · audit trail · org registry · MCP hub · multi-agent orchestration · RAG · evaluations · A2A protocol · AgentOps fleet dashboard · community marketplace
 
 Full feature matrix and supported versions → [docs/features](https://www.agentbreeder.io/docs/features)
+
+---
+
+## CLI Reference
+
+| Command | What it does |
+|---------|-------------|
+| `agentbreeder quickstart` | **Full local bootstrap** — Docker, stack, seed data, 5 sample agents, dashboard |
+| `agentbreeder setup` | Configure Ollama + cloud API keys (interactive wizard) |
+| `agentbreeder seed` | Seed ChromaDB and Neo4j; ingest your own docs with `--docs` |
+| `agentbreeder init` | Scaffold a new agent project (interactive) |
+| `agentbreeder deploy` | Deploy an agent (local, AWS, GCP, Azure, K8s) |
+| `agentbreeder chat` | Chat with a deployed agent; `--local` uses Ollama directly |
+| `agentbreeder validate` | Validate `agent.yaml` without deploying |
+| `agentbreeder list` | List registered agents, tools, models, prompts |
+| `agentbreeder describe` | Show full detail for a registered agent |
+| `agentbreeder provider` | Manage LLM provider connections and API keys |
+| `agentbreeder scan` | Auto-discover Ollama models and MCP servers |
+| `agentbreeder logs` | Stream logs from a deployed agent |
+| `agentbreeder status` | Show deploy status of all agents |
+| `agentbreeder teardown` | Remove a deployed agent and its cloud resources |
+| `agentbreeder up` / `down` | Start / stop the local platform |
+| `agentbreeder eval` | Run evaluations against an agent |
+| `agentbreeder orchestration` | Manage multi-agent orchestrations |
+
+Full CLI reference → [agentbreeder.io/docs/cli](https://www.agentbreeder.io/docs/cli)
 
 ---
 
@@ -164,12 +194,48 @@ Other methods: [Homebrew · Docker · npm · from source →](https://www.agentb
 
 ## Quick Start
 
+### Option A — Full local platform (recommended for first-timers)
+
 ```bash
 pip3 install agentbreeder
+agentbreeder quickstart
+```
 
-agentbreeder init             # scaffold a new agent (interactive wizard)
-agentbreeder validate         # validate agent.yaml before deploying
-agentbreeder deploy --target local   # deploy locally with Docker
+That single command:
+- Detects and guides Docker/Podman install if needed
+- Starts the full stack: API · Dashboard · PostgreSQL · Redis · ChromaDB (RAG) · Neo4j (GraphRAG) · MCP servers · LiteLLM gateway
+- Seeds a ChromaDB knowledge base and a Neo4j knowledge graph with sample data
+- Deploys 5 sample agents (RAG, GraphRAG, MCP search, A2A orchestrator, assistant)
+- Opens the visual dashboard at `http://localhost:3001`
+
+Takes ~3 minutes on first run (image pulls). Then:
+
+```bash
+agentbreeder chat assistant                   # chat with the assistant agent
+agentbreeder chat rag-agent                   # ask questions about AgentBreeder docs
+agentbreeder chat graph-agent                 # query the knowledge graph
+agentbreeder chat a2a-orchestrator            # let the orchestrator route your question
+agentbreeder chat my-agent --local            # chat via Ollama — no API server needed
+```
+
+Deploy to cloud from the same setup:
+
+```bash
+agentbreeder quickstart --cloud aws           # local + deploy to AWS ECS Fargate
+agentbreeder quickstart --cloud gcp           # local + deploy to GCP Cloud Run
+agentbreeder quickstart --cloud azure         # local + deploy to Azure Container Apps
+```
+
+### Option B — Build your own agent
+
+```bash
+pip3 install agentbreeder
+agentbreeder setup                # configure Ollama + API keys (interactive wizard)
+agentbreeder init                 # scaffold a new agent project
+agentbreeder validate             # validate agent.yaml
+agentbreeder deploy --target local       # deploy locally with Docker
+agentbreeder deploy --target aws         # deploy to AWS ECS Fargate
+agentbreeder deploy --target gcp         # deploy to GCP Cloud Run
 ```
 
 Full quickstart guide → [agentbreeder.io/docs/quickstart](https://www.agentbreeder.io/docs/quickstart) · [How AgentBreeder compares →](https://www.agentbreeder.io/docs/comparisons)
@@ -180,9 +246,11 @@ Full quickstart guide → [agentbreeder.io/docs/quickstart](https://www.agentbre
 
 | | |
 |---|---|
-| [Quickstart](https://www.agentbreeder.io/docs/quickstart) | Deploy your first agent in 5 minutes |
+| [Quickstart](https://www.agentbreeder.io/docs/quickstart) | Full local platform in one command |
 | [agent.yaml reference](https://www.agentbreeder.io/docs/agent-yaml) | Every field, every option |
-| [CLI reference](https://www.agentbreeder.io/docs/cli) | All 24 commands |
+| [CLI reference](https://www.agentbreeder.io/docs/cli) | All commands |
+| [RAG & GraphRAG](https://www.agentbreeder.io/docs/rag) | ChromaDB vector search + Neo4j knowledge graphs |
+| [MCP & A2A](https://www.agentbreeder.io/docs/mcp-a2a) | MCP server registry + Agent-to-Agent protocol |
 | [How-To guides](https://www.agentbreeder.io/docs/how-to) | Install, deploy, orchestrate, evaluate |
 | [SDK reference](https://www.agentbreeder.io/docs/sdk) | Python + TypeScript |
 
