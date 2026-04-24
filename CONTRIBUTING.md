@@ -76,32 +76,213 @@ Before opening a PR, confirm:
 
 ### Prerequisites
 
-- Python 3.11+
-- Node.js 18+ (dashboard only)
-- Docker & Docker Compose
-- Git
+| Tool | Min version | What it's used for |
+|------|-------------|-------------------|
+| **Python** | 3.11+ | CLI, API server, engine |
+| **Node.js + npm** | 18+ | Dashboard UI, website, MCP servers |
+| **Docker Desktop** | 24+ | Local service stack (Postgres, Redis, ChromaDB, Neo4j) |
+| **Git** | any | Source control |
 
-### Setup
+---
+
+### 1. Fork and Clone
+
+1. Fork the repo on GitHub: [github.com/agentbreeder/agentbreeder](https://github.com/agentbreeder/agentbreeder) → **Fork**
+2. Clone your fork locally:
 
 ```bash
-# Fork and clone
 git clone https://github.com/YOUR_USERNAME/agentbreeder.git
 cd agentbreeder
+```
 
-# Python environment
-python -m venv venv && source venv/bin/activate
+3. Add the upstream remote so you can pull future changes:
+
+```bash
+git remote add upstream https://github.com/agentbreeder/agentbreeder.git
+```
+
+To sync later: `git fetch upstream && git merge upstream/main`
+
+---
+
+### 2. Python Environment + CLI
+
+```bash
+# Create and activate a virtual environment
+python -m venv venv
+source venv/bin/activate          # macOS / Linux
+# venv\Scripts\activate           # Windows
+
+# Install in editable mode (changes to source take effect immediately)
 pip install -e ".[dev]"
+
+# Copy example env
 cp .env.example .env
+```
 
-# Start local services (Postgres, Redis)
-docker compose up -d
+**Run the CLI locally — two ways:**
 
-# Verify everything works
-pytest tests/unit/
+```bash
+# Option 1 — entry point (after pip install -e .)
 agentbreeder --help
+agentbreeder validate ./agent.yaml
 
-# Dashboard (optional)
-cd dashboard && npm install && npm run dev
+# Option 2 — run as a module (no install required, useful for rapid iteration)
+python -m cli.main --help
+python -m cli.main validate ./agent.yaml
+```
+
+Both are identical. Use `python -m cli.main` when you want to skip reinstalling after every change.
+
+**Testing a CLI change end-to-end:**
+
+```bash
+# Make your change in cli/commands/your_command.py
+# Then run it immediately:
+python -m cli.main your-command --help
+```
+
+---
+
+### 3. API Server
+
+The dashboard and CLI both talk to the FastAPI backend. You need it running for anything that reads from the registry.
+
+```bash
+# Start infrastructure first (Postgres + Redis)
+docker compose up -d postgres redis
+
+# Run database migrations
+alembic upgrade head
+
+# Start the API server with hot reload
+uvicorn api.main:app --reload --port 8000
+```
+
+The API is now live at:
+- **REST API:** `http://localhost:8000`
+- **Interactive docs (Swagger):** `http://localhost:8000/docs`
+- **Health check:** `http://localhost:8000/health`
+
+Changes to any file under `api/` reload automatically.
+
+**To start the full stack (API + all services) instead:**
+
+```bash
+docker compose up -d
+uvicorn api.main:app --reload --port 8000
+```
+
+---
+
+### 4. Dashboard (Agent Builder UI)
+
+The dashboard is a React + TypeScript app (Vite, Tailwind). It proxies all `/api` requests to the API server at `http://localhost:8000`.
+
+```bash
+cd dashboard
+npm install        # first time only
+npm run dev
+```
+
+Dashboard is live at **`http://localhost:3001`** with hot module replacement — changes to any file in `dashboard/src/` appear in the browser instantly without a page reload.
+
+> **Requires the API server to be running** (`uvicorn api.main:app --reload --port 8000`). The Vite dev server proxies `/api/*` and `/health` to port 8000 automatically.
+
+**Lint and type-check the dashboard:**
+
+```bash
+cd dashboard
+npm run lint       # ESLint
+npm run typecheck  # TypeScript (tsc --noEmit)
+```
+
+---
+
+### 5. Website (agentbreeder.io)
+
+The website is a Next.js app (Fumadocs) that lives in `website/`. All documentation under `/docs` is rendered from `.mdx` files in `website/content/docs/`.
+
+```bash
+cd website
+npm install        # first time only
+npm run dev
+```
+
+Website is live at **`http://localhost:3000`** with fast refresh — edit any `.mdx` file in `website/content/docs/` and the page updates in the browser immediately.
+
+**To preview a docs change:**
+
+1. Edit the relevant `.mdx` file in `website/content/docs/`
+2. Save — the browser updates automatically
+3. Check that links, callouts, and code blocks render correctly
+4. Commit the change **in the same commit as the code it documents** (see [CLAUDE.md](CLAUDE.md) for the docs sync rule)
+
+---
+
+### 6. Running Everything Together
+
+For full end-to-end local development, open four terminal tabs:
+
+| Tab | Command | URL |
+|-----|---------|-----|
+| Services | `docker compose up -d` | — |
+| API | `uvicorn api.main:app --reload --port 8000` | `http://localhost:8000/docs` |
+| Dashboard | `cd dashboard && npm run dev` | `http://localhost:3001` |
+| Website | `cd website && npm run dev` | `http://localhost:3000` |
+
+The CLI (`python -m cli.main`) works in any additional terminal once the services and API are up.
+
+**Or use `agentbreeder quickstart` for a one-command local stack** (pulls Docker images; good for trying the platform but not for editing dashboard source):
+
+```bash
+agentbreeder quickstart
+```
+
+---
+
+### 7. Run Tests
+
+```bash
+# Unit tests — fast, no external deps required
+pytest tests/unit/
+
+# Integration tests — requires docker compose up
+pytest tests/integration/
+
+# E2E tests — requires full stack + Playwright
+pytest tests/e2e/ --headed
+
+# Coverage report
+pytest --cov=. --cov-report=html
+open htmlcov/index.html
+```
+
+Target: **85%+ coverage on changed files**.
+
+---
+
+### Quick Reference
+
+```bash
+# CLI changes
+python -m cli.main <command>              # run immediately, no reinstall
+
+# API changes
+uvicorn api.main:app --reload --port 8000 # auto-reloads on file save
+
+# Dashboard changes
+cd dashboard && npm run dev               # HMR at http://localhost:3001
+
+# Website / docs changes
+cd website && npm run dev                 # fast refresh at http://localhost:3000
+
+# Python lint
+ruff check . && ruff format .
+mypy .
+
+# TypeScript lint
+cd dashboard && npm run lint && npm run typecheck
 ```
 
 ---
@@ -175,7 +356,8 @@ chore: bump FastAPI to 0.110
 - [ ] If you changed `agent.yaml` schema → updated JSON Schema at `engine/schema/agent.schema.json`
 - [ ] If you changed the DB schema → wrote an Alembic migration
 - [ ] If you added a deployer or runtime → added to README supported stack table
-- [ ] If you changed a CLI command → updated help text
+- [ ] If you changed a CLI command → updated `website/content/docs/cli-reference.mdx` in the same commit
+- [ ] If you changed any user-facing feature → updated the matching doc page in `website/content/docs/` in the same commit (see the sync table in [CLAUDE.md](CLAUDE.md))
 
 PRs are reviewed within 48 hours. Changes to `engine/` require two maintainer approvals. All other changes require one.
 
