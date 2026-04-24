@@ -17,6 +17,103 @@ agentbreeder [COMMAND] [OPTIONS]
 
 ## Commands
 
+### `agentbreeder quickstart`
+
+Full local platform bootstrap — Docker, services, sample data, 5 sample agents, and dashboard in one command.
+
+```
+agentbreeder quickstart [--cloud TARGET] [--no-browser] [--skip-seed] [--dev]
+```
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `--cloud` | — | Also deploy to cloud after local setup: `aws`, `gcp`, or `azure` |
+| `--no-browser` | Off | Don't open the dashboard at `http://localhost:3001` |
+| `--skip-seed` | Off | Skip ChromaDB + Neo4j seeding (fast restart) |
+| `--dev` | Off | Build API and Dashboard from local source instead of pulling images |
+
+What it does:
+1. Detects Docker / Podman; shows OS-specific install instructions if neither is found
+2. Checks for Ollama and cloud API keys; suggests `agentbreeder setup` if neither is found
+3. Creates `.env` with secure random secrets if not present
+4. Starts the full stack via `docker-compose.quickstart.yml`: API · Dashboard · PostgreSQL · Redis · ChromaDB · Neo4j · MCP servers · LiteLLM
+5. Waits for all services with a live progress bar
+6. Seeds ChromaDB (vector store) and Neo4j (knowledge graph) with sample data
+7. Deploys 5 sample agents: `assistant`, `rag-agent`, `graph-agent`, `search-agent`, `a2a-orchestrator`
+8. Opens the visual dashboard at `http://localhost:3001`
+
+**Examples:**
+```bash
+agentbreeder quickstart                       # Local only
+agentbreeder quickstart --cloud aws           # Local + deploy to AWS ECS Fargate
+agentbreeder quickstart --cloud gcp           # Local + deploy to GCP Cloud Run
+agentbreeder quickstart --cloud azure         # Local + deploy to Azure Container Apps
+agentbreeder quickstart --skip-seed           # Restart stack without re-seeding data
+agentbreeder quickstart --dev                 # Build from source
+```
+
+---
+
+### `agentbreeder setup`
+
+Interactive wizard to configure Ollama and cloud LLM provider API keys.
+
+```
+agentbreeder setup [--ollama-only] [--providers-only]
+```
+
+| Option | Description |
+|--------|-------------|
+| `--ollama-only` | Only run the Ollama setup step |
+| `--providers-only` | Only run the cloud provider key step |
+
+Step 1 (Ollama): detects if Ollama is installed and running; shows OS-specific install instructions; presents a model picker with sizes and recommended use cases; runs `ollama pull` for the selected model.
+
+Step 2 (cloud providers): walks through Anthropic, OpenAI, Google AI, and OpenRouter; shows exact URL to get each API key; validates key format; makes a live API call to verify the key works; saves to `.env`.
+
+**Examples:**
+```bash
+agentbreeder setup                      # Full setup (Ollama + cloud providers)
+agentbreeder setup --ollama-only        # Only configure Ollama
+agentbreeder setup --providers-only     # Only configure cloud provider keys
+```
+
+---
+
+### `agentbreeder seed`
+
+Seed ChromaDB (vector store) and Neo4j (knowledge graph) with sample or custom data.
+
+```
+agentbreeder seed [--chromadb] [--neo4j] [--docs PATH] [--collection NAME]
+                  [--cypher PATH] [--clear] [--list]
+```
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `--chromadb` | Off | Seed ChromaDB only |
+| `--neo4j` | Off | Seed Neo4j only |
+| `--docs PATH` | `deploy/seed/docs/` | Directory of `.md` / `.txt` files to ingest into ChromaDB |
+| `--collection NAME` | `agentbreeder_knowledge` | ChromaDB collection name |
+| `--cypher PATH` | — | Custom `.cypher` file to run against Neo4j |
+| `--clear` | Off | Wipe existing data before seeding |
+| `--list` | Off | Show what is currently seeded (no writes) |
+
+Without `--chromadb` or `--neo4j`, both are seeded.
+
+**Examples:**
+```bash
+agentbreeder seed                                   # Seed both ChromaDB and Neo4j
+agentbreeder seed --chromadb                        # Seed ChromaDB only
+agentbreeder seed --neo4j                           # Seed Neo4j only
+agentbreeder seed --chromadb --docs ./my-docs/      # Ingest custom .md/.txt files
+agentbreeder seed --neo4j --cypher ./graph.cypher   # Load custom Cypher
+agentbreeder seed --list                            # Show what's currently seeded
+agentbreeder seed --clear                           # Wipe and re-seed
+```
+
+---
+
 ### `agentbreeder init`
 
 Scaffold a new agent project with an interactive wizard.
@@ -337,16 +434,17 @@ agentbreeder provider list --json                       # JSON output
 
 ### `agentbreeder chat`
 
-Interactive chat with a deployed agent in the terminal.
+Interactive chat with a deployed agent in the terminal. Use `--local` to bypass the API server entirely and talk directly to a local Ollama model.
 
 ```
-agentbreeder chat AGENT_NAME [--model MODEL] [--env ENV] [--verbose] [--json]
+agentbreeder chat AGENT_NAME [--local] [--model MODEL] [--env ENV] [--verbose] [--json]
 ```
 
 | Argument / Option | Required | Default | Description |
 |-------------------|----------|---------|-------------|
 | `AGENT_NAME` | Yes | — | Name of the agent to chat with |
-| `--model`, `-m` | No | — | Override the agent's configured model |
+| `--local`, `-l` | No | `false` | Bypass the API server — chat directly via Ollama (no server required) |
+| `--model`, `-m` | No | — | Override the agent's configured model (or select an Ollama model in `--local` mode) |
 | `--env`, `-e` | No | `dev` | Environment (`dev`, `staging`, `production`) |
 | `--verbose`, `-v` | No | `false` | Show tool calls, token counts, latency |
 
@@ -358,10 +456,12 @@ On exit, displays a session summary with turn count, total tokens, and cost.
 
 **Examples:**
 ```bash
-agentbreeder chat my-agent                     # Interactive chat
-agentbreeder chat my-agent --verbose           # Show tool calls + costs
-agentbreeder chat my-agent --model gpt-4o      # Override model
-echo "hello" | agentbreeder chat my-agent --json  # JSON stdin/stdout
+agentbreeder chat my-agent                          # Interactive chat (API server required)
+agentbreeder chat my-agent --local                  # Chat via Ollama — no API server needed
+agentbreeder chat my-agent --local --model llama3.2 # Use a specific Ollama model
+agentbreeder chat my-agent --verbose                # Show tool calls + costs
+agentbreeder chat my-agent --model gpt-4o           # Override model
+echo "hello" | agentbreeder chat my-agent --json    # JSON stdin/stdout
 ```
 
 ---

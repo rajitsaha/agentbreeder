@@ -100,6 +100,13 @@ See the complete working example in [`examples/graphrag-ollama-agent/`](https://
 
 ---
 
+<Callout type="info" title="Want Neo4j pre-wired and seeded?">
+  Run `agentbreeder quickstart` to start the full local stack with Neo4j running on port 7687
+  and a sample knowledge graph (~50 nodes, ~60 relationships) already loaded.
+  To load your own graph: `agentbreeder seed --neo4j --cypher ./my-graph.cypher`
+  Neo4j browser UI: `http://localhost:7474` — login: `neo4j` / `agentbreeder`
+</Callout>
+
 ## Step 1 — Create a Graph Index
 
 <Tabs items={['Dashboard', 'API', 'agent.yaml']}>
