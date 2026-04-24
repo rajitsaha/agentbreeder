@@ -9,11 +9,14 @@ import time
 import uuid
 
 import httpx
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from pydantic import BaseModel, Field
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.config import settings
+from api.database import get_db
 from api.models.schemas import ApiResponse
+from registry.agents import AgentRegistry
 
 logger = logging.getLogger(__name__)
 
@@ -205,19 +208,65 @@ async def _call_litellm(messages: list[dict], model: str) -> tuple[str, int, int
         return choice, usage.get("prompt_tokens", 0), usage.get("completion_tokens", 0)
 
 
+def _build_system_prompt(agent_name: str, description: str, config: dict) -> str:
+    """Build a system prompt from agent config."""
+    parts = [f"You are {agent_name}, an AI agent."]
+    if description:
+        parts.append(description)
+
+    # Extract system prompt from config_snapshot
+    prompts = config.get("prompts", {})
+    if isinstance(prompts, dict) and prompts.get("system"):
+        parts.append(prompts["system"])
+
+    # List available tools
+    tools = config.get("tools", [])
+    if tools:
+        tool_names = []
+        for t in tools:
+            if isinstance(t, dict):
+                tool_names.append(t.get("name") or t.get("ref", ""))
+            elif isinstance(t, str):
+                tool_names.append(t)
+        if tool_names:
+            parts.append(f"Available tools: {', '.join(filter(None, tool_names))}.")
+
+    parts.append("Answer the user's questions helpfully and accurately.")
+    return "\n\n".join(parts)
+
+
 @router.post("/chat", response_model=ApiResponse[PlaygroundChatResponse])
 async def playground_chat(
     body: PlaygroundChatRequest,
+    db: AsyncSession = Depends(get_db),
 ) -> ApiResponse[PlaygroundChatResponse]:
     """Send a message to an agent and get a response via LiteLLM gateway."""
     start = time.monotonic()
 
-    model_used = await _resolve_model(body.model_override)
+    # Load agent config to resolve model and system prompt
+    agent_model_override: str | None = body.model_override
+    system_prompt: str | None = body.system_prompt_override
+
+    try:
+        agent = await AgentRegistry.get_by_id(db, uuid.UUID(body.agent_id))
+        if agent:
+            if not agent_model_override and agent.model_primary:
+                agent_model_override = agent.model_primary
+            if not system_prompt:
+                system_prompt = _build_system_prompt(
+                    agent.name,
+                    agent.description or "",
+                    agent.config_snapshot or {},
+                )
+    except Exception:
+        pass  # agent_id may be a placeholder; proceed without agent context
+
+    model_used = await _resolve_model(agent_model_override)
 
     # Build message list
     messages: list[dict] = []
-    if body.system_prompt_override:
-        messages.append({"role": "system", "content": body.system_prompt_override})
+    if system_prompt:
+        messages.append({"role": "system", "content": system_prompt})
     for m in body.conversation_history:
         messages.append({"role": m.role, "content": m.content})
     messages.append({"role": "user", "content": body.message})
