@@ -20,48 +20,43 @@ Usage:
 
 from __future__ import annotations
 
-import json
 import os
 import platform
 import secrets
 import shutil
 import subprocess
-import sys
 import time
 import webbrowser
 from pathlib import Path
-from typing import Any
 
 import httpx
 import typer
 from rich.console import Console
-from rich.live import Live
 from rich.panel import Panel
 from rich.progress import BarColumn, Progress, SpinnerColumn, TextColumn, TimeElapsedColumn
 from rich.rule import Rule
 from rich.table import Table
-from rich.text import Text
 
 console = Console()
 
 # ── Paths ──────────────────────────────────────────────────────────────────
-REPO_ROOT   = Path(__file__).parent.parent.parent
-DEPLOY_DIR  = REPO_ROOT / "deploy"
-QS_COMPOSE  = DEPLOY_DIR / "docker-compose.quickstart.yml"
-QS_LITELLM  = DEPLOY_DIR / "litellm_config.quickstart.yaml"
+REPO_ROOT = Path(__file__).parent.parent.parent
+DEPLOY_DIR = REPO_ROOT / "deploy"
+QS_COMPOSE = DEPLOY_DIR / "docker-compose.quickstart.yml"
+QS_LITELLM = DEPLOY_DIR / "litellm_config.quickstart.yaml"
 EXAMPLES_QS = REPO_ROOT / "examples" / "quickstart"
 MCP_WORKSPACE = DEPLOY_DIR / "mcp_workspace"
 
-API_BASE       = os.environ.get("AGENTBREEDER_API_URL", "http://localhost:8000")
-CHROMADB_BASE  = "http://localhost:8001"
-NEO4J_HTTP     = "http://localhost:7474"
-NEO4J_USER     = "neo4j"
-NEO4J_PASS     = "agentbreeder"
-DASHBOARD_URL  = "http://localhost:3001"
+API_BASE = os.environ.get("AGENTBREEDER_API_URL", "http://localhost:8000")
+CHROMADB_BASE = "http://localhost:8001"
+NEO4J_HTTP = "http://localhost:7474"
+NEO4J_USER = "neo4j"
+NEO4J_PASS = "agentbreeder"
+DASHBOARD_URL = "http://localhost:3001"
 
 CLOUD_DEPLOY_DOCS = {
-    "aws":   "https://docs.agentbreeder.io/deploy/aws",
-    "gcp":   "https://docs.agentbreeder.io/deploy/gcp",
+    "aws": "https://docs.agentbreeder.io/deploy/aws",
+    "gcp": "https://docs.agentbreeder.io/deploy/gcp",
     "azure": "https://docs.agentbreeder.io/deploy/azure",
 }
 
@@ -258,9 +253,7 @@ def _detect_runtime() -> tuple[str, str] | None:
     """
     # Docker
     if shutil.which("docker"):
-        result = subprocess.run(
-            ["docker", "compose", "version"], capture_output=True, text=True
-        )
+        result = subprocess.run(["docker", "compose", "version"], capture_output=True, text=True)
         if result.returncode == 0:
             return ("docker", "docker compose")
         # Docker without compose plugin
@@ -269,9 +262,7 @@ def _detect_runtime() -> tuple[str, str] | None:
 
     # Podman
     if shutil.which("podman"):
-        result = subprocess.run(
-            ["podman", "compose", "version"], capture_output=True, text=True
-        )
+        result = subprocess.run(["podman", "compose", "version"], capture_output=True, text=True)
         if result.returncode == 0:
             return ("podman", "podman compose")
         if shutil.which("podman-compose"):
@@ -366,6 +357,7 @@ def _load_seed_module():
     """Load deploy/seed/seed.py as a module."""
     import importlib.util
     import types
+
     seed_path = DEPLOY_DIR / "seed" / "seed.py"
     spec = importlib.util.spec_from_file_location("qs_seed", seed_path)
     if spec is None or spec.loader is None:
@@ -517,7 +509,10 @@ def _guide_cloud_deploy(target: str) -> None:
 
     cloud_info: dict[str, dict] = {
         "aws": {
-            "prereqs": ["AWS CLI installed + configured", "IAM permissions: ECS, ECR, CloudFormation"],
+            "prereqs": [
+                "AWS CLI installed + configured",
+                "IAM permissions: ECS, ECR, CloudFormation",
+            ],
             "cmd": "agentbreeder deploy --target aws --region us-east-1",
             "env_keys": ["AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY", "AWS_DEFAULT_REGION"],
         },
@@ -640,11 +635,36 @@ def _print_final_summary(services_ok: dict[str, bool], agents: list[str]) -> Non
     svc_table.add_column("Purpose")
 
     svc_rows = [
-        ("Dashboard",  DASHBOARD_URL,              services_ok.get("dashboard", False), "Build agents visually, manage registry"),
-        ("API",        "http://localhost:8000",     services_ok.get("api", False),       "REST API + OpenAPI docs (/docs)"),
-        ("LiteLLM",   "http://localhost:4000",     services_ok.get("litellm", False),  "Model gateway (OpenAI-compat)"),
-        ("ChromaDB",   f"{CHROMADB_BASE}/docs",    services_ok.get("chromadb", False), "Vector store for RAG"),
-        ("Neo4j",      "http://localhost:7474",     services_ok.get("neo4j", False),    "Graph DB browser (neo4j/agentbreeder)"),
+        (
+            "Dashboard",
+            DASHBOARD_URL,
+            services_ok.get("dashboard", False),
+            "Build agents visually, manage registry",
+        ),
+        (
+            "API",
+            "http://localhost:8000",
+            services_ok.get("api", False),
+            "REST API + OpenAPI docs (/docs)",
+        ),
+        (
+            "LiteLLM",
+            "http://localhost:4000",
+            services_ok.get("litellm", False),
+            "Model gateway (OpenAI-compat)",
+        ),
+        (
+            "ChromaDB",
+            f"{CHROMADB_BASE}/docs",
+            services_ok.get("chromadb", False),
+            "Vector store for RAG",
+        ),
+        (
+            "Neo4j",
+            "http://localhost:7474",
+            services_ok.get("neo4j", False),
+            "Graph DB browser (neo4j/agentbreeder)",
+        ),
     ]
     for name, url, ok, purpose in svc_rows:
         status = "[green]● running[/green]" if ok else "[yellow]● starting[/yellow]"
@@ -661,11 +681,36 @@ def _print_final_summary(services_ok: dict[str, bool], agents: list[str]) -> Non
     agent_table.add_column("UI")
 
     agent_rows = [
-        ("assistant",       "General conversation",               "agentbreeder chat assistant --local",         f"{DASHBOARD_URL}/chat/assistant"),
-        ("rag-agent",       "Searches knowledge base (ChromaDB)", "agentbreeder chat rag-agent --local",         f"{DASHBOARD_URL}/chat/rag-agent"),
-        ("graph-agent",     "Queries knowledge graph (Neo4j)",    "agentbreeder chat graph-agent --local",       f"{DASHBOARD_URL}/chat/graph-agent"),
-        ("search-agent",    "Web search + filesystem (MCP)",      "agentbreeder chat search-agent --local",      f"{DASHBOARD_URL}/chat/search-agent"),
-        ("a2a-orchestrator","Routes to all above agents (A2A)",   "agentbreeder chat a2a-orchestrator --local",  f"{DASHBOARD_URL}/chat/a2a-orchestrator"),
+        (
+            "assistant",
+            "General conversation",
+            "agentbreeder chat assistant --local",
+            f"{DASHBOARD_URL}/chat/assistant",
+        ),
+        (
+            "rag-agent",
+            "Searches knowledge base (ChromaDB)",
+            "agentbreeder chat rag-agent --local",
+            f"{DASHBOARD_URL}/chat/rag-agent",
+        ),
+        (
+            "graph-agent",
+            "Queries knowledge graph (Neo4j)",
+            "agentbreeder chat graph-agent --local",
+            f"{DASHBOARD_URL}/chat/graph-agent",
+        ),
+        (
+            "search-agent",
+            "Web search + filesystem (MCP)",
+            "agentbreeder chat search-agent --local",
+            f"{DASHBOARD_URL}/chat/search-agent",
+        ),
+        (
+            "a2a-orchestrator",
+            "Routes to all above agents (A2A)",
+            "agentbreeder chat a2a-orchestrator --local",
+            f"{DASHBOARD_URL}/chat/a2a-orchestrator",
+        ),
     ]
     for name, power, cli_cmd, ui_url in agent_rows:
         agent_table.add_row(
@@ -776,8 +821,8 @@ def quickstart(
         console.print(
             Panel(
                 "[yellow]No container runtime found.[/yellow]\n\n"
-                + "\n".join(_install_instructions()) +
-                "\n\n[dim]Re-run [bold cyan]agentbreeder quickstart[/bold cyan] after installing.[/dim]",
+                + "\n".join(_install_instructions())
+                + "\n\n[dim]Re-run [bold cyan]agentbreeder quickstart[/bold cyan] after installing.[/dim]",
                 title="Install Docker or Podman",
                 border_style="yellow",
                 padding=(1, 2),
@@ -801,7 +846,9 @@ def quickstart(
         else:
             console.print("  [dim]Run: podman machine start[/dim]")
         console.print()
-        input_val = console.input("  [bold]Press Enter once the daemon is running (or Ctrl+C to cancel): [/bold]")
+        console.input(
+            "  [bold]Press Enter once the daemon is running (or Ctrl+C to cancel): [/bold]"
+        )
         if not _runtime_is_running(binary):
             console.print(f"  [red]Still can't reach {binary}. Exiting.[/red]")
             raise typer.Exit(code=1)
@@ -813,8 +860,7 @@ def quickstart(
 
     has_ollama = False
     has_cloud_key = any(
-        os.environ.get(k)
-        for k in ("OPENAI_API_KEY", "ANTHROPIC_API_KEY", "GOOGLE_API_KEY")
+        os.environ.get(k) for k in ("OPENAI_API_KEY", "ANTHROPIC_API_KEY", "GOOGLE_API_KEY")
     )
 
     try:
@@ -831,7 +877,11 @@ def quickstart(
         _info("For free local inference: ollama serve  (then: ollama pull llama3.2)")
 
     if has_cloud_key:
-        keys_found = [k for k in ("OPENAI_API_KEY", "ANTHROPIC_API_KEY", "GOOGLE_API_KEY") if os.environ.get(k)]
+        keys_found = [
+            k
+            for k in ("OPENAI_API_KEY", "ANTHROPIC_API_KEY", "GOOGLE_API_KEY")
+            if os.environ.get(k)
+        ]
         _ok(f"Cloud keys found: {', '.join(keys_found)}")
     else:
         _warn("No cloud API keys in environment")
@@ -850,7 +900,9 @@ def quickstart(
                 padding=(1, 2),
             )
         )
-        proceed = console.input("  [bold]Continue without a provider? (y/N): [/bold]").strip().lower()
+        proceed = (
+            console.input("  [bold]Continue without a provider? (y/N): [/bold]").strip().lower()
+        )
         if proceed != "y":
             console.print("  [dim]Run: agentbreeder setup  — then come back[/dim]")
             raise typer.Exit(code=0)
@@ -871,8 +923,8 @@ def quickstart(
         # Generate minimal .env
         compose_env.update(
             {
-                "SECRET_KEY":        secrets.token_hex(32),
-                "JWT_SECRET_KEY":    secrets.token_hex(32),
+                "SECRET_KEY": secrets.token_hex(32),
+                "JWT_SECRET_KEY": secrets.token_hex(32),
                 "LITELLM_MASTER_KEY": f"sk-agentbreeder-{secrets.token_hex(16)}",
             }
         )
@@ -915,13 +967,13 @@ def quickstart(
     _step("Waiting for Services", 5, total_steps)
 
     service_checks = [
-        ("PostgreSQL",  None,                              True),   # no HTTP, just timing
-        ("Redis",       None,                              True),
-        ("ChromaDB",    f"{CHROMADB_BASE}/api/v1/heartbeat", True),
-        ("Neo4j",       f"{NEO4J_HTTP}",                   True),
-        ("API",         "http://localhost:8000/health",    True),
-        ("Dashboard",   DASHBOARD_URL,                     False),  # non-blocking
-        ("LiteLLM",     "http://localhost:4000/health",    False),
+        ("PostgreSQL", None, True),  # no HTTP, just timing
+        ("Redis", None, True),
+        ("ChromaDB", f"{CHROMADB_BASE}/api/v1/heartbeat", True),
+        ("Neo4j", f"{NEO4J_HTTP}", True),
+        ("API", "http://localhost:8000/health", True),
+        ("Dashboard", DASHBOARD_URL, False),  # non-blocking
+        ("LiteLLM", "http://localhost:4000/health", False),
     ]
 
     services_ok: dict[str, bool] = {}
@@ -1011,7 +1063,9 @@ def quickstart(
             if result:
                 _ok(f"Deployed: {name}")
             else:
-                _info(f"Queued: {name}  (deploy: agentbreeder deploy {yaml_path.name} --target local)")
+                _info(
+                    f"Queued: {name}  (deploy: agentbreeder deploy {yaml_path.name} --target local)"
+                )
     else:
         _warn("API not ready — deploy agents manually:")
         for yaml_path in sorted(EXAMPLES_QS.glob("*.yaml")):

@@ -14,18 +14,15 @@ import asyncio
 import json
 import os
 import platform
-import sys
 import time
 from pathlib import Path
 
 import httpx
 import typer
-from rich.columns import Columns
 from rich.console import Console
 from rich.panel import Panel
 from rich.rule import Rule
 from rich.table import Table
-from rich.text import Text
 
 console = Console()
 
@@ -36,46 +33,46 @@ OLLAMA_BASE_URL = os.environ.get("OLLAMA_BASE_URL", "http://localhost:11434")
 
 # ── Ollama starter models (name, size, best for) ──────────────────────────
 STARTER_MODELS = [
-    ("llama3.2",   "~2 GB", "General purpose — fast responses"),
-    ("gemma3",     "~2 GB", "Google's efficient small model"),
-    ("phi4-mini",  "~2 GB", "Microsoft — great at reasoning"),
-    ("mistral",    "~4 GB", "Strong at coding and instruction"),
-    ("qwen2.5",    "~4 GB", "Alibaba — multilingual + tools"),
+    ("llama3.2", "~2 GB", "General purpose — fast responses"),
+    ("gemma3", "~2 GB", "Google's efficient small model"),
+    ("phi4-mini", "~2 GB", "Microsoft — great at reasoning"),
+    ("mistral", "~4 GB", "Strong at coding and instruction"),
+    ("qwen2.5", "~4 GB", "Alibaba — multilingual + tools"),
 ]
 
 # ── Cloud providers ────────────────────────────────────────────────────────
 CLOUD_PROVIDERS = {
     "anthropic": {
-        "name":     "Anthropic (Claude)",
-        "env_key":  "ANTHROPIC_API_KEY",
-        "key_url":  "https://console.anthropic.com/settings/keys",
-        "prefix":   "sk-ant-",
-        "models":   ["claude-sonnet-4-20250514", "claude-haiku-4-20250414"],
-        "why":      "Best reasoning, safety, and long-context tasks",
+        "name": "Anthropic (Claude)",
+        "env_key": "ANTHROPIC_API_KEY",
+        "key_url": "https://console.anthropic.com/settings/keys",
+        "prefix": "sk-ant-",
+        "models": ["claude-sonnet-4-20250514", "claude-haiku-4-20250414"],
+        "why": "Best reasoning, safety, and long-context tasks",
     },
     "openai": {
-        "name":     "OpenAI (GPT)",
-        "env_key":  "OPENAI_API_KEY",
-        "key_url":  "https://platform.openai.com/api-keys",
-        "prefix":   "sk-",
-        "models":   ["gpt-4o", "gpt-4o-mini"],
-        "why":      "Widest ecosystem, function calling pioneer",
+        "name": "OpenAI (GPT)",
+        "env_key": "OPENAI_API_KEY",
+        "key_url": "https://platform.openai.com/api-keys",
+        "prefix": "sk-",
+        "models": ["gpt-4o", "gpt-4o-mini"],
+        "why": "Widest ecosystem, function calling pioneer",
     },
     "google": {
-        "name":     "Google AI (Gemini)",
-        "env_key":  "GOOGLE_API_KEY",
-        "key_url":  "https://aistudio.google.com/app/apikey",
-        "prefix":   "AIza",
-        "models":   ["gemini-2.0-flash", "gemini-1.5-pro"],
-        "why":      "Huge context window, multimodal, free tier",
+        "name": "Google AI (Gemini)",
+        "env_key": "GOOGLE_API_KEY",
+        "key_url": "https://aistudio.google.com/app/apikey",
+        "prefix": "AIza",
+        "models": ["gemini-2.0-flash", "gemini-1.5-pro"],
+        "why": "Huge context window, multimodal, free tier",
     },
     "openrouter": {
-        "name":     "OpenRouter",
-        "env_key":  "OPENROUTER_API_KEY",
-        "key_url":  "https://openrouter.ai/keys",
-        "prefix":   "sk-or-",
-        "models":   ["openai/gpt-4o", "anthropic/claude-sonnet-4-20250514"],
-        "why":      "Access 200+ models through one key",
+        "name": "OpenRouter",
+        "env_key": "OPENROUTER_API_KEY",
+        "key_url": "https://openrouter.ai/keys",
+        "prefix": "sk-or-",
+        "models": ["openai/gpt-4o", "anthropic/claude-sonnet-4-20250514"],
+        "why": "Access 200+ models through one key",
     },
 }
 
@@ -326,7 +323,9 @@ def _setup_ollama() -> bool:
         models = asyncio.run(_ollama_list_models())
         console.print(f"  [green]✓ Ollama is already running at {OLLAMA_BASE_URL}[/green]")
         if models:
-            console.print(f"  [green]✓ {len(models)} model(s) available: {', '.join(models[:5])}[/green]")
+            console.print(
+                f"  [green]✓ {len(models)} model(s) available: {', '.join(models[:5])}[/green]"
+            )
             console.print()
             return True
         else:
@@ -349,9 +348,13 @@ def _setup_ollama() -> bool:
     console.print("  After installing, start Ollama:")
     console.print("    [cyan]ollama serve[/cyan]   (or just launch the desktop app)\n")
 
-    wait = console.input(
-        "  [bold]Press Enter once Ollama is running, or type [cyan]skip[/cyan] to skip: [/bold]"
-    ).strip().lower()
+    wait = (
+        console.input(
+            "  [bold]Press Enter once Ollama is running, or type [cyan]skip[/cyan] to skip: [/bold]"
+        )
+        .strip()
+        .lower()
+    )
 
     if wait == "skip":
         console.print("\n  [dim]Skipping Ollama — you can set it up later.[/dim]\n")
@@ -369,9 +372,7 @@ def _setup_ollama() -> bool:
             console.print("  [dim]Not yet — retrying...[/dim]")
 
     console.print("  [red]Could not reach Ollama.[/red]")
-    console.print(
-        "  [dim]You can finish setup later. Run: agentbreeder setup[/dim]\n"
-    )
+    console.print("  [dim]You can finish setup later. Run: agentbreeder setup[/dim]\n")
     return False
 
 
@@ -401,7 +402,9 @@ def _guide_pull_model() -> None:
         model_name = STARTER_MODELS[0][0]
     elif choice.isdigit():
         idx = int(choice) - 1
-        model_name = STARTER_MODELS[idx][0] if 0 <= idx < len(STARTER_MODELS) else STARTER_MODELS[0][0]
+        model_name = (
+            STARTER_MODELS[idx][0] if 0 <= idx < len(STARTER_MODELS) else STARTER_MODELS[0][0]
+        )
     else:
         model_name = choice
 
@@ -417,15 +420,13 @@ def _guide_pull_model() -> None:
         )
     )
 
-    console.input(
-        "\n  [bold]Press Enter once the model is downloaded (or now to skip): [/bold]"
-    )
+    console.input("\n  [bold]Press Enter once the model is downloaded (or now to skip): [/bold]")
 
     models = asyncio.run(_ollama_list_models())
     if model_name.split(":")[0] in " ".join(models):
         console.print(f"  [green]✓ {model_name} is ready[/green]")
     else:
-        console.print(f"  [dim]Model not confirmed yet — that's fine, continue.[/dim]")
+        console.print("  [dim]Model not confirmed yet — that's fine, continue.[/dim]")
     console.print()
 
 
@@ -464,14 +465,12 @@ def _setup_one_provider(provider_id: str, meta: dict, providers: dict) -> None:
         console.print(f"\n  ┌─ [bold]{meta['name']}[/bold]")
         console.print(f"  │  {meta['why']}")
         console.print(f"  │  Models: [dim]{', '.join(meta['models'][:2])}[/dim]")
-        console.print(f"  │")
-        console.print(f"  │  Get your API key:")
+        console.print("  │")
+        console.print("  │  Get your API key:")
         console.print(f"  │  [bold cyan]{meta['key_url']}[/bold cyan]")
-        console.print(f"  │")
+        console.print("  │")
 
-    raw_key = console.input(
-        f"  └─ [bold]{meta['env_key']}[/bold] (or Enter to skip): "
-    ).strip()
+    raw_key = console.input(f"  └─ [bold]{meta['env_key']}[/bold] (or Enter to skip): ").strip()
 
     if not raw_key:
         console.print("     [dim]Skipped.[/dim]\n")
@@ -497,27 +496,25 @@ def _setup_one_provider(provider_id: str, meta: dict, providers: dict) -> None:
         if success:
             console.print(f"\r     [green]✓ Connected to {meta['name']}[/green]          ")
         else:
-            console.print(f"\r     [red]✗ Connection failed — key may be invalid or inactive[/red]")
+            console.print("\r     [red]✗ Connection failed — key may be invalid or inactive[/red]")
             keep = console.input("     Save anyway? (y/N): ").strip().lower()
             if keep != "y":
                 console.print("     [dim]Skipped.[/dim]\n")
                 return
     else:
-        console.print(f"\r     [dim]Saved (connection test not available for this provider)[/dim]")
+        console.print("\r     [dim]Saved (connection test not available for this provider)[/dim]")
 
     # Persist
     _write_env_key(meta["env_key"], raw_key)
     providers[provider_id] = {
-        "name":          meta["name"],
+        "name": meta["name"],
         "provider_type": provider_id,
-        "status":        "active",
-        "masked_key":    _mask(raw_key),
-        "model_count":   len(meta["models"]),
+        "status": "active",
+        "masked_key": _mask(raw_key),
+        "model_count": len(meta["models"]),
     }
     _save_providers(providers)
-    console.print(
-        f"     [green]✓[/green] Key saved to [dim]{ENV_FILE}[/dim]\n"
-    )
+    console.print(f"     [green]✓[/green] Key saved to [dim]{ENV_FILE}[/dim]\n")
 
 
 # ── Final summary ──────────────────────────────────────────────────────────
@@ -542,7 +539,7 @@ def _print_summary(providers: dict) -> None:
     else:
         lines.append("  [dim]○ Ollama not running (run: ollama serve)[/dim]")
 
-    for pid, p in providers.items():
+    for _pid, p in providers.items():
         if p.get("status") == "active":
             lines.append(
                 f"  [green]✓[/green] {p['name']} — [dim]{p.get('masked_key', 'configured')}[/dim]"
@@ -552,7 +549,9 @@ def _print_summary(providers: dict) -> None:
         lines.append("  [yellow]No providers configured yet.[/yellow]")
         lines.append("  [dim]Run [bold]agentbreeder setup[/bold] any time to add one.[/dim]")
 
-    console.print(Panel("\n".join(lines), title="Setup Complete", border_style="green", padding=(1, 2)))
+    console.print(
+        Panel("\n".join(lines), title="Setup Complete", border_style="green", padding=(1, 2))
+    )
     console.print()
 
     # Next steps

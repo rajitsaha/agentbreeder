@@ -292,13 +292,17 @@ def provider_add(
     # For Ollama: detect if it's running and show install help if not
     if provider_type == "ollama" and not json_output:
         import asyncio
+
         import httpx
+
         ollama_url = base_url or meta["default_base_url"]
         try:
+
             async def _check() -> bool:
                 async with httpx.AsyncClient(timeout=4.0) as c:
                     r = await c.get(f"{ollama_url}/")
                     return r.status_code == 200
+
             is_up = asyncio.run(_check())
         except Exception:
             is_up = False
@@ -307,15 +311,15 @@ def provider_add(
             system = platform.system()
             if system == "Darwin":
                 install_cmd = "brew install ollama"
-                start_cmd  = "ollama serve"
+                start_cmd = "ollama serve"
                 alt = "Or download the desktop app: https://ollama.com/download"
             elif system == "Linux":
                 install_cmd = "curl -fsSL https://ollama.com/install.sh | sh"
-                start_cmd  = "ollama serve"
+                start_cmd = "ollama serve"
                 alt = "Or via Docker: docker run -d -p 11434:11434 ollama/ollama"
             else:
                 install_cmd = "winget install Ollama.Ollama"
-                start_cmd  = "ollama serve"
+                start_cmd = "ollama serve"
                 alt = "Or download from: https://ollama.com/download/windows"
 
             console.print(
@@ -336,9 +340,13 @@ def provider_add(
                 )
             )
             console.print()
-            wait = console.input(
-                "  [bold]Press Enter once Ollama is running, or type [cyan]skip[/cyan]: [/bold]"
-            ).strip().lower()
+            wait = (
+                console.input(
+                    "  [bold]Press Enter once Ollama is running, or type [cyan]skip[/cyan]: [/bold]"
+                )
+                .strip()
+                .lower()
+            )
             if wait == "skip":
                 raise typer.Exit(code=0)
 

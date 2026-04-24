@@ -69,7 +69,7 @@ def _extract_keyword(question: str, prefix: str) -> str:
     idx = lower.find(prefix.lower())
     if idx == -1:
         return ""
-    after = question[idx + len(prefix):].strip()
+    after = question[idx + len(prefix) :].strip()
     # Take first word or phrase up to a stop word
     words = after.split()
     keyword_words = []
@@ -121,7 +121,9 @@ def graph_query(question: str) -> str:
         data = resp.json()
         errors = data.get("errors", [])
         if errors:
-            return json.dumps({"error": errors[0].get("message", "Unknown error"), "cypher": cypher})
+            return json.dumps(
+                {"error": errors[0].get("message", "Unknown error"), "cypher": cypher}
+            )
 
         results = data.get("results", [{}])[0]
         columns = results.get("columns", [])
@@ -140,7 +142,7 @@ def graph_query(question: str) -> str:
         return json.dumps(
             {
                 "error": f"Cannot connect to Neo4j at {NEO4J_HTTP}. "
-                         "Is the quickstart stack running? Run: agentbreeder up"
+                "Is the quickstart stack running? Run: agentbreeder up"
             }
         )
     except Exception as exc:
@@ -165,17 +167,21 @@ def _build_llm():
         resp = httpx.get(f"{ollama_url}/", timeout=3.0)
         if resp.status_code == 200:
             from langchain_ollama import ChatOllama
+
             return ChatOllama(model=model_name, base_url=ollama_url).bind_tools(tools)
     except Exception:
         pass
     if os.environ.get("ANTHROPIC_API_KEY"):
         from langchain_anthropic import ChatAnthropic
+
         return ChatAnthropic(model="claude-haiku-4-20250414").bind_tools(tools)
     if os.environ.get("OPENAI_API_KEY"):
         from langchain_openai import ChatOpenAI
+
         return ChatOpenAI(model="gpt-4o-mini").bind_tools(tools)
     litellm_url = os.environ.get("LITELLM_BASE_URL", "http://localhost:4000")
     from langchain_openai import ChatOpenAI
+
     return ChatOpenAI(
         model=f"ollama/{model_name}",
         base_url=f"{litellm_url}/v1",

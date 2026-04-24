@@ -285,9 +285,7 @@ def _run_local_ollama(agent_name: str, model: str | None, verbose: bool) -> None
         conversation.append({"role": "user", "content": user_input})
 
         try:
-            result = asyncio.run(
-                provider.generate(messages=conversation, model=resolved_model)
-            )
+            result = asyncio.run(provider.generate(messages=conversation, model=resolved_model))
         except Exception as exc:
             console.print(f"\n  [red]Ollama error: {exc}[/red]\n")
             conversation.pop()

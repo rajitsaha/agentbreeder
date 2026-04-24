@@ -9,7 +9,8 @@ Usage:
 
 from __future__ import annotations
 
-from importlib.metadata import version as _pkg_version, PackageNotFoundError
+from importlib.metadata import PackageNotFoundError
+from importlib.metadata import version as _pkg_version
 
 import typer
 
@@ -22,6 +23,7 @@ def _version_callback(value: bool) -> None:
             v = "dev"
         typer.echo(f"agentbreeder {v}")
         raise typer.Exit()
+
 
 from cli.commands import (
     chat,
@@ -55,10 +57,14 @@ from cli.commands import (
     eval as eval_cmd,
 )
 
+
 def _main_callback(
     version: bool = typer.Option(
-        False, "--version", "-V",
-        callback=_version_callback, is_eager=True,
+        False,
+        "--version",
+        "-V",
+        callback=_version_callback,
+        is_eager=True,
         help="Show version and exit.",
     ),
 ) -> None:

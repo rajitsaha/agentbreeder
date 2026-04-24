@@ -12,14 +12,14 @@ import os
 from typing import Annotated, TypedDict
 
 import httpx
-from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, ToolMessage
+from langchain_core.messages import BaseMessage
 from langchain_core.tools import tool
 from langgraph.graph import END, StateGraph
 from langgraph.graph.message import add_messages
 from langgraph.prebuilt import ToolNode
 
 CHROMADB_URL = os.environ.get("CHROMADB_URL", "http://localhost:8001")
-COLLECTION   = os.environ.get("COLLECTION_NAME", "agentbreeder_knowledge")
+COLLECTION = os.environ.get("COLLECTION_NAME", "agentbreeder_knowledge")
 
 
 # ── Tool: rag_search ────────────────────────────────────────────────────────
@@ -38,11 +38,11 @@ def rag_search(query: str, n_results: int = 3) -> str:
     """
     try:
         # Get collection ID
-        resp = httpx.get(
-            f"{CHROMADB_URL}/api/v1/collections/{COLLECTION}", timeout=10.0
-        )
+        resp = httpx.get(f"{CHROMADB_URL}/api/v1/collections/{COLLECTION}", timeout=10.0)
         if resp.status_code != 200:
-            return json.dumps({"error": f"Collection '{COLLECTION}' not found. Run: agentbreeder seed"})
+            return json.dumps(
+                {"error": f"Collection '{COLLECTION}' not found. Run: agentbreeder seed"}
+            )
         collection_id = resp.json()["id"]
 
         # Query by embedding (ChromaDB embeds the query automatically)
@@ -80,7 +80,7 @@ def rag_search(query: str, n_results: int = 3) -> str:
         return json.dumps(
             {
                 "error": f"Cannot connect to ChromaDB at {CHROMADB_URL}. "
-                         "Is the quickstart stack running? Run: agentbreeder up"
+                "Is the quickstart stack running? Run: agentbreeder up"
             }
         )
     except Exception as exc:
@@ -108,6 +108,7 @@ def _build_llm():
         resp = httpx.get(f"{ollama_url}/", timeout=3.0)
         if resp.status_code == 200:
             from langchain_ollama import ChatOllama
+
             return ChatOllama(model=model_name, base_url=ollama_url).bind_tools(tools)
     except Exception:
         pass
@@ -115,16 +116,19 @@ def _build_llm():
     # Try Anthropic
     if os.environ.get("ANTHROPIC_API_KEY"):
         from langchain_anthropic import ChatAnthropic
+
         return ChatAnthropic(model="claude-haiku-4-20250414").bind_tools(tools)
 
     # Try OpenAI
     if os.environ.get("OPENAI_API_KEY"):
         from langchain_openai import ChatOpenAI
+
         return ChatOpenAI(model="gpt-4o-mini").bind_tools(tools)
 
     # Try LiteLLM gateway
     litellm_url = os.environ.get("LITELLM_BASE_URL", "http://localhost:4000")
     from langchain_openai import ChatOpenAI
+
     return ChatOpenAI(
         model=f"ollama/{model_name}",
         base_url=f"{litellm_url}/v1",
@@ -153,6 +157,7 @@ You specialize in questions about:
 def call_model(state: AgentState) -> AgentState:
     llm = _build_llm()
     from langchain_core.messages import SystemMessage
+
     messages = [SystemMessage(content=SYSTEM_PROMPT)] + state["messages"]
     response = llm.invoke(messages)
     return {"messages": [response]}

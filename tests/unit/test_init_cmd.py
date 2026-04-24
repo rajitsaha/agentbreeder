@@ -13,6 +13,11 @@ from cli.main import app
 
 runner = CliRunner()
 
+# Patch applied to all CLI-runner tests so they are independent of whether
+# Ollama is running locally. Tests for _gather_model_suggestions itself
+# control the patch directly.
+_NO_LOCAL_MODELS = patch("cli.commands.init_cmd._gather_model_suggestions", return_value=[])
+
 
 def _make_init_input(
     framework: int = 1,
@@ -23,6 +28,19 @@ def _make_init_input(
 ) -> str:
     """Build the interactive input string for the init wizard."""
     return f"{framework}\n{cloud}\n{name}\n{team}\n{owner}\n"
+
+
+@pytest.fixture(autouse=True)
+def _suppress_model_suggestions(request):
+    """Suppress Ollama/OpenRouter discovery in every test that uses the CLI runner.
+
+    Tests in TestGatherModelSuggestions control their own mock, so skip them.
+    """
+    if "TestGatherModelSuggestions" in request.node.nodeid:
+        yield
+    else:
+        with _NO_LOCAL_MODELS:
+            yield
 
 
 class TestInitCommand:
@@ -371,6 +389,7 @@ class TestGatherModelSuggestions:
 
     def test_returns_ollama_models_when_available(self) -> None:
         """Detected Ollama models are returned as 'ollama/<name>'."""
+        from unittest.mock import AsyncMock
 
         from cli.commands.init_cmd import _gather_model_suggestions
 
@@ -379,9 +398,16 @@ class TestGatherModelSuggestions:
         mock_model_2 = MagicMock()
         mock_model_2.name = "mistral"
 
-        run_results = iter([True, [mock_model_1, mock_model_2], None])
+        # Build a single mock class so detect and instance methods are consistent.
+        mock_provider_instance = MagicMock()
+        mock_provider_instance.list_models = AsyncMock(return_value=[mock_model_1, mock_model_2])
+        mock_provider_instance.close = AsyncMock()
 
-        with patch("cli.commands.init_cmd.asyncio.run", side_effect=run_results):
+        mock_provider_class = MagicMock()
+        mock_provider_class.detect = AsyncMock(return_value=True)
+        mock_provider_class.return_value = mock_provider_instance
+
+        with patch("cli.commands.init_cmd.OllamaProvider", mock_provider_class):
             result = _gather_model_suggestions()
 
         assert "ollama/llama3" in result

@@ -166,9 +166,7 @@ class DockerComposeDeployer(BaseDeployer):
         for line in result.stdout.splitlines():
             logger.debug("  %s", line)
         if result.returncode != 0:
-            raise RuntimeError(
-                f"docker build failed (exit {result.returncode}):\n{result.stderr}"
-            )
+            raise RuntimeError(f"docker build failed (exit {result.returncode}):\n{result.stderr}")
 
         # Stop existing container if any
         container_name = f"agentbreeder-{config.name}"

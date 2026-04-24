@@ -204,6 +204,9 @@ ignore = [
     "S311",   # allow random for non-crypto use
     "S607",   # allow partial executable paths
     "S608",   # allow SQL in string literals (used in benchmark/test data)
+    "S603",   # allow subprocess with literal args in deployers/CLI
+    "B905",   # allow zip() without strict= (not needed for deploy logic)
+    "E501",   # line length — formatter handles wrapping where possible
 ]
 
 [tool.ruff.lint.per-file-ignores]
@@ -211,3 +214,4 @@ ignore = [
 "api/**" = ["PT028"]
 "templates/**" = ["N999"]
 "examples/**" = ["E501", "S314"]  # examples are educational code, not production
+"cli/main.py" = ["E402"]  # deferred imports after version callback are intentional

@@ -28,7 +28,7 @@ console = Console()
 
 SEED_SCRIPT = Path(__file__).parent.parent.parent / "deploy" / "seed" / "seed.py"
 CHROMADB_BASE = "http://localhost:8001"
-NEO4J_HTTP    = "http://localhost:7474"
+NEO4J_HTTP = "http://localhost:7474"
 
 
 def seed(
@@ -91,10 +91,12 @@ def seed(
     # Import the seed module directly
     try:
         import importlib.util
+
         spec = importlib.util.spec_from_file_location("seed_module", SEED_SCRIPT)
         if spec is None or spec.loader is None:
             raise ImportError("seed.py not found")
         import types
+
         seed_mod = types.ModuleType("seed_module")
         spec.loader.exec_module(seed_mod)
     except Exception:
@@ -122,7 +124,7 @@ def _run_via_module(
 
     # Default: seed both if neither flag given
     seed_chroma = do_chromadb or (not do_chromadb and not do_neo4j)
-    seed_graph  = do_neo4j    or (not do_chromadb and not do_neo4j)
+    seed_graph = do_neo4j or (not do_chromadb and not do_neo4j)
 
     console.print()
 
@@ -140,8 +142,12 @@ def _run_via_module(
         )
         result = mod.seed_chromadb(docs_dir=docs, collection=collection, clear=clear)
         if result["ok"]:
-            console.print(f"  [green]✓[/green] Seeded [bold]{result['documents_seeded']}[/bold] document chunks")
-            console.print(f"  [green]✓[/green] Collection: [cyan]{collection}[/cyan] ({result['collection_id'][:8]}...)")
+            console.print(
+                f"  [green]✓[/green] Seeded [bold]{result['documents_seeded']}[/bold] document chunks"
+            )
+            console.print(
+                f"  [green]✓[/green] Collection: [cyan]{collection}[/cyan] ({result['collection_id'][:8]}...)"
+            )
             console.print()
         else:
             console.print(f"  [red]✗ ChromaDB seed failed:[/red] {result.get('error')}")
@@ -161,14 +167,16 @@ def _run_via_module(
         )
         result = mod.seed_neo4j(cypher_file=cypher, clear=clear)
         if result["ok"]:
-            console.print(f"  [green]✓[/green] Ran [bold]{result['statements_run']}[/bold] Cypher statements")
+            console.print(
+                f"  [green]✓[/green] Ran [bold]{result['statements_run']}[/bold] Cypher statements"
+            )
             summary = mod.list_neo4j()
             if summary["ok"]:
                 for label, count in summary["counts"].items():
                     console.print(f"  [green]✓[/green] {label:15} {count}")
             console.print()
         else:
-            console.print(f"  [red]✗ Neo4j seed failed[/red]")
+            console.print("  [red]✗ Neo4j seed failed[/red]")
             for err in result.get("errors", []):
                 console.print(f"    [dim]{err}[/dim]")
             console.print("  [dim]Is Neo4j running? Try: agentbreeder up[/dim]")
@@ -214,11 +222,11 @@ def _print_next_steps() -> None:
         Panel(
             "  [bold]Test the seeded data:[/bold]\n\n"
             "  [cyan]agentbreeder chat rag-agent[/cyan]\n"
-            "    Ask: [dim]\"How do I deploy an agent to AWS?\"[/dim]\n"
-            "    Ask: [dim]\"What is the agent.yaml format?\"[/dim]\n\n"
+            '    Ask: [dim]"How do I deploy an agent to AWS?"[/dim]\n'
+            '    Ask: [dim]"What is the agent.yaml format?"[/dim]\n\n'
             "  [cyan]agentbreeder chat graph-agent[/cyan]\n"
-            "    Ask: [dim]\"Which agents use ChromaDB?\"[/dim]\n"
-            "    Ask: [dim]\"Show me all agents in the quickstart team\"[/dim]\n\n"
+            '    Ask: [dim]"Which agents use ChromaDB?"[/dim]\n'
+            '    Ask: [dim]"Show me all agents in the quickstart team"[/dim]\n\n'
             "  [bold]Add your own documents:[/bold]\n"
             "  [cyan]agentbreeder seed --chromadb --docs ./my-company-docs/[/cyan]\n\n"
             "  [bold]Explore the graph in Neo4j Browser:[/bold]\n"
@@ -243,6 +251,7 @@ def _run_via_subprocess(
 ) -> None:
     """Fall back to calling seed.py as a subprocess."""
     import subprocess
+
     args = [sys.executable, str(SEED_SCRIPT)]
     if do_chromadb and not do_neo4j:
         args.append("--chromadb-only")
