@@ -18,7 +18,11 @@ jobs:
         id: code-changed
         run: |
           git fetch origin main
-          CHANGED=$(git diff --name-only origin/main...HEAD | grep -E '^(api|engine|cli|registry|connectors|sdk|dashboard)/' || true)
+          # Exclude dependency-only files (lock files bumped by dependabot)
+          CHANGED=$(git diff --name-only origin/main...HEAD \
+            | grep -E '^(api|engine|cli|registry|connectors|sdk|dashboard)/' \
+            | grep -vE '(package-lock\.json|yarn\.lock|poetry\.lock|Pipfile\.lock|requirements.*\.txt)$' \
+            || true)
           if [ -n "$CHANGED" ]; then
             echo "changed=true" >> $GITHUB_OUTPUT
             echo "Source code changed:"

@@ -2,7 +2,8 @@
 # AgentBreeder auto-generates server_loader.py from this file at build time.
 # NOTE: requires AgentBreeder issue #66 to be resolved for ollama/ model support.
 name: ai-news-digest
-model: ollama/gemma3:27b
+model:
+  primary: ollama/gemma3:27b
 description: "Daily AI news digest agent"
 instruction: |
   You are an AI news curator. When the user asks for the daily digest, follow these steps:
