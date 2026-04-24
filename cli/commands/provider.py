@@ -13,6 +13,7 @@ Subcommands:
 from __future__ import annotations
 
 import json
+import platform
 import sys
 import time
 from pathlib import Path
@@ -284,7 +285,72 @@ def provider_add(
     if not json_output:
         console.print()
         console.print(f"  [bold]Connect to {meta['name']}[/bold]")
+        if not meta["requires_key"]:
+            console.print(f"  [dim]{meta['help_url']}[/dim]")
         console.print()
+
+    # For Ollama: detect if it's running and show install help if not
+    if provider_type == "ollama" and not json_output:
+        import asyncio
+        import httpx
+        ollama_url = base_url or meta["default_base_url"]
+        try:
+            async def _check() -> bool:
+                async with httpx.AsyncClient(timeout=4.0) as c:
+                    r = await c.get(f"{ollama_url}/")
+                    return r.status_code == 200
+            is_up = asyncio.run(_check())
+        except Exception:
+            is_up = False
+
+        if not is_up:
+            system = platform.system()
+            if system == "Darwin":
+                install_cmd = "brew install ollama"
+                start_cmd  = "ollama serve"
+                alt = "Or download the desktop app: https://ollama.com/download"
+            elif system == "Linux":
+                install_cmd = "curl -fsSL https://ollama.com/install.sh | sh"
+                start_cmd  = "ollama serve"
+                alt = "Or via Docker: docker run -d -p 11434:11434 ollama/ollama"
+            else:
+                install_cmd = "winget install Ollama.Ollama"
+                start_cmd  = "ollama serve"
+                alt = "Or download from: https://ollama.com/download/windows"
+
+            console.print(
+                Panel(
+                    f"  [yellow]Ollama is not running at {ollama_url}[/yellow]\n\n"
+                    f"  [bold]1. Install:[/bold]\n"
+                    f"     [cyan]{install_cmd}[/cyan]\n\n"
+                    f"  [bold]2. Start:[/bold]\n"
+                    f"     [cyan]{start_cmd}[/cyan]\n\n"
+                    f"  [dim]{alt}[/dim]\n\n"
+                    f"  [bold]3. Pull a model:[/bold]\n"
+                    f"     [cyan]ollama pull llama3.2[/cyan]   "
+                    f"[dim](~2 GB, fast general-purpose model)[/dim]\n\n"
+                    f"  Then re-run: [bold cyan]agentbreeder provider add ollama[/bold cyan]",
+                    title="Ollama not found",
+                    border_style="yellow",
+                    padding=(1, 2),
+                )
+            )
+            console.print()
+            wait = console.input(
+                "  [bold]Press Enter once Ollama is running, or type [cyan]skip[/cyan]: [/bold]"
+            ).strip().lower()
+            if wait == "skip":
+                raise typer.Exit(code=0)
+
+            # Re-check
+            try:
+                is_up = asyncio.run(_check())
+            except Exception:
+                is_up = False
+            if not is_up:
+                console.print("  [red]Still can't reach Ollama. Try: agentbreeder setup[/red]")
+                raise typer.Exit(code=1)
+            console.print(f"  [green]✓ Ollama is running at {ollama_url}[/green]\n")
 
     # Collect API key if needed
     resolved_key = api_key

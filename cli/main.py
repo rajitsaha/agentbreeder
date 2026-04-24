@@ -35,11 +35,14 @@ from cli.commands import (
     orchestration,
     provider,
     publish,
+    quickstart,
     review,
     scan,
     schedule,
     search,
     secret,
+    seed,
+    setup,
     status,
     submit,
     teardown,
@@ -70,6 +73,9 @@ app = typer.Typer(
     callback=_main_callback,
 )
 
+app.command(name="quickstart")(quickstart.quickstart)
+app.command(name="seed")(seed.seed)
+app.command(name="setup")(setup.setup)
 app.command(name="ui")(ui.ui)
 app.command(name="up")(up.up)
 app.command(name="down")(down.down)

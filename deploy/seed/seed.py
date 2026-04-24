@@ -1,0 +1,415 @@
+#!/usr/bin/env python3
+"""AgentBreeder seed script — standalone, runnable independently of quickstart.
+
+Seeds ChromaDB (vector store) and Neo4j (knowledge graph) with sample data
+so the rag-agent and graph-agent work immediately.
+
+Usage:
+    python deploy/seed/seed.py                    # seed everything
+    python deploy/seed/seed.py --chromadb-only    # only vector store
+    python deploy/seed/seed.py --neo4j-only       # only graph DB
+    python deploy/seed/seed.py --docs ./my-docs/  # ingest custom documents
+    python deploy/seed/seed.py --list             # show what's seeded
+    python deploy/seed/seed.py --clear            # drop and re-seed
+
+Or via the CLI (preferred):
+    agentbreeder seed
+    agentbreeder seed --chromadb --docs ./my-docs/
+    agentbreeder seed --neo4j --cypher ./my-graph.cypher
+    agentbreeder seed --list
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import sys
+import time
+from pathlib import Path
+
+import httpx
+
+CHROMADB_BASE = "http://localhost:8001"
+NEO4J_HTTP    = "http://localhost:7474"
+NEO4J_USER    = "neo4j"
+NEO4J_PASS    = "agentbreeder"
+COLLECTION    = "agentbreeder_knowledge"
+DOCS_DIR      = Path(__file__).parent / "docs"
+
+NEO4J_SEED_CYPHER = """
+MATCH (n:QuickstartNode) DETACH DELETE n;
+
+CREATE (:Framework:QuickstartNode {name:'langgraph', label:'LangGraph', tool_calling:true, streaming:true});
+CREATE (:Framework:QuickstartNode {name:'crewai', label:'CrewAI', tool_calling:true, streaming:false});
+CREATE (:Framework:QuickstartNode {name:'claude_sdk', label:'Claude SDK', tool_calling:true, streaming:true});
+CREATE (:Framework:QuickstartNode {name:'openai_agents', label:'OpenAI Agents', tool_calling:true, streaming:true});
+CREATE (:Framework:QuickstartNode {name:'google_adk', label:'Google ADK', tool_calling:true, streaming:true});
+CREATE (:Framework:QuickstartNode {name:'custom', label:'Custom', tool_calling:false, streaming:false});
+
+CREATE (:Provider:QuickstartNode {name:'anthropic', label:'Anthropic', local:false, free_tier:false, models:['claude-sonnet-4','claude-haiku-4']});
+CREATE (:Provider:QuickstartNode {name:'openai', label:'OpenAI', local:false, free_tier:false, models:['gpt-4o','gpt-4o-mini']});
+CREATE (:Provider:QuickstartNode {name:'google', label:'Google AI', local:false, free_tier:true, models:['gemini-2.0-flash','gemini-1.5-pro']});
+CREATE (:Provider:QuickstartNode {name:'ollama', label:'Ollama', local:true, free_tier:true, models:['llama3.2','mistral','gemma3']});
+CREATE (:Provider:QuickstartNode {name:'openrouter', label:'OpenRouter', local:false, free_tier:false, models:['openai/gpt-4o','anthropic/claude-sonnet-4']});
+
+CREATE (:Tool:QuickstartNode {name:'rag_search', label:'RAG Search', type:'function', backend:'chromadb', description:'Semantic vector search over knowledge base'});
+CREATE (:Tool:QuickstartNode {name:'graph_query', label:'Graph Query', type:'function', backend:'neo4j', description:'Query knowledge graph via Cypher'});
+CREATE (:Tool:QuickstartNode {name:'web_search', label:'Web Search', type:'function', backend:'http', description:'Search the web for current information'});
+CREATE (:Tool:QuickstartNode {name:'mcp_filesystem', label:'MCP Filesystem', type:'mcp', backend:'filesystem', description:'Read and write files via MCP'});
+CREATE (:Tool:QuickstartNode {name:'mcp_memory', label:'MCP Memory', type:'mcp', backend:'memory', description:'Persistent key-value memory across sessions'});
+CREATE (:Tool:QuickstartNode {name:'call_rag_agent', label:'Call RAG Agent', type:'a2a', backend:'a2a', description:'Delegate knowledge-base questions to rag-agent'});
+CREATE (:Tool:QuickstartNode {name:'call_graph_agent', label:'Call Graph Agent', type:'a2a', backend:'a2a', description:'Delegate graph questions to graph-agent'});
+CREATE (:Tool:QuickstartNode {name:'call_search_agent', label:'Call Search Agent', type:'a2a', backend:'a2a', description:'Delegate search/file tasks to search-agent'});
+
+CREATE (:Agent:QuickstartNode {name:'rag-agent', label:'RAG Agent', team:'quickstart', status:'running', endpoint:'http://localhost:8080'});
+CREATE (:Agent:QuickstartNode {name:'graph-agent', label:'Graph Agent', team:'quickstart', status:'running', endpoint:'http://localhost:8081'});
+CREATE (:Agent:QuickstartNode {name:'search-agent', label:'Search Agent', team:'quickstart', status:'running', endpoint:'http://localhost:8082'});
+CREATE (:Agent:QuickstartNode {name:'a2a-orchestrator', label:'A2A Orchestrator', team:'quickstart', status:'running', endpoint:'http://localhost:8083'});
+CREATE (:Agent:QuickstartNode {name:'assistant', label:'Assistant', team:'quickstart', status:'running', endpoint:'http://localhost:8084'});
+
+CREATE (:DeployTarget:QuickstartNode {name:'local', label:'Local Docker', provider:'docker'});
+CREATE (:DeployTarget:QuickstartNode {name:'aws', label:'AWS ECS Fargate', provider:'aws'});
+CREATE (:DeployTarget:QuickstartNode {name:'gcp', label:'GCP Cloud Run', provider:'gcp'});
+CREATE (:DeployTarget:QuickstartNode {name:'azure', label:'Azure Container Apps', provider:'azure'});
+CREATE (:DeployTarget:QuickstartNode {name:'kubernetes', label:'Kubernetes', provider:'k8s'});
+
+MATCH (a:Agent {name:'rag-agent'}), (f:Framework {name:'langgraph'}) CREATE (a)-[:RUNS_ON]->(f);
+MATCH (a:Agent {name:'graph-agent'}), (f:Framework {name:'langgraph'}) CREATE (a)-[:RUNS_ON]->(f);
+MATCH (a:Agent {name:'search-agent'}), (f:Framework {name:'langgraph'}) CREATE (a)-[:RUNS_ON]->(f);
+MATCH (a:Agent {name:'a2a-orchestrator'}), (f:Framework {name:'langgraph'}) CREATE (a)-[:RUNS_ON]->(f);
+MATCH (a:Agent {name:'assistant'}), (f:Framework {name:'langgraph'}) CREATE (a)-[:RUNS_ON]->(f);
+
+MATCH (a:Agent {name:'rag-agent'}), (t:Tool {name:'rag_search'}) CREATE (a)-[:USES_TOOL]->(t);
+MATCH (a:Agent {name:'graph-agent'}), (t:Tool {name:'graph_query'}) CREATE (a)-[:USES_TOOL]->(t);
+MATCH (a:Agent {name:'search-agent'}), (t:Tool {name:'web_search'}) CREATE (a)-[:USES_TOOL]->(t);
+MATCH (a:Agent {name:'search-agent'}), (t:Tool {name:'mcp_filesystem'}) CREATE (a)-[:USES_TOOL]->(t);
+MATCH (a:Agent {name:'search-agent'}), (t:Tool {name:'mcp_memory'}) CREATE (a)-[:USES_TOOL]->(t);
+MATCH (a:Agent {name:'a2a-orchestrator'}), (t:Tool {name:'call_rag_agent'}) CREATE (a)-[:USES_TOOL]->(t);
+MATCH (a:Agent {name:'a2a-orchestrator'}), (t:Tool {name:'call_graph_agent'}) CREATE (a)-[:USES_TOOL]->(t);
+MATCH (a:Agent {name:'a2a-orchestrator'}), (t:Tool {name:'call_search_agent'}) CREATE (a)-[:USES_TOOL]->(t);
+
+MATCH (a:Agent), (p:Provider {name:'ollama'}) CREATE (a)-[:CALLS_PROVIDER {role:'primary'}]->(p);
+MATCH (a:Agent {name:'rag-agent'}), (p:Provider {name:'anthropic'}) CREATE (a)-[:CALLS_PROVIDER {role:'fallback'}]->(p);
+MATCH (a:Agent {name:'graph-agent'}), (p:Provider {name:'anthropic'}) CREATE (a)-[:CALLS_PROVIDER {role:'fallback'}]->(p);
+MATCH (a:Agent {name:'assistant'}), (p:Provider {name:'openai'}) CREATE (a)-[:CALLS_PROVIDER {role:'fallback'}]->(p);
+
+MATCH (o:Agent {name:'a2a-orchestrator'}), (r:Agent {name:'rag-agent'}) CREATE (o)-[:CALLS_AGENT {via:'a2a'}]->(r);
+MATCH (o:Agent {name:'a2a-orchestrator'}), (g:Agent {name:'graph-agent'}) CREATE (o)-[:CALLS_AGENT {via:'a2a'}]->(g);
+MATCH (o:Agent {name:'a2a-orchestrator'}), (s:Agent {name:'search-agent'}) CREATE (o)-[:CALLS_AGENT {via:'a2a'}]->(s);
+
+MATCH (a:Agent), (d:DeployTarget {name:'local'}) CREATE (a)-[:DEPLOYED_ON]->(d)
+"""
+
+
+# ── ChromaDB helpers ────────────────────────────────────────────────────────
+
+
+def _chroma_is_up() -> bool:
+    try:
+        resp = httpx.get(f"{CHROMADB_BASE}/api/v1/heartbeat", timeout=5.0)
+        return resp.status_code == 200
+    except (httpx.ConnectError, httpx.TimeoutException):
+        return False
+
+
+def _get_or_create_collection(name: str) -> str | None:
+    """Return collection ID, creating if needed."""
+    resp = httpx.post(
+        f"{CHROMADB_BASE}/api/v1/collections",
+        json={"name": name, "get_or_create": True},
+        timeout=15.0,
+    )
+    if resp.status_code in (200, 201):
+        return resp.json().get("id")
+    # Try fetching existing
+    resp2 = httpx.get(f"{CHROMADB_BASE}/api/v1/collections/{name}", timeout=10.0)
+    if resp2.status_code == 200:
+        return resp2.json().get("id")
+    return None
+
+
+def _load_docs_from_dir(docs_dir: Path) -> list[dict]:
+    """Read all .md and .txt files from a directory as seed documents."""
+    docs = []
+    for path in sorted(docs_dir.glob("**/*.md")) + sorted(docs_dir.glob("**/*.txt")):
+        text = path.read_text(encoding="utf-8")
+        # Split into ~500-char chunks (simple sentence-boundary split)
+        chunks = _chunk_text(text, max_chars=600)
+        for i, chunk in enumerate(chunks):
+            doc_id = f"{path.stem}-{i}"
+            docs.append({
+                "id": doc_id,
+                "text": chunk,
+                "metadata": {
+                    "source": path.name,
+                    "topic": path.stem,
+                    "chunk": i,
+                    "path": str(path.relative_to(docs_dir)),
+                },
+            })
+    return docs
+
+
+def _chunk_text(text: str, max_chars: int = 600) -> list[str]:
+    """Split text into chunks at sentence boundaries."""
+    import re
+    sentences = re.split(r'(?<=[.!?])\s+', text.strip())
+    chunks: list[str] = []
+    current = ""
+    for sentence in sentences:
+        if len(current) + len(sentence) + 1 <= max_chars:
+            current = (current + " " + sentence).strip()
+        else:
+            if current:
+                chunks.append(current)
+            current = sentence
+    if current:
+        chunks.append(current)
+    return chunks if chunks else [text[:max_chars]]
+
+
+def seed_chromadb(
+    docs_dir: Path | None = None,
+    collection: str = COLLECTION,
+    clear: bool = False,
+) -> dict:
+    """Seed ChromaDB with documents from docs_dir. Returns a status dict."""
+    if not _chroma_is_up():
+        return {"ok": False, "error": f"ChromaDB not reachable at {CHROMADB_BASE}"}
+
+    source_dir = docs_dir or DOCS_DIR
+
+    if clear:
+        try:
+            httpx.delete(f"{CHROMADB_BASE}/api/v1/collections/{collection}", timeout=10.0)
+        except Exception:
+            pass
+
+    collection_id = _get_or_create_collection(collection)
+    if not collection_id:
+        return {"ok": False, "error": f"Could not create collection '{collection}'"}
+
+    docs = _load_docs_from_dir(source_dir)
+    if not docs:
+        return {"ok": False, "error": f"No .md/.txt files found in {source_dir}"}
+
+    ids       = [d["id"] for d in docs]
+    documents = [d["text"] for d in docs]
+    metadatas = [d["metadata"] for d in docs]
+
+    resp = httpx.post(
+        f"{CHROMADB_BASE}/api/v1/collections/{collection_id}/upsert",
+        json={"ids": ids, "documents": documents, "metadatas": metadatas},
+        timeout=120.0,
+    )
+
+    if resp.status_code not in (200, 201):
+        return {"ok": False, "error": f"Upsert failed: HTTP {resp.status_code}"}
+
+    return {
+        "ok": True,
+        "collection": collection,
+        "collection_id": collection_id,
+        "documents_seeded": len(docs),
+        "source": str(source_dir),
+    }
+
+
+def list_chromadb() -> dict:
+    """Return info about seeded collections."""
+    if not _chroma_is_up():
+        return {"ok": False, "error": f"ChromaDB not reachable at {CHROMADB_BASE}"}
+    try:
+        resp = httpx.get(f"{CHROMADB_BASE}/api/v1/collections", timeout=10.0)
+        if resp.status_code != 200:
+            return {"ok": False, "error": f"HTTP {resp.status_code}"}
+        collections = resp.json()
+        result = []
+        for col in collections:
+            col_id = col.get("id", "")
+            count_resp = httpx.get(
+                f"{CHROMADB_BASE}/api/v1/collections/{col_id}/count", timeout=5.0
+            )
+            count = count_resp.json() if count_resp.status_code == 200 else "?"
+            result.append({"name": col.get("name"), "id": col_id, "count": count})
+        return {"ok": True, "collections": result}
+    except Exception as exc:
+        return {"ok": False, "error": str(exc)}
+
+
+# ── Neo4j helpers ───────────────────────────────────────────────────────────
+
+
+def _neo4j_is_up() -> bool:
+    try:
+        resp = httpx.get(NEO4J_HTTP, timeout=5.0, auth=(NEO4J_USER, NEO4J_PASS))
+        return resp.status_code == 200
+    except (httpx.ConnectError, httpx.TimeoutException):
+        return False
+
+
+def _run_cypher(cypher_block: str) -> dict:
+    """Execute one or more semicolon-separated Cypher statements."""
+    url = f"{NEO4J_HTTP}/db/neo4j/tx/commit"
+    statements = [
+        {"statement": stmt.strip()}
+        for stmt in cypher_block.split(";")
+        if stmt.strip()
+    ]
+    try:
+        resp = httpx.post(
+            url,
+            json={"statements": statements},
+            auth=(NEO4J_USER, NEO4J_PASS),
+            timeout=30.0,
+        )
+        data = resp.json()
+        errors = data.get("errors", [])
+        return {
+            "ok": resp.status_code == 200 and not errors,
+            "errors": errors,
+            "statements_run": len(statements),
+        }
+    except Exception as exc:
+        return {"ok": False, "errors": [str(exc)], "statements_run": 0}
+
+
+def seed_neo4j(cypher_file: Path | None = None, clear: bool = False) -> dict:
+    """Seed Neo4j with the knowledge graph. Returns a status dict."""
+    if not _neo4j_is_up():
+        return {"ok": False, "error": f"Neo4j not reachable at {NEO4J_HTTP}"}
+
+    if cypher_file:
+        cypher = cypher_file.read_text(encoding="utf-8")
+    else:
+        cypher = NEO4J_SEED_CYPHER
+
+    if clear:
+        _run_cypher("MATCH (n:QuickstartNode) DETACH DELETE n")
+
+    result = _run_cypher(cypher)
+    return {
+        **result,
+        "source": str(cypher_file) if cypher_file else "built-in",
+    }
+
+
+def list_neo4j() -> dict:
+    """Return a summary of what's in the graph."""
+    if not _neo4j_is_up():
+        return {"ok": False, "error": f"Neo4j not reachable at {NEO4J_HTTP}"}
+
+    queries = {
+        "agents":       "MATCH (a:Agent) RETURN count(a) AS n",
+        "tools":        "MATCH (t:Tool) RETURN count(t) AS n",
+        "frameworks":   "MATCH (f:Framework) RETURN count(f) AS n",
+        "providers":    "MATCH (p:Provider) RETURN count(p) AS n",
+        "relationships":"MATCH ()-[r]->() RETURN count(r) AS n",
+    }
+
+    url = f"{NEO4J_HTTP}/db/neo4j/tx/commit"
+    statements = [{"statement": q} for q in queries.values()]
+    try:
+        resp = httpx.post(
+            url,
+            json={"statements": statements},
+            auth=(NEO4J_USER, NEO4J_PASS),
+            timeout=10.0,
+        )
+        data = resp.json()
+        results = data.get("results", [])
+        counts = {}
+        for key, result in zip(queries.keys(), results):
+            rows = result.get("data", [])
+            counts[key] = rows[0]["row"][0] if rows else 0
+        return {"ok": True, "counts": counts}
+    except Exception as exc:
+        return {"ok": False, "error": str(exc)}
+
+
+# ── CLI entrypoint ──────────────────────────────────────────────────────────
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(
+        description="Seed ChromaDB and Neo4j with AgentBreeder sample data",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=__doc__,
+    )
+    parser.add_argument("--chromadb-only", action="store_true", help="Only seed ChromaDB")
+    parser.add_argument("--neo4j-only",    action="store_true", help="Only seed Neo4j")
+    parser.add_argument("--docs",          type=Path,           help="Directory of .md/.txt files to ingest into ChromaDB")
+    parser.add_argument("--collection",    default=COLLECTION,  help=f"ChromaDB collection name (default: {COLLECTION})")
+    parser.add_argument("--cypher",        type=Path,           help="Custom .cypher file for Neo4j")
+    parser.add_argument("--clear",         action="store_true", help="Drop existing data before seeding")
+    parser.add_argument("--list",          action="store_true", help="Show what's currently seeded")
+    args = parser.parse_args()
+
+    do_chroma = not args.neo4j_only
+    do_neo4j  = not args.chromadb_only
+
+    if args.list:
+        print("\n── ChromaDB ─────────────────────────────")
+        result = list_chromadb()
+        if result["ok"]:
+            for col in result.get("collections", []):
+                print(f"  Collection: {col['name']}  ({col['count']} documents)")
+        else:
+            print(f"  {result.get('error')}")
+
+        print("\n── Neo4j ────────────────────────────────")
+        result = list_neo4j()
+        if result["ok"]:
+            for label, count in result["counts"].items():
+                print(f"  {label:15}: {count}")
+        else:
+            print(f"  {result.get('error')}")
+        print()
+        return
+
+    if do_chroma:
+        print(f"\n── ChromaDB ─────────────────────────────")
+        print(f"  Target:     {CHROMADB_BASE}")
+        print(f"  Collection: {args.collection}")
+        print(f"  Source:     {args.docs or DOCS_DIR}")
+        if args.clear:
+            print("  Mode:       clear + re-seed")
+        result = seed_chromadb(
+            docs_dir=args.docs,
+            collection=args.collection,
+            clear=args.clear,
+        )
+        if result["ok"]:
+            print(f"  ✓ Seeded {result['documents_seeded']} document chunks")
+            print(f"  ✓ Collection ID: {result['collection_id']}")
+        else:
+            print(f"  ✗ Failed: {result.get('error')}")
+            if not do_neo4j:
+                sys.exit(1)
+
+    if do_neo4j:
+        print(f"\n── Neo4j ────────────────────────────────")
+        print(f"  Target: {NEO4J_HTTP}")
+        print(f"  Auth:   {NEO4J_USER} / (configured)")
+        print(f"  Source: {args.cypher or 'built-in quickstart graph'}")
+        if args.clear:
+            print("  Mode:   clear + re-seed")
+        result = seed_neo4j(cypher_file=args.cypher, clear=args.clear)
+        if result["ok"]:
+            print(f"  ✓ Ran {result['statements_run']} Cypher statements")
+            # Show what was created
+            summary = list_neo4j()
+            if summary["ok"]:
+                for label, count in summary["counts"].items():
+                    print(f"  ✓ {label:15}: {count}")
+        else:
+            print(f"  ✗ Failed")
+            for err in result.get("errors", []):
+                print(f"    {err}")
+            sys.exit(1)
+
+    print()
+
+
+if __name__ == "__main__":
+    main()

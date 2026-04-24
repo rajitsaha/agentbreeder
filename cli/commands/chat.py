@@ -4,10 +4,13 @@ Usage:
     agentbreeder chat my-agent
     agentbreeder chat my-agent --verbose
     agentbreeder chat my-agent --model gpt-4o --env staging
+    agentbreeder chat my-agent --local
+    agentbreeder chat my-agent --local --model llama3.2
 """
 
 from __future__ import annotations
 
+import asyncio
 import json
 import os
 import signal
@@ -24,6 +27,7 @@ from rich.table import Table
 console = Console()
 
 API_BASE = os.environ.get("AGENTBREEDER_API_URL", "http://localhost:8000")
+OLLAMA_BASE_URL = os.environ.get("OLLAMA_BASE_URL", "http://localhost:11434")
 
 
 # ---------------------------------------------------------------------------
@@ -142,24 +146,171 @@ def chat(
         "--json",
         help="Output each turn as JSON (non-interactive, reads from stdin)",
     ),
+    local: bool = typer.Option(
+        False,
+        "--local",
+        "-l",
+        help="Chat directly with a local Ollama model (no API server required)",
+    ),
 ) -> None:
     """Start an interactive chat session with a deployed agent.
 
     Sends messages to the agent via the playground API and displays responses
     in the terminal. Use --verbose to see tool calls and token usage.
 
+    Use --local to chat directly with a local Ollama model without starting
+    the AgentBreeder API server. Ollama must be running (ollama serve).
+
     Press Ctrl+C to end the session and see a usage summary.
 
     Examples:
         agentbreeder chat my-agent
         agentbreeder chat my-agent --verbose --model gpt-4o
+        agentbreeder chat my-agent --local
+        agentbreeder chat my-agent --local --model llama3.2
         echo "hello" | agentbreeder chat my-agent --json
     """
+    if local:
+        _run_local_ollama(agent_name, model, verbose)
+        return
+
     if json_output:
         _run_json_mode(agent_name, model)
         return
 
     _run_interactive(agent_name, verbose, model, env)
+
+
+def _run_local_ollama(agent_name: str, model: str | None, verbose: bool) -> None:
+    """Chat directly with a local Ollama model — no API server needed."""
+    from engine.providers.models import ProviderConfig, ProviderType
+    from engine.providers.ollama_provider import OllamaProvider
+
+    config = ProviderConfig(provider_type=ProviderType.ollama, base_url=OLLAMA_BASE_URL)
+    provider = OllamaProvider(config)
+
+    # Health check
+    is_up = asyncio.run(provider.health_check())
+    if not is_up:
+        console.print()
+        console.print(f"  [red]Cannot connect to Ollama at {OLLAMA_BASE_URL}.[/red]")
+        console.print("  [dim]Start Ollama with: ollama serve[/dim]")
+        console.print()
+        raise typer.Exit(code=1)
+
+    # Resolve model
+    resolved_model = model
+    if not resolved_model:
+        try:
+            models = asyncio.run(provider.list_models())
+        except Exception as exc:
+            console.print(f"\n  [red]Failed to list Ollama models: {exc}[/red]\n")
+            raise typer.Exit(code=1) from exc
+
+        if not models:
+            console.print()
+            console.print("  [red]No models found in Ollama.[/red]")
+            console.print("  [dim]Pull a model first: ollama pull llama3.2[/dim]")
+            console.print()
+            raise typer.Exit(code=1)
+
+        if len(models) == 1:
+            resolved_model = models[0].id
+            console.print(f"  [dim]Using model: {resolved_model}[/dim]")
+        else:
+            console.print("\n  [bold]Available Ollama models:[/bold]")
+            for i, m in enumerate(models, 1):
+                console.print(f"    [cyan]{i}[/cyan]. {m.id}")
+            console.print()
+            choice_str = console.input(
+                f"  Select model [1-{len(models)}] or press Enter for [cyan]{models[0].id}[/cyan]: "
+            ).strip()
+            if not choice_str:
+                resolved_model = models[0].id
+            else:
+                try:
+                    resolved_model = models[int(choice_str) - 1].id
+                except (ValueError, IndexError):
+                    resolved_model = models[0].id
+            console.print()
+
+    conversation: list[dict[str, str]] = []
+    total_tokens = 0
+    turn_count = 0
+
+    console.print()
+    console.print(
+        Panel(
+            f"  Chatting with [bold cyan]{agent_name}[/bold cyan] [dim](local)[/dim]\n"
+            f"  Model: [dim]{resolved_model}[/dim] via Ollama\n\n"
+            "  [dim]Type your message and press Enter. Ctrl+C to quit.[/dim]",
+            title="AgentBreeder Chat",
+            border_style="blue",
+        )
+    )
+    console.print()
+
+    def _on_exit(signum: int, frame: Any) -> None:
+        _print_session_summary(turn_count, total_tokens, 0.0)
+        raise typer.Exit(code=0)
+
+    signal.signal(signal.SIGINT, _on_exit)
+
+    while True:
+        try:
+            user_input = console.input("[bold green]You:[/bold green] ").strip()
+        except (EOFError, KeyboardInterrupt):
+            _print_session_summary(turn_count, total_tokens, 0.0)
+            raise typer.Exit(code=0) from None
+
+        if not user_input:
+            continue
+
+        if user_input.lower() in ("/quit", "/exit", "/q"):
+            _print_session_summary(turn_count, total_tokens, 0.0)
+            raise typer.Exit(code=0)
+
+        if user_input.lower() == "/clear":
+            conversation.clear()
+            total_tokens = 0
+            turn_count = 0
+            console.clear()
+            console.print("  [dim]Conversation cleared.[/dim]\n")
+            continue
+
+        if user_input.lower() == "/help":
+            _print_chat_help()
+            continue
+
+        conversation.append({"role": "user", "content": user_input})
+
+        try:
+            result = asyncio.run(
+                provider.generate(messages=conversation, model=resolved_model)
+            )
+        except Exception as exc:
+            console.print(f"\n  [red]Ollama error: {exc}[/red]\n")
+            conversation.pop()
+            continue
+
+        assistant_msg = result.content or ""
+        token_count = result.usage.total_tokens
+        total_tokens += token_count
+        turn_count += 1
+
+        console.print()
+        console.print(f"[bold blue]{agent_name}:[/bold blue]")
+        console.print(Markdown(assistant_msg))
+
+        if verbose:
+            console.print(
+                f"  [dim]model={result.model} | tokens={token_count} | cost=$0.000000 (local)[/dim]"
+            )
+
+        console.print()
+        conversation.append({"role": "assistant", "content": assistant_msg})
+
+    asyncio.run(provider.close())
 
 
 def _run_interactive(
@@ -270,6 +421,10 @@ def _run_interactive(
                 console.print(f"  [red]Cannot connect to API at {API_BASE}.[/red]")
                 console.print(
                     "  [dim]Ensure the server is running: uvicorn api.main:app --port 8000[/dim]"
+                )
+                console.print(
+                    "  [dim]Or chat with a local Ollama model: agentbreeder chat "
+                    f"{agent_name} --local[/dim]"
                 )
                 console.print()
                 raise typer.Exit(code=1) from None
