@@ -4,6 +4,7 @@ description: Get from zero to running AI agents in under 5 minutes — no cloud 
 ---
 
 import { Callout } from 'fumadocs-ui/components/callout';
+import { Accordion, Accordions } from 'fumadocs-ui/components/accordion';
 
 # Quickstart
 
@@ -181,6 +182,83 @@ agentbreeder logs support-agent --follow         # tail live logs
 agentbreeder chat support-agent                  # interactive chat (requires API server)
 agentbreeder chat support-agent --local          # chat via Ollama — no server needed
 ```
+
+---
+
+## FAQ
+
+<Accordions>
+
+<Accordion title='"Port is already allocated" / port conflict error'>
+
+If `agentbreeder quickstart` exits with a port conflict, one or more of the ports it needs are already in use:
+
+| Port | Service |
+|------|---------|
+| 5432 | PostgreSQL |
+| 6379 | Redis |
+| 8000 | AgentBreeder API |
+| 3001 | Dashboard |
+| 4000 | LiteLLM |
+| 8001 | ChromaDB |
+| 7474 | Neo4j HTTP |
+| 7687 | Neo4j Bolt |
+
+**Most common cause:** the AgentBreeder dev stack is already running.
+
+```bash
+# Stop the dev stack
+docker compose -f deploy/docker-compose.yml down
+
+# Then re-run quickstart
+agentbreeder quickstart
+```
+
+**To find and stop any process using a specific port:**
+
+```bash
+lsof -ti :5432 | xargs kill -9   # replace 5432 with the conflicting port
+```
+
+</Accordion>
+
+<Accordion title='Ollama is running but quickstart says "no cloud API keys"'>
+
+This is expected — it's a warning, not a failure. Quickstart detects Ollama and will use it as the primary model provider automatically. The warning just reminds you that cloud providers (Anthropic, OpenAI, etc.) aren't configured.
+
+To add cloud providers any time:
+
+```bash
+agentbreeder setup
+```
+
+</Accordion>
+
+<Accordion title='How do I stop and remove the quickstart stack?'>
+
+```bash
+docker compose -f deploy/docker-compose.quickstart.yml --project-name agentbreeder-qs down -v
+```
+
+The `-v` flag also removes the named volumes (Postgres data, ChromaDB, Neo4j). Omit it if you want to keep the seeded data for next time.
+
+</Accordion>
+
+<Accordion title='The dashboard opened but the API shows as unhealthy'>
+
+The API can take 15–30 seconds to finish running database migrations on first start. Refresh the dashboard after a moment. If it stays unhealthy:
+
+```bash
+# Check API logs
+docker compose -f deploy/docker-compose.quickstart.yml --project-name agentbreeder-qs logs api --tail 50
+
+# Check if migrations ran
+docker compose -f deploy/docker-compose.quickstart.yml --project-name agentbreeder-qs logs migrate
+```
+
+</Accordion>
+
+</Accordions>
 
 ---
 
