@@ -190,7 +190,8 @@ def _run_local_ollama(agent_name: str, model: str | None, verbose: bool) -> None
     exit_code: list[int] = [0]
 
     async def _run() -> None:
-        config = ProviderConfig(provider_type=ProviderType.ollama, base_url=OLLAMA_BASE_URL)
+        # Local models (especially 8B+) can take >60s to load and respond; use a generous timeout.
+        config = ProviderConfig(provider_type=ProviderType.ollama, base_url=OLLAMA_BASE_URL, timeout=300.0)
         provider = OllamaProvider(config)
 
         try:
@@ -287,7 +288,8 @@ def _run_local_ollama(agent_name: str, model: str | None, verbose: bool) -> None
                 conversation.append({"role": "user", "content": user_input})
 
                 try:
-                    result = await provider.generate(messages=conversation, model=resolved_model)
+                    with console.status("[dim]Thinking...[/dim]", spinner="dots"):
+                        result = await provider.generate(messages=conversation, model=resolved_model)
                 except Exception as exc:
                     console.print(f"\n  [red]Ollama error: {exc}[/red]\n")
                     conversation.pop()
