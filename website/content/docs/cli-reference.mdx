@@ -980,7 +980,7 @@ agentbreeder up [--no-input] [--no-browser] [--env-file PATH] [--build]
 
 ### `agentbreeder down`
 
-Stop and remove the platform stack started by `agentbreeder up`.
+Stop the AgentBreeder platform. Works from **any directory** — stops the quickstart stack if running, or the dev stack if a compose file is found nearby.
 
 ```
 agentbreeder down [--clean] [--json]
@@ -990,6 +990,11 @@ agentbreeder down [--clean] [--json]
 |--------|---------|-------------|
 | `--clean` | Off | Also remove volumes (full reset — deletes all database data) |
 | `--json` | Off | JSON output |
+
+```bash
+agentbreeder down            # stop everything, keep data
+agentbreeder down --clean    # stop + wipe all volumes
+```
 
 ---
 

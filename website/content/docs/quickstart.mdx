@@ -242,11 +242,32 @@ agentbreeder setup
 
 <Accordion title='How do I stop and remove the quickstart stack?'>
 
+Run from **any directory** — no repo clone needed:
+
 ```bash
-docker compose -f deploy/docker-compose.quickstart.yml --project-name agentbreeder-qs down -v
+agentbreeder down           # stop, keep your data
+agentbreeder down --clean   # stop and wipe all volumes (fresh start)
 ```
 
-The `-v` flag also removes the named volumes (Postgres data, ChromaDB, Neo4j). Omit it if you want to keep the seeded data for next time.
+`--clean` deletes the Postgres database, ChromaDB vectors, and Neo4j graph. Omit it if you want to keep seeded data for next time.
+
+</Accordion>
+
+<Accordion title='"Neo4j seed failed" or "ChromaDB seed failed" warning during quickstart'>
+
+These are **warnings, not errors** — quickstart still completes successfully. The seed step pre-populates the knowledge stores with sample data so the example agents have something to query. If seeding fails, the agents run but return empty results from RAG/graph queries.
+
+**Most common cause:** Neo4j or ChromaDB took longer than expected to start. Run seed manually after quickstart finishes:
+
+```bash
+cd deploy && python seed/seed.py
+```
+
+Or re-run quickstart (it skips the Docker pull/start if the stack is already up and goes straight to seeding):
+
+```bash
+agentbreeder quickstart
+```
 
 </Accordion>
 

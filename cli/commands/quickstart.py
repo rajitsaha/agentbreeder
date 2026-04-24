@@ -385,8 +385,15 @@ def _seed_neo4j() -> bool:
     mod = _load_seed_module()
     if mod is None:
         return False
-    result = mod.seed_neo4j()
-    return result.get("ok", False)
+    # Neo4j's transaction API can lag behind the HTTP discovery endpoint;
+    # retry a few times with backoff to let it fully initialise.
+    for attempt in range(4):
+        result = mod.seed_neo4j()
+        if result.get("ok", False):
+            return True
+        if attempt < 3:
+            time.sleep(8)
+    return False
 
 
 # ── AgentBreeder API registration ───────────────────────────────────────────
@@ -1144,8 +1151,8 @@ def quickstart(
         # Neo4j
         console.print("  [dim]Seeding Neo4j knowledge graph...[/dim]")
         if services_ok.get("neo4j"):
-            # Wait a bit more for Neo4j bolt
-            time.sleep(5)
+            # Neo4j HTTP responds before the transaction API is ready; give it more time.
+            time.sleep(15)
             neo4j_ok = _seed_neo4j()
             if neo4j_ok:
                 _ok("Neo4j seeded with agent/tool/provider knowledge graph")
