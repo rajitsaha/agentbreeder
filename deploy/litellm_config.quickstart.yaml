@@ -24,7 +24,11 @@ model_list:
   # Ollama (local, free — host.docker.internal resolves to your Mac/Linux host)
   - model_name: ollama/llama3.2
     litellm_params:
-      model: ollama/llama3.2
+      model: ollama/llama3.2:3b
+      api_base: http://host.docker.internal:11434
+  - model_name: ollama/llama3.2:3b
+    litellm_params:
+      model: ollama/llama3.2:3b
       api_base: http://host.docker.internal:11434
   - model_name: ollama/mistral
     litellm_params:

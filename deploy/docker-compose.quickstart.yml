@@ -57,11 +57,11 @@ services:
       IS_PERSISTENT: "TRUE"
       ANONYMIZED_TELEMETRY: "FALSE"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/heartbeat"]
+      test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/localhost/8000 && printf 'GET /api/v2/heartbeat HTTP/1.0\\r\\nHost: localhost\\r\\n\\r\\n' >&3 && grep -q '200' <&3"]
       interval: 10s
       timeout: 5s
       retries: 10
-      start_period: 10s
+      start_period: 15s
 
   # ── Graph Database (GraphRAG) ────────────────────────────────────────
 
@@ -140,6 +140,9 @@ services:
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
       GOOGLE_API_KEY: ${GOOGLE_API_KEY:-}
       OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
+      LITELLM_MASTER_KEY: ${LITELLM_MASTER_KEY:-sk-agentbreeder-quickstart}
+    volumes:
+      - ../api:/app/api:ro
     depends_on:
       postgres:
         condition: service_healthy

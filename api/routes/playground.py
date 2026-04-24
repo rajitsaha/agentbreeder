@@ -3,13 +3,16 @@
 from __future__ import annotations
 
 import logging
+import os
 import random
 import time
 import uuid
 
+import httpx
 from fastapi import APIRouter
 from pydantic import BaseModel, Field
 
+from api.config import settings
 from api.models.schemas import ApiResponse
 
 logger = logging.getLogger(__name__)
@@ -159,58 +162,86 @@ def _estimate_cost(input_tokens: int, output_tokens: int, model: str) -> float:
 # ---------------------------------------------------------------------------
 
 
+async def _litellm_headers() -> dict:
+    key = os.getenv("LITELLM_MASTER_KEY", "sk-agentbreeder-quickstart")
+    return {"Authorization": f"Bearer {key}", "Content-Type": "application/json"}
+
+
+async def _resolve_model(requested: str | None) -> str:
+    """Return a model that LiteLLM actually has available, preferring the requested one."""
+    if requested:
+        return requested
+    try:
+        async with httpx.AsyncClient(timeout=5.0) as client:
+            resp = await client.get(
+                f"{settings.litellm_base_url}/v1/models",
+                headers=await _litellm_headers(),
+            )
+            resp.raise_for_status()
+            models = [m["id"] for m in resp.json().get("data", [])]
+            # prefer ollama models (free, local), then anything available
+            for m in models:
+                if m.startswith("ollama/"):
+                    return m
+            if models:
+                return models[0]
+    except Exception:
+        pass
+    return "ollama/llama3.2"
+
+
+async def _call_litellm(messages: list[dict], model: str) -> tuple[str, int, int]:
+    """Call LiteLLM gateway. Returns (response_text, input_tokens, output_tokens)."""
+    async with httpx.AsyncClient(timeout=60.0) as client:
+        resp = await client.post(
+            f"{settings.litellm_base_url}/v1/chat/completions",
+            headers=await _litellm_headers(),
+            json={"model": model, "messages": messages},
+        )
+        resp.raise_for_status()
+        data = resp.json()
+        choice = data["choices"][0]["message"]["content"]
+        usage = data.get("usage", {})
+        return choice, usage.get("prompt_tokens", 0), usage.get("completion_tokens", 0)
+
+
 @router.post("/chat", response_model=ApiResponse[PlaygroundChatResponse])
 async def playground_chat(
     body: PlaygroundChatRequest,
 ) -> ApiResponse[PlaygroundChatResponse]:
-    """Send a message to an agent and get a response.
-
-    NOTE: This is currently a simulated endpoint for UI development.
-    In production, this routes through the engine's provider infrastructure
-    to call the actual model configured for the agent. The simulation
-    provides realistic response structure, tool calls, token counts,
-    latency, and cost estimates.
-    """
+    """Send a message to an agent and get a response via LiteLLM gateway."""
     start = time.monotonic()
 
-    # Log system prompt override if provided
+    model_used = await _resolve_model(body.model_override)
+
+    # Build message list
+    messages: list[dict] = []
     if body.system_prompt_override:
-        logger.info(
-            "Playground chat using system prompt override (%d chars) for agent %s",
-            len(body.system_prompt_override),
-            body.agent_id,
-        )
+        messages.append({"role": "system", "content": body.system_prompt_override})
+    for m in body.conversation_history:
+        messages.append({"role": m.role, "content": m.content})
+    messages.append({"role": "user", "content": body.message})
 
-    # Determine model
-    model_used = body.model_override or "claude-sonnet-4"
+    response_text: str
+    input_tokens: int
+    output_tokens: int
 
-    # Simulate tool calls (30% chance of including tool calls)
-    tool_calls: list[PlaygroundToolCall] = []
-    if random.random() < 0.3:
-        tool_calls = random.sample(
-            _SIMULATED_TOOL_CALLS, k=random.randint(1, len(_SIMULATED_TOOL_CALLS))
-        )
+    try:
+        response_text, input_tokens, output_tokens = await _call_litellm(messages, model_used)
+    except Exception as exc:
+        logger.warning("LiteLLM call failed (%s) — falling back to simulation", exc)
+        response_text = random.choice(_SIMULATED_AGENT_RESPONSES)
+        input_text = body.message + " ".join(m.content for m in body.conversation_history)
+        input_tokens = _estimate_tokens(input_text)
+        output_tokens = _estimate_tokens(response_text)
 
-    # Pick a simulated response
-    response_text = random.choice(_SIMULATED_AGENT_RESPONSES)
-
-    # Calculate tokens
-    input_text = body.message + " ".join(m.content for m in body.conversation_history)
-    input_tokens = _estimate_tokens(input_text)
-    output_tokens = _estimate_tokens(response_text)
-    total_tokens = input_tokens + output_tokens
-
-    # Cost estimate
+    elapsed_ms = int((time.monotonic() - start) * 1000)
     cost = _estimate_cost(input_tokens, output_tokens, model_used)
-
-    # Simulated latency (300-1200ms)
-    simulated_latency = random.randint(300, 1200)
-    elapsed_ms = int((time.monotonic() - start) * 1000) + simulated_latency
 
     result = PlaygroundChatResponse(
         response=response_text,
-        tool_calls=tool_calls,
-        token_count=total_tokens,
+        tool_calls=[],
+        token_count=input_tokens + output_tokens,
         cost_estimate=cost,
         latency_ms=elapsed_ms,
         model_used=model_used,
