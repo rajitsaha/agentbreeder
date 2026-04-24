@@ -13,7 +13,7 @@ const FEATURES: Feature[] = [
   {
     icon: '☁️',
     title: 'Multi-Cloud',
-    desc: 'GCP Cloud Run and local Docker Compose supported. Same command, either target.',
+    desc: 'AWS ECS · GCP Cloud Run · Azure Container Apps · Kubernetes · local. One `agent.yaml`, any target — no cloud lock-in.',
   },
   {
     icon: '🔒',

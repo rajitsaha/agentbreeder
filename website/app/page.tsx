@@ -5,6 +5,8 @@ import { Frameworks } from '@/components/frameworks';
 import { AgentDemo } from '@/components/agent-demo';
 import { AgentForAll } from '@/components/agent-for-all';
 import { DeployAnywhere } from '@/components/deploy-anywhere';
+import { PlatformLock } from '@/components/platform-lock';
+import { FiveLayerArch } from '@/components/five-layer-arch';
 import { RegistryLifecycle } from '@/components/registry-lifecycle';
 import { Features } from '@/components/features';
 import { HowItWorks } from '@/components/how-it-works';
@@ -23,6 +25,8 @@ export default function HomePage() {
         <AgentDemo />
         <AgentForAll />
         <DeployAnywhere />
+        <PlatformLock />
+        <FiveLayerArch />
         <RegistryLifecycle />
         <Features />
         <HowItWorks />
