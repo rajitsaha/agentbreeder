@@ -669,7 +669,9 @@ class CreateMemoryConfigRequest(BaseModel):
     team: str = "default"
     owner: str = ""
     backend_type: str = "postgresql"  # "postgresql" | "redis"
-    memory_type: str = "buffer_window"  # "buffer_window" | "buffer" (summary/entity/semantic: Phase 2)
+    memory_type: str = (
+        "buffer_window"  # "buffer_window" | "buffer" (summary/entity/semantic: Phase 2)
+    )
     max_messages: int = Field(default=100, ge=1, le=100_000)
     namespace_pattern: str = "{agent_id}:{session_id}"
     scope: str = "agent"  # "agent" (team/global: Phase 2)
