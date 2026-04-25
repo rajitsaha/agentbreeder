@@ -325,7 +325,9 @@ async def list_gateway_models(
 
 
 @router.get("/providers", response_model=ApiResponse[list[dict]])
-async def list_gateway_providers(_user: User = Depends(get_current_user)) -> ApiResponse[list[dict]]:
+async def list_gateway_providers(
+    _user: User = Depends(get_current_user),
+) -> ApiResponse[list[dict]]:
     """List configured gateway providers with health status."""
     return ApiResponse(
         data=_GATEWAY_PROVIDERS,

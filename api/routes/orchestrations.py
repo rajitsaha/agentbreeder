@@ -47,7 +47,9 @@ async def list_orchestrations(
 
 
 @router.post("", status_code=201)
-async def create_orchestration(body: dict[str, Any], _user: User = Depends(require_role("deployer"))) -> ApiResponse[dict[str, Any]]:
+async def create_orchestration(
+    body: dict[str, Any], _user: User = Depends(require_role("deployer"))
+) -> ApiResponse[dict[str, Any]]:
     """Create an orchestration from a config dict (parsed from YAML)."""
     store = get_orchestration_store()
 
@@ -83,7 +85,9 @@ async def create_orchestration(body: dict[str, Any], _user: User = Depends(requi
 
 
 @router.get("/{orch_id}")
-async def get_orchestration(orch_id: str, _user: User = Depends(get_current_user)) -> ApiResponse[dict[str, Any]]:
+async def get_orchestration(
+    orch_id: str, _user: User = Depends(get_current_user)
+) -> ApiResponse[dict[str, Any]]:
     """Get a single orchestration by ID."""
     store = get_orchestration_store()
     item = store.get(orch_id)
@@ -98,7 +102,9 @@ async def get_orchestration(orch_id: str, _user: User = Depends(get_current_user
 
 
 @router.put("/{orch_id}")
-async def update_orchestration(orch_id: str, body: dict[str, Any], _user: User = Depends(require_role("deployer"))) -> ApiResponse[dict[str, Any]]:
+async def update_orchestration(
+    orch_id: str, body: dict[str, Any], _user: User = Depends(require_role("deployer"))
+) -> ApiResponse[dict[str, Any]]:
     """Update an orchestration."""
     store = get_orchestration_store()
     result = store.update(orch_id, **body)
@@ -113,7 +119,9 @@ async def update_orchestration(orch_id: str, body: dict[str, Any], _user: User =
 
 
 @router.delete("/{orch_id}")
-async def delete_orchestration(orch_id: str, _user: User = Depends(require_role("admin"))) -> ApiResponse[dict[str, str]]:
+async def delete_orchestration(
+    orch_id: str, _user: User = Depends(require_role("admin"))
+) -> ApiResponse[dict[str, str]]:
     """Delete an orchestration."""
     store = get_orchestration_store()
     success = store.delete(orch_id)
@@ -171,7 +179,9 @@ async def validate_orchestration_yaml(
 
 
 @router.post("/{orch_id}/deploy")
-async def deploy_orchestration(orch_id: str, _user: User = Depends(require_role("deployer"))) -> ApiResponse[dict[str, Any]]:
+async def deploy_orchestration(
+    orch_id: str, _user: User = Depends(require_role("deployer"))
+) -> ApiResponse[dict[str, Any]]:
     """Deploy an orchestration (marks as deployed and assigns endpoint)."""
     store = get_orchestration_store()
     result = store.deploy(orch_id)
@@ -186,7 +196,9 @@ async def deploy_orchestration(orch_id: str, _user: User = Depends(require_role(
 
 
 @router.post("/{orch_id}/execute")
-async def execute_orchestration(orch_id: str, body: dict[str, Any], _user: User = Depends(require_role("deployer"))) -> ApiResponse[dict[str, Any]]:
+async def execute_orchestration(
+    orch_id: str, body: dict[str, Any], _user: User = Depends(require_role("deployer"))
+) -> ApiResponse[dict[str, Any]]:
     """Execute an orchestration — send a message through the agent graph."""
     store = get_orchestration_store()
 

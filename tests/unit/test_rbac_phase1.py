@@ -77,6 +77,7 @@ def _mock_db():
 # Decorator to patch get_current_user / require_role with a real user
 # ---------------------------------------------------------------------------
 
+
 def _patch_auth(role: UserRole = UserRole.viewer):
     """Context manager: patch get_current_user + get_user_by_id to return a mock user."""
     user_id = uuid.uuid4()
@@ -93,6 +94,7 @@ def _patch_auth(role: UserRole = UserRole.viewer):
 # ---------------------------------------------------------------------------
 # 1. 401 for unauthenticated requests
 # ---------------------------------------------------------------------------
+
 
 class TestUnauthenticated401:
     """Every previously-open endpoint should now return 401."""
@@ -210,6 +212,7 @@ class TestUnauthenticated401:
 # 2. 403 for viewer on admin-only endpoints
 # ---------------------------------------------------------------------------
 
+
 class TestViewerForbiddenOnAdminEndpoints:
     """Viewer role must be rejected on admin-only routes."""
 
@@ -233,7 +236,9 @@ class TestViewerForbiddenOnAdminEndpoints:
             p.start()
         try:
             headers = _viewer_headers()
-            resp = client.post("/api/v1/teams", json={"name": "x", "display_name": "X"}, headers=headers)
+            resp = client.post(
+                "/api/v1/teams", json={"name": "x", "display_name": "X"}, headers=headers
+            )
             assert resp.status_code == 403
         finally:
             for p in patches:
@@ -279,6 +284,7 @@ class TestViewerForbiddenOnAdminEndpoints:
 # ---------------------------------------------------------------------------
 # 3. 403 for viewer on deployer+ endpoints
 # ---------------------------------------------------------------------------
+
 
 class TestViewerForbiddenOnDeployerEndpoints:
     """Viewer must be rejected on deployer+ write routes."""
@@ -350,6 +356,7 @@ class TestViewerForbiddenOnDeployerEndpoints:
 # 4. Authenticated viewer can reach read-only endpoints
 # ---------------------------------------------------------------------------
 
+
 class TestViewerCanReadPublicEndpoints:
     """Viewer-role users should be able to hit read-only (GET) endpoints."""
 
@@ -384,6 +391,7 @@ class TestViewerCanReadPublicEndpoints:
 # ---------------------------------------------------------------------------
 # 5. RBAC middleware — require_role DB-backed check
 # ---------------------------------------------------------------------------
+
 
 class TestRequireRoleDBBacked:
     """require_role() must use TeamService.get_user_teams (DB-backed), not _memberships."""
@@ -424,7 +432,7 @@ class TestRequireRoleDBBacked:
             creds = MagicMock()
             creds.credentials = create_access_token(str(user_id), "test@test.com", "viewer")
 
-            db_mock = AsyncMock()
+            AsyncMock()
             result_user = await checker(user=user)
             assert result_user is user
             mock_get_teams.assert_awaited_once_with(str(user_id))
@@ -466,6 +474,7 @@ class TestRequireRoleDBBacked:
 # ---------------------------------------------------------------------------
 # 6. Approvals endpoint integration
 # ---------------------------------------------------------------------------
+
 
 class TestApprovalsRequireAuth:
     """All approvals routes require authentication; approve/reject require admin."""

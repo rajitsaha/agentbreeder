@@ -13,14 +13,11 @@ Tests:
 from __future__ import annotations
 
 import importlib
-import sys
-import types
 import uuid
 from datetime import UTC, datetime
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-import pytest_asyncio
 from fastapi.testclient import TestClient
 
 # ---------------------------------------------------------------------------
@@ -139,7 +136,9 @@ class TestRBACSchemas:
 class TestCheckPermission:
     """Test check_permission with mock DB responses."""
 
-    def _make_perm_row(self, principal_type: str, principal_id: str, actions: list[str], resource_id: uuid.UUID) -> MagicMock:
+    def _make_perm_row(
+        self, principal_type: str, principal_id: str, actions: list[str], resource_id: uuid.UUID
+    ) -> MagicMock:
         row = MagicMock()
         row.principal_type = principal_type
         row.principal_id = principal_id
@@ -320,7 +319,7 @@ class TestGrantRevoke:
                 created_by="admin@example.com",
                 created_at=datetime.now(UTC),
             )
-            result = await grant_permission(db, granter="admin@example.com", body=body)
+            await grant_permission(db, granter="admin@example.com", body=body)
 
         assert db.add.called
         added = added_rows[0]
@@ -368,7 +367,9 @@ class TestGrantRevoke:
         no_result.scalar_one_or_none.return_value = None
         db.execute = AsyncMock(return_value=no_result)
 
-        result = await revoke_permission(db, revoker="admin@example.com", permission_id=uuid.uuid4())
+        result = await revoke_permission(
+            db, revoker="admin@example.com", permission_id=uuid.uuid4()
+        )
         assert result is False
 
 
@@ -422,7 +423,7 @@ class TestApprovalWorkflow:
                 pass
 
             db.refresh = fake_refresh
-            result = await submit_approval(db, submitter="alice@example.com", body=body)
+            await submit_approval(db, submitter="alice@example.com", body=body)
 
         assert db.add.called
         submitted = added_rows[0]
@@ -574,7 +575,7 @@ class TestServicePrincipalCRUD:
                 pass
 
             db.refresh = fake_refresh
-            result = await create_service_principal(db, body=body, created_by="admin@example.com")
+            await create_service_principal(db, body=body, created_by="admin@example.com")
 
         assert db.add.called
         sp = added_rows[0]
@@ -718,7 +719,7 @@ class TestPrincipalGroupCRUD:
                 pass
 
             db.refresh = fake_refresh
-            result = await create_group(db, body=body, created_by="admin@example.com")
+            await create_group(db, body=body, created_by="admin@example.com")
 
         assert db.add.called
         grp = added_rows[0]
@@ -795,7 +796,9 @@ class TestPrincipalGroupCRUD:
         no_result.scalar_one_or_none.return_value = None
         db.execute = AsyncMock(return_value=no_result)
 
-        result = await remove_group_member(db, group_id=uuid.uuid4(), member_id="alice@example.com")
+        result = await remove_group_member(
+            db, group_id=uuid.uuid4(), member_id="alice@example.com"
+        )
         assert result is None
 
     @pytest.mark.asyncio
@@ -847,12 +850,18 @@ class TestTeamServiceKeyLifecycle:
             import asyncio
 
             # Patch asyncio.ensure_future to call the coroutine synchronously
-            original_ensure = asyncio.ensure_future
 
             async def run_coro(coro):
                 return await coro
 
-            with patch("asyncio.ensure_future", side_effect=lambda coro: asyncio.get_event_loop().create_task(coro) if asyncio.get_event_loop().is_running() else None):
+            with patch(
+                "asyncio.ensure_future",
+                side_effect=lambda coro: (
+                    asyncio.get_event_loop().create_task(coro)
+                    if asyncio.get_event_loop().is_running()
+                    else None
+                ),
+            ):
                 membership = await TeamService.add_member(
                     team.id,
                     user_id="user-alice",
@@ -869,7 +878,7 @@ class TestTeamServiceKeyLifecycle:
         from api.services.team_service import TeamService
 
         team = await TeamService.create_team(name="eng", display_name="Engineering")
-        membership = await TeamService.add_member(
+        await TeamService.add_member(
             team.id,
             user_id="user-alice",
             user_email="alice@example.com",
@@ -883,8 +892,6 @@ class TestTeamServiceKeyLifecycle:
             revoke_called = True
 
         with patch.object(TeamService, "_auto_revoke_member_key", side_effect=mock_revoke):
-            import asyncio
-
             with patch("asyncio.ensure_future", side_effect=lambda coro: None):
                 removed = await TeamService.remove_member(team.id, "user-alice")
 

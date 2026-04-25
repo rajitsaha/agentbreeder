@@ -24,7 +24,9 @@ router = APIRouter(prefix="/api/v1", tags=["costs"])
 
 
 @router.post("/costs/events", status_code=201)
-async def record_cost_event(body: dict[str, Any], _user: User = Depends(get_current_user)) -> ApiResponse[dict]:
+async def record_cost_event(
+    body: dict[str, Any], _user: User = Depends(get_current_user)
+) -> ApiResponse[dict]:
     """Record a new cost event."""
     store = get_cost_store()
 
@@ -113,7 +115,9 @@ async def get_top_spenders(
 
 
 @router.post("/costs/compare")
-async def compare_models(body: dict[str, Any], _user: User = Depends(get_current_user)) -> ApiResponse[dict]:
+async def compare_models(
+    body: dict[str, Any], _user: User = Depends(get_current_user)
+) -> ApiResponse[dict]:
     """Compare estimated costs between two models."""
     store = get_cost_store()
 
@@ -144,7 +148,9 @@ async def list_budgets(_user: User = Depends(get_current_user)) -> ApiResponse[l
 
 
 @router.post("/budgets", status_code=201)
-async def create_budget(body: dict[str, Any], _user: User = Depends(require_role("admin"))) -> ApiResponse[dict]:
+async def create_budget(
+    body: dict[str, Any], _user: User = Depends(require_role("admin"))
+) -> ApiResponse[dict]:
     """Create or update a team budget."""
     store = get_cost_store()
 
@@ -175,7 +181,9 @@ async def get_budget(team: str, _user: User = Depends(get_current_user)) -> ApiR
 
 
 @router.put("/budgets/{team}")
-async def update_budget(team: str, body: dict[str, Any], _user: User = Depends(require_role("admin"))) -> ApiResponse[dict]:
+async def update_budget(
+    team: str, body: dict[str, Any], _user: User = Depends(require_role("admin"))
+) -> ApiResponse[dict]:
     """Update a team's budget."""
     store = get_cost_store()
     budget = store.update_budget(

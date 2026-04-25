@@ -5,18 +5,17 @@ from __future__ import annotations
 import json
 import tempfile
 from pathlib import Path
-from unittest.mock import MagicMock, call, patch
+from unittest.mock import MagicMock, patch
 
-import pytest
 from typer.testing import CliRunner
 
 from cli.commands.teardown import (
     CloudProvider,
     TeardownRow,
+    _run_cloud_teardown,
     _teardown_aws,
     _teardown_azure,
     _teardown_gcp,
-    _run_cloud_teardown,
 )
 from cli.main import app
 
@@ -120,7 +119,7 @@ class TestTeardownGcp:
                 patch("cli.commands.teardown.REGISTRY_DIR", registry_dir),
                 patch.dict("sys.modules", sys_mods),
             ):
-                rows = _teardown_gcp(
+                _teardown_gcp(
                     region="us-central1",
                     project="my-proj",
                     dry_run=True,
@@ -265,7 +264,7 @@ class TestTeardownAws:
                     },
                 ),
             ):
-                rows = _teardown_aws(region="us-east-1", dry_run=True, agent_filter=None)
+                _teardown_aws(region="us-east-1", dry_run=True, agent_filter=None)
 
             # delete_repository should never be called in dry_run mode
             mocks["ecr"].delete_repository.assert_not_called()
@@ -335,7 +334,9 @@ class TestTeardownAws:
             assert len(iam_rows) == 1
             assert iam_rows[0].name == "agentbreeder-demo-agent-role"
             assert iam_rows[0].status == "deleted"
-            mocks["iam"].delete_role.assert_called_once_with(RoleName="agentbreeder-demo-agent-role")
+            mocks["iam"].delete_role.assert_called_once_with(
+                RoleName="agentbreeder-demo-agent-role"
+            )
 
     def test_agent_filter(self) -> None:
         """--agent should restrict ECR repos to those starting with the agent name."""
@@ -423,18 +424,12 @@ class TestTeardownAzure:
             "azure.mgmt.resource.subscriptions": MagicMock(
                 SubscriptionClient=mocks["sub_client_cls"]
             ),
-            "azure.mgmt.resource": MagicMock(
-                ResourceManagementClient=mocks["rg_client_cls"]
-            ),
-            "azure.mgmt.appcontainers": MagicMock(
-                ContainerAppsAPIClient=mocks["ca_client_cls"]
-            ),
+            "azure.mgmt.resource": MagicMock(ResourceManagementClient=mocks["rg_client_cls"]),
+            "azure.mgmt.appcontainers": MagicMock(ContainerAppsAPIClient=mocks["ca_client_cls"]),
             "azure.mgmt.containerregistry": MagicMock(
                 ContainerRegistryManagementClient=mocks["acr_client_cls"]
             ),
-            "azure.mgmt.keyvault": MagicMock(
-                KeyVaultManagementClient=mocks["kv_client_cls"]
-            ),
+            "azure.mgmt.keyvault": MagicMock(KeyVaultManagementClient=mocks["kv_client_cls"]),
             "azure.core.exceptions": MagicMock(ResourceNotFoundError=Exception),
         }
 
@@ -453,7 +448,7 @@ class TestTeardownAzure:
                 patch("cli.commands.teardown.REGISTRY_DIR", registry_dir),
                 patch.dict("sys.modules", self._azure_patch(mocks)),
             ):
-                rows = _teardown_azure(dry_run=True, agent_filter=None, destroy_resource_group=False)
+                _teardown_azure(dry_run=True, agent_filter=None, destroy_resource_group=False)
 
             # begin_delete must NOT be called
             mocks["ca_mock"].container_apps.begin_delete.assert_not_called()
@@ -469,9 +464,9 @@ class TestTeardownAzure:
             app_mock.name = "demo-agent"
             app_mock.tags = {"managed-by": "agentbreeder"}
             mocks["ca_mock"].container_apps.list_by_resource_group.return_value = [app_mock]
-            mocks["ca_mock"].container_apps.begin_delete.return_value.result.side_effect = (
-                not_found_cls("gone")
-            )
+            mocks[
+                "ca_mock"
+            ].container_apps.begin_delete.return_value.result.side_effect = not_found_cls("gone")
 
             azure_patches = self._azure_patch(mocks)
             azure_patches["azure.core.exceptions"] = MagicMock(ResourceNotFoundError=not_found_cls)
@@ -480,7 +475,9 @@ class TestTeardownAzure:
                 patch("cli.commands.teardown.REGISTRY_DIR", registry_dir),
                 patch.dict("sys.modules", azure_patches),
             ):
-                rows = _teardown_azure(dry_run=False, agent_filter=None, destroy_resource_group=False)
+                rows = _teardown_azure(
+                    dry_run=False, agent_filter=None, destroy_resource_group=False
+                )
 
             app_rows = [r for r in rows if r.resource_type == "Container App"]
             assert len(app_rows) == 1
@@ -642,9 +639,7 @@ class TestTeardownCloudCli:
             registry_dir = _write_registry(tmpdir)
 
             with patch("cli.commands.teardown.REGISTRY_DIR", registry_dir):
-                result = runner.invoke(
-                    app, ["teardown", "--cloud", "gcp"], input="n\n"
-                )
+                result = runner.invoke(app, ["teardown", "--cloud", "gcp"], input="n\n")
 
             assert result.exit_code == 0
             assert "Aborted" in result.output
@@ -665,7 +660,10 @@ class TestTeardownCloudCli:
 
             assert result.exit_code == 0
             _, kwargs = mock_run.call_args
-            assert kwargs.get("agent_filter") == "demo-agent" or mock_run.call_args[0][4] == "demo-agent"
+            assert (
+                kwargs.get("agent_filter") == "demo-agent"
+                or mock_run.call_args[0][4] == "demo-agent"
+            )
 
     def test_existing_single_agent_teardown_unaffected(self) -> None:
         """agentbreeder teardown <name> still works as before (no --cloud)."""
@@ -683,7 +681,9 @@ class TestTeardownCloudCli:
             state_file.write_text(json.dumps(state))
             registry_dir = Path(tmpdir) / "registry"
             registry_dir.mkdir()
-            (registry_dir / "agents.json").write_text(json.dumps({"my-agent": {"status": "running"}}))
+            (registry_dir / "agents.json").write_text(
+                json.dumps({"my-agent": {"status": "running"}})
+            )
 
             with (
                 patch("cli.commands.teardown.STATE_FILE", state_file),

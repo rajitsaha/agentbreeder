@@ -5,9 +5,8 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
-from enum import Enum
+from enum import StrEnum
 from pathlib import Path
-from typing import Optional
 
 import typer
 from rich.console import Console
@@ -24,7 +23,7 @@ AGENTBREEDER_LABEL = "managed-by=agentbreeder"
 IAM_ROLE_PREFIX = "agentbreeder-"
 
 
-class CloudProvider(str, Enum):
+class CloudProvider(StrEnum):
     gcp = "gcp"
     aws = "aws"
     azure = "azure"
@@ -116,10 +115,10 @@ def _print_teardown_table(rows: list[TeardownRow], cloud: str, dry_run: bool) ->
 
 
 def _teardown_gcp(
-    region: Optional[str],
-    project: Optional[str],
+    region: str | None,
+    project: str | None,
     dry_run: bool,
-    agent_filter: Optional[str],
+    agent_filter: str | None,
 ) -> list[TeardownRow]:
     """Delete GCP Cloud Run services, Artifact Registry repos, and Secret Manager secrets
     managed by AgentBreeder.  Returns a list of TeardownRow results."""
@@ -181,11 +180,15 @@ def _teardown_gcp(
             else:
                 try:
                     ar_client.delete_repository(name=repo.name)
-                    rows.append(TeardownRow(repo_name, "Artifact Registry Repo", "deleted", repo.name))
+                    rows.append(
+                        TeardownRow(repo_name, "Artifact Registry Repo", "deleted", repo.name)
+                    )
                 except NotFound:
                     rows.append(TeardownRow(repo_name, "Artifact Registry Repo", "not_found"))
                 except Exception as exc:
-                    rows.append(TeardownRow(repo_name, "Artifact Registry Repo", "error", str(exc)))
+                    rows.append(
+                        TeardownRow(repo_name, "Artifact Registry Repo", "error", str(exc))
+                    )
     except Exception as exc:
         logger.warning("GCP Artifact Registry listing failed: %s", exc)
 
@@ -204,15 +207,21 @@ def _teardown_gcp(
             if agent_filter and not secret_name.startswith(agent_filter):
                 continue
             if dry_run:
-                rows.append(TeardownRow(secret_name, "Secret Manager Secret", "dry_run", secret.name))
+                rows.append(
+                    TeardownRow(secret_name, "Secret Manager Secret", "dry_run", secret.name)
+                )
             else:
                 try:
                     sm_client.delete_secret(name=secret.name)
-                    rows.append(TeardownRow(secret_name, "Secret Manager Secret", "deleted", secret.name))
+                    rows.append(
+                        TeardownRow(secret_name, "Secret Manager Secret", "deleted", secret.name)
+                    )
                 except NotFound:
                     rows.append(TeardownRow(secret_name, "Secret Manager Secret", "not_found"))
                 except Exception as exc:
-                    rows.append(TeardownRow(secret_name, "Secret Manager Secret", "error", str(exc)))
+                    rows.append(
+                        TeardownRow(secret_name, "Secret Manager Secret", "error", str(exc))
+                    )
     except Exception as exc:
         logger.warning("GCP Secret Manager listing failed: %s", exc)
 
@@ -234,9 +243,9 @@ def _aws_name_matches_filter(name: str, agent_filter: str) -> bool:
 
 
 def _teardown_aws(
-    region: Optional[str],
+    region: str | None,
     dry_run: bool,
-    agent_filter: Optional[str],
+    agent_filter: str | None,
 ) -> list[TeardownRow]:
     """Delete AWS ECS services/task definitions, ECR repos, Secrets Manager secrets, and
     IAM roles prefixed 'agentbreeder-'.  Returns a list of TeardownRow results."""
@@ -250,8 +259,7 @@ def _teardown_aws(
         from botocore.exceptions import ClientError
     except ImportError:
         console.print(
-            "[yellow]Warning:[/yellow] boto3 not installed. "
-            "Install with: pip install boto3"
+            "[yellow]Warning:[/yellow] boto3 not installed. Install with: pip install boto3"
         )
         return rows
 
@@ -267,9 +275,9 @@ def _teardown_aws(
             services_resp = ecs.list_services(cluster=cluster_arn)
             for svc_arn in services_resp.get("serviceArns", []):
                 svc_name = svc_arn.split("/")[-1]
-                if not any(svc_name.startswith(n) for n in agent_names) and not svc_name.startswith(
-                    "agentbreeder-"
-                ):
+                if not any(
+                    svc_name.startswith(n) for n in agent_names
+                ) and not svc_name.startswith("agentbreeder-"):
                     continue
                 if agent_filter and not _aws_name_matches_filter(svc_name, agent_filter):
                     continue
@@ -313,7 +321,9 @@ def _teardown_aws(
                         if code == "InvalidParameterException":
                             rows.append(TeardownRow(td_name, "ECS Task Definition", "not_found"))
                         else:
-                            rows.append(TeardownRow(td_name, "ECS Task Definition", "error", str(exc)))
+                            rows.append(
+                                TeardownRow(td_name, "ECS Task Definition", "error", str(exc))
+                            )
     except Exception as exc:
         logger.warning("AWS ECS task definition listing failed: %s", exc)
 
@@ -351,9 +361,9 @@ def _teardown_aws(
         for page in paginator.paginate():
             for secret in page.get("SecretList", []):
                 secret_name = secret["Name"]
-                if not any(secret_name.startswith(n) for n in agent_names) and not secret_name.startswith(
-                    "agentbreeder-"
-                ):
+                if not any(
+                    secret_name.startswith(n) for n in agent_names
+                ) and not secret_name.startswith("agentbreeder-"):
                     continue
                 if agent_filter and not _aws_name_matches_filter(secret_name, agent_filter):
                     continue
@@ -366,9 +376,15 @@ def _teardown_aws(
                     except ClientError as exc:
                         code = exc.response["Error"]["Code"]
                         if code == "ResourceNotFoundException":
-                            rows.append(TeardownRow(secret_name, "Secrets Manager Secret", "not_found"))
+                            rows.append(
+                                TeardownRow(secret_name, "Secrets Manager Secret", "not_found")
+                            )
                         else:
-                            rows.append(TeardownRow(secret_name, "Secrets Manager Secret", "error", str(exc)))
+                            rows.append(
+                                TeardownRow(
+                                    secret_name, "Secrets Manager Secret", "error", str(exc)
+                                )
+                            )
     except Exception as exc:
         logger.warning("AWS Secrets Manager listing failed: %s", exc)
 
@@ -420,7 +436,7 @@ def _teardown_aws(
 
 def _teardown_azure(
     dry_run: bool,
-    agent_filter: Optional[str],
+    agent_filter: str | None,
     destroy_resource_group: bool = False,
 ) -> list[TeardownRow]:
     """Delete Azure Container Apps, ACR repos, Key Vault secrets, and Container Apps
@@ -498,15 +514,23 @@ def _teardown_azure(
                 if agent_filter:
                     continue  # environments are shared; only delete when not filtering
                 if dry_run:
-                    rows.append(TeardownRow(env_name, "Container Apps Environment", "dry_run", rg_name))
+                    rows.append(
+                        TeardownRow(env_name, "Container Apps Environment", "dry_run", rg_name)
+                    )
                 else:
                     try:
                         ca_client.managed_environments.begin_delete(rg_name, env_name).result()
-                        rows.append(TeardownRow(env_name, "Container Apps Environment", "deleted", rg_name))
+                        rows.append(
+                            TeardownRow(env_name, "Container Apps Environment", "deleted", rg_name)
+                        )
                     except ResourceNotFoundError:
-                        rows.append(TeardownRow(env_name, "Container Apps Environment", "not_found"))
+                        rows.append(
+                            TeardownRow(env_name, "Container Apps Environment", "not_found")
+                        )
                     except Exception as exc:
-                        rows.append(TeardownRow(env_name, "Container Apps Environment", "error", str(exc)))
+                        rows.append(
+                            TeardownRow(env_name, "Container Apps Environment", "error", str(exc))
+                        )
         except Exception as exc:
             logger.warning("Azure Container Apps Env listing failed for %s: %s", rg_name, exc)
 
@@ -574,10 +598,14 @@ def _teardown_azure(
                             try:
                                 secret_client.begin_delete_secret(secret_name).result()
                                 rows.append(
-                                    TeardownRow(secret_name, "Key Vault Secret", "deleted", vault.name)
+                                    TeardownRow(
+                                        secret_name, "Key Vault Secret", "deleted", vault.name
+                                    )
                                 )
                             except ResourceNotFoundError:
-                                rows.append(TeardownRow(secret_name, "Key Vault Secret", "not_found"))
+                                rows.append(
+                                    TeardownRow(secret_name, "Key Vault Secret", "not_found")
+                                )
                             except Exception as exc:
                                 rows.append(
                                     TeardownRow(secret_name, "Key Vault Secret", "error", str(exc))
@@ -616,17 +644,19 @@ def _teardown_azure(
 
 def _run_cloud_teardown(
     cloud: CloudProvider,
-    region: Optional[str],
-    project: Optional[str],
+    region: str | None,
+    project: str | None,
     dry_run: bool,
-    agent_filter: Optional[str],
+    agent_filter: str | None,
     destroy_resource_group: bool,
 ) -> int:
     """Run cloud-provider teardown(s).  Returns exit code (0 = success, 1 = any error)."""
     any_error = False
 
     if cloud in (CloudProvider.gcp, CloudProvider.all):
-        rows = _teardown_gcp(region=region, project=project, dry_run=dry_run, agent_filter=agent_filter)
+        rows = _teardown_gcp(
+            region=region, project=project, dry_run=dry_run, agent_filter=agent_filter
+        )
         _print_teardown_table(rows, "gcp", dry_run)
         if any(r.status == "error" for r in rows):
             any_error = True
@@ -656,7 +686,7 @@ def _run_cloud_teardown(
 
 
 def teardown(
-    agent_name: Optional[str] = typer.Argument(None, help="Name of the agent to remove"),
+    agent_name: str | None = typer.Argument(None, help="Name of the agent to remove"),
     force: bool = typer.Option(
         False,
         "--force",
@@ -665,18 +695,18 @@ def teardown(
     ),
     json_output: bool = typer.Option(False, "--json", help="Output as JSON"),
     # Cloud teardown options
-    cloud: Optional[CloudProvider] = typer.Option(
+    cloud: CloudProvider | None = typer.Option(
         None,
         "--cloud",
         help="Cloud provider(s) to clean up: gcp | aws | azure | all",
         case_sensitive=False,
     ),
-    region: Optional[str] = typer.Option(
+    region: str | None = typer.Option(
         None,
         "--region",
         help="Cloud region (GCP/AWS). Defaults to provider default.",
     ),
-    project: Optional[str] = typer.Option(
+    project: str | None = typer.Option(
         None,
         "--project",
         help="GCP project ID (GCP only).",
@@ -686,7 +716,7 @@ def teardown(
         "--dry-run",
         help="Print what WOULD be deleted without deleting anything.",
     ),
-    agent: Optional[str] = typer.Option(
+    agent: str | None = typer.Option(
         None,
         "--agent",
         help="Filter cloud teardown to resources belonging to this agent name.",

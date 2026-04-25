@@ -10,15 +10,14 @@ from typing import Any
 
 import yaml as pyyaml
 from fastapi import APIRouter, Depends, HTTPException, Request
-
-from api.auth import get_current_user
-from api.middleware.rbac import require_role
-from api.models.database import User
 from fastapi.responses import PlainTextResponse
 from jsonschema import Draft202012Validator
 from pydantic import BaseModel
 from starlette.concurrency import run_in_threadpool
 
+from api.auth import get_current_user
+from api.middleware.rbac import require_role
+from api.models.database import User
 from api.models.schemas import ApiResponse
 
 logger = logging.getLogger(__name__)

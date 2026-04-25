@@ -9,7 +9,6 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from api.auth import get_current_user
 from api.middleware.rbac import require_role
 from api.models.database import User
-
 from api.models.schemas import (
     ApiMeta,
     ApiResponse,
@@ -131,7 +130,9 @@ def _pr_to_response(pr: object) -> GitPRResponse:
 
 
 @router.post("/branches", response_model=ApiResponse[GitBranchResponse], status_code=201)
-async def create_branch(body: GitBranchCreateRequest, _user: User = Depends(require_role("deployer"))) -> ApiResponse[GitBranchResponse]:
+async def create_branch(
+    body: GitBranchCreateRequest, _user: User = Depends(require_role("deployer"))
+) -> ApiResponse[GitBranchResponse]:
     """Create a draft branch for editing a resource."""
     try:
         git = _get_git()
@@ -159,7 +160,9 @@ async def list_branches(
 
 
 @router.post("/commits", response_model=ApiResponse[GitCommitResponse], status_code=201)
-async def create_commit(body: GitCommitRequest, _user: User = Depends(require_role("deployer"))) -> ApiResponse[GitCommitResponse]:
+async def create_commit(
+    body: GitCommitRequest, _user: User = Depends(require_role("deployer"))
+) -> ApiResponse[GitCommitResponse]:
     """Commit a file change on a branch."""
     try:
         git = _get_git()
@@ -222,7 +225,9 @@ async def get_diff(
 
 
 @router.post("/prs", response_model=ApiResponse[GitPRResponse], status_code=201)
-async def create_pr(body: GitPRCreateRequest, _user: User = Depends(require_role("deployer"))) -> ApiResponse[GitPRResponse]:
+async def create_pr(
+    body: GitPRCreateRequest, _user: User = Depends(require_role("deployer"))
+) -> ApiResponse[GitPRResponse]:
     """Create a pull request for a draft branch."""
     try:
         pr_svc = _get_pr()
@@ -254,7 +259,9 @@ async def list_prs(
 
 
 @router.get("/prs/{pr_id}", response_model=ApiResponse[GitPRResponse])
-async def get_pr(pr_id: uuid.UUID, _user: User = Depends(get_current_user)) -> ApiResponse[GitPRResponse]:
+async def get_pr(
+    pr_id: uuid.UUID, _user: User = Depends(get_current_user)
+) -> ApiResponse[GitPRResponse]:
     """Get pull request detail with diff and commits."""
     pr_svc = _get_pr()
     pr = await pr_svc.get_pr(pr_id)

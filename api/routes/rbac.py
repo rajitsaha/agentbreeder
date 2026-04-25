@@ -81,7 +81,9 @@ async def revoke_permission(
     db: AsyncSession = Depends(get_db),
 ) -> ApiResponse[dict]:
     """Revoke a permission by ID."""
-    deleted = await rbac_service.revoke_permission(db, revoker=user.email, permission_id=permission_id)
+    deleted = await rbac_service.revoke_permission(
+        db, revoker=user.email, permission_id=permission_id
+    )
     if not deleted:
         raise HTTPException(status_code=404, detail="Permission not found")
     await db.commit()
@@ -163,7 +165,9 @@ async def approve_request(
     if str(user.role) not in {"admin"}:
         raise HTTPException(status_code=403, detail="Only admins can approve requests")
     try:
-        req = await rbac_service.approve_request(db, approval_id, approver=user.email, decision=body)
+        req = await rbac_service.approve_request(
+            db, approval_id, approver=user.email, decision=body
+        )
     except ValueError as exc:
         raise HTTPException(status_code=409, detail=str(exc)) from exc
     await db.commit()
@@ -181,7 +185,9 @@ async def reject_request(
     if str(user.role) not in {"admin"}:
         raise HTTPException(status_code=403, detail="Only admins can reject requests")
     try:
-        req = await rbac_service.reject_request(db, approval_id, approver=user.email, decision=body)
+        req = await rbac_service.reject_request(
+            db, approval_id, approver=user.email, decision=body
+        )
     except ValueError as exc:
         raise HTTPException(status_code=409, detail=str(exc)) from exc
     await db.commit()
@@ -458,7 +464,9 @@ async def mint_key(
     try:
         created = await create_key(db, body, created_by=user.email)
     except Exception as exc:
-        raise HTTPException(status_code=502, detail=f"LiteLLM key generation failed: {exc}") from exc
+        raise HTTPException(
+            status_code=502, detail=f"LiteLLM key generation failed: {exc}"
+        ) from exc
     return ApiResponse(data=created)
 
 
@@ -492,9 +500,7 @@ async def reveal_key(
 
     from api.models.database import LiteLLMKeyRef
 
-    result = await db.execute(
-        select(LiteLLMKeyRef).where(LiteLLMKeyRef.key_alias == key_alias)
-    )
+    result = await db.execute(select(LiteLLMKeyRef).where(LiteLLMKeyRef.key_alias == key_alias))
     ref = result.scalar_one_or_none()
     if not ref:
         raise HTTPException(status_code=404, detail="Key not found")

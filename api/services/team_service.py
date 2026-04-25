@@ -508,7 +508,12 @@ class TeamService:
                 )
                 await create_key(db, body, created_by="team-service")
                 await db.commit()
-                logger.info("Auto-minted LiteLLM key %s for %s joining team %s", key_alias, user_email, team_name)
+                logger.info(
+                    "Auto-minted LiteLLM key %s for %s joining team %s",
+                    key_alias,
+                    user_email,
+                    team_name,
+                )
         except Exception as exc:
             logger.debug("LiteLLM key auto-mint failed for %s: %s", user_email, exc)
 
@@ -523,11 +528,12 @@ class TeamService:
         Runs as a background task — failures are logged but not propagated.
         """
         try:
+            from sqlalchemy import select
+
             from api.database import async_session
             from api.models.database import LiteLLMKeyRef
             from api.models.enums import KeyScopeType
             from api.services.litellm_key_service import revoke_key
-            from sqlalchemy import select
 
             async with async_session() as db:
                 stmt = select(LiteLLMKeyRef).where(

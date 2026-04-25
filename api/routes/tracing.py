@@ -9,7 +9,6 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from api.auth import get_current_user
 from api.middleware.rbac import require_role
 from api.models.database import User
-
 from api.models.schemas import ApiMeta, ApiResponse
 from api.models.tracing_schemas import (
     AgentMetricsSummary,
@@ -86,7 +85,9 @@ async def get_agent_metrics(
 
 
 @router.get("/{trace_id}", response_model=ApiResponse[TraceDetailResponse])
-async def get_trace(trace_id: str, _user: User = Depends(get_current_user)) -> ApiResponse[TraceDetailResponse]:
+async def get_trace(
+    trace_id: str, _user: User = Depends(get_current_user)
+) -> ApiResponse[TraceDetailResponse]:
     """Get a trace with all its spans."""
     store = get_tracing_store()
     trace = store.get_trace(trace_id)
@@ -104,7 +105,9 @@ async def get_trace(trace_id: str, _user: User = Depends(get_current_user)) -> A
 
 
 @router.post("", response_model=ApiResponse[TraceResponse], status_code=201)
-async def create_trace(body: TraceCreate, _user: User = Depends(get_current_user)) -> ApiResponse[TraceResponse]:
+async def create_trace(
+    body: TraceCreate, _user: User = Depends(get_current_user)
+) -> ApiResponse[TraceResponse]:
     """Create/ingest a new trace."""
     store = get_tracing_store()
 
@@ -136,7 +139,9 @@ async def create_trace(body: TraceCreate, _user: User = Depends(get_current_user
 
 
 @router.post("/{trace_id}/spans", response_model=ApiResponse[SpanResponse], status_code=201)
-async def create_span(trace_id: str, body: SpanCreate, _user: User = Depends(get_current_user)) -> ApiResponse[SpanResponse]:
+async def create_span(
+    trace_id: str, body: SpanCreate, _user: User = Depends(get_current_user)
+) -> ApiResponse[SpanResponse]:
     """Add a span to an existing trace."""
     store = get_tracing_store()
 

@@ -26,10 +26,11 @@ from registry.agents import AgentRegistry, create_from_yaml, validate_config_yam
 
 router = APIRouter(prefix="/api/v1/agents", tags=["agents"])
 
+
 async def _enforce_acl(
-    db: "AsyncSession",
+    db: AsyncSession,
     user_email: str,
-    resource_id: "uuid.UUID",
+    resource_id: uuid.UUID,
     action: str,
 ) -> None:
     """Check ACL for an agent. Raises 403 if explicitly denied.
@@ -37,9 +38,10 @@ async def _enforce_acl(
     Passes silently if: no ACL rows exist, DB unavailable, or permission granted.
     """
     try:
-        from api.services.rbac_service import check_permission
         from sqlalchemy import select
+
         from api.models.database import ResourcePermission
+        from api.services.rbac_service import check_permission
 
         allowed, reason = await check_permission(
             db,
@@ -49,22 +51,23 @@ async def _enforce_acl(
             action=action,
         )
         result = await db.execute(
-            select(ResourcePermission).where(
+            select(ResourcePermission)
+            .where(
                 ResourcePermission.resource_type == "agent",
                 ResourcePermission.resource_id == resource_id,
-            ).limit(1)
+            )
+            .limit(1)
         )
         has_acl = result.scalar_one_or_none() is not None
         if has_acl and not allowed:
             from fastapi import HTTPException
+
             raise HTTPException(status_code=403, detail=f"Access denied: {reason}")
     except Exception as exc:
         if "403" in str(exc) or "Access denied" in str(exc):
             raise
         # DB unavailable or table not yet migrated — allow access
         pass
-
-
 
 
 @router.get("", response_model=ApiResponse[list[AgentResponse]])

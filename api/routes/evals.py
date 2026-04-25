@@ -36,7 +36,9 @@ async def list_datasets(
 
 
 @router.post("/datasets", status_code=201)
-async def create_dataset(body: dict, _user: User = Depends(require_role("deployer"))) -> ApiResponse[dict]:
+async def create_dataset(
+    body: dict, _user: User = Depends(require_role("deployer"))
+) -> ApiResponse[dict]:
     """Create a new evaluation dataset."""
     store = get_eval_store()
     name = body.get("name")
@@ -60,7 +62,9 @@ async def create_dataset(body: dict, _user: User = Depends(require_role("deploye
 
 
 @router.get("/datasets/{dataset_id}")
-async def get_dataset(dataset_id: str, _user: User = Depends(get_current_user)) -> ApiResponse[dict]:
+async def get_dataset(
+    dataset_id: str, _user: User = Depends(get_current_user)
+) -> ApiResponse[dict]:
     """Get a dataset by ID, including row count."""
     store = get_eval_store()
     dataset = store.get_dataset(dataset_id)
@@ -70,7 +74,9 @@ async def get_dataset(dataset_id: str, _user: User = Depends(get_current_user)) 
 
 
 @router.delete("/datasets/{dataset_id}")
-async def delete_dataset(dataset_id: str, _user: User = Depends(require_role("admin"))) -> ApiResponse[dict]:
+async def delete_dataset(
+    dataset_id: str, _user: User = Depends(require_role("admin"))
+) -> ApiResponse[dict]:
     """Delete a dataset and all related rows, runs, and results."""
     store = get_eval_store()
     deleted = store.delete_dataset(dataset_id)
@@ -85,7 +91,9 @@ async def delete_dataset(dataset_id: str, _user: User = Depends(require_role("ad
 
 
 @router.post("/datasets/{dataset_id}/rows", status_code=201)
-async def add_rows(dataset_id: str, body: dict, _user: User = Depends(require_role("deployer"))) -> ApiResponse[list]:
+async def add_rows(
+    dataset_id: str, body: dict, _user: User = Depends(require_role("deployer"))
+) -> ApiResponse[list]:
     """Add rows to a dataset."""
     store = get_eval_store()
     rows = body.get("rows", [])
@@ -115,7 +123,9 @@ async def list_rows(
 
 
 @router.post("/datasets/{dataset_id}/import", status_code=201)
-async def import_jsonl(dataset_id: str, body: dict, _user: User = Depends(require_role("deployer"))) -> ApiResponse[dict]:
+async def import_jsonl(
+    dataset_id: str, body: dict, _user: User = Depends(require_role("deployer"))
+) -> ApiResponse[dict]:
     """Import rows from JSONL content."""
     store = get_eval_store()
     content = body.get("content", "")
@@ -133,7 +143,9 @@ async def import_jsonl(dataset_id: str, body: dict, _user: User = Depends(requir
 
 
 @router.get("/datasets/{dataset_id}/export")
-async def export_jsonl(dataset_id: str, _user: User = Depends(get_current_user)) -> PlainTextResponse:
+async def export_jsonl(
+    dataset_id: str, _user: User = Depends(get_current_user)
+) -> PlainTextResponse:
     """Export dataset rows as JSONL."""
     store = get_eval_store()
     dataset = store.get_dataset(dataset_id)
@@ -150,7 +162,9 @@ async def export_jsonl(dataset_id: str, _user: User = Depends(get_current_user))
 
 
 @router.post("/runs", status_code=201)
-async def create_run(body: dict, _user: User = Depends(require_role("deployer"))) -> ApiResponse[dict]:
+async def create_run(
+    body: dict, _user: User = Depends(require_role("deployer"))
+) -> ApiResponse[dict]:
     """Create and execute an eval run."""
     store = get_eval_store()
 

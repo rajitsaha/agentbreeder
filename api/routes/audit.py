@@ -7,7 +7,6 @@ from datetime import UTC, datetime
 from fastapi import APIRouter, Depends, Query
 
 from api.auth import get_current_user
-from api.models.database import User
 from api.models.audit_schemas import (
     AffectedAgent,
     AuditEventCreate,
@@ -19,6 +18,7 @@ from api.models.audit_schemas import (
     ResourceDependencyCreate,
     ResourceDependencyResponse,
 )
+from api.models.database import User
 from api.models.schemas import ApiMeta, ApiResponse
 from api.services.audit_service import AuditService
 

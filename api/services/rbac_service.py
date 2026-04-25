@@ -267,7 +267,13 @@ async def submit_approval(
     db.add(req)
     await db.flush()
     await db.refresh(req)
-    logger.info("Approval request %s submitted by %s for %s/%s", req.id, submitter, body.asset_type, body.asset_id)
+    logger.info(
+        "Approval request %s submitted by %s for %s/%s",
+        req.id,
+        submitter,
+        body.asset_type,
+        body.asset_id,
+    )
     return ApprovalResponse.model_validate(req)
 
 
@@ -355,9 +361,7 @@ async def create_service_principal(
         raise ValueError(f"Invalid role: {body.role}. Must be one of {VALID_SP_ROLES}")
 
     # Uniqueness check
-    existing = await db.execute(
-        select(ServicePrincipal).where(ServicePrincipal.name == body.name)
-    )
+    existing = await db.execute(select(ServicePrincipal).where(ServicePrincipal.name == body.name))
     if existing.scalar_one_or_none():
         raise ValueError(f"ServicePrincipal '{body.name}' already exists")
 
@@ -396,9 +400,7 @@ async def get_service_principal(
     db: AsyncSession,
     sp_id: uuid.UUID,
 ) -> ServicePrincipalResponse | None:
-    result = await db.execute(
-        select(ServicePrincipal).where(ServicePrincipal.id == sp_id)
-    )
+    result = await db.execute(select(ServicePrincipal).where(ServicePrincipal.id == sp_id))
     row = result.scalar_one_or_none()
     return ServicePrincipalResponse.model_validate(row) if row else None
 
@@ -408,9 +410,7 @@ async def update_service_principal(
     sp_id: uuid.UUID,
     body: ServicePrincipalUpdate,
 ) -> ServicePrincipalResponse | None:
-    result = await db.execute(
-        select(ServicePrincipal).where(ServicePrincipal.id == sp_id)
-    )
+    result = await db.execute(select(ServicePrincipal).where(ServicePrincipal.id == sp_id))
     sp = result.scalar_one_or_none()
     if not sp:
         return None
@@ -430,9 +430,7 @@ async def update_service_principal(
 
 
 async def delete_service_principal(db: AsyncSession, sp_id: uuid.UUID) -> bool:
-    result = await db.execute(
-        select(ServicePrincipal).where(ServicePrincipal.id == sp_id)
-    )
+    result = await db.execute(select(ServicePrincipal).where(ServicePrincipal.id == sp_id))
     sp = result.scalar_one_or_none()
     if not sp:
         return False
@@ -452,9 +450,7 @@ async def rotate_service_principal_key(
     Revokes any existing active key for this SP, then mints a fresh one.
     Returns dict with key_alias and key_value.
     """
-    result = await db.execute(
-        select(ServicePrincipal).where(ServicePrincipal.id == sp_id)
-    )
+    result = await db.execute(select(ServicePrincipal).where(ServicePrincipal.id == sp_id))
     sp = result.scalar_one_or_none()
     if not sp:
         raise ValueError(f"ServicePrincipal {sp_id} not found")
@@ -474,8 +470,9 @@ async def rotate_service_principal_key(
         alias = f"sp-{sp.name}-{uuid.uuid4().hex[:8]}"
 
         # Revoke any existing active SP keys (best-effort)
-        from api.models.database import LiteLLMKeyRef
         from sqlalchemy import and_
+
+        from api.models.database import LiteLLMKeyRef
 
         old_result = await db.execute(
             select(LiteLLMKeyRef).where(
@@ -564,9 +561,7 @@ async def get_group(
     db: AsyncSession,
     group_id: uuid.UUID,
 ) -> PrincipalGroupResponse | None:
-    result = await db.execute(
-        select(PrincipalGroup).where(PrincipalGroup.id == group_id)
-    )
+    result = await db.execute(select(PrincipalGroup).where(PrincipalGroup.id == group_id))
     row = result.scalar_one_or_none()
     return PrincipalGroupResponse.model_validate(row) if row else None
 
@@ -576,9 +571,7 @@ async def update_group(
     group_id: uuid.UUID,
     name: str,
 ) -> PrincipalGroupResponse | None:
-    result = await db.execute(
-        select(PrincipalGroup).where(PrincipalGroup.id == group_id)
-    )
+    result = await db.execute(select(PrincipalGroup).where(PrincipalGroup.id == group_id))
     grp = result.scalar_one_or_none()
     if not grp:
         return None
@@ -589,9 +582,7 @@ async def update_group(
 
 
 async def delete_group(db: AsyncSession, group_id: uuid.UUID) -> bool:
-    result = await db.execute(
-        select(PrincipalGroup).where(PrincipalGroup.id == group_id)
-    )
+    result = await db.execute(select(PrincipalGroup).where(PrincipalGroup.id == group_id))
     grp = result.scalar_one_or_none()
     if not grp:
         return False
@@ -605,9 +596,7 @@ async def add_group_member(
     group_id: uuid.UUID,
     member_id: str,
 ) -> PrincipalGroupResponse | None:
-    result = await db.execute(
-        select(PrincipalGroup).where(PrincipalGroup.id == group_id)
-    )
+    result = await db.execute(select(PrincipalGroup).where(PrincipalGroup.id == group_id))
     grp = result.scalar_one_or_none()
     if not grp:
         return None
@@ -625,9 +614,7 @@ async def remove_group_member(
     group_id: uuid.UUID,
     member_id: str,
 ) -> PrincipalGroupResponse | None:
-    result = await db.execute(
-        select(PrincipalGroup).where(PrincipalGroup.id == group_id)
-    )
+    result = await db.execute(select(PrincipalGroup).where(PrincipalGroup.id == group_id))
     grp = result.scalar_one_or_none()
     if not grp:
         return None

@@ -10,7 +10,6 @@ from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
 from api.auth import get_current_user
 from api.middleware.rbac import require_role
 from api.models.database import User
-
 from api.models.schemas import ApiMeta, ApiResponse
 from api.services.graph_store import get_graph_store
 from api.services.rag_service import get_rag_store
@@ -123,7 +122,9 @@ async def get_index(index_id: str, _user: User = Depends(get_current_user)) -> A
 
 
 @router.delete("/indexes/{index_id}")
-async def delete_index(index_id: str, _user: User = Depends(require_role("admin"))) -> ApiResponse[dict]:
+async def delete_index(
+    index_id: str, _user: User = Depends(require_role("admin"))
+) -> ApiResponse[dict]:
     """Delete a vector index."""
     store = get_rag_store()
     deleted = store.delete_index(index_id)
@@ -193,7 +194,9 @@ async def get_ingest_job(
 
 
 @router.post("/search")
-async def search(body: dict[str, Any], _user: User = Depends(get_current_user)) -> ApiResponse[dict]:
+async def search(
+    body: dict[str, Any], _user: User = Depends(get_current_user)
+) -> ApiResponse[dict]:
     """Search across a vector index using hybrid vector + text search, or graph/hybrid search.
 
     Request body:
@@ -247,7 +250,9 @@ async def search(body: dict[str, Any], _user: User = Depends(get_current_user)) 
 
 
 @router.get("/indexes/{index_id}/graph")
-async def get_index_graph_metadata(index_id: str, _user: User = Depends(get_current_user)) -> ApiResponse[dict]:
+async def get_index_graph_metadata(
+    index_id: str, _user: User = Depends(get_current_user)
+) -> ApiResponse[dict]:
     """Get graph metadata for a graph/hybrid index.
 
     Returns node count, edge count, entity type breakdown, and top entities.

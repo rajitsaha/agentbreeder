@@ -252,18 +252,21 @@ class TestRequireRole:
 
         checker = require_role("viewer")
         user = self._make_user()
-        uid = str(user.id)
+        str(user.id)
 
         # Simulate user having "admin" role in team "t1" via DB-backed queries
         mock_team = MagicMock()
         mock_team.id = "t1"
 
-        with patch(
-            "api.middleware.rbac.TeamService.get_user_teams",
-            new=AsyncMock(return_value=[mock_team]),
-        ), patch(
-            "api.middleware.rbac.TeamService.get_user_role_in_team",
-            new=AsyncMock(return_value="admin"),
+        with (
+            patch(
+                "api.middleware.rbac.TeamService.get_user_teams",
+                new=AsyncMock(return_value=[mock_team]),
+            ),
+            patch(
+                "api.middleware.rbac.TeamService.get_user_role_in_team",
+                new=AsyncMock(return_value="admin"),
+            ),
         ):
             result = await checker(user=user)
         assert result is user

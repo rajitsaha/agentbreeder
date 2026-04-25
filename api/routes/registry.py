@@ -3,13 +3,12 @@
 from __future__ import annotations
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-
-from api.auth import get_current_user
-from api.middleware.rbac import require_role
-from api.models.database import User
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from api.auth import get_current_user
 from api.database import get_db
+from api.middleware.rbac import require_role
+from api.models.database import User
 from api.models.schemas import (
     ApiMeta,
     ApiResponse,

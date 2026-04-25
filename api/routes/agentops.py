@@ -102,7 +102,9 @@ async def list_incidents(
 
 
 @router.post("/incidents", status_code=201)
-async def create_incident(body: dict[str, Any], _user: User = Depends(require_role("deployer"))) -> ApiResponse[dict]:
+async def create_incident(
+    body: dict[str, Any], _user: User = Depends(require_role("deployer"))
+) -> ApiResponse[dict]:
     """Create a new incident."""
     store = get_agentops_store()
 

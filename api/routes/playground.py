@@ -4,20 +4,18 @@ from __future__ import annotations
 
 import logging
 import os
-import random
 import time
 import uuid
 
 import httpx
 from fastapi import APIRouter, Depends
-
-from api.auth import get_current_user
-from api.models.database import User
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from api.auth import get_current_user
 from api.config import settings
 from api.database import get_db
+from api.models.database import User
 from api.models.schemas import ApiResponse
 from registry.agents import AgentRegistry
 

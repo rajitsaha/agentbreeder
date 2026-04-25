@@ -7,11 +7,10 @@ from datetime import UTC, date, datetime
 from typing import Literal
 
 from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel
 
 from api.auth import get_current_user
-from api.middleware.rbac import require_role
 from api.models.database import User
-from pydantic import BaseModel
 
 router = APIRouter(prefix="/api/v1/compliance", tags=["compliance"])
 
@@ -277,7 +276,9 @@ def _build_summary(standard: str, sections: dict, request: ReportRequest) -> dic
 
 
 @router.post("/reports", response_model=ReportResponse)
-async def generate_report(request: ReportRequest, _user: User = Depends(get_current_user)) -> ReportResponse:
+async def generate_report(
+    request: ReportRequest, _user: User = Depends(get_current_user)
+) -> ReportResponse:
     """Generate a compliance evidence report pack for the requested standard."""
     builder = _BUILDERS.get(request.standard)
     if builder is None:
