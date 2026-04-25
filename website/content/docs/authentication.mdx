@@ -280,6 +280,81 @@ The `AGENTBREEDER_API_KEY` is a long-lived service principal token. It is scoped
 
 ---
 
+## RBAC REST API
+
+All RBAC operations are available as a first-class REST API under `/api/v1/rbac/`. Every endpoint requires a valid JWT (Bearer token).
+
+### Permissions
+
+```
+GET    /api/v1/rbac/permissions                  # list ACL entries (filterable)
+POST   /api/v1/rbac/permissions                  # grant a permission
+DELETE /api/v1/rbac/permissions/{id}             # revoke a permission
+GET    /api/v1/rbac/permissions/check            # check if caller can perform action
+```
+
+**Grant a permission:**
+```json
+POST /api/v1/rbac/permissions
+{
+  "resource_type": "agent",
+  "resource_id": "uuid-of-the-agent",
+  "principal_type": "team",
+  "principal_id": "data-science",
+  "actions": ["read", "use"]
+}
+```
+
+**Check permission:**
+```
+GET /api/v1/rbac/permissions/check?resource_type=agent&resource_id=<uuid>&action=deploy
+→ { "allowed": true, "reason": "Direct user permission" }
+```
+
+### Approval queue
+
+```
+GET    /api/v1/rbac/approvals                    # list pending/decided approvals
+POST   /api/v1/rbac/approvals                    # submit an asset for approval
+GET    /api/v1/rbac/approvals/{id}               # get approval detail
+POST   /api/v1/rbac/approvals/{id}/approve       # approve (admin only)
+POST   /api/v1/rbac/approvals/{id}/reject        # reject (admin only)
+```
+
+### Service principals
+
+```
+GET    /api/v1/rbac/service-principals           # list all SPs
+POST   /api/v1/rbac/service-principals           # create SP
+GET    /api/v1/rbac/service-principals/{id}      # get SP detail
+PUT    /api/v1/rbac/service-principals/{id}      # update SP
+DELETE /api/v1/rbac/service-principals/{id}      # delete SP
+POST   /api/v1/rbac/service-principals/{id}/rotate-key  # issue new key
+```
+
+### Principal groups
+
+```
+GET    /api/v1/rbac/groups                       # list groups
+POST   /api/v1/rbac/groups                       # create group
+GET    /api/v1/rbac/groups/{id}                  # get group
+PUT    /api/v1/rbac/groups/{id}                  # update group
+DELETE /api/v1/rbac/groups/{id}                  # delete group
+POST   /api/v1/rbac/groups/{id}/members          # add member
+DELETE /api/v1/rbac/groups/{id}/members/{member_id}  # remove member
+```
+
+### LiteLLM virtual keys
+
+```
+GET    /api/v1/rbac/keys                         # list keys (no secret values)
+POST   /api/v1/rbac/keys                         # create key (value shown once)
+DELETE /api/v1/rbac/keys/{id}                    # revoke key
+GET    /api/v1/rbac/keys/{id}/reveal             # reveal full key value (admin only)
+```
+
+---
+
 ## Audit log
 
 Every auth and authorization event is written to the immutable audit log:

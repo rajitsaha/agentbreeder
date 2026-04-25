@@ -370,8 +370,9 @@ agentbreeder status --json           # JSON output
 
 ### `agentbreeder teardown`
 
-Remove a deployed agent and clean up its resources.
+Remove a deployed agent and clean up its resources, or bulk-clean an entire cloud environment.
 
+**Single-agent teardown (local or cloud):**
 ```
 agentbreeder teardown AGENT_NAME [--force] [--json]
 ```
@@ -381,13 +382,36 @@ agentbreeder teardown AGENT_NAME [--force] [--json]
 | `AGENT_NAME` | Yes | — | Name of the agent to remove |
 | `--force`, `-f` | No | `false` | Skip confirmation prompt |
 
-Removes the agent's containers, infrastructure, and registry entry. Prompts for confirmation unless `--force` is used.
+**Org-wide cloud teardown:**
+```
+agentbreeder teardown --cloud <gcp|aws|azure|all> [options]
+```
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `--cloud` | — | Cloud provider to clean up: `gcp`, `aws`, `azure`, or `all` |
+| `--dry-run` | `false` | Preview what would be deleted without making any changes |
+| `--agent` | — | Limit teardown to a single named agent across cloud targets |
+| `--region` | — | Cloud region (GCP / AWS) |
+| `--project` | — | GCP project ID |
+| `--destroy-resource-group` | `false` | Also delete the Azure resource group itself |
+
+Removes Cloud Run services, ECS services/task definitions, Container Apps, Artifact Registry / ECR repositories, and associated secrets for all agents labelled `managed-by: agentbreeder`.
 
 **Examples:**
 ```bash
+# Single-agent local teardown
 agentbreeder teardown my-agent              # Prompts for confirmation
 agentbreeder teardown my-agent --force      # No confirmation
-agentbreeder teardown my-agent --json       # JSON output
+
+# Bulk cloud teardown
+agentbreeder teardown --cloud gcp --project my-proj --region us-central1 --dry-run
+agentbreeder teardown --cloud aws --region us-east-1
+agentbreeder teardown --cloud azure --destroy-resource-group
+agentbreeder teardown --cloud all           # All three clouds at once
+
+# Limit to one agent across all clouds
+agentbreeder teardown --cloud all --agent customer-support-agent --dry-run
 ```
 
 ---
