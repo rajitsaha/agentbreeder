@@ -11,8 +11,10 @@ from pydantic import BaseModel, Field
 from api.models.enums import (
     A2AStatus,
     AgentStatus,
+    BudgetDuration,
     DeployJobStatus,
     EvalRunStatus,
+    KeyScopeType,
     ListingStatus,
     OrchestrationStatus,
     ProviderStatus,
@@ -1203,3 +1205,54 @@ class MarketplaceBrowseItem(BaseModel):
     install_count: int
     featured: bool
     published_at: datetime | None
+
+
+# ---------------------------------------------------------------------------
+# LiteLLM Virtual Key Schemas
+# ---------------------------------------------------------------------------
+
+
+class LiteLLMKeyCreate(BaseModel):
+    key_alias: str = Field(..., description="Human-readable alias, e.g. 'team-engineering-prod'")
+    scope_type: KeyScopeType
+    scope_id: str = Field(..., description="Team name, user id, agent name, etc.")
+    team_id: str | None = None
+    agent_name: str | None = None
+    allowed_models: list[str] | None = Field(
+        None, description="Model IDs this key may call. Null = all models."
+    )
+    max_budget: float | None = Field(None, description="Max spend in USD (null = unlimited)")
+    budget_duration: BudgetDuration | None = None
+    tpm_limit: int | None = Field(None, description="Token-per-minute rate limit")
+    rpm_limit: int | None = Field(None, description="Requests-per-minute rate limit")
+    tags: list[str] = Field(default_factory=list, description="Routing / cost-attribution tags")
+    expires_at: datetime | None = None
+
+
+class LiteLLMKeyResponse(BaseModel):
+    id: uuid.UUID
+    key_alias: str
+    key_prefix: str
+    litellm_key_id: str | None
+    scope_type: KeyScopeType
+    scope_id: str
+    team_id: str | None
+    agent_name: str | None
+    created_by: str
+    allowed_models: list[str] | None
+    max_budget: float | None
+    budget_duration: BudgetDuration | None
+    tpm_limit: int | None
+    rpm_limit: int | None
+    tags: list[str]
+    expires_at: datetime | None
+    is_active: bool
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
+class LiteLLMKeyCreateResponse(LiteLLMKeyResponse):
+    """Returned only on creation — includes the full key value once."""
+    key_value: str = Field(..., description="Full sk-... value. Store it — it will not be shown again.")

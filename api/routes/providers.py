@@ -10,11 +10,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from api.auth import get_current_user
 from api.database import get_db
 from api.models.database import Model, User
-from api.models.enums import ProviderStatus, ProviderType
+from api.models.enums import KeyScopeType, ProviderStatus, ProviderType
 from api.models.schemas import (
     ApiMeta,
     ApiResponse,
     DiscoveredModel,
+    LiteLLMKeyCreate,
+    LiteLLMKeyCreateResponse,
+    LiteLLMKeyResponse,
     ModelDiscoveryResult,
     OllamaDetectResult,
     ProviderCreate,
@@ -24,6 +27,7 @@ from api.models.schemas import (
     ProviderTestResult,
     ProviderUpdate,
 )
+from api.services import litellm_key_service
 from api.tasks.provider_health import check_all_providers
 from registry.providers import ProviderRegistry
 
@@ -235,3 +239,58 @@ async def toggle_provider(
 
     provider = await ProviderRegistry.toggle(db, provider)
     return ApiResponse(data=ProviderResponse.model_validate(provider))
+
+
+# ---------------------------------------------------------------------------
+# LiteLLM Virtual Key endpoints  (prefix: /api/v1/providers/litellm/keys)
+# ---------------------------------------------------------------------------
+
+_keys_router = APIRouter(prefix="/litellm/keys", tags=["providers"])
+
+
+@_keys_router.post("", response_model=ApiResponse[LiteLLMKeyCreateResponse])
+async def create_litellm_key(
+    body: LiteLLMKeyCreate,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> ApiResponse[LiteLLMKeyCreateResponse]:
+    """Generate a new LiteLLM virtual key scoped to an org, team, user, agent, or service principal."""
+    result = await litellm_key_service.create_key(db, body, created_by=user.email)
+    return ApiResponse(data=result)
+
+
+@_keys_router.get("", response_model=ApiResponse[list[LiteLLMKeyResponse]])
+async def list_litellm_keys(
+    scope_type: KeyScopeType | None = Query(None),
+    team_id: str | None = Query(None),
+    agent_name: str | None = Query(None),
+    active_only: bool = Query(True),
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> ApiResponse[list[LiteLLMKeyResponse]]:
+    """List virtual keys with optional filters."""
+    keys = await litellm_key_service.list_keys(
+        db,
+        scope_type=scope_type,
+        team_id=team_id,
+        agent_name=agent_name,
+        active_only=active_only,
+    )
+    return ApiResponse(data=keys, meta={"page": 1, "per_page": len(keys), "total": len(keys)})
+
+
+@_keys_router.delete("/{key_alias}", response_model=ApiResponse[dict])
+async def revoke_litellm_key(
+    key_alias: str,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> ApiResponse[dict]:
+    """Revoke a virtual key — deletes from LiteLLM and marks inactive in AgentBreeder."""
+    ok = await litellm_key_service.revoke_key(db, key_alias)
+    if not ok:
+        raise HTTPException(status_code=404, detail="Key not found")
+    return ApiResponse(data={"revoked": True, "key_alias": key_alias})
+
+
+# Mount sub-router onto main providers router
+router.include_router(_keys_router)

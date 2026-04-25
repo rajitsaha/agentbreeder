@@ -19,6 +19,7 @@ from sqlalchemy.orm import selectinload
 from api.database import async_session
 from api.models.database import Agent, DeployJob
 from api.models.enums import AgentStatus, DeployJobStatus
+from api.services import litellm_key_service
 
 logger = logging.getLogger(__name__)
 
@@ -155,6 +156,23 @@ async def _run_pipeline(job_id: uuid.UUID, agent_name: str, target: str) -> None
             elif sk == "registering" and first_tick:
                 msg = "Registering agent in registry"
                 _append_log(job_id, "info", msg, step=sk)
+                # Auto-mint a scoped LiteLLM virtual key for this agent
+                try:
+                    async with async_session() as ks:
+                        # Look up the agent to get team info
+                        agent_row = await ks.execute(
+                            select(Agent).where(Agent.name == agent_name)
+                        )
+                        ag = agent_row.scalar_one_or_none()
+                        if ag:
+                            await litellm_key_service.get_or_create_agent_key(
+                                ks,
+                                agent_name=agent_name,
+                                team_id=ag.team or "default",
+                                created_by="deploy-engine",
+                            )
+                except Exception as _ke:
+                    logger.warning("Could not mint LiteLLM key for %s: %s", agent_name, _ke)
 
         _append_log(job_id, "info", f"[{i + 1}/8] {step_label} -- done", step=step_key)
 
