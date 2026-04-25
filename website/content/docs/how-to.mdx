@@ -798,6 +798,16 @@ deploy-agent:
 
 ## Run the Platform with Docker Compose
 
+The quickest way to start the dashboard and API together is:
+
+```bash
+agentbreeder ui
+```
+
+This pulls and starts the pre-built images (dashboard, API, PostgreSQL, Redis) and opens **http://localhost:3001** automatically. Deployed agents appear in the **Agents** tab once they are registered.
+
+Alternatively, you can start the stack directly with Docker Compose:
+
 ```bash
 # Standalone — pre-built images, no repo clone needed
 curl -O https://raw.githubusercontent.com/agentbreeder/agentbreeder/main/deploy/docker-compose.standalone.yml
@@ -818,6 +828,19 @@ Default login: `admin@agentbreeder.local` / `plant`
 <Callout type="warn" title="Warning">
   Change the default password before exposing this to a network.
 </Callout>
+
+### Docker networking: localhost vs host.docker.internal
+
+From your **host terminal**, the API is at `http://localhost:8000` and the dashboard at `http://localhost:3001`.
+
+From **inside a Docker container** (e.g. a deployed agent), `localhost` resolves to the container itself — not your host machine. Use these addresses instead:
+
+| Host OS | Address to reach the AgentBreeder API |
+|---------|--------------------------------------|
+| macOS / Windows (Docker Desktop) | `http://host.docker.internal:8000` |
+| Linux | `http://172.17.0.1:8000` (default Docker bridge) |
+
+If you hard-code `localhost:8000` inside an agent container, the agent will fail to reach the API. Reference `host.docker.internal:8000` in your `agent.yaml` `env_vars` or secrets instead.
 
 ---
 

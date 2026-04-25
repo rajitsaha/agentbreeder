@@ -265,6 +265,20 @@ Full quickstart guide → [agentbreeder.io/docs/quickstart](https://www.agentbre
 
 ---
 
+## Viewing deployed agents
+
+After deploying, start the UI stack to see your agents in the dashboard (requires Docker):
+
+```bash
+agentbreeder ui
+```
+
+Then open **http://localhost:3001** and log in (default: `admin@agentbreeder.local` / `plant`). Deployed agents appear automatically in the **Agents** tab.
+
+> **Docker networking note:** Agent containers reach the API at `http://host.docker.internal:8000` (macOS/Windows with Docker Desktop) or `http://172.17.0.1:8000` (Linux). Use `localhost:8000` only from your host terminal.
+
+---
+
 ## Documentation
 
 | | |

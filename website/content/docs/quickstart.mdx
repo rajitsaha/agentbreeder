@@ -176,7 +176,21 @@ The 8-step atomic pipeline:
 
 If any step fails, the entire deploy rolls back.
 
-### 5. Chat
+### 5. View your agent in the dashboard
+
+To see deployed agents in the UI, start the dashboard stack first:
+
+```bash
+agentbreeder ui
+```
+
+Then open **http://localhost:3001** and log in (default: `admin@agentbreeder.local` / `plant`). Your agent appears automatically in the **Agents** tab once deployment completes.
+
+<Callout type="info" title="Docker networking">
+  Agent containers reach the API at `http://host.docker.internal:8000` (macOS/Windows with Docker Desktop) or `http://172.17.0.1:8000` (Linux). Use `localhost:8000` only from your host terminal — not from inside a container.
+</Callout>
+
+### 6. Chat
 
 ```bash
 agentbreeder status                              # see your agent's endpoint and health
