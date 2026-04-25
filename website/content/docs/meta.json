@@ -7,6 +7,8 @@
     "no-code",
     "low-code",
     "full-code",
+    "polyglot-agents",
+    "mcp-authoring",
     "---Registry Components---",
     "prompts",
     "tools",
