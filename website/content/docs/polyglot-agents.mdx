@@ -562,7 +562,7 @@ Yes — via A2A. Wire the Python agent as a tool with `type: a2a`. The APS handl
 Yes. All templates implement `POST /stream` returning SSE. Framework-specific streaming (Vercel AI's `streamText`, Rig's stream iterator, Go's `http.Flusher`) is handled inside the template.
 
 **What's the performance overhead of the APS sidecar?**  
-The APS sidecar runs in the same pod/task as your agent — communication is localhost. Typical latency is <1ms per call. The Go binary APS (Phase 2) is a static binary with no JVM/Python startup overhead.
+The APS sidecar runs in the same pod/task as your agent — communication is localhost. Typical latency is &lt;1ms per call. The Go binary APS (Phase 2) is a static binary with no JVM/Python startup overhead.
 
 **Can I use my own Dockerfile instead of the generated one?**  
 Yes — use `framework: custom` and include a `Dockerfile` in your agent directory. The engine uses your Dockerfile as-is and still injects the APS sidecar.
