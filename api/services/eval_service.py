@@ -18,6 +18,7 @@ from __future__ import annotations
 import json
 import logging
 import os
+import pathlib
 import statistics
 import uuid
 from datetime import UTC, datetime
@@ -470,17 +471,143 @@ class EvalResultRecord:
 
 
 class EvalStore:
-    """In-memory store for evaluation datasets, runs, and results.
+    """Eval dataset/run store backed by JSON files on disk.
 
-    Will be replaced by PostgreSQL when the real DB is connected.
+    When *store_dir* is provided (or defaults to ``~/.agentbreeder/evals/``)
+    every mutating operation is flushed to:
+      - ``<store_dir>/datasets.json``   — datasets + rows
+      - ``<store_dir>/runs.json``       — runs + results + schedules
+
+    Pass ``store_dir=None`` for a fully in-memory instance (unit tests).
     """
 
-    def __init__(self) -> None:
+    _DATASETS_FILE = "datasets.json"
+    _RUNS_FILE = "runs.json"
+
+    def __init__(self, store_dir: pathlib.Path | None = pathlib.Path.home() / ".agentbreeder" / "evals") -> None:
+        self._store_dir = store_dir
         self._datasets: dict[str, EvalDatasetRecord] = {}
         self._rows: dict[str, EvalDatasetRowRecord] = {}  # keyed by row_id
         self._runs: dict[str, EvalRunRecord] = {}
         self._results: dict[str, EvalResultRecord] = {}  # keyed by result_id
         self._schedules: dict[str, dict[str, Any]] = {}  # keyed by schedule_id
+
+        if self._store_dir is not None:
+            self._store_dir.mkdir(parents=True, exist_ok=True)
+            self._load()
+
+    # ------------------------------------------------------------------
+    # Persistence helpers
+    # ------------------------------------------------------------------
+
+    def _datasets_path(self) -> pathlib.Path:
+        assert self._store_dir is not None
+        return self._store_dir / self._DATASETS_FILE
+
+    def _runs_path(self) -> pathlib.Path:
+        assert self._store_dir is not None
+        return self._store_dir / self._RUNS_FILE
+
+    def _load(self) -> None:
+        """Load all state from disk. Called once at startup."""
+        # --- datasets + rows ---
+        dp = self._datasets_path()
+        if dp.exists():
+            try:
+                data = json.loads(dp.read_text())
+                for d in data.get("datasets", []):
+                    rec = EvalDatasetRecord(
+                        dataset_id=d["id"],
+                        name=d["name"],
+                        description=d.get("description", ""),
+                        agent_id=d.get("agent_id"),
+                        version=d.get("version", "1.0.0"),
+                        fmt=d.get("format", "jsonl"),
+                        row_count=d.get("row_count", 0),
+                        team=d.get("team", "default"),
+                        tags=d.get("tags", []),
+                        created_at=d["created_at"],
+                        updated_at=d["updated_at"],
+                    )
+                    self._datasets[rec.id] = rec
+                for r in data.get("rows", []):
+                    row = EvalDatasetRowRecord(
+                        row_id=r["id"],
+                        dataset_id=r["dataset_id"],
+                        row_input=r.get("input", {}),
+                        expected_output=r.get("expected_output", ""),
+                        expected_tool_calls=r.get("expected_tool_calls"),
+                        tags=r.get("tags", []),
+                        metadata=r.get("metadata", {}),
+                        created_at=r["created_at"],
+                    )
+                    self._rows[row.id] = row
+            except Exception:
+                logger.exception("Failed to load eval datasets from disk — starting fresh")
+
+        # --- runs + results + schedules ---
+        rp = self._runs_path()
+        if rp.exists():
+            try:
+                data = json.loads(rp.read_text())
+                for rn in data.get("runs", []):
+                    run = EvalRunRecord(
+                        run_id=rn["id"],
+                        agent_id=rn.get("agent_id"),
+                        agent_name=rn["agent_name"],
+                        dataset_id=rn["dataset_id"],
+                        status=rn.get("status", "pending"),
+                        config=rn.get("config", {}),
+                        summary=rn.get("summary", {}),
+                        started_at=rn.get("started_at"),
+                        completed_at=rn.get("completed_at"),
+                        created_at=rn["created_at"],
+                    )
+                    self._runs[run.id] = run
+                for res in data.get("results", []):
+                    result = EvalResultRecord(
+                        result_id=res["id"],
+                        run_id=res["run_id"],
+                        row_id=res["row_id"],
+                        actual_output=res.get("actual_output", ""),
+                        scores=res.get("scores", {}),
+                        latency_ms=res.get("latency_ms", 0),
+                        token_count=res.get("token_count", 0),
+                        cost_usd=res.get("cost_usd", 0.0),
+                        error=res.get("error"),
+                        created_at=res["created_at"],
+                    )
+                    self._results[result.id] = result
+                for sch in data.get("schedules", []):
+                    self._schedules[sch["id"]] = sch
+            except Exception:
+                logger.exception("Failed to load eval runs from disk — starting fresh")
+
+    def _save(self) -> None:
+        """Flush all in-memory state to disk atomically."""
+        if self._store_dir is None:
+            return
+
+        # datasets + rows
+        datasets_data = {
+            "datasets": [ds.to_dict() for ds in self._datasets.values()],
+            "rows": [row.to_dict() for row in self._rows.values()],
+        }
+        dp = self._datasets_path()
+        tmp_dp = dp.with_suffix(".tmp")
+        tmp_dp.write_text(json.dumps(datasets_data, indent=2))
+        tmp_dp.replace(dp)
+
+        # runs + results + schedules
+        runs_data = {
+            "runs": [run.to_dict() for run in self._runs.values()],
+            "results": [res.to_dict() for res in self._results.values()],
+            "schedules": list(self._schedules.values()),
+        }
+        rp = self._runs_path()
+        tmp_rp = rp.with_suffix(".tmp")
+        tmp_rp.write_text(json.dumps(runs_data, indent=2))
+        tmp_rp.replace(rp)
 
     # --- Dataset CRUD ---
 
@@ -517,6 +644,7 @@ class EvalStore:
         )
         self._datasets[dataset_id] = dataset
         logger.info("Eval dataset created", extra={"name": name, "team": team})
+        self._save()
         return dataset.to_dict()
 
     def list_datasets(
@@ -565,6 +693,7 @@ class EvalStore:
 
         del self._datasets[dataset_id]
         logger.info("Eval dataset deleted", extra={"dataset_id": dataset_id})
+        self._save()
         return True
 
     # --- Dataset Rows ---
@@ -595,6 +724,7 @@ class EvalStore:
 
         ds.row_count += len(created)
         ds.updated_at = now
+        self._save()
         return created
 
     def list_rows(
@@ -684,6 +814,7 @@ class EvalStore:
         )
         self._runs[run_id] = run
         logger.info("Eval run created", extra={"run_id": run_id, "agent": agent_name})
+        self._save()
         return run.to_dict()
 
     def get_run(self, run_id: str) -> dict[str, Any] | None:
@@ -726,6 +857,7 @@ class EvalStore:
             run.started_at = now
         if status in ("completed", "failed", "cancelled"):
             run.completed_at = now
+        self._save()
         return run.to_dict()
 
     # --- Eval Results ---
@@ -761,6 +893,7 @@ class EvalStore:
             created_at=now,
         )
         self._results[result_id] = result
+        self._save()
         return result.to_dict()
 
     def get_results(self, run_id: str) -> list[dict[str, Any]]:
@@ -816,6 +949,7 @@ class EvalStore:
         run = self._runs.get(run_id)
         if run:
             run.summary = summary
+            self._save()
 
         return summary
 
@@ -1015,6 +1149,7 @@ class EvalStore:
             "Eval schedule created",
             extra={"schedule_id": schedule_id, "agent": agent_name, "cron": cron_expr},
         )
+        self._save()
         return schedule
 
     def list_schedules(self) -> list[dict[str, Any]]:
@@ -1029,6 +1164,7 @@ class EvalStore:
             return False
         del self._schedules[schedule_id]
         logger.info("Eval schedule deleted", extra={"schedule_id": schedule_id})
+        self._save()
         return True
 
     # --- Promotion Gate ---
@@ -1173,13 +1309,23 @@ class EvalStore:
 
 _store: EvalStore | None = None
 
+_DEFAULT_STORE_DIR = pathlib.Path.home() / ".agentbreeder" / "evals"
+
 
 def get_eval_store() -> EvalStore:
-    """Get the global eval store singleton."""
+    """Get the global eval store singleton backed by ``~/.agentbreeder/evals/``.
+
+    Demo data is seeded only on the very first invocation (i.e. when the JSON
+    files do not yet exist on disk).  Subsequent process starts load the
+    previously persisted state and do not re-seed, so UUIDs remain stable
+    across CLI invocations.
+    """
     global _store
     if _store is None:
-        _store = EvalStore()
-        _seed_demo_data(_store)
+        is_first_run = not (_DEFAULT_STORE_DIR / EvalStore._DATASETS_FILE).exists()
+        _store = EvalStore(store_dir=_DEFAULT_STORE_DIR)
+        if is_first_run:
+            _seed_demo_data(_store)
     return _store
 
 

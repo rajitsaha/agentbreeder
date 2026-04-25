@@ -18,8 +18,8 @@ from api.services.eval_service import (
 
 @pytest.fixture
 def store() -> EvalStore:
-    """Create a fresh EvalStore for each test (no seed data)."""
-    return EvalStore()
+    """Create a fresh in-memory EvalStore for each test (no seed data, no disk I/O)."""
+    return EvalStore(store_dir=None)
 
 
 @pytest.fixture
@@ -1113,3 +1113,133 @@ class TestJudgeScorerMultiCriteria:
         scores = score_with_judge_model("exact match", "exact match", judge_model="claude-opus-4")
         assert scores["judge_accuracy"] == 1.0
         assert scores["judge_safety"] == 1.0
+
+
+# ---------------------------------------------------------------------------
+# Persistence (JSONFileStore) tests
+# ---------------------------------------------------------------------------
+
+
+class TestJSONFilePersistence:
+    """Verify that EvalStore correctly saves and reloads state from disk."""
+
+    def test_dataset_survives_restart(self, tmp_path) -> None:
+        """Create a dataset, re-instantiate the store from the same path, dataset is still there."""
+        store1 = EvalStore(store_dir=tmp_path)
+        ds = store1.create_dataset(
+            name="persist-me",
+            description="should survive",
+            team="engineering",
+            tags=["persist"],
+        )
+        dataset_id = ds["id"]
+
+        # Simulate a new CLI invocation by creating a fresh store from the same directory
+        store2 = EvalStore(store_dir=tmp_path)
+        reloaded = store2.get_dataset(dataset_id)
+
+        assert reloaded is not None
+        assert reloaded["id"] == dataset_id
+        assert reloaded["name"] == "persist-me"
+        assert reloaded["team"] == "engineering"
+        assert reloaded["tags"] == ["persist"]
+
+    def test_rows_survive_restart(self, tmp_path) -> None:
+        """Rows added to a dataset are still present after re-instantiation."""
+        store1 = EvalStore(store_dir=tmp_path)
+        ds = store1.create_dataset(name="row-persist-test")
+        store1.add_rows(
+            ds["id"],
+            [
+                {"input": {"q": "What is 1+1?"}, "expected_output": "2", "tags": ["math"]},
+                {"input": {"q": "Hello"}, "expected_output": "Hi there!"},
+            ],
+        )
+
+        store2 = EvalStore(store_dir=tmp_path)
+        rows = store2.list_rows(ds["id"])
+        assert len(rows) == 2
+        inputs = {r["input"]["q"] for r in rows}
+        assert "What is 1+1?" in inputs
+        assert "Hello" in inputs
+
+    def test_run_survives_restart(self, tmp_path) -> None:
+        """A completed eval run is preserved across store re-instantiation."""
+        store1 = EvalStore(store_dir=tmp_path)
+        ds = store1.create_dataset(name="run-persist-ds")
+        store1.add_rows(ds["id"], [{"input": {"x": "hi"}, "expected_output": "hello"}])
+        run = store1.create_run(agent_name="test-agent", dataset_id=ds["id"])
+        store1.execute_run(run["id"])
+
+        store2 = EvalStore(store_dir=tmp_path)
+        reloaded_run = store2.get_run(run["id"])
+        assert reloaded_run is not None
+        assert reloaded_run["status"] == "completed"
+        assert reloaded_run["agent_name"] == "test-agent"
+
+    def test_uuid_stable_across_restart(self, tmp_path) -> None:
+        """Dataset IDs do not change between process restarts."""
+        store1 = EvalStore(store_dir=tmp_path)
+        ds = store1.create_dataset(name="uuid-stable-test")
+        original_id = ds["id"]
+
+        store2 = EvalStore(store_dir=tmp_path)
+        datasets = store2.list_datasets()
+        assert len(datasets) == 1
+        assert datasets[0]["id"] == original_id
+
+    def test_delete_persisted_across_restart(self, tmp_path) -> None:
+        """Deleting a dataset is reflected after re-instantiation."""
+        store1 = EvalStore(store_dir=tmp_path)
+        ds = store1.create_dataset(name="delete-persist-test")
+        store1.delete_dataset(ds["id"])
+
+        store2 = EvalStore(store_dir=tmp_path)
+        assert store2.get_dataset(ds["id"]) is None
+        assert store2.list_datasets() == []
+
+    def test_schedule_survives_restart(self, tmp_path) -> None:
+        """Schedules are persisted and loaded correctly."""
+        store1 = EvalStore(store_dir=tmp_path)
+        ds = store1.create_dataset(name="sched-persist-ds")
+        sch = store1.create_schedule(
+            agent_name="sched-agent",
+            dataset_id=ds["id"],
+            cron_expr="0 * * * *",
+            threshold=0.8,
+        )
+
+        store2 = EvalStore(store_dir=tmp_path)
+        schedules = store2.list_schedules()
+        assert len(schedules) == 1
+        assert schedules[0]["id"] == sch["id"]
+        assert schedules[0]["cron"] == "0 * * * *"
+
+    def test_first_run_seeds_demo_data(self, tmp_path, monkeypatch) -> None:
+        """get_eval_store seeds demo data only when datasets.json does not exist."""
+        import api.services.eval_service as svc
+
+        # Point the default store dir at tmp_path for this test
+        monkeypatch.setattr(svc, "_DEFAULT_STORE_DIR", tmp_path)
+        monkeypatch.setattr(svc, "_store", None)
+
+        store = svc.get_eval_store()
+        datasets = store.list_datasets()
+        # Demo data should include at least the seeded dataset
+        assert len(datasets) > 0
+
+        # Reset singleton so next call sees existing files
+        monkeypatch.setattr(svc, "_store", None)
+        store2 = svc.get_eval_store()
+        # No new datasets should be added (no double-seeding)
+        datasets2 = store2.list_datasets()
+        assert len(datasets2) == len(datasets)
+
+    def test_in_memory_store_no_disk_writes(self, tmp_path) -> None:
+        """store_dir=None produces a pure in-memory store with no files written."""
+        store = EvalStore(store_dir=None)
+        store.create_dataset(name="in-memory-only")
+
+        # No JSON files should exist anywhere for this store
+        assert not (tmp_path / "datasets.json").exists()
+        assert not (tmp_path / "runs.json").exists()

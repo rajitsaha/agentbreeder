@@ -634,14 +634,14 @@ class TestScoreWithJudgeModel:
 class TestSeedDemoData:
     def test_seed_demo_data_runs_without_error(self):
         """Lines 1324-1396: _seed_demo_data happy path."""
-        store = EvalStore()
+        store = EvalStore(store_dir=None)
         _seed_demo_data(store)
         datasets = store.list_datasets()
         assert len(datasets) > 0
 
     def test_seed_community_datasets_returns_ids(self):
         """Lines 1397+: seed_community_datasets."""
-        store = EvalStore()
+        store = EvalStore(store_dir=None)
         ids = seed_community_datasets(store)
         assert isinstance(ids, list)
         assert len(ids) >= 3  # at least 3 community datasets
