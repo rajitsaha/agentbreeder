@@ -193,16 +193,15 @@ Full CLI reference → [agentbreeder.io/docs/cli-reference](https://www.agentbre
 
 ## Install
 
-Pick the method that matches your environment:
+Requires Python 3.11+:
 
-| Method | Command |
-|--------|---------|
-| **pip** (Python 3.11+) | `pip3 install agentbreeder` |
-| **Homebrew** (macOS) | `brew tap agentbreeder/agentbreeder && brew install agentbreeder` |
-| **Docker** | `docker run rajits/agentbreeder-cli --help` |
-| **npm** | `npm install @agentbreeder/sdk` |
+```bash
+pip3 install agentbreeder
+```
 
-After any install, the same commands are available:
+> `brew install` and `npx` support are coming soon.
+
+After install, the same commands are available:
 
 ```bash
 agentbreeder quickstart       # full local platform in one command
@@ -212,9 +211,7 @@ agentbreeder deploy           # deploy an agent (local, AWS, GCP, Azure)
 agentbreeder chat my-agent    # chat with a deployed agent
 ```
 
-> **`agentbreeder: command not found`?** pip's script directory may not be on your PATH — [fix it here](https://www.agentbreeder.io/docs/how-to#agentbreeder-command-not-found). On macOS, Homebrew is the easiest install.
-
-Install from source: [agentbreeder.io/docs/how-to#install-from-source →](https://www.agentbreeder.io/docs/how-to#install-from-source)
+> **`agentbreeder: command not found`?** pip's script directory may not be on your PATH — [fix it here](https://www.agentbreeder.io/docs/how-to#agentbreeder-command-not-found).
 
 ---
 

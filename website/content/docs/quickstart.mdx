@@ -38,23 +38,19 @@ docker info         # must succeed — if it errors, open Docker Desktop first
 
 ## 1. Install
 
-Pick the method that matches your environment:
+Requires Python 3.11+:
 
-| Method | Command |
-|--------|---------|
-| **pip** (Python 3.11+) | `pip3 install agentbreeder` |
-| **Homebrew** (macOS) | `brew tap agentbreeder/agentbreeder && brew install agentbreeder` |
-| **Docker** | `docker run rajits/agentbreeder-cli --help` |
-| **npm** | `npm install @agentbreeder/sdk` |
+```bash
+pip3 install agentbreeder
+```
+
+> `brew install` and `npx` support are coming soon.
 
 > **`agentbreeder: command not found` after pip install?** pip's script directory may not be in your PATH. Run:
 > ```bash
 > python3 -c "import sysconfig; print(sysconfig.get_path('scripts'))"
 > ```
 > Add that path to your `PATH` (e.g. in `~/.zshrc`), then open a new terminal.
-> On macOS, **Homebrew is the easiest install** — it handles PATH automatically.
-
-All install options → [How-To: Install →](how-to#install-agentbreeder)
 
 ---
 

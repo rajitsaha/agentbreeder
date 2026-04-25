@@ -18,51 +18,16 @@ Recipes for common AgentBreeder workflows. Each section is self-contained — ju
 
 ## Install AgentBreeder
 
-<Tabs items={['PyPI (recommended)', 'Homebrew', 'Docker', 'npm (TypeScript / JS)', 'From source']}>
-  <Tab value="PyPI (recommended)">
+Requires Python 3.11+:
+
 ```bash
 pip3 install agentbreeder          # full CLI + API server + engine
 pip3 install agentbreeder-sdk      # lightweight SDK only
 ```
 
-> **macOS / command not found?** See the [troubleshooting section below.](#agentbreeder-command-not-found)
-  </Tab>
-  <Tab value="Homebrew">
-```bash
-brew tap agentbreeder/agentbreeder
-brew install agentbreeder
-```
-  </Tab>
-  <Tab value="Docker">
-```bash
-# Full platform — no repo clone needed
-curl -O https://raw.githubusercontent.com/agentbreeder/agentbreeder/main/deploy/docker-compose.standalone.yml
-docker compose -f docker-compose.standalone.yml up -d
-# Dashboard: http://localhost:3001  API: http://localhost:8000
+> `brew install` and `npx` support are coming soon.
 
-# CLI image only (for CI/CD)
-docker pull rajits/agentbreeder-cli
-docker run rajits/agentbreeder-cli --help
-```
-  </Tab>
-  <Tab value="npm (TypeScript / JS)">
-```bash
-npm install @agentbreeder/sdk
-```
-```typescript
-import { Agent } from "@agentbreeder/sdk";
-const agent = new Agent("my-agent", { version: "1.0.0", team: "eng" });
-```
-  </Tab>
-  <Tab value="From source">
-```bash
-git clone https://github.com/agentbreeder/agentbreeder.git
-cd agentbreeder
-python -m venv venv && source venv/bin/activate
-pip install -e ".[dev]"
-```
-  </Tab>
-</Tabs>
+> **macOS / command not found?** See the [troubleshooting section below.](#agentbreeder-command-not-found)
 
 **Prerequisites** — Python 3.11+, Docker 24+, Node.js 18+ (for MCP servers). Full table: [Quickstart → Prerequisites](quickstart#prerequisites).
 
@@ -874,8 +839,6 @@ source ~/.zshrc
 
 # Alternatively, install into a place already on PATH:
 pip3 install --user agentbreeder
-# or use Homebrew (recommended for macOS):
-brew tap agentbreeder/agentbreeder && brew install agentbreeder
 ```
 
 After updating PATH, open a new terminal and run `agentbreeder --help`.
@@ -906,9 +869,4 @@ agentbreeder logs my-agent
 
 ### Dashboard won't start
 
-The dashboard needs the API running first:
-
-```bash
-docker run -d -p 8000:8000 rajits/agentbreeder-api
-docker run -d -p 3001:3001 rajits/agentbreeder-dashboard
-```
+The dashboard needs the API running first. Start it via `docker compose up` from your local dev stack (see [Quickstart](quickstart)).
