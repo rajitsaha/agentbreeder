@@ -85,6 +85,12 @@ class McpServerRef(BaseModel):
     transport: str = "stdio"
 
 
+class MemoryConfig(BaseModel):
+    """Memory configuration — references to memory.yaml store entries."""
+
+    stores: list[str] = Field(default_factory=list)
+
+
 class PromptsConfig(BaseModel):
     system: str | None = None
 
@@ -249,6 +255,7 @@ class AgentConfig(BaseModel):
     guardrails: list[str | GuardrailConfig] = Field(default_factory=list)
     subagents: list[SubagentRef] = Field(default_factory=list)
     mcp_servers: list[McpServerRef] = Field(default_factory=list)
+    memory: MemoryConfig | None = None
     deploy: DeployConfig
     access: AccessConfig = Field(default_factory=AccessConfig)
     crewai: CrewAIConfig | None = None

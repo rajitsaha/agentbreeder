@@ -428,6 +428,20 @@
       },
       "description": "Subagent references \u2014 auto-generates call_{name} tools"
     },
+    "memory": {
+      "type": "object",
+      "description": "Memory store references — each entry must match a memory.yaml entry (redis buffer_window, postgresql entity, etc.)",
+      "additionalProperties": false,
+      "properties": {
+        "stores": {
+          "type": "array",
+          "description": "List of memory store refs (e.g. session-buffer, entity-store)",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
     "mcp_servers": {
       "type": "array",
       "items": {
