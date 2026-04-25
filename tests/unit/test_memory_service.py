@@ -10,12 +10,11 @@ import uuid
 from contextlib import asynccontextmanager
 from datetime import UTC, datetime
 from typing import Any
-from unittest.mock import AsyncMock, patch
+from unittest.mock import patch
 
 import pytest
 
 from api.services.memory_service import MemoryService
-
 
 # ---------------------------------------------------------------------------
 # In-memory session fake
@@ -76,8 +75,7 @@ class _FakeSession:
             self._store.configs.pop(cid, None)
             # cascade
             self._store.messages = {
-                k: v for k, v in self._store.messages.items()
-                if str(v.config_id) != cid
+                k: v for k, v in self._store.messages.items() if str(v.config_id) != cid
             }
 
     async def execute(self, stmt: Any) -> _FakeResult:
@@ -138,12 +136,6 @@ class _FakeResult:
             return
         self._evaluated = True
 
-        import sqlalchemy as sa
-        from sqlalchemy import delete as sa_delete
-
-        from api.models.database import MemoryConfig as MCfgORM
-        from api.models.database import MemoryMessage as MMsgORM
-
         stmt = self._stmt
 
         # DELETE statement
@@ -161,7 +153,6 @@ class _FakeResult:
             self._value = 0
 
     def _handle_delete(self, stmt: Any) -> None:
-        from api.models.database import MemoryMessage as MMsgORM
 
         # Determine what's being deleted based on table
         table_name = ""
@@ -177,7 +168,8 @@ class _FakeResult:
             criteria = self._extract_where_criteria(stmt)
             before_count = len(self._store.messages)
             self._store.messages = {
-                k: v for k, v in self._store.messages.items()
+                k: v
+                for k, v in self._store.messages.items()
                 if not self._message_matches(v, criteria)
             }
             self._value = before_count - len(self._store.messages)
