@@ -101,14 +101,15 @@ class TemplateCategory(enum.StrEnum):
 
 class KeyScopeType(enum.StrEnum):
     """Who a LiteLLM virtual key is issued to."""
-    org            = "org"
-    team           = "team"
-    user           = "user"
-    agent          = "agent"
+
+    org = "org"
+    team = "team"
+    user = "user"
+    agent = "agent"
     service_principal = "service_principal"
 
 
 class BudgetDuration(enum.StrEnum):
-    daily   = "daily"
-    weekly  = "weekly"
+    daily = "daily"
+    weekly = "weekly"
     monthly = "monthly"

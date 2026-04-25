@@ -773,6 +773,7 @@ class TestInjectKbContext:
         mock_store.search = AsyncMock(return_value=[hit])
 
         import api.services.rag_service as _rag_mod
+
         original = _rag_mod.get_rag_store
         _rag_mod.get_rag_store = lambda: mock_store
         try:
@@ -794,6 +795,7 @@ class TestInjectKbContext:
         mock_store.list_indexes.return_value = ([], 0)  # not found by name either
 
         import api.services.rag_service as _rag_mod
+
         original = _rag_mod.get_rag_store
         _rag_mod.get_rag_store = lambda: mock_store
         try:
@@ -809,6 +811,7 @@ class TestInjectKbContext:
         srv = _import_server()
 
         import api.services.rag_service as _rag_mod
+
         original = _rag_mod.get_rag_store
 
         def _raise():

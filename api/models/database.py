@@ -622,7 +622,9 @@ class LiteLLMKeyRef(Base):
 
     # Who this key is issued to
     scope_type: Mapped[KeyScopeType] = mapped_column(Enum(KeyScopeType), nullable=False)
-    scope_id: Mapped[str] = mapped_column(String(255), nullable=False)  # team name / user id / agent name
+    scope_id: Mapped[str] = mapped_column(
+        String(255), nullable=False
+    )  # team name / user id / agent name
 
     # Optional FK-friendly denormalized fields for filtering
     team_id: Mapped[str | None] = mapped_column(String(100), nullable=True, index=True)
@@ -634,9 +636,11 @@ class LiteLLMKeyRef(Base):
 
     # Spend limits
     max_budget: Mapped[float | None] = mapped_column(Float, nullable=True)
-    budget_duration: Mapped[BudgetDuration | None] = mapped_column(Enum(BudgetDuration), nullable=True)
-    tpm_limit: Mapped[int | None] = mapped_column(Integer, nullable=True)   # tokens/minute
-    rpm_limit: Mapped[int | None] = mapped_column(Integer, nullable=True)   # requests/minute
+    budget_duration: Mapped[BudgetDuration | None] = mapped_column(
+        Enum(BudgetDuration), nullable=True
+    )
+    tpm_limit: Mapped[int | None] = mapped_column(Integer, nullable=True)  # tokens/minute
+    rpm_limit: Mapped[int | None] = mapped_column(Integer, nullable=True)  # requests/minute
 
     # Routing / classification tags (e.g. ["production", "rag", "customer-support"])
     tags: Mapped[list] = mapped_column(JSON, default=list)
@@ -646,7 +650,9 @@ class LiteLLMKeyRef(Base):
 
     is_active: Mapped[bool] = mapped_column(default=True, nullable=False)
 
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
     )

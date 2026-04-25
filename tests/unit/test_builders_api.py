@@ -179,7 +179,9 @@ class TestPlaygroundChat:
 
         import api.routes.playground as pg
 
-        with mock.patch.object(pg, "_try_litellm_call", return_value=("Hello!", 10, 5, "claude-sonnet-4")):
+        with mock.patch.object(
+            pg, "_try_litellm_call", return_value=("Hello!", 10, 5, "claude-sonnet-4")
+        ):
             resp = client.post(
                 "/api/v1/playground/chat",
                 json={

@@ -146,9 +146,7 @@ def _build_service_template(
                     "name": k,
                     "value_source": {
                         "secret_key_ref": {
-                            "secret": (
-                                f"projects/{gcp_config.project_id}/secrets/{secret_name}"
-                            ),
+                            "secret": (f"projects/{gcp_config.project_id}/secrets/{secret_name}"),
                             "version": "latest",
                         }
                     },

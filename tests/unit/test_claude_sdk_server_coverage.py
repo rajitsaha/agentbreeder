@@ -736,6 +736,7 @@ class TestAgenticLoop:
         # Inject a fake tool_bridge into sys.modules so the loop uses it.
         fake_tb = MagicMock()
         import sys as _sys
+
         _sys.modules["engine.tool_bridge"] = fake_tb
 
         return srv, fake_tb
@@ -777,9 +778,7 @@ class TestAgenticLoop:
         fake_client.messages.create = AsyncMock(side_effect=[resp1, resp2])
 
         messages = [{"role": "user", "content": "search for AI"}]
-        result = await srv._run_agentic_loop(
-            fake_client, "claude-sonnet-4-6", "", messages
-        )
+        result = await srv._run_agentic_loop(fake_client, "claude-sonnet-4-6", "", messages)
 
         assert result == "Final answer."
         # Two API calls: one that returns tool_use, one after tool result is appended
@@ -895,9 +894,7 @@ class TestAgenticLoop:
         fake_client.messages.create = AsyncMock(side_effect=[resp1, resp2])
 
         messages = [{"role": "user", "content": "use missing tool"}]
-        result = await srv._run_agentic_loop(
-            fake_client, "claude-sonnet-4-6", "", messages
-        )
+        result = await srv._run_agentic_loop(fake_client, "claude-sonnet-4-6", "", messages)
 
         # Loop should continue and return the text from the next turn.
         assert result == "Sorry."
@@ -916,6 +913,7 @@ class TestAgenticLoop:
         import sys as _sys
 
         import anthropic
+
         fake_tb = MagicMock()
         fake_tb.execute.return_value = "tool result"
         _sys.modules["engine.tool_bridge"] = fake_tb

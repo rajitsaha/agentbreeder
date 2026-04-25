@@ -50,8 +50,8 @@ class MemoryManager:
     def __init__(self) -> None:
         self._backend: str = os.getenv("MEMORY_BACKEND", "none").lower()
         self._agent_name: str = os.getenv("AGENT_NAME", "agent")
-        self._redis: Any = None          # aioredis / redis.asyncio client
-        self._pg_pool: Any = None        # asyncpg connection pool
+        self._redis: Any = None  # aioredis / redis.asyncio client
+        self._pg_pool: Any = None  # asyncpg connection pool
 
     # ------------------------------------------------------------------
     # Lifecycle
@@ -143,8 +143,7 @@ class MemoryManager:
             logger.info("MemoryManager: connected to Redis at %s", redis_url)
         except ImportError:
             logger.warning(
-                "MemoryManager: redis[asyncio] is not installed — "
-                "conversation history disabled"
+                "MemoryManager: redis[asyncio] is not installed — conversation history disabled"
             )
         except Exception:
             logger.exception("MemoryManager: failed to connect to Redis")
@@ -176,8 +175,7 @@ class MemoryManager:
             logger.info("MemoryManager: connected to PostgreSQL")
         except ImportError:
             logger.warning(
-                "MemoryManager: asyncpg is not installed — "
-                "conversation history disabled"
+                "MemoryManager: asyncpg is not installed — conversation history disabled"
             )
         except Exception:
             logger.exception("MemoryManager: failed to connect to PostgreSQL")

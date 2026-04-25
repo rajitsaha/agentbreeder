@@ -58,7 +58,6 @@ class TestResolveKnowledgeBases:
         """When the RAGStore contains a matching index, KB_INDEX_IDS is set in env_vars."""
         from unittest.mock import MagicMock
 
-
         mock_idx = MagicMock()
         mock_idx.name = "product-docs"
         mock_idx.id = "uuid-1234"
@@ -73,6 +72,7 @@ class TestResolveKnowledgeBases:
 
             # Monkey-patch the import inside resolver
             from engine.resolver import _resolve_kb_index_ids as _fn
+
             original = getattr(_rag_mod, "get_rag_store", None)
             _rag_mod.get_rag_store = lambda: mock_store
             try:
@@ -90,6 +90,7 @@ class TestResolveKnowledgeBases:
         # Simulate store not having the index (empty list)
         import api.services.rag_service as _rag_mod
         from engine.resolver import _resolve_kb_index_ids
+
         original = _rag_mod.get_rag_store
 
         mock_store = MagicMock()
@@ -147,9 +148,7 @@ class TestResolveKnowledgeBases:
         original = _rag_mod.get_rag_store
         _rag_mod.get_rag_store = lambda: mock_store
         try:
-            config = _make_config(
-                knowledge_bases=[{"ref": "kb/docs"}, {"ref": "kb/policy"}]
-            )
+            config = _make_config(knowledge_bases=[{"ref": "kb/docs"}, {"ref": "kb/policy"}])
             resolved = resolve_dependencies(config)
         finally:
             _rag_mod.get_rag_store = original

@@ -922,19 +922,23 @@ class TestDownCommand:
     def _no_qs(self):
         """Patch _qs_is_running to return False."""
         from unittest.mock import patch
+
         return patch("cli.commands.down._qs_is_running", return_value=False)
 
     def _qs_running(self):
         """Patch _qs_is_running to return True."""
         from unittest.mock import patch
+
         return patch("cli.commands.down._qs_is_running", return_value=True)
 
     def _stop_qs_ok(self):
         from unittest.mock import patch
+
         return patch("cli.commands.down._stop_qs", return_value=0)
 
     def _stop_qs_fail(self):
         from unittest.mock import patch
+
         return patch("cli.commands.down._stop_qs", return_value=1)
 
     def test_nothing_running_exits_0(self) -> None:

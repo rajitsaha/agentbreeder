@@ -276,9 +276,7 @@ class DeployEngine:
         api_base = os.environ.get("AGENTBREEDER_API_URL", "http://localhost:8000")
         self._sync_to_api(config, endpoint_url, api_base)
 
-    def _sync_to_api(
-        self, config: AgentConfig, endpoint_url: str, api_base: str
-    ) -> None:
+    def _sync_to_api(self, config: AgentConfig, endpoint_url: str, api_base: str) -> None:
         """Upsert the deployed agent into the dashboard API.
 
         Uses a search-first strategy:
@@ -300,9 +298,7 @@ class DeployEngine:
                 results: list[dict[str, Any]] = search_resp.json().get("data", [])
 
                 # Filter to an exact name match (search is substring-based)
-                existing = next(
-                    (r for r in results if r.get("name") == config.name), None
-                )
+                existing = next((r for r in results if r.get("name") == config.name), None)
 
                 if existing:
                     agent_id = existing["id"]
@@ -339,9 +335,7 @@ class DeployEngine:
                         },
                     )
                     post_resp.raise_for_status()
-                    logger.info(
-                        "Created agent '%s' in dashboard API", config.name
-                    )
+                    logger.info("Created agent '%s' in dashboard API", config.name)
 
         except Exception as exc:  # noqa: BLE001 — best-effort; never break deploy
             logger.warning(

@@ -431,10 +431,13 @@ class TestToolBridgeA2AIntegration:
 
         with (
             patch.object(server, "_load_agent", return_value=fake_agent),
-            patch.dict("os.environ", {
-                "AGENT_TOOLS_JSON": tools_json,
-                "OPENAI_API_KEY": "sk-dummy",
-            }),
+            patch.dict(
+                "os.environ",
+                {
+                    "AGENT_TOOLS_JSON": tools_json,
+                    "OPENAI_API_KEY": "sk-dummy",
+                },
+            ),
         ):
             await server.startup()
 
@@ -477,10 +480,13 @@ class TestToolBridgeA2AIntegration:
 
         with (
             patch.object(server, "_load_agent", return_value=fake_agent),
-            patch.dict("os.environ", {
-                "AGENT_TOOLS_JSON": tools_json,
-                "OPENAI_API_KEY": "sk-dummy",
-            }),
+            patch.dict(
+                "os.environ",
+                {
+                    "AGENT_TOOLS_JSON": tools_json,
+                    "OPENAI_API_KEY": "sk-dummy",
+                },
+            ),
         ):
             await server.startup()
 
@@ -521,10 +527,13 @@ class TestToolBridgeA2AIntegration:
 
         with (
             patch.object(server, "_load_agent", return_value=fake_agent),
-            patch.dict("os.environ", {
-                "AGENT_TOOLS_JSON": tools_json,
-                "OPENAI_API_KEY": "sk-dummy",
-            }),
+            patch.dict(
+                "os.environ",
+                {
+                    "AGENT_TOOLS_JSON": tools_json,
+                    "OPENAI_API_KEY": "sk-dummy",
+                },
+            ),
         ):
             await server.startup()
 
@@ -560,10 +569,13 @@ class TestToolBridgeA2AIntegration:
 
         with (
             patch.object(server, "_load_agent", return_value=fake_agent),
-            patch.dict("os.environ", {
-                "AGENT_TOOLS_JSON": tools_json,
-                "OPENAI_API_KEY": "sk-dummy",
-            }),
+            patch.dict(
+                "os.environ",
+                {
+                    "AGENT_TOOLS_JSON": tools_json,
+                    "OPENAI_API_KEY": "sk-dummy",
+                },
+            ),
         ):
             # Must not raise.
             await server.startup()
@@ -593,10 +605,13 @@ class TestToolBridgeA2AIntegration:
 
         with (
             patch.object(server, "_load_agent", return_value=fake_agent),
-            patch.dict("os.environ", {
-                "AGENT_TOOLS_JSON": "[]",
-                "OPENAI_API_KEY": "sk-dummy",
-            }),
+            patch.dict(
+                "os.environ",
+                {
+                    "AGENT_TOOLS_JSON": "[]",
+                    "OPENAI_API_KEY": "sk-dummy",
+                },
+            ),
         ):
             await server.startup()
 

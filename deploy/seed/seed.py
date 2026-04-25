@@ -109,6 +109,7 @@ MATCH (a:Agent), (d:DeployTarget {name:'local'}) CREATE (a)-[:DEPLOYED_ON]->(d)
 def _chroma_client():
     """Return an HttpClient connected to the local ChromaDB instance."""
     import chromadb
+
     return chromadb.HttpClient(host="localhost", port=8001)
 
 
@@ -213,7 +214,9 @@ def list_chromadb() -> dict:
     try:
         client = _chroma_client()
         collections = client.list_collections()
-        result = [{"name": col.name, "id": str(col.id), "count": col.count()} for col in collections]
+        result = [
+            {"name": col.name, "id": str(col.id), "count": col.count()} for col in collections
+        ]
         return {"ok": True, "collections": result}
     except Exception as exc:
         return {"ok": False, "error": str(exc)}

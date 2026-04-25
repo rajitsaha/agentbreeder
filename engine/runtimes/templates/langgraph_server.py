@@ -231,7 +231,9 @@ async def startup() -> None:
     kb_env = os.getenv("KB_INDEX_IDS", "")
     if kb_env:
         _kb_index_ids = [idx.strip() for idx in kb_env.split(",") if idx.strip()]
-        logger.info("Knowledge base context enabled — %d index(es): %s", len(_kb_index_ids), _kb_index_ids)
+        logger.info(
+            "Knowledge base context enabled — %d index(es): %s", len(_kb_index_ids), _kb_index_ids
+        )
     else:
         _kb_index_ids = []
 
@@ -293,7 +295,9 @@ async def invoke(request: InvokeRequest) -> InvokeResponse:
             kb_context = await _inject_kb_context(query, _kb_index_ids)
             if kb_context:
                 input_data = _prepend_kb_context(input_data, kb_context)
-                logger.debug("Injected %d-char KB context for query %r", len(kb_context), query[:80])
+                logger.debug(
+                    "Injected %d-char KB context for query %r", len(kb_context), query[:80]
+                )
 
         result = await _run_agent(input_data, config)
 

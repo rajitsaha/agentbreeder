@@ -1255,4 +1255,7 @@ class LiteLLMKeyResponse(BaseModel):
 
 class LiteLLMKeyCreateResponse(LiteLLMKeyResponse):
     """Returned only on creation — includes the full key value once."""
-    key_value: str = Field(..., description="Full sk-... value. Store it — it will not be shown again.")
+
+    key_value: str = Field(
+        ..., description="Full sk-... value. Store it — it will not be shown again."
+    )

@@ -128,7 +128,9 @@ async def startup() -> None:
                 tool_name: str = tool_spec.get("name") or ""
                 if not tool_name:
                     continue
-                tool_description: str = tool_spec.get("description") or f"A2A sub-agent: {tool_name}"
+                tool_description: str = (
+                    tool_spec.get("description") or f"A2A sub-agent: {tool_name}"
+                )
 
                 # Capture loop variables in the closure.
                 def _make_fn(name: str, tb: Any, description: str) -> Any:

@@ -72,9 +72,12 @@ def down(
         compose_file = compose_dir / "docker-compose.yml"
         project_root = compose_dir.parent
         cmd = [
-            "docker", "compose",
-            "-f", str(compose_file),
-            "--project-directory", str(project_root),
+            "docker",
+            "compose",
+            "-f",
+            str(compose_file),
+            "--project-directory",
+            str(project_root),
             "down",
         ]
         if clean:
@@ -104,7 +107,9 @@ def down(
 
     if json_output:
         sys.stdout.write(
-            json.dumps({"status": "stopped", "quickstart": stopped_qs, "dev": stopped_dev, "clean": clean})
+            json.dumps(
+                {"status": "stopped", "quickstart": stopped_qs, "dev": stopped_dev, "clean": clean}
+            )
             + "\n"
         )
         return
@@ -118,5 +123,14 @@ def down(
     if clean:
         parts.append("[dim]Volumes removed — database data deleted[/dim]")
     else:
-        parts.append("[dim]Data preserved. Run [bold]agentbreeder quickstart[/bold] to start again.[/dim]")
-    console.print(Panel("\n".join(parts), title="[bold]AgentBreeder stopped[/bold]", border_style="blue", padding=(1, 2)))
+        parts.append(
+            "[dim]Data preserved. Run [bold]agentbreeder quickstart[/bold] to start again.[/dim]"
+        )
+    console.print(
+        Panel(
+            "\n".join(parts),
+            title="[bold]AgentBreeder stopped[/bold]",
+            border_style="blue",
+            padding=(1, 2),
+        )
+    )

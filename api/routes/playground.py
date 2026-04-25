@@ -207,7 +207,9 @@ async def _resolve_model(requested: str | None) -> str:
     return models[0] if models else "ollama/llama3.2"
 
 
-async def _call_litellm(messages: list[dict], model: str, timeout: float = 180.0) -> tuple[str, int, int]:
+async def _call_litellm(
+    messages: list[dict], model: str, timeout: float = 180.0
+) -> tuple[str, int, int]:
     """Call LiteLLM gateway. Returns (response_text, input_tokens, output_tokens)."""
     async with httpx.AsyncClient(timeout=timeout) as client:
         resp = await client.post(

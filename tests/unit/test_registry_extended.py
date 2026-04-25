@@ -686,7 +686,9 @@ class TestDeployJobCascadeDelete:
 
         # The deploy job must no longer exist.
         orphan = await DeployRegistry.get(session, job_id)
-        assert orphan is None, "DeployJob was not removed when parent Agent was deleted (issue #121)"
+        assert orphan is None, (
+            "DeployJob was not removed when parent Agent was deleted (issue #121)"
+        )
 
     @pytest.mark.asyncio
     async def test_cascade_delete_multiple_jobs(self, session: AsyncSession) -> None:

@@ -69,9 +69,7 @@ def upgrade() -> None:
     )
 
     op.create_index("ix_litellm_key_refs_key_alias", "litellm_key_refs", ["key_alias"])
-    op.create_index(
-        "ix_litellm_key_refs_scope", "litellm_key_refs", ["scope_type", "scope_id"]
-    )
+    op.create_index("ix_litellm_key_refs_scope", "litellm_key_refs", ["scope_type", "scope_id"])
     op.create_index("ix_litellm_key_refs_team", "litellm_key_refs", ["team_id"])
     op.create_index("ix_litellm_key_refs_agent", "litellm_key_refs", ["agent_name"])
 

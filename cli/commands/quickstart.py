@@ -614,10 +614,10 @@ def _guide_cloud_deploy(target: str) -> None:
 
 _CLOUD_PROVIDERS: list[tuple[str, str, str, str]] = [
     # (display_name,          env_key,               placeholder,   models)
-    ("OpenAI",               "OPENAI_API_KEY",       "sk-...",      "gpt-4o, gpt-4o-mini"),
-    ("Anthropic (Claude)",   "ANTHROPIC_API_KEY",    "sk-ant-...",  "claude-sonnet-4, claude-haiku-4"),
-    ("Google Gemini",        "GOOGLE_API_KEY",       "AIza...",     "gemini-2.0-flash"),
-    ("OpenRouter",           "OPENROUTER_API_KEY",   "sk-or-...",   "100+ models, pay-per-use"),
+    ("OpenAI", "OPENAI_API_KEY", "sk-...", "gpt-4o, gpt-4o-mini"),
+    ("Anthropic (Claude)", "ANTHROPIC_API_KEY", "sk-ant-...", "claude-sonnet-4, claude-haiku-4"),
+    ("Google Gemini", "GOOGLE_API_KEY", "AIza...", "gemini-2.0-flash"),
+    ("OpenRouter", "OPENROUTER_API_KEY", "sk-or-...", "100+ models, pay-per-use"),
 ]
 
 
@@ -645,16 +645,12 @@ def _collect_provider_keys(existing_env: dict) -> tuple[dict, bool]:
         existing = existing_env.get(env_key) or os.environ.get(env_key, "")
         if existing:
             masked = existing[:10] + "..." if len(existing) > 10 else "***"
-            console.print(
-                f"  [green]●[/green] {name}  [dim]({masked} — already set)[/dim]"
-            )
+            console.print(f"  [green]●[/green] {name}  [dim]({masked} — already set)[/dim]")
         else:
             console.print(f"  [dim]○[/dim] {name}  [dim]({models})[/dim]")
 
     console.print()
-    console.print(
-        "  [bold]Add or update API keys[/bold]  [dim](press Enter to skip any)[/dim]"
-    )
+    console.print("  [bold]Add or update API keys[/bold]  [dim](press Enter to skip any)[/dim]")
     console.print()
 
     collected: dict[str, str] = {}
@@ -995,7 +991,16 @@ def quickstart(
     if has_ollama:
         _ok("Ollama ready — local models available")
     if has_cloud_key:
-        active = [k for k in ("OPENAI_API_KEY", "ANTHROPIC_API_KEY", "GOOGLE_API_KEY", "OPENROUTER_API_KEY") if os.environ.get(k)]
+        active = [
+            k
+            for k in (
+                "OPENAI_API_KEY",
+                "ANTHROPIC_API_KEY",
+                "GOOGLE_API_KEY",
+                "OPENROUTER_API_KEY",
+            )
+            if os.environ.get(k)
+        ]
         _ok(f"Cloud providers configured: {', '.join(active)}")
     if new_provider_keys:
         _ok(f"Keys saved: {', '.join(new_provider_keys)}")
@@ -1017,7 +1022,9 @@ def quickstart(
             console.input("  [bold]Continue without a provider? (y/N): [/bold]").strip().lower()
         )
         if proceed != "y":
-            console.print("  [dim]Re-run agentbreeder quickstart and enter an API key above.[/dim]")
+            console.print(
+                "  [dim]Re-run agentbreeder quickstart and enter an API key above.[/dim]"
+            )
             raise typer.Exit(code=0)
 
     # ── Step 3: Compose environment ──────────────────────────────────────────
@@ -1031,7 +1038,9 @@ def quickstart(
     compose_env: dict[str, str] = {}
 
     # Load existing .env (CWD wins, fall back to deploy dir)
-    source_path = env_path if env_path.exists() else (deploy_env_path if deploy_env_path.exists() else None)
+    source_path = (
+        env_path if env_path.exists() else (deploy_env_path if deploy_env_path.exists() else None)
+    )
     if source_path:
         for line in source_path.read_text().splitlines():
             if "=" in line and not line.startswith("#"):
@@ -1047,7 +1056,12 @@ def quickstart(
     compose_env.update(new_provider_keys)
 
     # Also pull any cloud keys already in the environment (e.g. exported in shell)
-    for _env_key in ("OPENAI_API_KEY", "ANTHROPIC_API_KEY", "GOOGLE_API_KEY", "OPENROUTER_API_KEY"):
+    for _env_key in (
+        "OPENAI_API_KEY",
+        "ANTHROPIC_API_KEY",
+        "GOOGLE_API_KEY",
+        "OPENROUTER_API_KEY",
+    ):
         if os.environ.get(_env_key) and _env_key not in compose_env:
             compose_env[_env_key] = os.environ[_env_key]
 
@@ -1089,9 +1103,7 @@ def quickstart(
             console.print(
                 Panel(
                     "[yellow]Port conflicts detected.[/yellow]\n\n"
-                    "These ports are already in use on your machine:\n\n"
-                    + conflict_lines
-                    + "\n\n"
+                    "These ports are already in use on your machine:\n\n" + conflict_lines + "\n\n"
                     "[bold]To fix:[/bold]\n"
                     "  Stop the conflicting services, then re-run [cyan]agentbreeder quickstart[/cyan].\n\n"
                     "  If you have the [bold]agentbreeder dev stack[/bold] running:\n"
@@ -1123,15 +1135,33 @@ def quickstart(
     if result.returncode != 0:
         # Check for unhealthy containers to give a specific message
         unhealthy = subprocess.run(
-            ["docker", "ps", "-a", "--filter", "name=agentbreeder-qs",
-             "--filter", "health=unhealthy", "--format", "{{.Names}}: {{.Status}}"],
+            [
+                "docker",
+                "ps",
+                "-a",
+                "--filter",
+                "name=agentbreeder-qs",
+                "--filter",
+                "health=unhealthy",
+                "--format",
+                "{{.Names}}: {{.Status}}",
+            ],
             capture_output=True,
             text=True,
         ).stdout.strip()
 
         exited = subprocess.run(
-            ["docker", "ps", "-a", "--filter", "name=agentbreeder-qs",
-             "--filter", "status=exited", "--format", "{{.Names}}: {{.Status}}"],
+            [
+                "docker",
+                "ps",
+                "-a",
+                "--filter",
+                "name=agentbreeder-qs",
+                "--filter",
+                "status=exited",
+                "--format",
+                "{{.Names}}: {{.Status}}",
+            ],
             capture_output=True,
             text=True,
         ).stdout.strip()
@@ -1148,9 +1178,7 @@ def quickstart(
 
         console.print(
             Panel(
-                "[red]Failed to start services.[/red]"
-                + detail
-                + "\n"
+                "[red]Failed to start services.[/red]" + detail + "\n"
                 "Diagnose:\n"
                 "  [cyan]docker compose -f deploy/docker-compose.quickstart.yml --project-name agentbreeder-qs logs[/cyan]\n\n"
                 "Common fixes:\n"

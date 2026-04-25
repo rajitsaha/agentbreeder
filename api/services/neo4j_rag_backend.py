@@ -249,9 +249,7 @@ class Neo4jRAGBackend:
                         index_id=self._index_id,
                     )
 
-        logger.info(
-            "Neo4jRAGBackend.index: wrote %d chunks to index=%s", written, self._index_id
-        )
+        logger.info("Neo4jRAGBackend.index: wrote %d chunks to index=%s", written, self._index_id)
         return written
 
     # ------------------------------------------------------------------
@@ -326,9 +324,7 @@ class Neo4jRAGBackend:
                             "text": record["text"],
                             "source": record["source"],
                             "score": graph_score,
-                            "metadata": self._parse_metadata(
-                                record.get("metadata_json") or "{}"
-                            ),
+                            "metadata": self._parse_metadata(record.get("metadata_json") or "{}"),
                         }
 
         sorted_results = sorted(results.values(), key=lambda r: r["score"], reverse=True)

@@ -160,9 +160,7 @@ async def _run_pipeline(job_id: uuid.UUID, agent_name: str, target: str) -> None
                 try:
                     async with async_session() as ks:
                         # Look up the agent to get team info
-                        agent_row = await ks.execute(
-                            select(Agent).where(Agent.name == agent_name)
-                        )
+                        agent_row = await ks.execute(select(Agent).where(Agent.name == agent_name))
                         ag = agent_row.scalar_one_or_none()
                         if ag:
                             await litellm_key_service.get_or_create_agent_key(

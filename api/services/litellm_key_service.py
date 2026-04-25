@@ -131,9 +131,7 @@ async def list_keys(
 
 async def revoke_key(db: AsyncSession, key_alias: str) -> bool:
     """Revoke a virtual key: delete from LiteLLM and mark inactive in DB."""
-    result = await db.execute(
-        select(LiteLLMKeyRef).where(LiteLLMKeyRef.key_alias == key_alias)
-    )
+    result = await db.execute(select(LiteLLMKeyRef).where(LiteLLMKeyRef.key_alias == key_alias))
     ref = result.scalar_one_or_none()
     if not ref:
         return False
@@ -148,7 +146,9 @@ async def revoke_key(db: AsyncSession, key_alias: str) -> bool:
                     json={"keys": [ref.litellm_key_id]},
                 )
         except Exception:
-            logger.warning("LiteLLM /key/delete failed for alias %s — marking inactive only", key_alias)
+            logger.warning(
+                "LiteLLM /key/delete failed for alias %s — marking inactive only", key_alias
+            )
 
     ref.is_active = False
     ref.updated_at = datetime.utcnow()

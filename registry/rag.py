@@ -98,8 +98,7 @@ def get_rag_backend(
     """
     if backend not in _BACKEND_REGISTRY:
         raise ValueError(
-            f"Unknown RAG backend '{backend}'. "
-            f"Supported backends: {sorted(_SUPPORTED_BACKENDS)}"
+            f"Unknown RAG backend '{backend}'. Supported backends: {sorted(_SUPPORTED_BACKENDS)}"
         )
 
     factory = _BACKEND_REGISTRY[backend]

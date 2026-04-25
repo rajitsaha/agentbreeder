@@ -291,8 +291,7 @@ class TestNeo4jRAGBackendSearch:
     async def test_search_respects_top_k(self):
         """search() truncates results to top_k."""
         records = [
-            _make_record(f"c{i}", f"text {i}", "doc.txt", 1.0 - i * 0.05)
-            for i in range(10)
+            _make_record(f"c{i}", f"text {i}", "doc.txt", 1.0 - i * 0.05) for i in range(10)
         ]
         backend = _make_backend()
         mock_driver = _make_mock_driver(records=records)

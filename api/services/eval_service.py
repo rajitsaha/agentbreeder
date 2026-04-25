@@ -484,7 +484,9 @@ class EvalStore:
     _DATASETS_FILE = "datasets.json"
     _RUNS_FILE = "runs.json"
 
-    def __init__(self, store_dir: pathlib.Path | None = pathlib.Path.home() / ".agentbreeder" / "evals") -> None:
+    def __init__(
+        self, store_dir: pathlib.Path | None = pathlib.Path.home() / ".agentbreeder" / "evals"
+    ) -> None:
         self._store_dir = store_dir
         self._datasets: dict[str, EvalDatasetRecord] = {}
         self._rows: dict[str, EvalDatasetRowRecord] = {}  # keyed by row_id
