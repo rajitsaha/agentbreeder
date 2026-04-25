@@ -42,6 +42,12 @@ def _get_backend(backend: str, **kwargs):
         choices = ", ".join(VALID_BACKENDS)
         console.print(f"[red]Unknown backend '{backend}'. Choose from: {choices}[/red]")
         raise typer.Exit(code=2)
+
+    # Fix #123: GCP Secret Manager names cannot contain slashes.
+    # Replace '/' with '_' in the prefix so the composed secret ID is valid.
+    if backend == "gcp" and "prefix" in kwargs:
+        kwargs["prefix"] = kwargs["prefix"].replace("/", "_")
+
     try:
         return get_backend(backend, **kwargs)
     except ImportError as exc:

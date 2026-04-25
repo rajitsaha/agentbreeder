@@ -109,45 +109,74 @@ def _build_service_template(
     to define the service's container spec, scaling, and resource limits.
     """
     # Parse resource config
-    cpu = config.deploy.resources.cpu or DEFAULT_CPU
+    # Fix #119: Cloud Run requires >= 1 vCPU when concurrency > 1.
+    # Normalise the value first, then clamp to 1000m if below 1.0 vCPU.
+    cpu_str = str(config.deploy.resources.cpu or DEFAULT_CPU)
+    cpu_val = float(cpu_str.replace("m", "")) / (1000 if cpu_str.endswith("m") else 1)
+    if cpu_val < 1.0:
+        cpu_str = "1000m"  # Cloud Run minimum for concurrency > 1
     memory = config.deploy.resources.memory or DEFAULT_MEMORY
 
     # Environment variables for the container
-    env_vars = {
+    # Fix #120: env vars whose value starts with "secret://" are wired as
+    # SecretKeyRef instead of being passed as literal strings.
+    import os as _os
+
+    plain_env_vars: dict[str, str] = {
         "AGENT_NAME": config.name,
         "AGENT_VERSION": config.version,
         "AGENT_FRAMEWORK": config.framework.value,
     }
     # Inject platform-level OTel endpoint if configured
-    import os as _os
-
     otel_endpoint = _os.getenv("OPENTELEMETRY_ENDPOINT")
     if otel_endpoint:
-        env_vars["OPENTELEMETRY_ENDPOINT"] = otel_endpoint
+        plain_env_vars["OPENTELEMETRY_ENDPOINT"] = otel_endpoint
     # Add user-defined env vars, excluding GCP_ prefixed ones (those are for infra config)
     for key, value in config.deploy.env_vars.items():
         if not key.startswith("GCP_") and not key.startswith("GOOGLE_"):
-            env_vars[key] = value
+            plain_env_vars[key] = value
+
+    # Build the env list, resolving secret:// references into SecretKeyRef entries.
+    env_list: list[dict[str, Any]] = []
+    for k, v in plain_env_vars.items():
+        if isinstance(v, str) and v.startswith("secret://"):
+            secret_name = v.removeprefix("secret://")
+            env_list.append(
+                {
+                    "name": k,
+                    "value_source": {
+                        "secret_key_ref": {
+                            "secret": (
+                                f"projects/{gcp_config.project_id}/secrets/{secret_name}"
+                            ),
+                            "version": "latest",
+                        }
+                    },
+                }
+            )
+        else:
+            env_list.append({"name": k, "value": v})
 
     container = {
         "image": image_uri,
         "resources": {
             "limits": {
-                "cpu": cpu,
+                "cpu": cpu_str,
                 "memory": memory,
             },
         },
-        "env": [{"name": k, "value": v} for k, v in env_vars.items()],
-        "ports": [{"containerPort": 8080}],
-        "startupProbe": {
-            "httpGet": {"path": "/health"},
-            "initialDelaySeconds": 5,
-            "periodSeconds": 5,
-            "failureThreshold": 12,
+        "env": env_list,
+        # Fix #117: use snake_case field names required by Cloud Run Python SDK v2.
+        "ports": [{"container_port": 8080}],
+        "startup_probe": {
+            "http_get": {"path": "/health"},
+            "initial_delay_seconds": 5,
+            "period_seconds": 5,
+            "failure_threshold": 12,
         },
-        "livenessProbe": {
-            "httpGet": {"path": "/health"},
-            "periodSeconds": 30,
+        "liveness_probe": {
+            "http_get": {"path": "/health"},
+            "period_seconds": 30,
         },
     }
 
@@ -156,15 +185,16 @@ def _build_service_template(
     min_instances = scaling_min if scaling_min >= 0 else DEFAULT_MIN_INSTANCES
     max_instances = config.deploy.scaling.max or DEFAULT_MAX_INSTANCES
 
+    # Fix #117 (continued): top-level template fields are also snake_case.
     template: dict[str, Any] = {
         "containers": [container],
         "scaling": {
-            "minInstanceCount": min_instances,
-            "maxInstanceCount": max_instances,
+            "min_instance_count": min_instances,
+            "max_instance_count": max_instances,
         },
         "timeout": f"{gcp_config.timeout_seconds}s",
-        "maxInstanceRequestConcurrency": gcp_config.concurrency,
-        "executionEnvironment": (
+        "max_instance_request_concurrency": gcp_config.concurrency,
+        "execution_environment": (
             "EXECUTION_ENVIRONMENT_GEN2"
             if gcp_config.execution_environment == "gen2"
             else "EXECUTION_ENVIRONMENT_GEN1"
@@ -172,10 +202,10 @@ def _build_service_template(
     }
 
     if gcp_config.service_account:
-        template["serviceAccount"] = gcp_config.service_account
+        template["service_account"] = gcp_config.service_account
 
     if gcp_config.vpc_connector:
-        template["vpcAccess"] = {
+        template["vpc_access"] = {
             "connector": gcp_config.vpc_connector,
             "egress": "PRIVATE_RANGES_ONLY",
         }
@@ -398,7 +428,7 @@ class GCPCloudRunDeployer(BaseDeployer):
             Service,
             UpdateServiceRequest,
         )
-        from google.cloud.run_v2.types import RevisionTemplate
+        from google.cloud.run_v2.types import IngressTraffic, RevisionTemplate
 
         run_client = self._get_run_client()
 
@@ -407,15 +437,16 @@ class GCPCloudRunDeployer(BaseDeployer):
 
         template_dict = _build_service_template(config, gcp, image_uri)
 
-        # Build ingress setting
+        # Fix #118: Service.Ingress enum does not exist in the Python SDK v2.
+        # Use IngressTraffic instead.
         ingress_map = {
-            "all": Service.Ingress.INGRESS_TRAFFIC_ALL,
-            "internal": Service.Ingress.INGRESS_TRAFFIC_INTERNAL_ONLY,
+            "all": IngressTraffic.INGRESS_TRAFFIC_ALL,
+            "internal": IngressTraffic.INGRESS_TRAFFIC_INTERNAL_ONLY,
             "internal-and-cloud-load-balancing": (
-                Service.Ingress.INGRESS_TRAFFIC_INTERNAL_LOAD_BALANCER
+                IngressTraffic.INGRESS_TRAFFIC_INTERNAL_LOAD_BALANCER
             ),
         }
-        ingress = ingress_map.get(gcp.ingress, Service.Ingress.INGRESS_TRAFFIC_ALL)
+        ingress = ingress_map.get(gcp.ingress, IngressTraffic.INGRESS_TRAFFIC_ALL)
 
         # Try to get existing service first
         try:

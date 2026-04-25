@@ -419,6 +419,46 @@ class TestSecretCommand:
         )
         assert result.exit_code != 0
 
+    def test_gcp_backend_prefix_slash_is_sanitized(self) -> None:
+        """#123: slashes in the prefix must be replaced with underscores for GCP."""
+        from cli.commands.secret import _get_backend as real_get_backend
+
+        fake_factory_calls: list[dict] = []
+
+        def capturing_factory(backend: str, **kwargs):
+            fake_factory_calls.append({"backend": backend, **kwargs})
+            mock_b = MagicMock()
+            mock_b.list = AsyncMock(return_value=[])
+            return mock_b
+
+        # engine.secrets.factory.get_backend is imported inside _get_backend,
+        # so patch it at its source module.
+        with patch("engine.secrets.factory.get_backend", side_effect=capturing_factory):
+            real_get_backend("gcp", prefix="agentbreeder/")
+
+        assert len(fake_factory_calls) == 1
+        assert "/" not in fake_factory_calls[0].get("prefix", "")
+        assert fake_factory_calls[0].get("prefix") == "agentbreeder_"
+
+    def test_non_gcp_backend_prefix_slash_is_not_sanitized(self) -> None:
+        """#123: slash sanitization must NOT apply to non-GCP backends."""
+        from cli.commands.secret import _get_backend as real_get_backend
+
+        fake_factory_calls: list[dict] = []
+
+        def capturing_factory(backend: str, **kwargs):
+            fake_factory_calls.append({"backend": backend, **kwargs})
+            mock_b = MagicMock()
+            mock_b.list = AsyncMock(return_value=[])
+            return mock_b
+
+        with patch("engine.secrets.factory.get_backend", side_effect=capturing_factory):
+            real_get_backend("aws", prefix="agentbreeder/")
+
+        assert len(fake_factory_calls) == 1
+        # AWS allows slashes; prefix should be untouched
+        assert fake_factory_calls[0].get("prefix") == "agentbreeder/"
+
 
 # ── Template Subcommands ───────────────────────────────────────────
 

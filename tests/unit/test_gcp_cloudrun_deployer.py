@@ -167,8 +167,9 @@ class TestBuildServiceTemplate:
         gcp = _extract_cloudrun_config(config)
         template = _build_service_template(config, gcp, "img:1.0.0")
 
-        assert template["scaling"]["minInstanceCount"] == 0
-        assert template["scaling"]["maxInstanceCount"] == 5
+        # #117: scaling keys must be snake_case
+        assert template["scaling"]["min_instance_count"] == 0
+        assert template["scaling"]["max_instance_count"] == 5
 
     def test_template_env_vars_exclude_gcp_prefixed(self) -> None:
         config = _make_config(
@@ -203,7 +204,8 @@ class TestBuildServiceTemplate:
         )
         gcp = _extract_cloudrun_config(config)
         template = _build_service_template(config, gcp, "img:1.0.0")
-        assert template["serviceAccount"] == "sa@proj.iam.gserviceaccount.com"
+        # #117: must be snake_case
+        assert template["service_account"] == "sa@proj.iam.gserviceaccount.com"
 
     def test_template_has_vpc_connector(self) -> None:
         config = _make_config(
@@ -216,7 +218,8 @@ class TestBuildServiceTemplate:
         )
         gcp = _extract_cloudrun_config(config)
         template = _build_service_template(config, gcp, "img:1.0.0")
-        assert template["vpcAccess"]["connector"] == "projects/p/locations/r/connectors/c"
+        # #117: must be snake_case
+        assert template["vpc_access"]["connector"] == "projects/p/locations/r/connectors/c"
 
     def test_template_gen1_execution_environment(self) -> None:
         config = _make_config(
@@ -229,7 +232,8 @@ class TestBuildServiceTemplate:
         )
         gcp = _extract_cloudrun_config(config)
         template = _build_service_template(config, gcp, "img:1.0.0")
-        assert template["executionEnvironment"] == "EXECUTION_ENVIRONMENT_GEN1"
+        # #117: must be snake_case
+        assert template["execution_environment"] == "EXECUTION_ENVIRONMENT_GEN1"
 
     def test_template_has_health_probes(self) -> None:
         config = _make_config()
@@ -237,10 +241,108 @@ class TestBuildServiceTemplate:
         template = _build_service_template(config, gcp, "img:1.0.0")
 
         container = template["containers"][0]
-        assert "startupProbe" in container
-        assert container["startupProbe"]["httpGet"]["path"] == "/health"
-        assert "livenessProbe" in container
-        assert container["livenessProbe"]["httpGet"]["path"] == "/health"
+        # #117: probe keys must be snake_case
+        assert "startup_probe" in container
+        assert container["startup_probe"]["http_get"]["path"] == "/health"
+        assert "liveness_probe" in container
+        assert container["liveness_probe"]["http_get"]["path"] == "/health"
+
+    def test_template_container_port_is_snake_case(self) -> None:
+        """#117: 'container_port' not 'containerPort'."""
+        config = _make_config()
+        gcp = _extract_cloudrun_config(config)
+        template = _build_service_template(config, gcp, "img:1.0.0")
+        container = template["containers"][0]
+        ports = container["ports"]
+        assert len(ports) == 1
+        assert ports[0].get("container_port") == 8080
+        assert "containerPort" not in ports[0]
+
+    def test_template_max_instance_request_concurrency_is_snake_case(self) -> None:
+        """#117: top-level concurrency field must be snake_case."""
+        config = _make_config()
+        gcp = _extract_cloudrun_config(config)
+        template = _build_service_template(config, gcp, "img:1.0.0")
+        assert "max_instance_request_concurrency" in template
+        assert "maxInstanceRequestConcurrency" not in template
+
+    def test_template_execution_environment_is_snake_case(self) -> None:
+        """#117: execution_environment key must be snake_case."""
+        config = _make_config()
+        gcp = _extract_cloudrun_config(config)
+        template = _build_service_template(config, gcp, "img:1.0.0")
+        assert "execution_environment" in template
+        assert "executionEnvironment" not in template
+
+    # -- #119: CPU minimum guard ------------------------------------------------
+
+    def test_cpu_below_1_is_clamped_to_1000m(self) -> None:
+        """#119: Cloud Run requires >= 1 vCPU when concurrency > 1."""
+        config = _make_config(deploy={"resources": {"cpu": "0.5", "memory": "512Mi"}})
+        gcp = _extract_cloudrun_config(config)
+        template = _build_service_template(config, gcp, "img:1.0.0")
+        cpu_limit = template["containers"][0]["resources"]["limits"]["cpu"]
+        assert cpu_limit == "1000m"
+
+    def test_cpu_in_millicores_below_1000m_is_clamped(self) -> None:
+        """#119: 500m expressed as millicores should also be clamped."""
+        config = _make_config(deploy={"resources": {"cpu": "500m", "memory": "512Mi"}})
+        gcp = _extract_cloudrun_config(config)
+        template = _build_service_template(config, gcp, "img:1.0.0")
+        cpu_limit = template["containers"][0]["resources"]["limits"]["cpu"]
+        assert cpu_limit == "1000m"
+
+    def test_cpu_at_or_above_1_is_not_clamped(self) -> None:
+        """#119: CPU >= 1 should not be modified."""
+        config = _make_config(deploy={"resources": {"cpu": "2", "memory": "1Gi"}})
+        gcp = _extract_cloudrun_config(config)
+        template = _build_service_template(config, gcp, "img:1.0.0")
+        cpu_limit = template["containers"][0]["resources"]["limits"]["cpu"]
+        assert cpu_limit == "2"
+
+    # -- #120: secret:// env vars -----------------------------------------------
+
+    def test_secret_ref_env_var_uses_secret_key_ref(self) -> None:
+        """#120: secret://FOO should become a SecretKeyRef, not a literal value."""
+        config = _make_config(
+            deploy={
+                "env_vars": {
+                    "GCP_PROJECT_ID": "my-project-123",
+                    "OPENAI_API_KEY": "secret://OPENAI_API_KEY",
+                },
+            }
+        )
+        gcp = _extract_cloudrun_config(config)
+        template = _build_service_template(config, gcp, "img:1.0.0")
+        container = template["containers"][0]
+
+        secret_entries = [e for e in container["env"] if e["name"] == "OPENAI_API_KEY"]
+        assert len(secret_entries) == 1
+        entry = secret_entries[0]
+        assert "value" not in entry
+        assert "value_source" in entry
+        ref = entry["value_source"]["secret_key_ref"]
+        assert ref["secret"].endswith("/secrets/OPENAI_API_KEY")
+        assert ref["version"] == "latest"
+
+    def test_plain_env_var_uses_value_not_secret_key_ref(self) -> None:
+        """#120: non-secret:// values should stay as plain 'value' fields."""
+        config = _make_config(
+            deploy={
+                "env_vars": {
+                    "GCP_PROJECT_ID": "my-project-123",
+                    "LOG_LEVEL": "debug",
+                },
+            }
+        )
+        gcp = _extract_cloudrun_config(config)
+        template = _build_service_template(config, gcp, "img:1.0.0")
+        container = template["containers"][0]
+
+        log_entries = [e for e in container["env"] if e["name"] == "LOG_LEVEL"]
+        assert len(log_entries) == 1
+        assert log_entries[0]["value"] == "debug"
+        assert "value_source" not in log_entries[0]
 
 
 # ---------------------------------------------------------------------------
