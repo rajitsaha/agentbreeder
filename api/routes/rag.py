@@ -5,7 +5,11 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-from fastapi import APIRouter, File, HTTPException, Query, UploadFile
+from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
+
+from api.auth import get_current_user
+from api.middleware.rbac import require_role
+from api.models.database import User
 
 from api.models.schemas import ApiMeta, ApiResponse
 from api.services.graph_store import get_graph_store
@@ -25,6 +29,7 @@ router = APIRouter(prefix="/api/v1/rag", tags=["rag"])
 @router.post("/indexes", status_code=201)
 async def create_index(
     body: dict[str, Any],
+    _user: User = Depends(require_role("deployer")),
 ) -> ApiResponse[dict]:
     """Create a new vector index.
 
@@ -85,7 +90,7 @@ async def create_index(
 
 
 @router.get("/backends")
-async def list_backends() -> ApiResponse[list[str]]:
+async def list_backends(_user: User = Depends(get_current_user)) -> ApiResponse[list[str]]:
     """List all registered RAG storage backends."""
     from registry.rag import list_backends as _list_backends  # noqa: PLC0415
 
@@ -94,6 +99,7 @@ async def list_backends() -> ApiResponse[list[str]]:
 
 @router.get("/indexes")
 async def list_indexes(
+    _user: User = Depends(get_current_user),
     page: int = Query(1, ge=1),
     per_page: int = Query(20, ge=1, le=100),
 ) -> ApiResponse[list[dict]]:
@@ -107,7 +113,7 @@ async def list_indexes(
 
 
 @router.get("/indexes/{index_id}")
-async def get_index(index_id: str) -> ApiResponse[dict]:
+async def get_index(index_id: str, _user: User = Depends(get_current_user)) -> ApiResponse[dict]:
     """Get a vector index by ID."""
     store = get_rag_store()
     idx = store.get_index(index_id)
@@ -117,7 +123,7 @@ async def get_index(index_id: str) -> ApiResponse[dict]:
 
 
 @router.delete("/indexes/{index_id}")
-async def delete_index(index_id: str) -> ApiResponse[dict]:
+async def delete_index(index_id: str, _user: User = Depends(require_role("admin"))) -> ApiResponse[dict]:
     """Delete a vector index."""
     store = get_rag_store()
     deleted = store.delete_index(index_id)
@@ -134,6 +140,7 @@ async def delete_index(index_id: str) -> ApiResponse[dict]:
 @router.post("/indexes/{index_id}/ingest")
 async def ingest_files(
     index_id: str,
+    _user: User = Depends(require_role("deployer")),
     files: list[UploadFile] = File(...),
 ) -> ApiResponse[dict]:
     """Upload and ingest files into a vector index.
@@ -170,6 +177,7 @@ async def ingest_files(
 async def get_ingest_job(
     index_id: str,
     job_id: str,
+    _user: User = Depends(get_current_user),
 ) -> ApiResponse[dict]:
     """Get ingestion job progress."""
     store = get_rag_store()
@@ -185,7 +193,7 @@ async def get_ingest_job(
 
 
 @router.post("/search")
-async def search(body: dict[str, Any]) -> ApiResponse[dict]:
+async def search(body: dict[str, Any], _user: User = Depends(get_current_user)) -> ApiResponse[dict]:
     """Search across a vector index using hybrid vector + text search, or graph/hybrid search.
 
     Request body:
@@ -239,7 +247,7 @@ async def search(body: dict[str, Any]) -> ApiResponse[dict]:
 
 
 @router.get("/indexes/{index_id}/graph")
-async def get_index_graph_metadata(index_id: str) -> ApiResponse[dict]:
+async def get_index_graph_metadata(index_id: str, _user: User = Depends(get_current_user)) -> ApiResponse[dict]:
     """Get graph metadata for a graph/hybrid index.
 
     Returns node count, edge count, entity type breakdown, and top entities.
@@ -281,6 +289,7 @@ async def get_index_graph_metadata(index_id: str) -> ApiResponse[dict]:
 @router.get("/indexes/{index_id}/entities")
 async def list_index_entities(
     index_id: str,
+    _user: User = Depends(get_current_user),
     page: int = Query(1, ge=1),
     per_page: int = Query(50, ge=1, le=200),
     entity_type: str | None = Query(None),

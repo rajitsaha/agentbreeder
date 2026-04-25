@@ -7,8 +7,10 @@ import random
 import re
 import time
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 
+from api.auth import get_current_user
+from api.models.database import User
 from api.models.schemas import (
     ApiResponse,
     PromptTestRequest,
@@ -134,6 +136,7 @@ def _estimate_tokens(text: str) -> int:
 @router.post("/test", response_model=ApiResponse[PromptTestResponse])
 async def test_prompt(
     body: PromptTestRequest,
+    _user: User = Depends(get_current_user),
 ) -> ApiResponse[PromptTestResponse]:
     """Test a prompt by rendering variables and sending to an LLM.
 

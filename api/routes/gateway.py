@@ -10,8 +10,10 @@ import logging
 import random
 import time
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Depends, Query
 
+from api.auth import get_current_user
+from api.models.database import User
 from api.models.schemas import ApiMeta, ApiResponse
 
 logger = logging.getLogger(__name__)
@@ -287,7 +289,7 @@ def _generate_log_entries(count: int = 20) -> list[dict]:
 
 
 @router.get("/status", response_model=ApiResponse[list[dict]])
-async def gateway_status() -> ApiResponse[list[dict]]:
+async def gateway_status(_user: User = Depends(get_current_user)) -> ApiResponse[list[dict]]:
     """Return status of each gateway tier (LiteLLM, OpenRouter, Direct API)."""
     return ApiResponse(
         data=_GATEWAY_TIERS,
@@ -297,6 +299,7 @@ async def gateway_status() -> ApiResponse[list[dict]]:
 
 @router.get("/models", response_model=ApiResponse[list[dict]])
 async def list_gateway_models(
+    _user: User = Depends(get_current_user),
     tier: str | None = Query(None, description="Filter by gateway tier"),
     provider: str | None = Query(None, description="Filter by provider"),
     page: int = Query(1, ge=1),
@@ -322,7 +325,7 @@ async def list_gateway_models(
 
 
 @router.get("/providers", response_model=ApiResponse[list[dict]])
-async def list_gateway_providers() -> ApiResponse[list[dict]]:
+async def list_gateway_providers(_user: User = Depends(get_current_user)) -> ApiResponse[list[dict]]:
     """List configured gateway providers with health status."""
     return ApiResponse(
         data=_GATEWAY_PROVIDERS,
@@ -332,6 +335,7 @@ async def list_gateway_providers() -> ApiResponse[list[dict]]:
 
 @router.get("/logs", response_model=ApiResponse[list[dict]])
 async def gateway_logs(
+    _user: User = Depends(get_current_user),
     page: int = Query(1, ge=1),
     per_page: int = Query(20, ge=1, le=100),
     model: str | None = Query(None),
@@ -360,7 +364,7 @@ async def gateway_logs(
 
 
 @router.get("/costs/comparison", response_model=ApiResponse[list[dict]])
-async def cost_comparison() -> ApiResponse[list[dict]]:
+async def cost_comparison(_user: User = Depends(get_current_user)) -> ApiResponse[list[dict]]:
     """Return cost comparison table across providers (price per 1M tokens)."""
     comparison = [
         {

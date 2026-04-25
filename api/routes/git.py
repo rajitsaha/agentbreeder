@@ -4,7 +4,11 @@ from __future__ import annotations
 
 import uuid
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
+
+from api.auth import get_current_user
+from api.middleware.rbac import require_role
+from api.models.database import User
 
 from api.models.schemas import (
     ApiMeta,
@@ -127,7 +131,7 @@ def _pr_to_response(pr: object) -> GitPRResponse:
 
 
 @router.post("/branches", response_model=ApiResponse[GitBranchResponse], status_code=201)
-async def create_branch(body: GitBranchCreateRequest) -> ApiResponse[GitBranchResponse]:
+async def create_branch(body: GitBranchCreateRequest, _user: User = Depends(require_role("deployer"))) -> ApiResponse[GitBranchResponse]:
     """Create a draft branch for editing a resource."""
     try:
         git = _get_git()
@@ -140,6 +144,7 @@ async def create_branch(body: GitBranchCreateRequest) -> ApiResponse[GitBranchRe
 
 @router.get("/branches", response_model=ApiResponse[GitBranchListResponse])
 async def list_branches(
+    _user: User = Depends(get_current_user),
     user: str | None = Query(None),
 ) -> ApiResponse[GitBranchListResponse]:
     """List draft branches, optionally filtered by user."""
@@ -154,7 +159,7 @@ async def list_branches(
 
 
 @router.post("/commits", response_model=ApiResponse[GitCommitResponse], status_code=201)
-async def create_commit(body: GitCommitRequest) -> ApiResponse[GitCommitResponse]:
+async def create_commit(body: GitCommitRequest, _user: User = Depends(require_role("deployer"))) -> ApiResponse[GitCommitResponse]:
     """Commit a file change on a branch."""
     try:
         git = _get_git()
@@ -185,6 +190,7 @@ async def create_commit(body: GitCommitRequest) -> ApiResponse[GitCommitResponse
 @router.get("/diff/{branch:path}", response_model=ApiResponse[GitDiffResponse])
 async def get_diff(
     branch: str,
+    _user: User = Depends(get_current_user),
     base: str = Query("main"),
 ) -> ApiResponse[GitDiffResponse]:
     """Get diff between a branch and base (default: main)."""
@@ -216,7 +222,7 @@ async def get_diff(
 
 
 @router.post("/prs", response_model=ApiResponse[GitPRResponse], status_code=201)
-async def create_pr(body: GitPRCreateRequest) -> ApiResponse[GitPRResponse]:
+async def create_pr(body: GitPRCreateRequest, _user: User = Depends(require_role("deployer"))) -> ApiResponse[GitPRResponse]:
     """Create a pull request for a draft branch."""
     try:
         pr_svc = _get_pr()
@@ -233,6 +239,7 @@ async def create_pr(body: GitPRCreateRequest) -> ApiResponse[GitPRResponse]:
 
 @router.get("/prs", response_model=ApiResponse[GitPRListResponse])
 async def list_prs(
+    _user: User = Depends(get_current_user),
     status: str | None = Query(None),
     resource_type: str | None = Query(None),
 ) -> ApiResponse[GitPRListResponse]:
@@ -247,7 +254,7 @@ async def list_prs(
 
 
 @router.get("/prs/{pr_id}", response_model=ApiResponse[GitPRResponse])
-async def get_pr(pr_id: uuid.UUID) -> ApiResponse[GitPRResponse]:
+async def get_pr(pr_id: uuid.UUID, _user: User = Depends(get_current_user)) -> ApiResponse[GitPRResponse]:
     """Get pull request detail with diff and commits."""
     pr_svc = _get_pr()
     pr = await pr_svc.get_pr(pr_id)
@@ -260,6 +267,7 @@ async def get_pr(pr_id: uuid.UUID) -> ApiResponse[GitPRResponse]:
 async def approve_pr(
     pr_id: uuid.UUID,
     body: GitPRApproveRequest,
+    _user: User = Depends(require_role("admin")),
 ) -> ApiResponse[GitPRResponse]:
     """Approve a pull request."""
     try:

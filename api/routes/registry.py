@@ -3,6 +3,10 @@
 from __future__ import annotations
 
 from fastapi import APIRouter, Depends, HTTPException, Query
+
+from api.auth import get_current_user
+from api.middleware.rbac import require_role
+from api.models.database import User
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.database import get_db
@@ -35,6 +39,7 @@ router = APIRouter(prefix="/api/v1/registry", tags=["registry"])
 
 @router.get("/tools", response_model=ApiResponse[list[ToolResponse]])
 async def list_tools(
+    _user: User = Depends(get_current_user),
     tool_type: str | None = Query(None),
     source: str | None = Query(None),
     page: int = Query(1, ge=1),
@@ -54,6 +59,7 @@ async def list_tools(
 @router.post("/tools", response_model=ApiResponse[ToolResponse], status_code=201)
 async def register_tool(
     body: ToolCreate,
+    _user: User = Depends(require_role("deployer")),
     db: AsyncSession = Depends(get_db),
 ) -> ApiResponse[ToolResponse]:
     """Register a tool or MCP server."""
@@ -72,6 +78,7 @@ async def register_tool(
 @router.get("/tools/{tool_id}", response_model=ApiResponse[ToolDetailResponse])
 async def get_tool(
     tool_id: str,
+    _user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ) -> ApiResponse[ToolDetailResponse]:
     """Get a single tool with full schema."""
@@ -87,6 +94,7 @@ async def get_tool(
 )
 async def get_tool_usage(
     tool_id: str,
+    _user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ) -> ApiResponse[list[ToolUsageResponse]]:
     """Get agents that reference this tool."""
@@ -110,6 +118,7 @@ async def get_tool_usage(
 
 @router.get("/models/compare", response_model=ApiResponse[list[ModelResponse]])
 async def compare_models(
+    _user: User = Depends(get_current_user),
     ids: str = Query(..., description="Comma-separated model IDs (max 3)"),
     db: AsyncSession = Depends(get_db),
 ) -> ApiResponse[list[ModelResponse]]:
@@ -131,6 +140,7 @@ async def compare_models(
 
 @router.get("/models", response_model=ApiResponse[list[ModelResponse]])
 async def list_models(
+    _user: User = Depends(get_current_user),
     provider: str | None = Query(None),
     source: str | None = Query(None),
     page: int = Query(1, ge=1),
@@ -150,6 +160,7 @@ async def list_models(
 @router.post("/models", response_model=ApiResponse[ModelResponse], status_code=201)
 async def register_model(
     body: ModelCreate,
+    _user: User = Depends(require_role("deployer")),
     db: AsyncSession = Depends(get_db),
 ) -> ApiResponse[ModelResponse]:
     """Register an LLM model."""
@@ -172,6 +183,7 @@ async def register_model(
 @router.get("/models/{model_id}", response_model=ApiResponse[ModelResponse])
 async def get_model(
     model_id: str,
+    _user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ) -> ApiResponse[ModelResponse]:
     """Get a single model with pricing and capabilities."""
@@ -187,6 +199,7 @@ async def get_model(
 )
 async def get_model_usage(
     model_id: str,
+    _user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ) -> ApiResponse[list[ModelUsageResponse]]:
     """Get agents that use this model as primary or fallback."""
@@ -213,6 +226,7 @@ async def get_model_usage(
 
 @router.get("/prompts", response_model=ApiResponse[list[PromptResponse]])
 async def list_prompts(
+    _user: User = Depends(get_current_user),
     team: str | None = Query(None),
     page: int = Query(1, ge=1),
     per_page: int = Query(20, ge=1, le=100),

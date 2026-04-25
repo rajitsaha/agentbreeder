@@ -2,8 +2,11 @@
 
 from __future__ import annotations
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 
+from api.auth import get_current_user
+from api.middleware.rbac import require_role
+from api.models.database import User
 from api.models.schemas import ApiResponse, SandboxExecuteRequest, SandboxExecuteResponse
 from api.services.sandbox_service import SandboxExecutionRequest, execute
 
@@ -13,6 +16,7 @@ router = APIRouter(prefix="/api/v1/tools/sandbox", tags=["sandbox"])
 @router.post("/execute", response_model=ApiResponse[SandboxExecuteResponse])
 async def execute_tool_in_sandbox(
     body: SandboxExecuteRequest,
+    _user: User = Depends(require_role("deployer")),
 ) -> ApiResponse[SandboxExecuteResponse]:
     """Execute tool code in an ephemeral sandbox container.
 

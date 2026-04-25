@@ -4,7 +4,11 @@ from __future__ import annotations
 
 import logging
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
+
+from api.auth import get_current_user
+from api.middleware.rbac import require_role
+from api.models.database import User
 
 from api.models.schemas import ApiMeta, ApiResponse
 from api.models.tracing_schemas import (
@@ -29,6 +33,7 @@ router = APIRouter(prefix="/api/v1/traces", tags=["tracing"])
 
 @router.get("", response_model=ApiResponse[list[TraceResponse]])
 async def list_traces(
+    _user: User = Depends(get_current_user),
     agent_name: str | None = Query(None),
     status: str | None = Query(None),
     date_from: str | None = Query(None),
@@ -71,6 +76,7 @@ async def list_traces(
 @router.get("/metrics/{agent_name}", response_model=ApiResponse[AgentMetricsSummary])
 async def get_agent_metrics(
     agent_name: str,
+    _user: User = Depends(get_current_user),
     days: int = Query(7, ge=1, le=365),
 ) -> ApiResponse[AgentMetricsSummary]:
     """Get aggregated metrics for an agent."""
@@ -80,7 +86,7 @@ async def get_agent_metrics(
 
 
 @router.get("/{trace_id}", response_model=ApiResponse[TraceDetailResponse])
-async def get_trace(trace_id: str) -> ApiResponse[TraceDetailResponse]:
+async def get_trace(trace_id: str, _user: User = Depends(get_current_user)) -> ApiResponse[TraceDetailResponse]:
     """Get a trace with all its spans."""
     store = get_tracing_store()
     trace = store.get_trace(trace_id)
@@ -98,7 +104,7 @@ async def get_trace(trace_id: str) -> ApiResponse[TraceDetailResponse]:
 
 
 @router.post("", response_model=ApiResponse[TraceResponse], status_code=201)
-async def create_trace(body: TraceCreate) -> ApiResponse[TraceResponse]:
+async def create_trace(body: TraceCreate, _user: User = Depends(get_current_user)) -> ApiResponse[TraceResponse]:
     """Create/ingest a new trace."""
     store = get_tracing_store()
 
@@ -130,7 +136,7 @@ async def create_trace(body: TraceCreate) -> ApiResponse[TraceResponse]:
 
 
 @router.post("/{trace_id}/spans", response_model=ApiResponse[SpanResponse], status_code=201)
-async def create_span(trace_id: str, body: SpanCreate) -> ApiResponse[SpanResponse]:
+async def create_span(trace_id: str, body: SpanCreate, _user: User = Depends(get_current_user)) -> ApiResponse[SpanResponse]:
     """Add a span to an existing trace."""
     store = get_tracing_store()
 
@@ -165,6 +171,7 @@ async def create_span(trace_id: str, body: SpanCreate) -> ApiResponse[SpanRespon
 
 @router.delete("", response_model=ApiResponse[dict])
 async def delete_traces(
+    _user: User = Depends(require_role("admin")),
     before: str = Query(..., description="ISO datetime — delete traces created before this date"),
 ) -> ApiResponse[dict]:
     """Bulk delete traces created before the given date."""

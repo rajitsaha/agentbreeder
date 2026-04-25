@@ -5,7 +5,10 @@ from __future__ import annotations
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from api.auth import get_current_user
 from api.database import get_db
+from api.middleware.rbac import require_role
+from api.models.database import User
 from api.models.schemas import (
     A2AAgentCreate,
     A2AAgentResponse,
@@ -26,6 +29,7 @@ async def list_a2a_agents(
     team: str | None = Query(None),
     page: int = Query(1, ge=1),
     per_page: int = Query(20, ge=1, le=100),
+    _user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ) -> ApiResponse[list[A2AAgentResponse]]:
     """List all A2A agents."""
@@ -39,6 +43,7 @@ async def list_a2a_agents(
 @router.get("/agents/{agent_id}", response_model=ApiResponse[A2AAgentResponse])
 async def get_a2a_agent(
     agent_id: str,
+    _user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ) -> ApiResponse[A2AAgentResponse]:
     """Get a single A2A agent by ID."""
@@ -51,6 +56,7 @@ async def get_a2a_agent(
 @router.post("/agents", response_model=ApiResponse[A2AAgentResponse], status_code=201)
 async def create_a2a_agent(
     body: A2AAgentCreate,
+    _user: User = Depends(require_role("deployer")),
     db: AsyncSession = Depends(get_db),
 ) -> ApiResponse[A2AAgentResponse]:
     """Register a new A2A agent."""
@@ -71,6 +77,7 @@ async def create_a2a_agent(
 async def update_a2a_agent(
     agent_id: str,
     body: A2AAgentUpdate,
+    _user: User = Depends(require_role("deployer")),
     db: AsyncSession = Depends(get_db),
 ) -> ApiResponse[A2AAgentResponse]:
     """Update an A2A agent."""
@@ -91,6 +98,7 @@ async def update_a2a_agent(
 @router.delete("/agents/{agent_id}", response_model=ApiResponse[dict])
 async def delete_a2a_agent(
     agent_id: str,
+    _user: User = Depends(require_role("admin")),
     db: AsyncSession = Depends(get_db),
 ) -> ApiResponse[dict]:
     """Delete an A2A agent."""
@@ -104,6 +112,7 @@ async def delete_a2a_agent(
 async def invoke_a2a_agent(
     body: A2AInvokeRequest,
     agent_name: str = Query(..., description="Name of the A2A agent to invoke"),
+    _user: User = Depends(require_role("deployer")),
     db: AsyncSession = Depends(get_db),
 ) -> ApiResponse[A2AInvokeResponse]:
     """Invoke an A2A agent by name."""

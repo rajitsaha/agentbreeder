@@ -4,11 +4,15 @@ from __future__ import annotations
 
 import logging
 import os
+import random
 import time
 import uuid
 
 import httpx
 from fastapi import APIRouter, Depends
+
+from api.auth import get_current_user
+from api.models.database import User
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -191,7 +195,7 @@ async def _try_litellm_call(
         try:
             text, in_tok, out_tok = await _call_litellm(messages, model)
             return text, in_tok, out_tok, model
-        except Exception:  # noqa: S112
+        except Exception:
             continue
     return None
 
@@ -207,9 +211,7 @@ async def _resolve_model(requested: str | None) -> str:
     return models[0] if models else "ollama/llama3.2"
 
 
-async def _call_litellm(
-    messages: list[dict], model: str, timeout: float = 180.0
-) -> tuple[str, int, int]:
+async def _call_litellm(messages: list[dict], model: str, timeout: float = 180.0) -> tuple[str, int, int]:
     """Call LiteLLM gateway. Returns (response_text, input_tokens, output_tokens)."""
     async with httpx.AsyncClient(timeout=timeout) as client:
         resp = await client.post(
@@ -254,6 +256,7 @@ def _build_system_prompt(agent_name: str, description: str, config: dict) -> str
 @router.post("/chat", response_model=ApiResponse[PlaygroundChatResponse])
 async def playground_chat(
     body: PlaygroundChatRequest,
+    _user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ) -> ApiResponse[PlaygroundChatResponse]:
     """Send a message to an agent and get a response via LiteLLM gateway."""
@@ -349,6 +352,7 @@ async def playground_chat(
 @router.post("/eval-case", response_model=ApiResponse[SaveEvalCaseResponse])
 async def save_eval_case(
     body: SaveEvalCaseRequest,
+    _user: User = Depends(get_current_user),
 ) -> ApiResponse[SaveEvalCaseResponse]:
     """Save an assistant message as an eval test case.
 

@@ -15,8 +15,12 @@ from __future__ import annotations
 import uuid
 from datetime import UTC, datetime
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
+
+from api.auth import get_current_user
+from api.middleware.rbac import require_role
+from api.models.database import User
 
 router = APIRouter(prefix="/api/v1/approvals", tags=["approvals"])
 
@@ -42,7 +46,7 @@ class ApprovalResponse(BaseModel):
 
 
 @router.post("/", response_model=ApprovalResponse)
-async def request_approval(request: ApprovalRequest) -> ApprovalResponse:
+async def request_approval(request: ApprovalRequest, _user: User = Depends(get_current_user)) -> ApprovalResponse:
     """Submit a tool call for human approval.
 
     The agent should poll GET /{approval_id} (or subscribe via webhook) and
@@ -70,7 +74,7 @@ async def request_approval(request: ApprovalRequest) -> ApprovalResponse:
 
 
 @router.get("/", response_model=list[ApprovalResponse])
-async def list_approvals(status: str | None = None) -> list[ApprovalResponse]:
+async def list_approvals(status: str | None = None, _user: User = Depends(get_current_user)) -> list[ApprovalResponse]:
     """List approval requests, optionally filtered by status."""
     items = list(_approval_queue.values())
     if status:
@@ -89,7 +93,7 @@ async def list_approvals(status: str | None = None) -> list[ApprovalResponse]:
 
 
 @router.get("/{approval_id}", response_model=ApprovalResponse)
-async def get_approval(approval_id: str) -> ApprovalResponse:
+async def get_approval(approval_id: str, _user: User = Depends(get_current_user)) -> ApprovalResponse:
     """Get the current status of an approval request."""
     if approval_id not in _approval_queue:
         raise HTTPException(status_code=404, detail="Approval request not found")
@@ -105,7 +109,7 @@ async def get_approval(approval_id: str) -> ApprovalResponse:
 
 
 @router.post("/{approval_id}/approve", response_model=ApprovalResponse)
-async def approve(approval_id: str, decided_by: str = "operator") -> ApprovalResponse:
+async def approve(approval_id: str, _user: User = Depends(require_role("admin")), decided_by: str = "operator") -> ApprovalResponse:
     """Approve a pending tool call, unblocking the agent."""
     if approval_id not in _approval_queue:
         raise HTTPException(status_code=404, detail="Approval request not found")
@@ -126,7 +130,7 @@ async def approve(approval_id: str, decided_by: str = "operator") -> ApprovalRes
 
 
 @router.post("/{approval_id}/reject", response_model=ApprovalResponse)
-async def reject(approval_id: str, decided_by: str = "operator") -> ApprovalResponse:
+async def reject(approval_id: str, _user: User = Depends(require_role("admin")), decided_by: str = "operator") -> ApprovalResponse:
     """Reject a pending tool call — the agent will receive a rejection error."""
     if approval_id not in _approval_queue:
         raise HTTPException(status_code=404, detail="Approval request not found")

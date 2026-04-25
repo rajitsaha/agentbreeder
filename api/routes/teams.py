@@ -2,7 +2,11 @@
 
 from __future__ import annotations
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
+
+from api.auth import get_current_user
+from api.middleware.rbac import require_role
+from api.models.database import User
 
 from api.models.schemas import ApiMeta, ApiResponse
 from api.models.team_schemas import (
@@ -26,6 +30,7 @@ router = APIRouter(prefix="/api/v1/teams", tags=["teams"])
 
 @router.get("", response_model=ApiResponse[list[TeamResponse]])
 async def list_teams(
+    _user: User = Depends(get_current_user),
     page: int = Query(1, ge=1),
     per_page: int = Query(20, ge=1, le=100),
 ) -> ApiResponse[list[TeamResponse]]:
@@ -51,7 +56,7 @@ async def list_teams(
 
 
 @router.post("", response_model=ApiResponse[TeamResponse], status_code=201)
-async def create_team(body: TeamCreate) -> ApiResponse[TeamResponse]:
+async def create_team(body: TeamCreate, _user: User = Depends(require_role("admin"))) -> ApiResponse[TeamResponse]:
     """Create a new team."""
     try:
         team = await TeamService.create_team(
@@ -74,7 +79,7 @@ async def create_team(body: TeamCreate) -> ApiResponse[TeamResponse]:
 
 
 @router.get("/{team_id}", response_model=ApiResponse[TeamDetailResponse])
-async def get_team(team_id: str) -> ApiResponse[TeamDetailResponse]:
+async def get_team(team_id: str, _user: User = Depends(get_current_user)) -> ApiResponse[TeamDetailResponse]:
     """Get team detail with members."""
     team = await TeamService.get_team(team_id)
     if not team:
@@ -107,7 +112,7 @@ async def get_team(team_id: str) -> ApiResponse[TeamDetailResponse]:
 
 
 @router.put("/{team_id}", response_model=ApiResponse[TeamResponse])
-async def update_team(team_id: str, body: TeamUpdate) -> ApiResponse[TeamResponse]:
+async def update_team(team_id: str, body: TeamUpdate, _user: User = Depends(require_role("admin"))) -> ApiResponse[TeamResponse]:
     """Update a team."""
     team = await TeamService.update_team(
         team_id,
@@ -131,7 +136,7 @@ async def update_team(team_id: str, body: TeamUpdate) -> ApiResponse[TeamRespons
 
 
 @router.delete("/{team_id}", response_model=ApiResponse[dict])
-async def delete_team(team_id: str) -> ApiResponse[dict]:
+async def delete_team(team_id: str, _user: User = Depends(require_role("admin"))) -> ApiResponse[dict]:
     """Delete a team and all its memberships/keys."""
     deleted = await TeamService.delete_team(team_id)
     if not deleted:
@@ -147,7 +152,7 @@ async def delete_team(team_id: str) -> ApiResponse[dict]:
     response_model=ApiResponse[TeamMemberResponse],
     status_code=201,
 )
-async def add_member(team_id: str, body: TeamMemberAdd) -> ApiResponse[TeamMemberResponse]:
+async def add_member(team_id: str, body: TeamMemberAdd, _user: User = Depends(require_role("admin"))) -> ApiResponse[TeamMemberResponse]:
     """Add a member to a team."""
     try:
         # Generate a user_id from email for the in-memory store
@@ -183,7 +188,10 @@ async def add_member(team_id: str, body: TeamMemberAdd) -> ApiResponse[TeamMembe
     response_model=ApiResponse[TeamMemberResponse],
 )
 async def update_member_role(
-    team_id: str, user_id: str, body: TeamMemberUpdate
+    team_id: str,
+    user_id: str,
+    body: TeamMemberUpdate,
+    _user: User = Depends(require_role("admin")),
 ) -> ApiResponse[TeamMemberResponse]:
     """Update a member's role."""
     try:
@@ -207,7 +215,7 @@ async def update_member_role(
 
 
 @router.delete("/{team_id}/members/{user_id}", response_model=ApiResponse[dict])
-async def remove_member(team_id: str, user_id: str) -> ApiResponse[dict]:
+async def remove_member(team_id: str, user_id: str, _user: User = Depends(require_role("admin"))) -> ApiResponse[dict]:
     """Remove a member from a team."""
     removed = await TeamService.remove_member(team_id, user_id)
     if not removed:
@@ -222,7 +230,7 @@ async def remove_member(team_id: str, user_id: str) -> ApiResponse[dict]:
     "/{team_id}/api-keys",
     response_model=ApiResponse[list[TeamApiKeyResponse]],
 )
-async def list_api_keys(team_id: str) -> ApiResponse[list[TeamApiKeyResponse]]:
+async def list_api_keys(team_id: str, _user: User = Depends(require_role("admin"))) -> ApiResponse[list[TeamApiKeyResponse]]:
     """List API keys for a team (hints only, never the actual key)."""
     team = await TeamService.get_team(team_id)
     if not team:
@@ -248,7 +256,7 @@ async def list_api_keys(team_id: str) -> ApiResponse[list[TeamApiKeyResponse]]:
     response_model=ApiResponse[TeamApiKeyResponse],
     status_code=201,
 )
-async def set_api_key(team_id: str, body: TeamApiKeyCreate) -> ApiResponse[TeamApiKeyResponse]:
+async def set_api_key(team_id: str, body: TeamApiKeyCreate, _user: User = Depends(require_role("admin"))) -> ApiResponse[TeamApiKeyResponse]:
     """Set an API key for a provider on this team."""
     try:
         key_data = await TeamService.set_api_key(

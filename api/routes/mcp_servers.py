@@ -3,6 +3,10 @@
 from __future__ import annotations
 
 from fastapi import APIRouter, Depends, HTTPException, Query
+
+from api.auth import get_current_user
+from api.middleware.rbac import require_role
+from api.models.database import User
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.database import get_db
@@ -23,6 +27,7 @@ router = APIRouter(prefix="/api/v1/mcp-servers", tags=["mcp-servers"])
 
 @router.get("", response_model=ApiResponse[list[McpServerResponse]])
 async def list_mcp_servers(
+    _user: User = Depends(get_current_user),
     page: int = Query(1, ge=1),
     per_page: int = Query(20, ge=1, le=100),
     db: AsyncSession = Depends(get_db),
@@ -38,6 +43,7 @@ async def list_mcp_servers(
 @router.get("/{server_id}", response_model=ApiResponse[McpServerResponse])
 async def get_mcp_server(
     server_id: str,
+    _user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ) -> ApiResponse[McpServerResponse]:
     """Get a single MCP server by ID."""
@@ -50,6 +56,7 @@ async def get_mcp_server(
 @router.post("", response_model=ApiResponse[McpServerResponse], status_code=201)
 async def create_mcp_server(
     body: McpServerCreate,
+    _user: User = Depends(require_role("deployer")),
     db: AsyncSession = Depends(get_db),
 ) -> ApiResponse[McpServerResponse]:
     """Register a new MCP server."""
@@ -66,6 +73,7 @@ async def create_mcp_server(
 async def update_mcp_server(
     server_id: str,
     body: McpServerUpdate,
+    _user: User = Depends(require_role("deployer")),
     db: AsyncSession = Depends(get_db),
 ) -> ApiResponse[McpServerResponse]:
     """Update an MCP server."""
@@ -85,6 +93,7 @@ async def update_mcp_server(
 @router.delete("/{server_id}", response_model=ApiResponse[dict])
 async def delete_mcp_server(
     server_id: str,
+    _user: User = Depends(require_role("admin")),
     db: AsyncSession = Depends(get_db),
 ) -> ApiResponse[dict]:
     """Delete an MCP server."""
@@ -100,6 +109,7 @@ async def delete_mcp_server(
 )
 async def test_mcp_server(
     server_id: str,
+    _user: User = Depends(require_role("deployer")),
     db: AsyncSession = Depends(get_db),
 ) -> ApiResponse[McpServerTestResult]:
     """Test connectivity to an MCP server."""
@@ -116,6 +126,7 @@ async def test_mcp_server(
 )
 async def discover_mcp_server_tools(
     server_id: str,
+    _user: User = Depends(require_role("deployer")),
     db: AsyncSession = Depends(get_db),
 ) -> ApiResponse[McpServerDiscoverResult]:
     """Discover tools exposed by an MCP server."""
@@ -137,6 +148,7 @@ async def discover_mcp_server_tools(
 )
 async def execute_mcp_tool(
     server_id: str,
+    _user: User = Depends(require_role("deployer")),
     tool_name: str = Query(..., description="Name of the tool to execute"),
     arguments: dict | None = None,
     db: AsyncSession = Depends(get_db),

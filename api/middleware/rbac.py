@@ -53,13 +53,19 @@ def require_role(min_role: str, resource_team: str | None = None) -> Callable:
                     detail=f"Requires {min_role} role, you have {user_role}",
                 )
         else:
-            # Check if user has sufficient role in ANY team
+            # Check if user has sufficient role in ANY team using DB-backed query
+            user_teams = await TeamService.get_user_teams(user_id)
             max_level = 0
-            memberships = [m for m in TeamService._memberships.values() if m.user_id == user_id]
-            for m in memberships:
-                level = ROLE_HIERARCHY.get(m.role, 0)
-                if level > max_level:
-                    max_level = level
+            for team in user_teams:
+                role = await TeamService.get_user_role_in_team(user_id, team.id)
+                if role is not None:
+                    level = ROLE_HIERARCHY.get(role, 0)
+                    if level > max_level:
+                        max_level = level
+
+            # Platform admins always pass
+            if hasattr(user, "role") and str(user.role) == "admin":
+                max_level = max(max_level, ROLE_HIERARCHY.get("admin", 3))
 
             if max_level < required_level:
                 raise HTTPException(

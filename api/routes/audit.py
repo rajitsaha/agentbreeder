@@ -4,8 +4,10 @@ from __future__ import annotations
 
 from datetime import UTC, datetime
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Depends, Query
 
+from api.auth import get_current_user
+from api.models.database import User
 from api.models.audit_schemas import (
     AffectedAgent,
     AuditEventCreate,
@@ -30,6 +32,7 @@ router = APIRouter(tags=["audit", "lineage"])
 
 @router.get("/api/v1/audit", response_model=ApiResponse[list[AuditEventResponse]])
 async def list_audit_events(
+    _user: User = Depends(get_current_user),
     actor: str | None = Query(None),
     action: str | None = Query(None),
     resource_type: str | None = Query(None),
@@ -72,6 +75,7 @@ async def list_audit_events(
 async def get_events_for_resource(
     resource_type: str,
     resource_id: str,
+    _user: User = Depends(get_current_user),
 ) -> ApiResponse[list[AuditEventResponse]]:
     """Get all audit events for a specific resource."""
     events = await AuditService.get_events_for_resource(resource_type, resource_id)
@@ -88,6 +92,7 @@ async def get_events_for_resource(
 )
 async def record_audit_event(
     body: AuditEventCreate,
+    _user: User = Depends(get_current_user),
 ) -> ApiResponse[AuditEventResponse]:
     """Record a new audit event (internal use)."""
     event = await AuditService.log_event(
@@ -114,6 +119,7 @@ async def record_audit_event(
 async def get_lineage_graph(
     resource_type: str,
     resource_id: str,
+    _user: User = Depends(get_current_user),
 ) -> ApiResponse[LineageGraphResponse]:
     """Get the dependency graph for a resource."""
     graph = await AuditService.get_lineage_graph(resource_type, resource_id)
@@ -132,6 +138,7 @@ async def get_lineage_graph(
 async def get_impact_analysis(
     resource_type: str,
     resource_name: str,
+    _user: User = Depends(get_current_user),
 ) -> ApiResponse[ImpactAnalysisResponse]:
     """Analyze the impact of changing a resource on dependent agents."""
     analysis = await AuditService.get_impact_analysis(resource_type, resource_name)
@@ -154,6 +161,7 @@ async def get_impact_analysis(
 )
 async def register_dependency(
     body: ResourceDependencyCreate,
+    _user: User = Depends(get_current_user),
 ) -> ApiResponse[ResourceDependencyResponse]:
     """Register a dependency between two resources."""
     dep = await AuditService.register_dependency(
@@ -175,6 +183,7 @@ async def register_dependency(
 async def sync_agent_dependencies(
     agent_name: str,
     config_snapshot: dict,
+    _user: User = Depends(get_current_user),
 ) -> ApiResponse[list[ResourceDependencyResponse]]:
     """Sync agent dependencies from its config snapshot."""
     deps = await AuditService.sync_agent_dependencies(agent_name, config_snapshot)

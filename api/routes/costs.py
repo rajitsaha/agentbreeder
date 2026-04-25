@@ -5,8 +5,11 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 
+from api.auth import get_current_user
+from api.middleware.rbac import require_role
+from api.models.database import User
 from api.models.schemas import ApiMeta, ApiResponse
 from api.services.cost_service import get_cost_store
 
@@ -21,7 +24,7 @@ router = APIRouter(prefix="/api/v1", tags=["costs"])
 
 
 @router.post("/costs/events", status_code=201)
-async def record_cost_event(body: dict[str, Any]) -> ApiResponse[dict]:
+async def record_cost_event(body: dict[str, Any], _user: User = Depends(get_current_user)) -> ApiResponse[dict]:
     """Record a new cost event."""
     store = get_cost_store()
 
@@ -61,6 +64,7 @@ async def record_cost_event(body: dict[str, Any]) -> ApiResponse[dict]:
 
 @router.get("/costs/summary")
 async def get_cost_summary(
+    _user: User = Depends(get_current_user),
     team: str | None = Query(None),
     agent_name: str | None = Query(None),
     days: int = Query(30, ge=1, le=365),
@@ -73,6 +77,7 @@ async def get_cost_summary(
 
 @router.get("/costs/breakdown")
 async def get_cost_breakdown(
+    _user: User = Depends(get_current_user),
     days: int = Query(30, ge=1, le=365),
     group_by: str = Query("agent"),
 ) -> ApiResponse[dict]:
@@ -84,6 +89,7 @@ async def get_cost_breakdown(
 
 @router.get("/costs/trend")
 async def get_cost_trend(
+    _user: User = Depends(get_current_user),
     days: int = Query(30, ge=1, le=365),
     team: str | None = Query(None),
     agent_name: str | None = Query(None),
@@ -96,6 +102,7 @@ async def get_cost_trend(
 
 @router.get("/costs/top-spenders")
 async def get_top_spenders(
+    _user: User = Depends(get_current_user),
     days: int = Query(30, ge=1, le=365),
     limit: int = Query(10, ge=1, le=100),
 ) -> ApiResponse[list]:
@@ -106,7 +113,7 @@ async def get_top_spenders(
 
 
 @router.post("/costs/compare")
-async def compare_models(body: dict[str, Any]) -> ApiResponse[dict]:
+async def compare_models(body: dict[str, Any], _user: User = Depends(get_current_user)) -> ApiResponse[dict]:
     """Compare estimated costs between two models."""
     store = get_cost_store()
 
@@ -126,7 +133,7 @@ async def compare_models(body: dict[str, Any]) -> ApiResponse[dict]:
 
 
 @router.get("/budgets")
-async def list_budgets() -> ApiResponse[list]:
+async def list_budgets(_user: User = Depends(get_current_user)) -> ApiResponse[list]:
     """List all team budgets."""
     store = get_cost_store()
     budgets = store.list_budgets()
@@ -137,7 +144,7 @@ async def list_budgets() -> ApiResponse[list]:
 
 
 @router.post("/budgets", status_code=201)
-async def create_budget(body: dict[str, Any]) -> ApiResponse[dict]:
+async def create_budget(body: dict[str, Any], _user: User = Depends(require_role("admin"))) -> ApiResponse[dict]:
     """Create or update a team budget."""
     store = get_cost_store()
 
@@ -158,7 +165,7 @@ async def create_budget(body: dict[str, Any]) -> ApiResponse[dict]:
 
 
 @router.get("/budgets/{team}")
-async def get_budget(team: str) -> ApiResponse[dict]:
+async def get_budget(team: str, _user: User = Depends(get_current_user)) -> ApiResponse[dict]:
     """Get a team's budget."""
     store = get_cost_store()
     budget = store.get_budget(team)
@@ -168,7 +175,7 @@ async def get_budget(team: str) -> ApiResponse[dict]:
 
 
 @router.put("/budgets/{team}")
-async def update_budget(team: str, body: dict[str, Any]) -> ApiResponse[dict]:
+async def update_budget(team: str, body: dict[str, Any], _user: User = Depends(require_role("admin"))) -> ApiResponse[dict]:
     """Update a team's budget."""
     store = get_cost_store()
     budget = store.update_budget(

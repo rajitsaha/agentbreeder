@@ -1698,6 +1698,7 @@ class TestApiMainLifespan:
 # ===================================================================
 
 
+@pytest.mark.no_auto_auth
 class TestApiAuthDependency:
     """Lines 40, 53-60: get_current_user with valid/invalid."""
 

@@ -81,6 +81,7 @@ class Agent(Base):
     )
     tags: Mapped[list] = mapped_column(JSON, default=list)
     config_snapshot: Mapped[dict] = mapped_column(JSON, default=dict)
+    created_by: Mapped[str | None] = mapped_column(String(255), nullable=True, index=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
@@ -134,6 +135,7 @@ class Tool(Base):
     endpoint: Mapped[str | None] = mapped_column(String(500), nullable=True)
     status: Mapped[str] = mapped_column(String(20), default="active")
     source: Mapped[str] = mapped_column(String(50), default="manual")
+    created_by: Mapped[str | None] = mapped_column(String(255), nullable=True, index=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
@@ -159,6 +161,7 @@ class Model(Base):
     input_price_per_million: Mapped[float | None] = mapped_column(Float, nullable=True)
     output_price_per_million: Mapped[float | None] = mapped_column(Float, nullable=True)
     capabilities: Mapped[list | None] = mapped_column(JSON, nullable=True)
+    created_by: Mapped[str | None] = mapped_column(String(255), nullable=True, index=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
@@ -178,6 +181,7 @@ class Prompt(Base):
     content: Mapped[str] = mapped_column(Text, nullable=False)
     description: Mapped[str] = mapped_column(Text, default="")
     team: Mapped[str] = mapped_column(String(100), nullable=False)
+    created_by: Mapped[str | None] = mapped_column(String(255), nullable=True, index=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
@@ -227,6 +231,7 @@ class KnowledgeBase(Base):
     source_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
     status: Mapped[str] = mapped_column(String(20), default="active")
     config: Mapped[dict] = mapped_column(JSON, default=dict)
+    created_by: Mapped[str | None] = mapped_column(String(255), nullable=True, index=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
@@ -257,6 +262,7 @@ class McpServer(Base):
     team: Mapped[str | None] = mapped_column(String(100), nullable=True, index=True)
     deploy_config: Mapped[dict | None] = mapped_column(JSON, nullable=True)
     image_uri: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    created_by: Mapped[str | None] = mapped_column(String(255), nullable=True, index=True)
 
 
 class Provider(Base):
@@ -622,9 +628,7 @@ class LiteLLMKeyRef(Base):
 
     # Who this key is issued to
     scope_type: Mapped[KeyScopeType] = mapped_column(Enum(KeyScopeType), nullable=False)
-    scope_id: Mapped[str] = mapped_column(
-        String(255), nullable=False
-    )  # team name / user id / agent name
+    scope_id: Mapped[str] = mapped_column(String(255), nullable=False)  # team name / user id / agent name
 
     # Optional FK-friendly denormalized fields for filtering
     team_id: Mapped[str | None] = mapped_column(String(100), nullable=True, index=True)
@@ -636,11 +640,9 @@ class LiteLLMKeyRef(Base):
 
     # Spend limits
     max_budget: Mapped[float | None] = mapped_column(Float, nullable=True)
-    budget_duration: Mapped[BudgetDuration | None] = mapped_column(
-        Enum(BudgetDuration), nullable=True
-    )
-    tpm_limit: Mapped[int | None] = mapped_column(Integer, nullable=True)  # tokens/minute
-    rpm_limit: Mapped[int | None] = mapped_column(Integer, nullable=True)  # requests/minute
+    budget_duration: Mapped[BudgetDuration | None] = mapped_column(Enum(BudgetDuration), nullable=True)
+    tpm_limit: Mapped[int | None] = mapped_column(Integer, nullable=True)   # tokens/minute
+    rpm_limit: Mapped[int | None] = mapped_column(Integer, nullable=True)   # requests/minute
 
     # Routing / classification tags (e.g. ["production", "rag", "customer-support"])
     tags: Mapped[list] = mapped_column(JSON, default=list)
@@ -650,9 +652,7 @@ class LiteLLMKeyRef(Base):
 
     is_active: Mapped[bool] = mapped_column(default=True, nullable=False)
 
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now()
-    )
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
     )
@@ -661,4 +661,117 @@ class LiteLLMKeyRef(Base):
         Index("ix_litellm_key_refs_scope", "scope_type", "scope_id"),
         Index("ix_litellm_key_refs_team", "team_id"),
         Index("ix_litellm_key_refs_agent", "agent_name"),
+    )
+
+
+# ---------------------------------------------------------------------------
+# Phase 2 — Asset ACL + Approval Queue
+# ---------------------------------------------------------------------------
+
+
+class ResourcePermission(Base):
+    """Fine-grained ACL entry granting a principal specific actions on a resource."""
+
+    __tablename__ = "resource_permissions"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+
+    # What resource this permission applies to
+    resource_type: Mapped[str] = mapped_column(String(50), nullable=False)
+    resource_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), nullable=False)
+
+    # Who the permission is granted to
+    principal_type: Mapped[str] = mapped_column(String(20), nullable=False)  # user|team|service_principal|group
+    principal_id: Mapped[str] = mapped_column(String(255), nullable=False)
+
+    # What they can do: ["read", "use", "write", "deploy", "publish", "admin"]
+    actions: Mapped[list] = mapped_column(JSON, nullable=False, default=list)
+
+    created_by: Mapped[str] = mapped_column(String(255), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+    __table_args__ = (
+        Index("ix_resource_permissions_resource", "resource_type", "resource_id"),
+        Index("ix_resource_permissions_principal", "principal_type", "principal_id"),
+    )
+
+
+class AssetApprovalRequest(Base):
+    """Persisted approval queue entry — an asset submitted for admin sign-off."""
+
+    __tablename__ = "asset_approval_requests"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+
+    asset_type: Mapped[str] = mapped_column(String(50), nullable=False)
+    asset_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), nullable=False)
+    asset_version: Mapped[str | None] = mapped_column(String(50), nullable=True)
+
+    submitter_id: Mapped[str] = mapped_column(String(255), nullable=False)
+    status: Mapped[str] = mapped_column(String(20), nullable=False, default="pending")  # pending|approved|rejected
+
+    approver_id: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    reason: Mapped[str | None] = mapped_column(Text, nullable=True)    # admin note on decision
+    message: Mapped[str | None] = mapped_column(Text, nullable=True)   # submitter message
+
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    decided_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+    __table_args__ = (
+        Index("ix_asset_approval_requests_status", "status"),
+        Index("ix_asset_approval_requests_submitter", "submitter_id"),
+        Index("ix_asset_approval_requests_asset", "asset_type", "asset_id"),
+    )
+
+
+# ---------------------------------------------------------------------------
+# Phase 3 — Service Principals + Principal Groups
+# ---------------------------------------------------------------------------
+
+
+class ServicePrincipal(Base):
+    """Non-human identity (CI bot, agent, service) with RBAC role and scoped access."""
+
+    __tablename__ = "service_principals"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+
+    name: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
+    team_id: Mapped[str] = mapped_column(String(100), nullable=False)
+    role: Mapped[str] = mapped_column(String(50), nullable=False, default="viewer")  # deployer|contributor|viewer
+
+    # Optional allowlist of resource_type:resource_id pairs
+    allowed_assets: Mapped[list | None] = mapped_column(JSON, nullable=True)
+
+    created_by: Mapped[str] = mapped_column(String(255), nullable=False)
+    last_used_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    is_active: Mapped[bool] = mapped_column(default=True, nullable=False)
+
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+    __table_args__ = (
+        Index("ix_service_principals_name", "name"),
+        Index("ix_service_principals_team", "team_id"),
+    )
+
+
+class PrincipalGroup(Base):
+    """Named group of users and/or service principals — used as a principal_id in ACL entries."""
+
+    __tablename__ = "principal_groups"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    team_id: Mapped[str] = mapped_column(String(100), nullable=False)
+
+    # List of member identifiers (user emails or service_principal IDs)
+    member_ids: Mapped[list] = mapped_column(JSON, nullable=False, default=list)
+
+    created_by: Mapped[str] = mapped_column(String(255), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+    __table_args__ = (
+        Index("ix_principal_groups_team", "team_id"),
+        Index("ix_principal_groups_team_name", "team_id", "name", unique=True),
     )

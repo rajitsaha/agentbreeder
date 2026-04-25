@@ -249,21 +249,22 @@ class TestRequireRole:
     @pytest.mark.asyncio
     async def test_no_team_sufficient_global_role_returns_user(self):
         from api.middleware.rbac import require_role
-        from api.services.team_service import MembershipData
 
         checker = require_role("viewer")
         user = self._make_user()
         uid = str(user.id)
 
-        m = MembershipData(
-            team_id="t1",
-            user_id=uid,
-            user_email="u@example.com",
-            user_name="User",
-            role="admin",
-        )
+        # Simulate user having "admin" role in team "t1" via DB-backed queries
+        mock_team = MagicMock()
+        mock_team.id = "t1"
 
-        with patch("api.middleware.rbac.TeamService._memberships", {"m1": m}):
+        with patch(
+            "api.middleware.rbac.TeamService.get_user_teams",
+            new=AsyncMock(return_value=[mock_team]),
+        ), patch(
+            "api.middleware.rbac.TeamService.get_user_role_in_team",
+            new=AsyncMock(return_value="admin"),
+        ):
             result = await checker(user=user)
         assert result is user
 
@@ -276,7 +277,11 @@ class TestRequireRole:
         checker = require_role("admin")
         user = self._make_user()
 
-        with patch("api.middleware.rbac.TeamService._memberships", {}):
+        # User has no teams and no admin role on user model → 403
+        with patch(
+            "api.middleware.rbac.TeamService.get_user_teams",
+            new=AsyncMock(return_value=[]),
+        ):
             with pytest.raises(HTTPException) as exc_info:
                 await checker(user=user)
         assert exc_info.value.status_code == 403

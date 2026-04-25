@@ -4,9 +4,12 @@ from __future__ import annotations
 
 import logging
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import PlainTextResponse, Response
 
+from api.auth import get_current_user
+from api.middleware.rbac import require_role
+from api.models.database import User
 from api.models.schemas import ApiMeta, ApiResponse
 from api.services.eval_service import get_eval_store, seed_community_datasets
 
@@ -22,6 +25,7 @@ router = APIRouter(prefix="/api/v1/eval", tags=["evals"])
 
 @router.get("/datasets")
 async def list_datasets(
+    _user: User = Depends(get_current_user),
     team: str | None = Query(None),
     agent_id: str | None = Query(None),
 ) -> ApiResponse[list]:
@@ -32,7 +36,7 @@ async def list_datasets(
 
 
 @router.post("/datasets", status_code=201)
-async def create_dataset(body: dict) -> ApiResponse[dict]:
+async def create_dataset(body: dict, _user: User = Depends(require_role("deployer"))) -> ApiResponse[dict]:
     """Create a new evaluation dataset."""
     store = get_eval_store()
     name = body.get("name")
@@ -56,7 +60,7 @@ async def create_dataset(body: dict) -> ApiResponse[dict]:
 
 
 @router.get("/datasets/{dataset_id}")
-async def get_dataset(dataset_id: str) -> ApiResponse[dict]:
+async def get_dataset(dataset_id: str, _user: User = Depends(get_current_user)) -> ApiResponse[dict]:
     """Get a dataset by ID, including row count."""
     store = get_eval_store()
     dataset = store.get_dataset(dataset_id)
@@ -66,7 +70,7 @@ async def get_dataset(dataset_id: str) -> ApiResponse[dict]:
 
 
 @router.delete("/datasets/{dataset_id}")
-async def delete_dataset(dataset_id: str) -> ApiResponse[dict]:
+async def delete_dataset(dataset_id: str, _user: User = Depends(require_role("admin"))) -> ApiResponse[dict]:
     """Delete a dataset and all related rows, runs, and results."""
     store = get_eval_store()
     deleted = store.delete_dataset(dataset_id)
@@ -81,7 +85,7 @@ async def delete_dataset(dataset_id: str) -> ApiResponse[dict]:
 
 
 @router.post("/datasets/{dataset_id}/rows", status_code=201)
-async def add_rows(dataset_id: str, body: dict) -> ApiResponse[list]:
+async def add_rows(dataset_id: str, body: dict, _user: User = Depends(require_role("deployer"))) -> ApiResponse[list]:
     """Add rows to a dataset."""
     store = get_eval_store()
     rows = body.get("rows", [])
@@ -99,6 +103,7 @@ async def add_rows(dataset_id: str, body: dict) -> ApiResponse[list]:
 @router.get("/datasets/{dataset_id}/rows")
 async def list_rows(
     dataset_id: str,
+    _user: User = Depends(get_current_user),
     tag: str | None = Query(None),
     limit: int = Query(100, ge=1, le=1000),
     offset: int = Query(0, ge=0),
@@ -110,7 +115,7 @@ async def list_rows(
 
 
 @router.post("/datasets/{dataset_id}/import", status_code=201)
-async def import_jsonl(dataset_id: str, body: dict) -> ApiResponse[dict]:
+async def import_jsonl(dataset_id: str, body: dict, _user: User = Depends(require_role("deployer"))) -> ApiResponse[dict]:
     """Import rows from JSONL content."""
     store = get_eval_store()
     content = body.get("content", "")
@@ -128,7 +133,7 @@ async def import_jsonl(dataset_id: str, body: dict) -> ApiResponse[dict]:
 
 
 @router.get("/datasets/{dataset_id}/export")
-async def export_jsonl(dataset_id: str) -> PlainTextResponse:
+async def export_jsonl(dataset_id: str, _user: User = Depends(get_current_user)) -> PlainTextResponse:
     """Export dataset rows as JSONL."""
     store = get_eval_store()
     dataset = store.get_dataset(dataset_id)
@@ -145,7 +150,7 @@ async def export_jsonl(dataset_id: str) -> PlainTextResponse:
 
 
 @router.post("/runs", status_code=201)
-async def create_run(body: dict) -> ApiResponse[dict]:
+async def create_run(body: dict, _user: User = Depends(require_role("deployer"))) -> ApiResponse[dict]:
     """Create and execute an eval run."""
     store = get_eval_store()
 
@@ -176,6 +181,7 @@ async def create_run(body: dict) -> ApiResponse[dict]:
 
 @router.get("/runs")
 async def list_runs(
+    _user: User = Depends(get_current_user),
     agent_name: str | None = Query(None),
     dataset_id: str | None = Query(None),
 ) -> ApiResponse[list]:

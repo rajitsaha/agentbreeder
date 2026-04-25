@@ -13,6 +13,10 @@ from __future__ import annotations
 import uuid
 
 from fastapi import APIRouter, Depends, HTTPException, Query
+
+from api.auth import get_current_user
+from api.middleware.rbac import require_role
+from api.models.database import User
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.database import get_db
@@ -41,6 +45,7 @@ def _enrich(job) -> DeployJobResponse:
 @router.post("", response_model=ApiResponse[DeployJobResponse])
 async def create_deploy(
     body: DeployRequest,
+    _user: User = Depends(require_role("deployer")),
     db: AsyncSession = Depends(get_db),
 ) -> ApiResponse[DeployJobResponse]:
     """Trigger a new deployment.
@@ -79,6 +84,7 @@ async def list_deploys(
     status: DeployJobStatus | None = Query(None),
     page: int = Query(1, ge=1),
     per_page: int = Query(20, ge=1, le=100),
+    _user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ) -> ApiResponse[list[DeployJobResponse]]:
     """List deploy jobs, optionally filtered by agent or status."""
@@ -94,6 +100,7 @@ async def list_deploys(
 @router.get("/{job_id}", response_model=ApiResponse[DeployJobDetailResponse])
 async def get_deploy(
     job_id: uuid.UUID,
+    _user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ) -> ApiResponse[DeployJobDetailResponse]:
     """Get deploy job details by ID, including streaming logs."""
@@ -106,6 +113,7 @@ async def get_deploy(
 @router.delete("/{job_id}", response_model=ApiResponse[dict])
 async def cancel_deploy(
     job_id: uuid.UUID,
+    _user: User = Depends(require_role("deployer")),
     db: AsyncSession = Depends(get_db),
 ) -> ApiResponse[dict]:
     """Cancel an in-progress deployment."""
@@ -118,6 +126,7 @@ async def cancel_deploy(
 @router.post("/{job_id}/rollback", response_model=ApiResponse[dict])
 async def rollback_deploy(
     job_id: uuid.UUID,
+    _user: User = Depends(require_role("deployer")),
     db: AsyncSession = Depends(get_db),
 ) -> ApiResponse[dict]:
     """Rollback a failed deployment."""

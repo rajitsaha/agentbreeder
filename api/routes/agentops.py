@@ -5,8 +5,11 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 
+from api.auth import get_current_user
+from api.middleware.rbac import require_role
+from api.models.database import User
 from api.models.schemas import ApiMeta, ApiResponse
 from api.services.agentops_service import get_agentops_store
 
@@ -21,7 +24,7 @@ router = APIRouter(prefix="/api/v1/agentops", tags=["agentops"])
 
 
 @router.get("/fleet")
-async def get_fleet_overview() -> ApiResponse[dict]:
+async def get_fleet_overview(_user: User = Depends(get_current_user)) -> ApiResponse[dict]:
     """Return all agents with health, cost, and last deploy info."""
     store = get_agentops_store()
     overview = store.get_fleet_overview()
@@ -32,7 +35,7 @@ async def get_fleet_overview() -> ApiResponse[dict]:
 
 
 @router.get("/fleet/heatmap")
-async def get_fleet_heatmap() -> ApiResponse[dict]:
+async def get_fleet_heatmap(_user: User = Depends(get_current_user)) -> ApiResponse[dict]:
     """Return health heatmap grid data for visualization."""
     store = get_agentops_store()
     heatmap = store.get_fleet_heatmap()
@@ -43,6 +46,7 @@ async def get_fleet_heatmap() -> ApiResponse[dict]:
 async def get_top_agents(
     metric: str = Query("cost", description="One of: cost | errors | latency | invocations"),
     limit: int = Query(5, ge=1, le=20),
+    _user: User = Depends(get_current_user),
 ) -> ApiResponse[list]:
     """Top N agents by cost, errors, latency, or invocations."""
     store = get_agentops_store()
@@ -59,6 +63,7 @@ async def get_top_agents(
 async def get_events(
     limit: int = Query(50, ge=1, le=500),
     since: str | None = Query(None, description="ISO timestamp — return events after this time"),
+    _user: User = Depends(get_current_user),
 ) -> ApiResponse[list]:
     """Recent operations events (deploys, alerts, restarts, cost spikes)."""
     store = get_agentops_store()
@@ -72,7 +77,7 @@ async def get_events(
 
 
 @router.get("/teams")
-async def get_team_comparison() -> ApiResponse[list]:
+async def get_team_comparison(_user: User = Depends(get_current_user)) -> ApiResponse[list]:
     """Team-level metrics comparison."""
     store = get_agentops_store()
     teams = store.get_team_comparison()
@@ -88,6 +93,7 @@ async def get_team_comparison() -> ApiResponse[list]:
 async def list_incidents(
     status: str | None = Query(None, description="open|investigating|mitigated|resolved"),
     severity: str | None = Query(None, description="critical|high|medium|low"),
+    _user: User = Depends(get_current_user),
 ) -> ApiResponse[list]:
     """List all incidents."""
     store = get_agentops_store()
@@ -96,7 +102,7 @@ async def list_incidents(
 
 
 @router.post("/incidents", status_code=201)
-async def create_incident(body: dict[str, Any]) -> ApiResponse[dict]:
+async def create_incident(body: dict[str, Any], _user: User = Depends(require_role("deployer"))) -> ApiResponse[dict]:
     """Create a new incident."""
     store = get_agentops_store()
 

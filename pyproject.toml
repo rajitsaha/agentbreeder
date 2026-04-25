@@ -102,6 +102,9 @@ packages = ["engine", "api", "cli", "registry", "connectors"]
 testpaths = ["tests"]
 asyncio_mode = "auto"
 addopts = "--strict-markers -v"
+markers = [
+    "no_auto_auth: disable the autouse _auto_auth fixture for tests that explicitly verify 401/403 behavior",
+]
 
 [tool.mypy]
 python_version = "3.11"

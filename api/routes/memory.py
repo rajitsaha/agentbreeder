@@ -4,7 +4,11 @@ from __future__ import annotations
 
 from datetime import UTC, datetime
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
+
+from api.auth import get_current_user
+from api.middleware.rbac import require_role
+from api.models.database import User
 
 from api.models.schemas import (
     ApiMeta,
@@ -29,6 +33,7 @@ router = APIRouter(prefix="/api/v1/memory", tags=["memory"])
 @router.post("/configs", response_model=ApiResponse[MemoryConfigResponse], status_code=201)
 async def create_memory_config(
     body: CreateMemoryConfigRequest,
+    _user: User = Depends(require_role("deployer")),
 ) -> ApiResponse[MemoryConfigResponse]:
     """Create a new memory configuration."""
     config = await MemoryService.create_config(
@@ -46,6 +51,7 @@ async def create_memory_config(
 
 @router.get("/configs", response_model=ApiResponse[list[MemoryConfigResponse]])
 async def list_memory_configs(
+    _user: User = Depends(get_current_user),
     page: int = Query(1, ge=1),
     per_page: int = Query(20, ge=1, le=100),
 ) -> ApiResponse[list[MemoryConfigResponse]]:
@@ -58,7 +64,7 @@ async def list_memory_configs(
 
 
 @router.get("/configs/{config_id}", response_model=ApiResponse[MemoryConfigResponse])
-async def get_memory_config(config_id: str) -> ApiResponse[MemoryConfigResponse]:
+async def get_memory_config(config_id: str, _user: User = Depends(get_current_user)) -> ApiResponse[MemoryConfigResponse]:
     """Get a memory configuration with stats."""
     config = await MemoryService.get_config(config_id)
     if not config:
@@ -67,7 +73,7 @@ async def get_memory_config(config_id: str) -> ApiResponse[MemoryConfigResponse]
 
 
 @router.delete("/configs/{config_id}", response_model=ApiResponse[dict])
-async def delete_memory_config(config_id: str) -> ApiResponse[dict]:
+async def delete_memory_config(config_id: str, _user: User = Depends(require_role("admin"))) -> ApiResponse[dict]:
     """Delete a memory configuration and all its data."""
     deleted = await MemoryService.delete_config(config_id)
     if not deleted:
@@ -79,7 +85,7 @@ async def delete_memory_config(config_id: str) -> ApiResponse[dict]:
 
 
 @router.get("/configs/{config_id}/stats", response_model=ApiResponse[MemoryStatsResponse])
-async def get_memory_stats(config_id: str) -> ApiResponse[MemoryStatsResponse]:
+async def get_memory_stats(config_id: str, _user: User = Depends(get_current_user)) -> ApiResponse[MemoryStatsResponse]:
     """Get usage statistics for a memory configuration."""
     stats = await MemoryService.get_stats(config_id)
     if not stats:
@@ -96,7 +102,9 @@ async def get_memory_stats(config_id: str) -> ApiResponse[MemoryStatsResponse]:
     status_code=201,
 )
 async def store_message(
-    config_id: str, body: MemoryMessageCreate
+    config_id: str,
+    body: MemoryMessageCreate,
+    _user: User = Depends(get_current_user),
 ) -> ApiResponse[MemoryMessageResponse]:
     """Store a message in a memory backend."""
     msg = await MemoryService.store_message(
@@ -121,6 +129,7 @@ async def store_message(
 )
 async def list_conversations(
     config_id: str,
+    _user: User = Depends(get_current_user),
     agent_id: str | None = None,
     page: int = Query(1, ge=1),
     per_page: int = Query(20, ge=1, le=100),
@@ -143,7 +152,9 @@ async def list_conversations(
     response_model=ApiResponse[list[MemoryMessageResponse]],
 )
 async def get_conversation(
-    config_id: str, session_id: str
+    config_id: str,
+    session_id: str,
+    _user: User = Depends(get_current_user),
 ) -> ApiResponse[list[MemoryMessageResponse]]:
     """Get all messages in a conversation."""
     config = await MemoryService.get_config(config_id)
@@ -158,7 +169,9 @@ async def get_conversation(
     response_model=ApiResponse[dict],
 )
 async def delete_conversations(
-    config_id: str, body: DeleteConversationsRequest
+    config_id: str,
+    body: DeleteConversationsRequest,
+    _user: User = Depends(require_role("deployer")),
 ) -> ApiResponse[dict]:
     """Bulk delete conversations by session, agent, or date range."""
     config = await MemoryService.get_config(config_id)
@@ -187,6 +200,7 @@ async def delete_conversations(
 )
 async def search_messages(
     config_id: str,
+    _user: User = Depends(get_current_user),
     q: str = Query(..., min_length=1),
     limit: int = Query(50, ge=1, le=200),
 ) -> ApiResponse[list[MemorySearchResultResponse]]:

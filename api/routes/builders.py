@@ -9,7 +9,11 @@ from pathlib import Path
 from typing import Any
 
 import yaml as pyyaml
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request
+
+from api.auth import get_current_user
+from api.middleware.rbac import require_role
+from api.models.database import User
 from fastapi.responses import PlainTextResponse
 from jsonschema import Draft202012Validator
 from pydantic import BaseModel
@@ -185,6 +189,7 @@ class YamlSaveResponse(BaseModel):
 async def get_resource_yaml(
     resource_type: str,
     name: str,
+    _user: User = Depends(get_current_user),
 ) -> PlainTextResponse:
     """Return the raw YAML config for a resource."""
     _validate_resource_type(resource_type)
@@ -206,6 +211,7 @@ async def put_resource_yaml(
     resource_type: str,
     name: str,
     request: Request,
+    _user: User = Depends(require_role("deployer")),
 ) -> ApiResponse[YamlSaveResponse]:
     """Accept raw YAML, validate against the schema, and save."""
     _validate_resource_type(resource_type)
@@ -239,6 +245,7 @@ async def put_resource_yaml(
 @router.post("/import", response_model=ApiResponse[YamlImportResponse], status_code=201)
 async def import_resource_yaml(
     body: YamlImportRequest,
+    _user: User = Depends(require_role("deployer")),
 ) -> ApiResponse[YamlImportResponse]:
     """Import raw YAML to create a new resource entry."""
     _validate_resource_type(body.resource_type)

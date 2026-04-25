@@ -6,7 +6,11 @@ import uuid
 from datetime import UTC, date, datetime
 from typing import Literal
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
+
+from api.auth import get_current_user
+from api.middleware.rbac import require_role
+from api.models.database import User
 from pydantic import BaseModel
 
 router = APIRouter(prefix="/api/v1/compliance", tags=["compliance"])
@@ -273,7 +277,7 @@ def _build_summary(standard: str, sections: dict, request: ReportRequest) -> dic
 
 
 @router.post("/reports", response_model=ReportResponse)
-async def generate_report(request: ReportRequest) -> ReportResponse:
+async def generate_report(request: ReportRequest, _user: User = Depends(get_current_user)) -> ReportResponse:
     """Generate a compliance evidence report pack for the requested standard."""
     builder = _BUILDERS.get(request.standard)
     if builder is None:
@@ -303,7 +307,7 @@ async def generate_report(request: ReportRequest) -> ReportResponse:
 
 
 @router.get("/reports/{report_id}", response_model=ReportResponse)
-async def get_report(report_id: str) -> ReportResponse:
+async def get_report(report_id: str, _user: User = Depends(get_current_user)) -> ReportResponse:
     """Retrieve a previously generated compliance report by ID."""
     entry = _report_store.get(report_id)
     if entry is None:
@@ -312,7 +316,7 @@ async def get_report(report_id: str) -> ReportResponse:
 
 
 @router.get("/standards")
-async def list_standards() -> dict:
+async def list_standards(_user: User = Depends(get_current_user)) -> dict:
     """List supported compliance standards."""
     return {
         "standards": ["soc2", "hipaa", "gdpr", "iso27001"],
