@@ -10,6 +10,7 @@ from fastapi import APIRouter, File, HTTPException, Query, UploadFile
 from api.models.schemas import ApiMeta, ApiResponse
 from api.services.graph_store import get_graph_store
 from api.services.rag_service import get_rag_store
+from registry.rag import BACKEND_IN_MEMORY, BACKEND_NEO4J, BACKEND_PGVECTOR, get_rag_backend
 
 logger = logging.getLogger(__name__)
 
@@ -25,11 +26,29 @@ router = APIRouter(prefix="/api/v1/rag", tags=["rag"])
 async def create_index(
     body: dict[str, Any],
 ) -> ApiResponse[dict]:
-    """Create a new vector index."""
+    """Create a new vector index.
+
+    Supports ``backend`` field values: ``in_memory`` (default), ``pgvector``,
+    or ``neo4j``.  For ``neo4j``, pass a ``config`` object with ``uri``,
+    ``username``, ``password``, and optionally ``database``.
+    """
     store = get_rag_store()
     name = body.get("name")
     if not name:
         raise HTTPException(status_code=400, detail="name is required")
+
+    backend = body.get("backend", BACKEND_IN_MEMORY)
+    backend_config: dict[str, Any] = body.get("config") or {}
+
+    # Validate the backend key early so callers get a clear 400 instead of a
+    # cryptic KeyError inside the factory.
+    valid_backends = {BACKEND_IN_MEMORY, BACKEND_PGVECTOR, BACKEND_NEO4J}
+    if backend not in valid_backends:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unsupported backend '{backend}'. Must be one of: {sorted(valid_backends)}",
+        )
+
     try:
         idx = store.create_index(
             name=name,
@@ -46,7 +65,31 @@ async def create_index(
         )
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
-    return ApiResponse(data=idx.to_dict())
+
+    # Resolve the backend instance (validates + imports lazily)
+    try:
+        get_rag_backend(backend, config=backend_config, index_id=idx.id)
+    except (ImportError, ValueError) as exc:
+        # Roll back the index we just created so state stays consistent
+        store.delete_index(idx.id)
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    result = idx.to_dict()
+    result["backend"] = backend
+    return ApiResponse(data=result)
+
+
+# ---------------------------------------------------------------------------
+# Backend discovery
+# ---------------------------------------------------------------------------
+
+
+@router.get("/backends")
+async def list_backends() -> ApiResponse[list[str]]:
+    """List all registered RAG storage backends."""
+    from registry.rag import list_backends as _list_backends  # noqa: PLC0415
+
+    return ApiResponse(data=_list_backends())
 
 
 @router.get("/indexes")

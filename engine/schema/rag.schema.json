@@ -45,9 +45,32 @@
     },
     "backend": {
       "type": "string",
-      "enum": ["pgvector", "in_memory"],
+      "enum": ["pgvector", "in_memory", "neo4j"],
       "default": "in_memory",
-      "description": "Vector storage backend"
+      "description": "Vector storage backend. Use 'neo4j' for graph-native storage with multi-hop traversal."
+    },
+    "config": {
+      "type": "object",
+      "description": "Backend-specific connection configuration (used when backend is 'neo4j' or 'pgvector')",
+      "properties": {
+        "uri": {
+          "type": "string",
+          "description": "Connection URI (e.g. bolt://neo4j:7687 for Neo4j)"
+        },
+        "username": {
+          "type": "string",
+          "description": "Database username"
+        },
+        "password": {
+          "type": "string",
+          "description": "Database password (prefer a secret reference in production)"
+        },
+        "database": {
+          "type": "string",
+          "description": "Neo4j database name (default: neo4j)"
+        }
+      },
+      "additionalProperties": true
     },
     "embedding_model": {
       "type": "object",

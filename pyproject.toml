@@ -72,6 +72,9 @@ schedule = [
 news = [
     "feedparser>=6.0.0",
 ]
+rag = [
+    "neo4j>=5.0",
+]
 all-clouds = [
     "boto3>=1.34.0",
     "azure-identity>=1.16.0",
