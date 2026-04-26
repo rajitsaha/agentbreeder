@@ -22,10 +22,15 @@ def _python_factory(config: AgentConfig) -> RuntimeBuilder:
     return PythonRuntimeFamily.from_framework(config.framework)
 
 
-# PR 2: only python registered.
-# PR 3 adds: "node": _node_factory
+def _node_factory(config: AgentConfig) -> RuntimeBuilder:  # noqa: PLC0415
+    from engine.runtimes.node import NodeRuntimeFamily
+
+    return NodeRuntimeFamily()
+
+
 LANGUAGE_REGISTRY: dict[str, Callable[[AgentConfig], RuntimeBuilder]] = {
     "python": _python_factory,
+    "node": _node_factory,
 }
 
 
