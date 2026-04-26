@@ -457,7 +457,7 @@ deploy:
         assert result.valid, result.errors
         assert result.config is not None
         assert result.config.runtime is not None
-        assert result.config.runtime.language == "node"
+        assert result.config.runtime.language.value == "node"
         assert result.config.runtime.framework == "vercel-ai"
         assert result.config.type.value == "agent"
 
@@ -496,6 +496,9 @@ deploy:
 """)
         result = validate_config(config_file)
         assert not result.valid
+        assert any(
+            "language" in e.message.lower() or "cobol" in e.message.lower() for e in result.errors
+        )
 
     def test_both_framework_and_runtime_rejected(self, tmp_path: Path) -> None:
         config_file = tmp_path / "agent.yaml"

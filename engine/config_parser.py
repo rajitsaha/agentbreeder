@@ -305,10 +305,15 @@ class AgentConfig(BaseModel):
     def validate_framework_or_runtime(self) -> AgentConfig:
         has_framework = self.framework is not None
         has_runtime = self.runtime is not None
-        if has_framework == has_runtime:
+        if has_framework and has_runtime:
             raise ValueError(
-                "Exactly one of 'framework' or 'runtime' must be set. "
-                "Use 'framework' for Python agents, 'runtime' for polyglot agents."
+                "Only one of 'framework' or 'runtime' may be set, not both. "
+                "Use 'framework' for Python agents, 'runtime' for polyglot (Node.js, etc.) agents."
+            )
+        if not has_framework and not has_runtime:
+            raise ValueError(
+                "One of 'framework' or 'runtime' must be set. "
+                "Use 'framework' for Python agents, 'runtime' for polyglot (Node.js, etc.) agents."
             )
         return self
 
