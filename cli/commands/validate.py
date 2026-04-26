@@ -71,7 +71,7 @@ def validate(
                 "skipped": True,
                 "reason": f"Not an agent config ({config_type})",
             }
-            console.print(json.dumps(output, indent=2))
+            typer.echo(json.dumps(output, indent=2))
             return
         console.print()
         console.print(
@@ -94,7 +94,7 @@ def validate(
             "valid": result.valid,
             "errors": [e.model_dump() for e in result.errors],
         }
-        console.print(json.dumps(output, indent=2))
+        typer.echo(json.dumps(output, indent=2))
         if not result.valid:
             raise typer.Exit(code=1)
         return
