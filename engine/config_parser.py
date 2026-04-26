@@ -447,6 +447,7 @@ def validate_config(path: Path) -> ValidationResult:
         line, col = _get_line_info(doc, json_path)
 
         suggestion = ""
+        message = error.message
         if error.validator == "required":
             missing = error.message.split("'")[1] if "'" in error.message else ""
             suggestion = f"Add '{missing}' field to your agent.yaml"
@@ -455,11 +456,15 @@ def validate_config(path: Path) -> ValidationResult:
             suggestion = f"Must be one of: {', '.join(str(a) for a in allowed)}"
         elif error.validator == "pattern":
             suggestion = f"Must match pattern: {error.schema.get('pattern', '')}"
+        elif error.validator == "oneOf":
+            if "not valid under any of the given schemas" in message:
+                message = "Must specify either 'framework' (for Python agents) or 'runtime' (for polyglot agents), not neither or both"
+                suggestion = "Set 'framework' (e.g. langgraph) for Python agents, OR set 'runtime' with language+framework for other languages"
 
         errors.append(
             ConfigValidationError(
                 path=friendly_path,
-                message=error.message,
+                message=message,
                 suggestion=suggestion,
                 line=line,
                 column=col,
