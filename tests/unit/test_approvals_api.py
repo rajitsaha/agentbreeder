@@ -5,8 +5,8 @@ Issue #69: Human-in-the-loop approval patterns.
 
 from __future__ import annotations
 
-import pytest
 import fakeredis.aioredis
+import pytest
 from fastapi.testclient import TestClient
 
 from api.database import get_redis
