@@ -129,16 +129,28 @@ class TestSearchAgents:
 class TestGetAgent:
     @patch("api.routes.agents.AgentRegistry.get_by_id", new_callable=AsyncMock)
     def test_get_existing(self, mock_get: AsyncMock) -> None:
+        from api.database import get_db
+
         agent = _make_agent()
         mock_get.return_value = agent
-        resp = client.get(f"/api/v1/agents/{agent.id}")
+        app.dependency_overrides[get_db] = _override_get_db_noop
+        try:
+            resp = client.get(f"/api/v1/agents/{agent.id}")
+        finally:
+            app.dependency_overrides.pop(get_db, None)
         assert resp.status_code == 200
         assert resp.json()["data"]["name"] == "test-agent"
 
     @patch("api.routes.agents.AgentRegistry.get_by_id", new_callable=AsyncMock)
     def test_get_not_found(self, mock_get: AsyncMock) -> None:
+        from api.database import get_db
+
         mock_get.return_value = None
-        resp = client.get(f"/api/v1/agents/{uuid.uuid4()}")
+        app.dependency_overrides[get_db] = _override_get_db_noop
+        try:
+            resp = client.get(f"/api/v1/agents/{uuid.uuid4()}")
+        finally:
+            app.dependency_overrides.pop(get_db, None)
         assert resp.status_code == 404
 
 
