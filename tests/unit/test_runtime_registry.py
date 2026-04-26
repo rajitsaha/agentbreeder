@@ -46,11 +46,12 @@ class TestGetRuntimeFromConfig:
         runtime = get_runtime_from_config(_make_python_config("crewai"))
         assert isinstance(runtime, CrewAIRuntime)
 
-    def test_node_raises_unsupported_in_pr2(self) -> None:
-        from engine.runtimes.registry import UnsupportedLanguageError, get_runtime_from_config
+    def test_node_routes_to_node_runtime_family(self) -> None:
+        from engine.runtimes.node import NodeRuntimeFamily
+        from engine.runtimes.registry import get_runtime_from_config
 
-        with pytest.raises(UnsupportedLanguageError):
-            get_runtime_from_config(_make_node_config())
+        runtime = get_runtime_from_config(_make_node_config())
+        assert isinstance(runtime, NodeRuntimeFamily)
 
     def test_truly_unsupported_language_not_in_registry(self) -> None:
         from engine.runtimes.registry import LANGUAGE_REGISTRY
