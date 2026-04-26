@@ -186,11 +186,15 @@ class DockerComposeDeployer(BaseDeployer):
         container_env: dict[str, str] = {
             "AGENT_NAME": config.name,
             "AGENT_VERSION": config.version,
-            "AGENT_FRAMEWORK": config.framework.value,
+            "AGENT_FRAMEWORK": config.framework.value
+            if config.framework
+            else (config.runtime.framework if config.runtime else "unknown"),
             "AGENT_MODEL": config.model.primary,
         }
         if otel := _os.getenv("OPENTELEMETRY_ENDPOINT"):
             container_env["OPENTELEMETRY_ENDPOINT"] = otel
+        # Inject AgentBreeder platform env vars for @agentbreeder/aps-client
+        container_env.update(self.get_aps_env_vars())
         container_env.update(config.deploy.env_vars)
 
         # For ollama/ models: start Ollama sidecar and pull model weights before the agent

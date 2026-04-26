@@ -28,6 +28,23 @@ class FrameworkType(enum.StrEnum):
     custom = "custom"
 
 
+class LanguageType(enum.StrEnum):
+    python = "python"
+    node = "node"
+
+
+class AgentType(enum.StrEnum):
+    agent = "agent"
+    mcp_server = "mcp-server"
+
+
+class RuntimeConfig(BaseModel):
+    language: LanguageType
+    framework: str
+    version: str | None = None
+    entrypoint: str | None = None
+
+
 class CloudType(enum.StrEnum):
     aws = "aws"
     azure = "azure"
@@ -247,7 +264,9 @@ class AgentConfig(BaseModel):
     team: str
     owner: EmailStr
     tags: list[str] = Field(default_factory=list)
-    framework: FrameworkType
+    type: AgentType = AgentType.agent
+    framework: FrameworkType | None = None
+    runtime: RuntimeConfig | None = None
     model: ModelConfig
     tools: list[ToolRef] = Field(default_factory=list)
     knowledge_bases: list[KnowledgeBaseRef] = Field(default_factory=list)
@@ -281,6 +300,22 @@ class AgentConfig(BaseModel):
             msg = f"Version '{v}' must be semantic versioning (e.g., '1.0.0')"
             raise ValueError(msg)
         return v
+
+    @model_validator(mode="after")
+    def validate_framework_or_runtime(self) -> AgentConfig:
+        has_framework = self.framework is not None
+        has_runtime = self.runtime is not None
+        if has_framework and has_runtime:
+            raise ValueError(
+                "Only one of 'framework' or 'runtime' may be set, not both. "
+                "Use 'framework' for Python agents, 'runtime' for polyglot (Node.js, etc.) agents."
+            )
+        if not has_framework and not has_runtime:
+            raise ValueError(
+                "One of 'framework' or 'runtime' must be set. "
+                "Use 'framework' for Python agents, 'runtime' for polyglot (Node.js, etc.) agents."
+            )
+        return self
 
 
 class ConfigValidationError(BaseModel):
@@ -412,6 +447,7 @@ def validate_config(path: Path) -> ValidationResult:
         line, col = _get_line_info(doc, json_path)
 
         suggestion = ""
+        message = error.message
         if error.validator == "required":
             missing = error.message.split("'")[1] if "'" in error.message else ""
             suggestion = f"Add '{missing}' field to your agent.yaml"
@@ -420,11 +456,15 @@ def validate_config(path: Path) -> ValidationResult:
             suggestion = f"Must be one of: {', '.join(str(a) for a in allowed)}"
         elif error.validator == "pattern":
             suggestion = f"Must match pattern: {error.schema.get('pattern', '')}"
+        elif error.validator == "oneOf":
+            if "not valid under any of the given schemas" in message:
+                message = "Must specify either 'framework' (for Python agents) or 'runtime' (for polyglot agents), not neither or both"
+                suggestion = "Set 'framework' (e.g. langgraph) for Python agents, OR set 'runtime' with language+framework for other languages"
 
         errors.append(
             ConfigValidationError(
                 path=friendly_path,
-                message=error.message,
+                message=message,
                 suggestion=suggestion,
                 line=line,
                 column=col,

@@ -296,8 +296,12 @@ class AWSECSDeployer(BaseDeployer):
         env_vars: dict[str, str] = {
             "AGENT_NAME": config.name,
             "AGENT_VERSION": config.version,
-            "AGENT_FRAMEWORK": config.framework.value,
+            "AGENT_FRAMEWORK": config.framework.value
+            if config.framework
+            else (config.runtime.framework if config.runtime else "unknown"),
         }
+        # Inject AgentBreeder platform env vars
+        env_vars.update(self.get_aps_env_vars())
         # Add user-defined env vars, excluding AWS_ prefixed infra vars
         for key, value in config.deploy.env_vars.items():
             if not key.startswith("AWS_"):

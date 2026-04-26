@@ -102,6 +102,7 @@ def _build_service_template(
     config: AgentConfig,
     gcp_config: CloudRunConfig,
     image_uri: str,
+    deployer: GCPCloudRunDeployer | None = None,
 ) -> dict[str, Any]:
     """Build the Cloud Run service revision template.
 
@@ -125,12 +126,17 @@ def _build_service_template(
     plain_env_vars: dict[str, str] = {
         "AGENT_NAME": config.name,
         "AGENT_VERSION": config.version,
-        "AGENT_FRAMEWORK": config.framework.value,
+        "AGENT_FRAMEWORK": config.framework.value
+        if config.framework
+        else (config.runtime.framework if config.runtime else "unknown"),
     }
     # Inject platform-level OTel endpoint if configured
     otel_endpoint = _os.getenv("OPENTELEMETRY_ENDPOINT")
     if otel_endpoint:
         plain_env_vars["OPENTELEMETRY_ENDPOINT"] = otel_endpoint
+    # Inject AgentBreeder platform env vars
+    if deployer is not None:
+        plain_env_vars.update(deployer.get_aps_env_vars())
     # Add user-defined env vars, excluding GCP_ prefixed ones (those are for infra config)
     for key, value in config.deploy.env_vars.items():
         if not key.startswith("GCP_") and not key.startswith("GOOGLE_"):
@@ -433,7 +439,7 @@ class GCPCloudRunDeployer(BaseDeployer):
         parent = f"projects/{gcp.project_id}/locations/{gcp.region}"
         service_name = f"{parent}/services/{config.name}"
 
-        template_dict = _build_service_template(config, gcp, image_uri)
+        template_dict = _build_service_template(config, gcp, image_uri, self)
 
         # Fix #118: Service.Ingress enum does not exist in the Python SDK v2.
         # Use IngressTraffic instead.
