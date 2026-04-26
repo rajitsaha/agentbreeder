@@ -259,7 +259,9 @@ class DeployEngine:
             "description": config.description,
             "team": config.team,
             "owner": config.owner,
-            "framework": config.framework.value,
+            "framework": config.framework.value
+            if config.framework
+            else (config.runtime.framework if config.runtime else "unknown"),
             "model_primary": config.model.primary,
             "model_fallback": config.model.fallback,
             "endpoint_url": endpoint_url,
@@ -327,7 +329,9 @@ class DeployEngine:
                             "description": config.description or "",
                             "team": config.team,
                             "owner": config.owner,
-                            "framework": config.framework.value,
+                            "framework": config.framework.value
+                            if config.framework
+                            else (config.runtime.framework if config.runtime else "unknown"),
                             "model_primary": config.model.primary,
                             "model_fallback": config.model.fallback,
                             "endpoint_url": endpoint_url,
