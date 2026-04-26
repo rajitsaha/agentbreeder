@@ -69,7 +69,7 @@ class TestDeployEngineEdgeCases:
             valid=False, errors=["Missing agent.py"]
         )
 
-        with patch("engine.builder.get_runtime", return_value=mock_runtime):
+        with patch("engine.builder.get_runtime_from_config", return_value=mock_runtime):
             engine = DeployEngine()
             with pytest.raises(Exception, match="Validation failed"):
                 await engine.deploy(agent_dir / "agent.yaml")

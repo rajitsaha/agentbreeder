@@ -29,7 +29,7 @@ from engine.deployers import get_deployer
 from engine.deployers.base import DeployResult
 from engine.governance import check_rbac
 from engine.resolver import resolve_dependencies
-from engine.runtimes import get_runtime
+from engine.runtimes.registry import get_runtime_from_config
 
 logger = logging.getLogger(__name__)
 
@@ -167,7 +167,7 @@ class DeployEngine:
                 )
                 image = None
             else:
-                runtime = get_runtime(config.framework)
+                runtime = get_runtime_from_config(config)
                 validation = runtime.validate(config_path.parent, config)
                 if not validation.valid:
                     raise BuildError("Validation failed:\n" + "\n".join(validation.errors))
