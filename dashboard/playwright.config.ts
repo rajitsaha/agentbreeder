@@ -4,9 +4,11 @@ export default defineConfig({
   testDir: "./tests/e2e",
   timeout: 30_000,
   retries: 0,
+  // CI runners have 2 vCPUs; 2 browser workers + Vite server saturates the CPU.
+  // Single worker lets one browser use the full machine — tests run faster overall.
+  workers: process.env.CI ? 1 : undefined,
   expect: {
-    // CI Ubuntu runners are slower; auth+data render cycles can exceed 5s default.
-    timeout: 15_000,
+    timeout: process.env.CI ? 30_000 : 15_000,
   },
   use: {
     baseURL: process.env.PLAYWRIGHT_TEST_BASE_URL ?? "http://localhost:3001",
