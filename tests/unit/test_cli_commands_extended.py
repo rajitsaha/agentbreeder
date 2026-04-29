@@ -156,11 +156,6 @@ class TestDeployCommand:
 # ── Secret Subcommands ─────────────────────────────────────────────
 
 
-@pytest.mark.skip(
-    reason="Track K rewrote the secret CLI surface (workspace-bound backends "
-    "+ JSON output schemas); these fixtures match the pre-K shape. To be "
-    "rewritten in a #162 follow-up that mocks the new code path."
-)
 class TestSecretCommand:
     """Tests for `agentbreeder secret` subcommands."""
 
@@ -195,6 +190,7 @@ class TestSecretCommand:
 
     def test_secret_list_json_empty(self) -> None:
         mock_backend = MagicMock()
+        mock_backend.backend_name = "env"
         mock_backend.list = AsyncMock(return_value=[])
 
         with patch(
@@ -205,7 +201,9 @@ class TestSecretCommand:
 
         assert result.exit_code == 0
         output = json.loads(result.output)
-        assert output == []
+        # Track K JSON shape: { workspace, backend, entries }
+        assert output["backend"] == "env"
+        assert output["entries"] == []
 
     def test_secret_list_json_with_entries(self) -> None:
         entry = MagicMock()
@@ -215,6 +213,7 @@ class TestSecretCommand:
             "masked_value": "****abcd",
         }
         mock_backend = MagicMock()
+        mock_backend.backend_name = "env"
         mock_backend.list = AsyncMock(return_value=[entry])
 
         with patch(
@@ -225,8 +224,10 @@ class TestSecretCommand:
 
         assert result.exit_code == 0
         output = json.loads(result.output)
-        assert len(output) == 1
-        assert output[0]["name"] == "MY_KEY"
+        # Track K JSON shape: { workspace, backend, entries }
+        assert output["backend"] == "env"
+        assert len(output["entries"]) == 1
+        assert output["entries"][0]["name"] == "MY_KEY"
 
     def test_secret_list_invalid_backend(self) -> None:
         result = runner.invoke(app, ["secret", "list", "--backend", "bogus"])
@@ -234,7 +235,10 @@ class TestSecretCommand:
 
     def test_secret_set_with_value(self) -> None:
         mock_backend = MagicMock()
+        mock_backend.backend_name = "env"
         mock_backend.set = AsyncMock()
+        # Track K: secret_set probes b.get() to decide created vs updated
+        mock_backend.get = AsyncMock(return_value=None)
 
         with patch(
             "cli.commands.secret._get_backend",
@@ -250,7 +254,9 @@ class TestSecretCommand:
 
     def test_secret_set_json_output(self) -> None:
         mock_backend = MagicMock()
+        mock_backend.backend_name = "env"
         mock_backend.set = AsyncMock()
+        mock_backend.get = AsyncMock(return_value=None)
 
         with patch(
             "cli.commands.secret._get_backend",
@@ -272,6 +278,8 @@ class TestSecretCommand:
         output = json.loads(result.output)
         assert output["name"] == "MY_KEY"
         assert output["status"] == "ok"
+        # Track K added "operation" — created when b.get() returned None
+        assert output["operation"] == "created"
 
     def test_secret_get_found(self) -> None:
         mock_backend = MagicMock()
@@ -301,6 +309,7 @@ class TestSecretCommand:
 
     def test_secret_get_json_masked(self) -> None:
         mock_backend = MagicMock()
+        mock_backend.backend_name = "env"
         mock_backend.get = AsyncMock(return_value="secret-value-1234")
 
         with patch(
@@ -316,6 +325,7 @@ class TestSecretCommand:
 
     def test_secret_get_json_reveal(self) -> None:
         mock_backend = MagicMock()
+        mock_backend.backend_name = "env"
         mock_backend.get = AsyncMock(return_value="secret-value-1234")
 
         with patch(
@@ -346,6 +356,7 @@ class TestSecretCommand:
 
     def test_secret_delete_json(self) -> None:
         mock_backend = MagicMock()
+        mock_backend.backend_name = "env"
         mock_backend.delete = AsyncMock()
 
         with patch(
@@ -375,6 +386,7 @@ class TestSecretCommand:
 
     def test_secret_rotate_with_value_json(self) -> None:
         mock_backend = MagicMock()
+        mock_backend.backend_name = "env"
         mock_backend.rotate = AsyncMock()
 
         with patch(
@@ -437,9 +449,10 @@ class TestSecretCommand:
             mock_b.list = AsyncMock(return_value=[])
             return mock_b
 
-        # engine.secrets.factory.get_backend is imported inside _get_backend,
-        # so patch it at its source module.
-        with patch("engine.secrets.factory.get_backend", side_effect=capturing_factory):
+        # cli.commands.secret imported `get_backend` into its own namespace
+        # at module load, so patching the source path doesn't intercept
+        # the call. Patch the local reference instead.
+        with patch("cli.commands.secret.get_backend", side_effect=capturing_factory):
             real_get_backend("gcp", prefix="agentbreeder/")
 
         assert len(fake_factory_calls) == 1
@@ -458,12 +471,180 @@ class TestSecretCommand:
             mock_b.list = AsyncMock(return_value=[])
             return mock_b
 
-        with patch("engine.secrets.factory.get_backend", side_effect=capturing_factory):
+        with patch("cli.commands.secret.get_backend", side_effect=capturing_factory):
             real_get_backend("aws", prefix="agentbreeder/")
 
         assert len(fake_factory_calls) == 1
         # AWS allows slashes; prefix should be untouched
         assert fake_factory_calls[0].get("prefix") == "agentbreeder/"
+
+
+# ── Secret Sync (workspace → cloud auto-mirror) ────────────────────
+
+
+def _sync_entry(name: str) -> MagicMock:
+    e = MagicMock()
+    e.name = name
+    return e
+
+
+class TestSecretSync:
+    """Tests for `agentbreeder secret sync` (workspace → cloud auto-mirror)."""
+
+    def test_sync_invalid_target(self) -> None:
+        result = runner.invoke(app, ["secret", "sync", "--target", "bogus"])
+        assert result.exit_code == 2
+        assert "bogus" in result.output.lower() or "unknown" in result.output.lower()
+
+    def test_sync_no_candidates(self) -> None:
+        src = MagicMock()
+        src.backend_name = "env"
+        src.list = AsyncMock(return_value=[])
+        dst = MagicMock()
+        dst.backend_name = "aws"
+
+        with (
+            patch(
+                "cli.commands.secret._resolve_backend",
+                return_value=(src, "default"),
+            ),
+            patch("cli.commands.secret._get_backend", return_value=dst),
+        ):
+            result = runner.invoke(app, ["secret", "sync", "--target", "aws"])
+
+        assert result.exit_code == 0
+        assert "no secrets to sync" in result.output.lower()
+
+    def test_sync_dry_run_json(self) -> None:
+        src = MagicMock()
+        src.backend_name = "env"
+        src.list = AsyncMock(return_value=[_sync_entry("KEY_A"), _sync_entry("KEY_B")])
+        src.get = AsyncMock(side_effect=lambda n: f"value-{n}")
+        dst = MagicMock()
+        dst.backend_name = "aws"
+        dst.set = AsyncMock()
+
+        with (
+            patch(
+                "cli.commands.secret._resolve_backend",
+                return_value=(src, "default"),
+            ),
+            patch("cli.commands.secret._get_backend", return_value=dst),
+        ):
+            result = runner.invoke(
+                app,
+                ["secret", "sync", "--target", "aws", "--dry-run", "--json"],
+            )
+
+        assert result.exit_code == 0
+        # dry-run never writes to dst
+        dst.set.assert_not_called()
+        output = json.loads(result.output)
+        assert output["target"] == "aws"
+        assert output["dry_run"] is True
+        assert output["mirrored"] == 2
+        assert all(r["status"] == "would_mirror" for r in output["results"])
+
+    def test_sync_actual_mirrors_all(self) -> None:
+        src = MagicMock()
+        src.backend_name = "env"
+        src.list = AsyncMock(return_value=[_sync_entry("KEY_A"), _sync_entry("KEY_B")])
+        src.get = AsyncMock(side_effect=lambda n: f"value-{n}")
+        dst = MagicMock()
+        dst.backend_name = "gcp"
+        dst.set = AsyncMock()
+
+        with (
+            patch(
+                "cli.commands.secret._resolve_backend",
+                return_value=(src, "default"),
+            ),
+            patch("cli.commands.secret._get_backend", return_value=dst),
+        ):
+            result = runner.invoke(
+                app,
+                ["secret", "sync", "--target", "gcp", "--json"],
+            )
+
+        assert result.exit_code == 0
+        assert dst.set.await_count == 2
+        # Every set call carries the managed-by + workspace tag pair
+        for call in dst.set.await_args_list:
+            tags = call.kwargs.get("tags") or {}
+            assert tags.get("managed-by") == "agentbreeder"
+            assert "workspace" in tags
+        output = json.loads(result.output)
+        assert output["mirrored"] == 2
+        assert output["errors"] == 0
+
+    def test_sync_with_include_filter(self) -> None:
+        src = MagicMock()
+        src.backend_name = "env"
+        src.list = AsyncMock(
+            return_value=[
+                _sync_entry("KEEP_THIS"),
+                _sync_entry("SKIP_THIS"),
+            ]
+        )
+        src.get = AsyncMock(side_effect=lambda n: f"value-{n}")
+        dst = MagicMock()
+        dst.backend_name = "aws"
+        dst.set = AsyncMock()
+
+        with (
+            patch(
+                "cli.commands.secret._resolve_backend",
+                return_value=(src, "default"),
+            ),
+            patch("cli.commands.secret._get_backend", return_value=dst),
+        ):
+            result = runner.invoke(
+                app,
+                ["secret", "sync", "--target", "aws", "--include", "KEEP_THIS"],
+            )
+
+        assert result.exit_code == 0
+        # Only the included secret is mirrored
+        assert dst.set.await_count == 1
+        called_name = dst.set.await_args.args[0]
+        assert called_name == "KEEP_THIS"
+
+    def test_sync_partial_error(self) -> None:
+        src = MagicMock()
+        src.backend_name = "env"
+        src.list = AsyncMock(return_value=[_sync_entry("OK_KEY"), _sync_entry("BAD_KEY")])
+        src.get = AsyncMock(side_effect=lambda n: f"value-{n}")
+
+        # Cloud rejects BAD_KEY but accepts OK_KEY
+        async def flaky_set(name, value, tags=None):
+            if name == "BAD_KEY":
+                raise RuntimeError("cloud rejected key")
+
+        dst = MagicMock()
+        dst.backend_name = "aws"
+        dst.set = AsyncMock(side_effect=flaky_set)
+
+        with (
+            patch(
+                "cli.commands.secret._resolve_backend",
+                return_value=(src, "default"),
+            ),
+            patch("cli.commands.secret._get_backend", return_value=dst),
+        ):
+            result = runner.invoke(
+                app,
+                ["secret", "sync", "--target", "aws", "--json"],
+            )
+
+        # Per Track K, partial failure does not raise — it surfaces per-secret
+        # status so callers can decide what to retry.
+        assert result.exit_code == 0
+        output = json.loads(result.output)
+        assert output["mirrored"] == 1
+        assert output["errors"] == 1
+        statuses = {r["name"]: r["status"] for r in output["results"]}
+        assert statuses["OK_KEY"] == "mirrored"
+        assert statuses["BAD_KEY"] == "error"
 
 
 # ── Template Subcommands ───────────────────────────────────────────
@@ -763,7 +944,6 @@ class TestEjectCommand:
         assert "hallucination_check" in code
 
     def test_generate_python_sdk_invalid_yaml(self) -> None:
-        import pytest
 
         from cli.commands.eject import _generate_python_sdk
 
@@ -786,7 +966,6 @@ class TestEjectCommand:
         assert "tools/slack" in code
 
     def test_generate_typescript_sdk_invalid_yaml(self) -> None:
-        import pytest
 
         from cli.commands.eject import _generate_typescript_sdk
 
