@@ -35,6 +35,7 @@ import { SortableColumnHeader } from "@/components/ui/sortable-header";
 import { SkeletonTableRows } from "@/components/ui/skeleton-table";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ColumnToggle, type ColumnDefinition } from "@/components/ui/column-toggle";
+import { ProviderCatalog } from "@/components/provider-catalog";
 
 const PROVIDER_COLORS: Record<string, string> = {
   anthropic: "bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500/20",
@@ -535,6 +536,13 @@ export default function ModelsPage() {
           />
           <CreateModelDialog />
         </div>
+      </div>
+
+      {/* OpenAI-compatible provider catalog (Track F / issue #160).
+          Shows the built-in presets shipped in `engine/providers/catalog.yaml`
+          plus any user-local entries from `~/.agentbreeder/providers.local.yaml`. */}
+      <div className="mb-4">
+        <ProviderCatalog />
       </div>
 
       {/* Provider filter tabs */}
