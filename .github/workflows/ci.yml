@@ -159,16 +159,22 @@ jobs:
         run: |
           cd "$EXAMPLE_DIR"
           test -f agent.yaml || (echo "missing agent.yaml" && exit 1)
-          test -f agent.py || (echo "missing agent.py" && exit 1)
+          # Entry-point file: each framework uses its own convention
+          # (agent.py / crew.py / main.py). At least one must exist.
+          if ! ls agent.py crew.py main.py 2>/dev/null | head -1 | grep -q .; then
+            echo "missing entry-point file (expected one of: agent.py, crew.py, main.py)" >&2
+            exit 1
+          fi
           test -f requirements.txt || (echo "missing requirements.txt" && exit 1)
           test -f pyproject.toml || (echo "missing pyproject.toml" && exit 1)
           grep -q "^pytest" requirements.txt || (echo "pytest not in requirements.txt" && exit 1)
           grep -q "pythonpath" pyproject.toml || (echo "pythonpath missing in pyproject.toml" && exit 1)
 
-      - name: Validate agent.py parses
+      - name: Validate entry-point parses
         run: |
           cd "$EXAMPLE_DIR"
-          python -c "import ast; ast.parse(open('agent.py').read())"
+          ENTRY=$(ls agent.py crew.py main.py 2>/dev/null | head -1)
+          python -c "import ast; ast.parse(open('$ENTRY').read())"
 
       - name: Pytest config sanity (config loads cleanly)
         run: |

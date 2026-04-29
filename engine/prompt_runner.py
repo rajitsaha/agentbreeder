@@ -89,7 +89,7 @@ async def run_prompt(
         )
         resp = await client.aio.models.generate_content(
             model=model,
-            contents=contents,  # type: ignore[arg-type]
+            contents=contents,
             config=config,
         )
         text_out = ""
