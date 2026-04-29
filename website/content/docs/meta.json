@@ -27,6 +27,7 @@
     "connectors",
     "memory",
     "a2a-protocol",
+    "sidecar",
     "---Core Concepts---",
     "agent-yaml",
     "registry-guide",

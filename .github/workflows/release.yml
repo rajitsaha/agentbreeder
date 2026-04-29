@@ -173,6 +173,24 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+      # Track J: Go sidecar — multi-arch publish (rajits/agentbreeder-sidecar).
+      - name: Build and push Sidecar image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./sidecar
+          file: ./sidecar/Dockerfile
+          push: true
+          platforms: linux/amd64,linux/arm64
+          build-args: |
+            VERSION=${{ steps.version.outputs.version }}
+          tags: |
+            ghcr.io/${{ github.repository }}/sidecar:${{ steps.version.outputs.version }}
+            ghcr.io/${{ github.repository }}/sidecar:latest
+            rajits/agentbreeder-sidecar:${{ steps.version.outputs.version }}
+            rajits/agentbreeder-sidecar:latest
+          cache-from: type=gha,scope=sidecar
+          cache-to: type=gha,scope=sidecar,mode=max
+
   # ── Build TypeScript SDK ────────────────────────────────────────────────────
   build-ts-sdk:
     name: Build TypeScript SDK
