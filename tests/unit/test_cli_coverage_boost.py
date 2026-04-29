@@ -1277,15 +1277,15 @@ class TestSecretListTable:
         assert result.exit_code == 0
 
 
-@pytest.mark.skip(
-    reason="Track K rewrote secret_set; old prompt fixture incompat — see #162 follow-up"
-)
 class TestSecretSetPrompted:
     """Lines 110-116: set with prompted value."""
 
     def test_set_prompts_for_value(self) -> None:
         backend = MagicMock()
+        backend.backend_name = "env"
         backend.set = AsyncMock()
+        # Track K: secret_set probes b.get() to decide created vs updated
+        backend.get = AsyncMock(return_value=None)
 
         with patch(
             "cli.commands.secret._get_backend",
@@ -1721,13 +1721,14 @@ class TestSecretGetMasking:
         assert result.exit_code == 0
 
 
-@pytest.mark.skip(reason="Track K removed --tags from secret set — see #162 follow-up")
 class TestSecretSetTags:
     """Lines 112-116: tag parsing."""
 
     def test_set_with_tags(self) -> None:
         backend = MagicMock()
+        backend.backend_name = "env"
         backend.set = AsyncMock()
+        backend.get = AsyncMock(return_value=None)
 
         with patch(
             "cli.commands.secret._get_backend",
