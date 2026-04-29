@@ -31,6 +31,10 @@ When you run `agentbreeder deploy`, the engine:
 
 The APS sidecar handles everything the platform needs to do: RAG retrieval, memory persistence, tool execution, A2A proxying, and OpenTelemetry tracing. LLM cost is tracked automatically by the LiteLLM gateway using the per-agent virtual key — no explicit cost recording call needed. Your agent code calls the sidecar over a local HTTP connection on port 9001. **You write zero infrastructure code.**
 
+<Callout type="info" title="APS vs. Track J sidecar">
+  This page describes the **Polyglot APS sidecar** (TypeScript-runtime concept from PR #136), which lives in the agent container's pod and exposes `:9001`. AgentBreeder v2.0 also ships a separate, broader **[Track J sidecar](sidecar)** — a Go binary that fronts the agent on `:8080` and handles bearer auth, OTel, cost emission, A2A, MCP passthrough, and guardrails for **all** languages and frameworks. The two are complementary: APS is opinionated polyglot scaffolding; Track J is the cross-cutting concerns layer auto-injected based on `agent.yaml` (`guardrails:` / MCP `tools:` / `a2a:`). Plan: the APS responsibilities collapse into the Track J sidecar over the v2.x line.
+</Callout>
+
 ```
 Your agent.ts / main.rs / main.go
         ↓ (imported by server template)
@@ -524,19 +528,18 @@ The APS sidecar is injected into the ECS task definition, Cloud Run job, or Kube
 | DeepAgent | `deepagent` | `deepagent` | Reasoning-intensive tasks |
 | Custom Node | `custom` | — | Any Node.js/TypeScript agent |
 
-### Rust frameworks (Phase 2)
+### Rust frameworks *(roadmap — [#189](https://github.com/agentbreeder/agentbreeder/issues/189))*
 
 | Framework | `framework:` value | crate | Best for |
 |---|---|---|---|
 | Rig | `rig` | `rig-core` | Performance-critical, low-latency agents |
 | Custom | `custom` | — | Any Rust agent |
 
-### Go frameworks (Phase 2)
+### Go frameworks *(shipped in v2.0 — see [Go SDK](go-sdk))*
 
 | Framework | `framework:` value | module | Best for |
 |---|---|---|---|
-| LangChain Go | `langchaingo` | `github.com/tmc/langchaingo` | Teams with existing Go LangChain code |
-| Custom | `custom` | — | Any Go agent |
+| Custom | `custom` | `github.com/agentbreeder/agentbreeder/sdk/go/agentbreeder` | Any Go agent — Tier-2 first-party SDK |
 
 ---
 
