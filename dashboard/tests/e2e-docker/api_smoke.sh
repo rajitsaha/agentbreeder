@@ -23,11 +23,12 @@ fail() { printf "  \033[31m✗\033[0m  %s\n" "$*"; exit 1; }
 
 echo "════ Stack reachability ════"
 curl -sf "$DASH/" >/dev/null && pass "Dashboard / 200"   || fail "Dashboard not reachable at $DASH"
-# The API health endpoint sits at /api/v1/health on the management server.
-# In the e2e stack we hit it through the dashboard's nginx proxy.
-curl -sf "$API/api/v1/health" >/dev/null \
-  && pass "API /api/v1/health 200 (via $API)" \
-  || fail "API not reachable via $API/api/v1/health"
+# API health is at /health on the FastAPI app (api/main.py @app.get("/health")) —
+# NOT under /api/v1. Dashboard nginx proxies both /health and /api/* to the api
+# container, so http://localhost:3001/health hits the api directly.
+curl -sf "$API/health" >/dev/null \
+  && pass "API /health 200 (via $API)" \
+  || fail "API not reachable via $API/health"
 
 echo
 echo "════ Auth flow ════"
