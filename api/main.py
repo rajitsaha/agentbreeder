@@ -26,6 +26,7 @@ from api.routes import (
     marketplace,
     mcp_servers,
     memory,
+    models as models_route,
     orchestrations,
     playground,
     prompts,
@@ -109,6 +110,7 @@ app.include_router(deploys.router)
 app.include_router(prompts.router)
 app.include_router(providers.router)
 app.include_router(mcp_servers.router)
+app.include_router(models_route.router)
 app.include_router(registry.router)
 app.include_router(sandbox.router)
 app.include_router(git.router)
