@@ -331,6 +331,7 @@ def test_build_target_backend_passes_prefix_empty(monkeypatch):
 def test_emit_mirror_audit_falls_back_when_api_unavailable(monkeypatch, caplog):
     """If the api package isn't importable the audit emit must not raise."""
     import builtins
+
     from engine.secrets import auto_mirror
 
     real_import = builtins.__import__
