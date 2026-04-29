@@ -1,19 +1,27 @@
-"""Injects the observability sidecar into deploy configurations.
+"""Injects the cross-cutting-concerns sidecar into deploy configurations.
 
-Issue #73: Auto-inject OTel observability sidecar.
+Track J: tracing, cost, guardrails, A2A, MCP.
 
-Two injection targets are supported:
-  - inject_sidecar()           — AWS ECS task definition dict
-  - inject_cloudrun_sidecar()  — GCP Cloud Run service spec dict
+Three injection targets are supported here:
+  - inject_sidecar()                 — AWS ECS task definition dict
+  - inject_cloudrun_sidecar()        — GCP Cloud Run service spec dict
+  - inject_compose_sidecar()         — docker-compose service dict
+                                       (used by engine.deployers.docker_compose)
 
-Both functions are idempotent: if a container named 'agentbreeder-sidecar' is
+All functions are idempotent: if a container named 'agentbreeder-sidecar' is
 already present the function returns the input unchanged.
+
+Auto-injection helper:
+  - should_inject(agent_config)      — returns True when the agent config
+                                       declares guardrails, MCP tools, or A2A
+                                       and AGENTBREEDER_SIDECAR != disabled
 """
 
 from __future__ import annotations
 
 import copy
 import logging
+import os
 from typing import Any
 
 from .config import SidecarConfig
@@ -21,6 +29,9 @@ from .config import SidecarConfig
 logger = logging.getLogger(__name__)
 
 SIDECAR_NAME = "agentbreeder-sidecar"
+
+# Env-var values that disable the sidecar (case-insensitive).
+_DISABLED_VALUES = {"disabled", "off", "0", "false", "no"}
 
 
 def inject_sidecar(task_definition: dict[str, Any], config: SidecarConfig) -> dict[str, Any]:
@@ -59,6 +70,10 @@ def inject_sidecar(task_definition: dict[str, Any], config: SidecarConfig) -> di
             {"name": "OTEL_EXPORTER_OTLP_ENDPOINT", "value": config.otel_endpoint},
             {"name": "AB_COST_TRACKING", "value": str(config.cost_tracking).lower()},
             {"name": "AB_GUARDRAILS", "value": ",".join(config.guardrails)},
+            {
+                "name": "AGENTBREEDER_SIDECAR_AGENT_URL",
+                "value": f"http://localhost:{config.agent_port}",
+            },
         ],
         "healthCheck": {
             "command": [
@@ -114,6 +129,10 @@ def inject_cloudrun_sidecar(service_spec: dict[str, Any], config: SidecarConfig)
             {"name": "OTEL_EXPORTER_OTLP_ENDPOINT", "value": config.otel_endpoint},
             {"name": "AB_COST_TRACKING", "value": str(config.cost_tracking).lower()},
             {"name": "AB_GUARDRAILS", "value": ",".join(config.guardrails)},
+            {
+                "name": "AGENTBREEDER_SIDECAR_AGENT_URL",
+                "value": f"http://localhost:{config.agent_port}",
+            },
         ],
         "ports": [{"containerPort": config.health_port}],
     }
@@ -121,3 +140,92 @@ def inject_cloudrun_sidecar(service_spec: dict[str, Any], config: SidecarConfig)
     containers.append(sidecar)
     logger.info("Injected observability sidecar into Cloud Run service spec")
     return result
+
+
+def inject_compose_sidecar(
+    services: dict[str, Any],
+    config: SidecarConfig,
+    *,
+    agent_service: str = "agent",
+) -> dict[str, Any]:
+    """Inject the sidecar service into a docker-compose `services` dict.
+
+    Args:
+        services:        Map of service name → service dict.
+        config:          SidecarConfig controlling the sidecar image / env.
+        agent_service:   The service name to forward inbound traffic to.
+
+    Returns:
+        A new dict — the original is never mutated.
+    """
+    if not config.enabled:
+        logger.debug("Sidecar injection disabled — skipping (compose)")
+        return services
+
+    result = copy.deepcopy(services)
+    if SIDECAR_NAME in result:
+        logger.debug("Sidecar already present in compose services — skipping")
+        return result
+
+    result[SIDECAR_NAME] = {
+        "image": config.image,
+        "environment": {
+            "AGENT_NAME": "${AGENT_NAME:-agent}",
+            "AGENT_VERSION": "${AGENT_VERSION:-}",
+            "AGENT_AUTH_TOKEN": "${AGENT_AUTH_TOKEN:-}",
+            "AGENTBREEDER_SIDECAR_AGENT_URL": (f"http://{agent_service}:{config.agent_port}"),
+            "OTEL_EXPORTER_OTLP_ENDPOINT": config.otel_endpoint,
+            "AGENTBREEDER_API_URL": "${AGENTBREEDER_API_URL:-}",
+            "AGENTBREEDER_API_TOKEN": "${AGENTBREEDER_API_TOKEN:-}",
+            "AB_GUARDRAILS": ",".join(config.guardrails),
+        },
+        "ports": [f"{config.health_port}:{config.health_port}"],
+        "depends_on": [agent_service],
+    }
+    logger.info("Injected sidecar into docker-compose services")
+    return result
+
+
+def should_inject(agent_config: Any) -> bool:
+    """Return True when an agent's config requires sidecar injection.
+
+    Triggers on any of:
+      - guardrails declared at the top level of agent.yaml
+      - tools that are MCP servers (engine treats `mcp_servers` as a separate
+        list, but tools entries with `type=mcp` also qualify)
+      - an a2a: block on the agent
+
+    The env-var bypass `AGENTBREEDER_SIDECAR=disabled` short-circuits to False
+    so local dev never has to fight the deployer.
+    """
+    if _is_env_disabled():
+        logger.debug("AGENTBREEDER_SIDECAR=disabled — skipping injection")
+        return False
+
+    guardrails = getattr(agent_config, "guardrails", None) or []
+    if guardrails:
+        return True
+
+    mcp_servers = getattr(agent_config, "mcp_servers", None) or []
+    if mcp_servers:
+        return True
+
+    tools = getattr(agent_config, "tools", None) or []
+    for tool in tools:
+        # Either a registry ref (str-like with `mcp/` prefix) or an inline dict.
+        ref = getattr(tool, "ref", None)
+        if isinstance(ref, str) and ref.startswith(("tools/mcp", "mcp/")):
+            return True
+        ttype = getattr(tool, "type", None)
+        if ttype and str(ttype).lower() == "mcp":
+            return True
+
+    a2a = getattr(agent_config, "a2a", None)
+    if a2a:
+        return True
+
+    return False
+
+
+def _is_env_disabled() -> bool:
+    return os.getenv("AGENTBREEDER_SIDECAR", "").strip().lower() in _DISABLED_VALUES

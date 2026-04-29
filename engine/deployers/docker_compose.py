@@ -19,6 +19,7 @@ import httpx
 from engine.config_parser import AgentConfig
 from engine.deployers.base import BaseDeployer, DeployResult, HealthStatus, InfraResult
 from engine.runtimes.base import ContainerImage
+from engine.sidecar import SidecarConfig, should_inject
 
 logger = logging.getLogger(__name__)
 
@@ -230,11 +231,21 @@ class DockerComposeDeployer(BaseDeployer):
             )
 
         endpoint_url = f"http://localhost:{port}"
+
+        # Track J: optional sidecar injection — runs alongside the agent
+        # container on the same Docker network. Side-by-side, not in-front,
+        # because the docker_compose deployer reuses the agent's host port
+        # mapping for backward compatibility.
+        sidecar_id: str | None = None
+        if should_inject(config):
+            sidecar_id = await self._start_sidecar(client, config, container_name)
+
         self._state["agents"][config.name] = {
             "port": port,
             "endpoint_url": endpoint_url,
             "container_id": container.id,
             "container_name": container_name,
+            "sidecar_container_id": sidecar_id,
             "image_tag": image.tag,
             "status": "running",
             "deployed_at": datetime.now().isoformat(),
@@ -248,6 +259,58 @@ class DockerComposeDeployer(BaseDeployer):
             agent_name=config.name,
             version=config.version,
         )
+
+    async def _start_sidecar(
+        self,
+        client: Any,
+        config: AgentConfig,
+        agent_container_name: str,
+    ) -> str | None:
+        """Start the sidecar container next to the agent.
+
+        Idempotent: if a sidecar container with the conventional name already
+        exists, it is returned unchanged. Failures are logged but don't fail
+        the deploy — the sidecar is best-effort in local dev.
+        """
+        import docker
+
+        sidecar_cfg = SidecarConfig.from_agent_config(config)
+        sidecar_name = f"{agent_container_name}-sidecar"
+
+        # Idempotency guard
+        try:
+            existing = client.containers.get(sidecar_name)
+            logger.info("Sidecar already running: %s", sidecar_name)
+            return existing.id
+        except docker.errors.NotFound:
+            pass
+
+        await self._ensure_network(client)
+
+        env = {
+            "AGENT_NAME": config.name,
+            "AGENT_VERSION": config.version,
+            "AGENTBREEDER_SIDECAR_AGENT_URL": f"http://{agent_container_name}:8080",
+            "AB_GUARDRAILS": ",".join(sidecar_cfg.guardrails),
+            "AGENTBREEDER_SIDECAR_ALLOW_NO_AUTH": "1",  # local dev convenience
+        }
+        if sidecar_cfg.otel_endpoint:
+            env["OTEL_EXPORTER_OTLP_ENDPOINT"] = sidecar_cfg.otel_endpoint
+
+        try:
+            sidecar = client.containers.run(
+                sidecar_cfg.image,
+                name=sidecar_name,
+                environment=env,
+                network=OLLAMA_NETWORK_NAME,
+                detach=True,
+                remove=False,
+            )
+            logger.info("Started sidecar container: %s", sidecar_name)
+            return sidecar.id
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("Failed to start sidecar (continuing without): %s", exc)
+            return None
 
     async def health_check(
         self, deploy_result: DeployResult, timeout: int = 60, interval: int = 2
@@ -290,6 +353,19 @@ class DockerComposeDeployer(BaseDeployer):
 
         client = _docker_client()
         container_name = f"agentbreeder-{agent_name}"
+
+        # Track J: tear down the sidecar first (if recorded in state) so the
+        # agent doesn't briefly answer requests without its egress guardrails.
+        agent_state = self._state.get("agents", {}).get(agent_name, {})
+        if agent_state.get("sidecar_container_id"):
+            sidecar_name = f"{container_name}-sidecar"
+            try:
+                sc = client.containers.get(sidecar_name)
+                sc.stop(timeout=10)
+                sc.remove()
+                logger.info("Removed sidecar container: %s", sidecar_name)
+            except docker.errors.NotFound:
+                logger.debug("Sidecar already removed: %s", sidecar_name)
 
         try:
             container = client.containers.get(container_name)

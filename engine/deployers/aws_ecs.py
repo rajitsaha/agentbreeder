@@ -357,6 +357,24 @@ class AWSECSDeployer(BaseDeployer):
 
         container_def = self._build_container_definition(config, image_uri)
 
+        # Track J: stub auto-injection. The full ECS task-def reshape (port
+        # remapping + extra capacity) needs follow-up work; for now we delegate
+        # to engine.sidecar.inject_sidecar which appends a non-essential
+        # sidecar container. See docs/architecture/platform-v2.md §5.
+        # TODO(track-j): allocate the agent's listening port to 8081 once the
+        # runtime contract makes that the default.
+        from engine.sidecar import (  # local import keeps base file dep-free
+            SidecarConfig,
+            inject_sidecar,
+            should_inject,
+        )
+
+        container_defs: list[dict[str, Any]] = [container_def]
+        if should_inject(config):
+            partial: dict[str, Any] = {"containerDefinitions": container_defs}
+            partial = inject_sidecar(partial, SidecarConfig.from_agent_config(config))
+            container_defs = partial["containerDefinitions"]
+
         kwargs: dict[str, Any] = {
             "family": config.name,
             "networkMode": "awsvpc",
@@ -364,7 +382,7 @@ class AWSECSDeployer(BaseDeployer):
             "cpu": cpu_str,
             "memory": memory_str,
             "executionRoleArn": aws.execution_role_arn,
-            "containerDefinitions": [container_def],
+            "containerDefinitions": container_defs,
             "tags": [
                 {"key": "managed-by", "value": "agentbreeder"},
                 {"key": "agent-name", "value": config.name},

@@ -22,6 +22,7 @@ from pydantic import BaseModel
 from engine.config_parser import AgentConfig
 from engine.deployers.base import BaseDeployer, DeployResult, HealthStatus, InfraResult
 from engine.runtimes.base import ContainerImage
+from engine.sidecar import SidecarConfig, should_inject
 
 logger = logging.getLogger(__name__)
 
@@ -189,9 +190,16 @@ def _build_service_template(
     min_instances = scaling_min if scaling_min >= 0 else DEFAULT_MIN_INSTANCES
     max_instances = config.deploy.scaling.max or DEFAULT_MAX_INSTANCES
 
+    # Track J: optional sidecar injection — Cloud Run multi-container revisions
+    # support up to 10 containers. The sidecar fronts external traffic on
+    # config.deploy.scaling-defined ports while the agent listens on 8081.
+    containers_list: list[dict[str, Any]] = [container]
+    if should_inject(config):
+        containers_list.append(_build_cloudrun_sidecar_container(config))
+
     # Fix #117 (continued): top-level template fields are also snake_case.
     template: dict[str, Any] = {
-        "containers": [container],
+        "containers": containers_list,
         "scaling": {
             "min_instance_count": min_instances,
             "max_instance_count": max_instances,
@@ -215,6 +223,43 @@ def _build_service_template(
         }
 
     return template
+
+
+def _build_cloudrun_sidecar_container(config: AgentConfig) -> dict[str, Any]:
+    """Build the sidecar container spec for a Cloud Run revision.
+
+    Cloud Run v2 multi-container: the first container with `ports` is the
+    "ingress" container — we leave that as the agent (existing behaviour) and
+    let the agent itself handle traffic. A future Cloud Run change can flip
+    ingress to the sidecar; for v1 we keep the proxy agent-side.
+
+    The sidecar receives all the env it needs to talk to the agent over
+    localhost (Cloud Run shares a network namespace within a revision).
+    """
+    import os as _os
+
+    sc = SidecarConfig.from_agent_config(config)
+    env: list[dict[str, Any]] = [
+        {"name": "AGENT_NAME", "value": config.name},
+        {"name": "AGENT_VERSION", "value": config.version},
+        {"name": "AGENTBREEDER_SIDECAR_AGENT_URL", "value": "http://localhost:8080"},
+        {"name": "AGENTBREEDER_SIDECAR_INBOUND_ADDR", "value": ":9080"},
+        {"name": "AB_GUARDRAILS", "value": ",".join(sc.guardrails)},
+    ]
+    otel = _os.getenv("OPENTELEMETRY_ENDPOINT") or sc.otel_endpoint
+    if otel:
+        env.append({"name": "OTEL_EXPORTER_OTLP_ENDPOINT", "value": otel})
+    if api_url := _os.getenv("AGENTBREEDER_API_URL"):
+        env.append({"name": "AGENTBREEDER_API_URL", "value": api_url})
+
+    return {
+        "name": "agentbreeder-sidecar",
+        "image": sc.image,
+        "env": env,
+        "resources": {"limits": {"cpu": "500m", "memory": "256Mi"}},
+        # Sidecar listens on a separate port; agent retains 8080 for ingress.
+        # No `ports` on this container (Cloud Run requires exactly one ingress).
+    }
 
 
 class GCPCloudRunDeployer(BaseDeployer):
