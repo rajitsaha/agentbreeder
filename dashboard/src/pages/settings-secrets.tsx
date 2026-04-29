@@ -38,7 +38,7 @@ export default function SettingsSecretsPage() {
       queryClient.invalidateQueries({ queryKey: ["secrets", "list"] });
     },
     onError: (err: Error) => {
-      toast({ title: "Rotate failed", description: err.message, variant: "destructive" });
+      toast({ title: "Rotate failed", description: err.message, variant: "error" });
     },
   });
 

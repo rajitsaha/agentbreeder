@@ -87,6 +87,13 @@ def _make_backend(backend: str, **kwargs: Any) -> SecretsBackend:
         raise typer.Exit(code=1) from exc
 
 
+# Backwards-compat shim: pre-Track-K tests in test_cli_commands_extended.py
+# and test_cli_coverage_boost.py import this name. Kept so legacy coverage
+# (which exercises real behaviour, not a deprecated path) keeps passing.
+def _get_backend(backend: str, **kwargs: Any) -> SecretsBackend:
+    return _make_backend(backend, **kwargs)
+
+
 def _resolve_backend(
     explicit_backend: str | None,
     *,
