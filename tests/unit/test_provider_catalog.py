@@ -26,10 +26,12 @@ from engine.providers.catalog import (
     Catalog,
     CatalogEntry,
     CatalogError,
+    GatewayModelRef,
     _parse_catalog,
     get_entry,
     list_entries,
     load_catalog,
+    parse_gateway_ref,
     parse_model_ref,
     reset_cache,
 )
@@ -720,3 +722,245 @@ class TestWriteUserLocal:
 
             reset_cache()
             assert get_entry("my-vllm") is not None
+
+
+# ─── Gateway type entries (Track H / #164) ─────────────────────────────────
+
+
+class TestGatewayCatalogEntries:
+    """Built-in gateway entries — LiteLLM + OpenRouter — exist with type=gateway."""
+
+    def setup_method(self) -> None:
+        reset_cache()
+
+    def teardown_method(self) -> None:
+        reset_cache()
+
+    def test_openrouter_is_gateway_type(self) -> None:
+        with patch("engine.providers.catalog.USER_LOCAL_PATH", Path("/nonexistent/path.yaml")):
+            reset_cache()
+            entry = get_entry("openrouter")
+        assert entry is not None
+        assert entry.type == "gateway"
+
+    def test_litellm_preset_present(self) -> None:
+        with patch("engine.providers.catalog.USER_LOCAL_PATH", Path("/nonexistent/path.yaml")):
+            reset_cache()
+            entry = get_entry("litellm")
+        assert entry is not None
+        assert entry.type == "gateway"
+        assert entry.api_key_env == "LITELLM_MASTER_KEY"
+        assert "4000" in str(entry.base_url)
+
+    def test_litellm_notable_models_seeded(self) -> None:
+        with patch("engine.providers.catalog.USER_LOCAL_PATH", Path("/nonexistent/path.yaml")):
+            reset_cache()
+            entry = get_entry("litellm")
+        assert entry is not None
+        # Cross-check that compose-shipped LiteLLM models are advertised so the
+        # quickstart `model.primary: litellm/...` examples actually work.
+        assert "openai/gpt-4o" in entry.notable_models
+        assert any("claude" in m for m in entry.notable_models)
+
+    def test_direct_provider_keeps_openai_compatible_type(self) -> None:
+        with patch("engine.providers.catalog.USER_LOCAL_PATH", Path("/nonexistent/path.yaml")):
+            reset_cache()
+            for name in ("nvidia", "groq", "moonshot", "fireworks", "cerebras"):
+                entry = get_entry(name)
+                assert entry is not None, f"missing direct provider: {name}"
+                assert entry.type == "openai_compatible", (
+                    f"direct provider {name} regressed to non-direct type"
+                )
+
+
+class TestParseGatewayRef:
+    def setup_method(self) -> None:
+        reset_cache()
+
+    def teardown_method(self) -> None:
+        reset_cache()
+
+    def test_openrouter_three_segment_ref(self) -> None:
+        with patch("engine.providers.catalog.USER_LOCAL_PATH", Path("/nonexistent/path.yaml")):
+            reset_cache()
+            ref = parse_gateway_ref("openrouter/moonshotai/kimi-k2")
+        assert isinstance(ref, GatewayModelRef)
+        assert ref.gateway == "openrouter"
+        assert ref.upstream_provider == "moonshotai"
+        assert ref.model == "kimi-k2"
+        assert ref.upstream_model == "moonshotai/kimi-k2"
+
+    def test_litellm_three_segment_ref(self) -> None:
+        with patch("engine.providers.catalog.USER_LOCAL_PATH", Path("/nonexistent/path.yaml")):
+            reset_cache()
+            ref = parse_gateway_ref("litellm/anthropic/claude-sonnet-4")
+        assert ref is not None
+        assert ref.gateway == "litellm"
+        assert ref.upstream_model == "anthropic/claude-sonnet-4"
+
+    def test_two_segment_returns_none(self) -> None:
+        # Two-segment refs are direct refs — gateway parser returns None and
+        # callers fall through to parse_model_ref.
+        with patch("engine.providers.catalog.USER_LOCAL_PATH", Path("/nonexistent/path.yaml")):
+            reset_cache()
+            assert parse_gateway_ref("openrouter/auto") is None
+            assert parse_gateway_ref("nvidia/llama-3.1-405b") is None
+
+    def test_first_segment_must_be_gateway_type(self) -> None:
+        # nvidia exists in the catalog but is type=openai_compatible — the
+        # 3-segment form must NOT match it (otherwise direct refs whose model
+        # contains a slash, e.g. nvidia/meta/llama-3.1, would be miscategorised).
+        with patch("engine.providers.catalog.USER_LOCAL_PATH", Path("/nonexistent/path.yaml")):
+            reset_cache()
+            assert parse_gateway_ref("nvidia/meta/llama-3.1-405b") is None
+
+    def test_unknown_gateway_returns_none(self) -> None:
+        with patch("engine.providers.catalog.USER_LOCAL_PATH", Path("/nonexistent/path.yaml")):
+            reset_cache()
+            assert parse_gateway_ref("acme-gw/foo/bar") is None
+
+    def test_no_slash_returns_none(self) -> None:
+        with patch("engine.providers.catalog.USER_LOCAL_PATH", Path("/nonexistent/path.yaml")):
+            reset_cache()
+            assert parse_gateway_ref("gpt-4o") is None
+
+    def test_empty_segments_return_none(self) -> None:
+        with patch("engine.providers.catalog.USER_LOCAL_PATH", Path("/nonexistent/path.yaml")):
+            reset_cache()
+            assert parse_gateway_ref("openrouter//kimi-k2") is None
+            assert parse_gateway_ref("/openrouter/kimi-k2") is None
+            assert parse_gateway_ref("openrouter/moonshot/") is None
+
+    def test_model_id_can_contain_extra_slashes(self) -> None:
+        # `partition('/')`-style: only the first 2 splits are consumed; extra
+        # slashes in the model id stay attached. Useful for OpenRouter refs
+        # like openrouter/openai/gpt-4o-2024-08-06 vs nested model paths.
+        with patch("engine.providers.catalog.USER_LOCAL_PATH", Path("/nonexistent/path.yaml")):
+            reset_cache()
+            ref = parse_gateway_ref("openrouter/openai/gpt-4o/2024-08-06")
+        assert ref is not None
+        assert ref.gateway == "openrouter"
+        assert ref.upstream_provider == "openai"
+        assert ref.model == "gpt-4o/2024-08-06"
+        assert ref.upstream_model == "openai/gpt-4o/2024-08-06"
+
+    def test_user_local_can_register_custom_gateway(self, tmp_path: Path) -> None:
+        # User-local override can declare type: gateway — it must work end-to-end.
+        local = tmp_path / "providers.local.yaml"
+        local.write_text(
+            "version: 1\n"
+            "providers:\n"
+            "  myproxy:\n"
+            "    type: gateway\n"
+            "    base_url: https://gw.internal/v1\n"
+            "    api_key_env: MYPROXY_KEY\n"
+        )
+        with patch("engine.providers.catalog.USER_LOCAL_PATH", local):
+            reset_cache()
+            ref = parse_gateway_ref("myproxy/anthropic/claude-sonnet-4")
+        assert ref is not None
+        assert ref.gateway == "myproxy"
+        assert ref.upstream_model == "anthropic/claude-sonnet-4"
+
+
+class TestResolveGatewayModelRef:
+    """Track H — resolve_model_ref dispatches 3-segment refs to gateway entries."""
+
+    def setup_method(self) -> None:
+        reset_cache()
+
+    def teardown_method(self) -> None:
+        reset_cache()
+
+    def test_three_segment_resolves_to_gateway_provider(self) -> None:
+        from engine.providers.registry import resolve_model_ref
+
+        with patch("engine.providers.catalog.USER_LOCAL_PATH", Path("/nonexistent/path.yaml")):
+            reset_cache()
+            with patch.dict("os.environ", {"OPENROUTER_API_KEY": "sk-or-test"}):
+                provider = resolve_model_ref("openrouter/moonshotai/kimi-k2")
+        assert provider is not None
+        assert provider.name == "openrouter"
+        # The wire model joins upstream + model so OpenRouter accepts it as-is.
+        assert provider.config.default_model == "moonshotai/kimi-k2"
+
+    def test_three_segment_litellm_resolves(self) -> None:
+        from engine.providers.registry import resolve_model_ref
+
+        with patch("engine.providers.catalog.USER_LOCAL_PATH", Path("/nonexistent/path.yaml")):
+            reset_cache()
+            with patch.dict("os.environ", {"LITELLM_MASTER_KEY": "sk-litellm"}):
+                provider = resolve_model_ref("litellm/anthropic/claude-sonnet-4")
+        assert provider is not None
+        assert provider.name == "litellm"
+        assert provider.config.default_model == "anthropic/claude-sonnet-4"
+
+    def test_two_segment_direct_still_works(self) -> None:
+        # Backwards-compat: existing nvidia/groq/etc. refs MUST keep resolving.
+        from engine.providers.registry import resolve_model_ref
+
+        with patch("engine.providers.catalog.USER_LOCAL_PATH", Path("/nonexistent/path.yaml")):
+            reset_cache()
+            with patch.dict("os.environ", {"NVIDIA_API_KEY": "nv-test"}):
+                provider = resolve_model_ref("nvidia/meta-llama-3.1-405b-instruct")
+        assert provider is not None
+        assert provider.name == "nvidia"
+        assert provider.config.default_model == "meta-llama-3.1-405b-instruct"
+
+    def test_legacy_two_segment_openrouter_still_routes(self) -> None:
+        # `openrouter/auto` was supported pre-Track-H. Even though openrouter
+        # is now type=gateway, the 2-segment form falls through to
+        # parse_model_ref and resolves the same way. This is a hard
+        # backwards-compat guarantee.
+        from engine.providers.registry import resolve_model_ref
+
+        with patch("engine.providers.catalog.USER_LOCAL_PATH", Path("/nonexistent/path.yaml")):
+            reset_cache()
+            with patch.dict("os.environ", {"OPENROUTER_API_KEY": "sk-or-test"}):
+                provider = resolve_model_ref("openrouter/auto")
+        assert provider is not None
+        assert provider.name == "openrouter"
+        assert provider.config.default_model == "auto"
+
+    def test_unknown_three_segment_returns_none(self) -> None:
+        from engine.providers.registry import resolve_model_ref
+
+        with patch("engine.providers.catalog.USER_LOCAL_PATH", Path("/nonexistent/path.yaml")):
+            reset_cache()
+            assert resolve_model_ref("acme-gw/anthropic/claude") is None
+
+    def test_gateway_base_url_env_override(self) -> None:
+        # `LITELLM_BASE_URL` overrides the catalog default — lets the same
+        # entry serve docker-compose, self-hosted, and SaaS deployments.
+        from engine.providers.registry import resolve_model_ref
+
+        with patch("engine.providers.catalog.USER_LOCAL_PATH", Path("/nonexistent/path.yaml")):
+            reset_cache()
+            with patch.dict(
+                "os.environ",
+                {
+                    "LITELLM_MASTER_KEY": "sk-test",
+                    "LITELLM_BASE_URL": "https://litellm.platform.example.com/v1",
+                },
+            ):
+                provider = resolve_model_ref("litellm/openai/gpt-4o")
+        assert provider is not None
+        assert provider.config.base_url == "https://litellm.platform.example.com/v1"
+
+    def test_direct_provider_does_not_honour_base_url_override(self) -> None:
+        # The override env var only applies to gateways. A plain direct
+        # provider keeps its catalog base_url even if a same-named env exists.
+        from engine.providers.registry import resolve_model_ref
+
+        with patch("engine.providers.catalog.USER_LOCAL_PATH", Path("/nonexistent/path.yaml")):
+            reset_cache()
+            with patch.dict(
+                "os.environ",
+                {
+                    "NVIDIA_API_KEY": "nv-test",
+                    "NVIDIA_BASE_URL": "https://malicious.example.com/v1",
+                },
+            ):
+                provider = resolve_model_ref("nvidia/meta-llama-3.1-405b-instruct")
+        assert provider is not None
+        assert "nvidia.com" in (provider.config.base_url or "")

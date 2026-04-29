@@ -196,9 +196,15 @@ def parse_model_ref(ref: str) -> tuple[str, str] | None:
     catalog, else ``None``. The model_id may itself contain ``/`` (e.g.
     ``meta/llama-3.1-405b``) — only the first segment is matched as provider.
 
+    For gateway-type entries the *full remainder* is preserved as the model_id
+    because gateways need to forward the upstream-provider prefix on the wire
+    (e.g. OpenRouter expects ``model: "anthropic/claude-sonnet-4"``).
+
     Examples:
         >>> parse_model_ref("nvidia/meta-llama-3.1-405b-instruct")
         ("nvidia", "meta-llama-3.1-405b-instruct")
+        >>> parse_model_ref("openrouter/anthropic/claude-sonnet-4")
+        ("openrouter", "anthropic/claude-sonnet-4")
         >>> parse_model_ref("gpt-4o")  # no slash, not catalog
         None
     """
@@ -210,3 +216,58 @@ def parse_model_ref(ref: str) -> tuple[str, str] | None:
     if get_entry(provider) is None:
         return None
     return provider, model
+
+
+class GatewayModelRef(BaseModel):
+    """A parsed 3-segment gateway ref: ``<gateway>/<upstream>/<model>``.
+
+    Track H (#164) — gateways fan out to many upstreams. The dashboard /
+    CLI / config-parser use this struct to route a request through the
+    correct gateway instance.
+    """
+
+    gateway: str
+    upstream_provider: str
+    model: str
+
+    @property
+    def upstream_model(self) -> str:
+        """The id to put in the wire payload's ``model`` field.
+
+        Both LiteLLM and OpenRouter accept ``<upstream>/<model>`` as the
+        canonical model id, so we re-join the last two segments.
+        """
+        return f"{self.upstream_provider}/{self.model}"
+
+
+def parse_gateway_ref(ref: str) -> GatewayModelRef | None:
+    """Parse a 3-segment gateway ref (Track H / #164).
+
+    Returns a :class:`GatewayModelRef` when:
+      - ``ref`` has at least 3 ``/``-separated segments, and
+      - the first segment names a catalog entry whose ``type == "gateway"``.
+
+    Otherwise returns ``None``. Anything that's not a gateway ref (including
+    plain ``<provider>/<model>`` direct refs) returns ``None`` so callers
+    can fall back to :func:`parse_model_ref`.
+
+    Examples:
+        >>> parse_gateway_ref("openrouter/moonshotai/kimi-k2")
+        GatewayModelRef(gateway="openrouter", upstream_provider="moonshotai", model="kimi-k2")
+        >>> parse_gateway_ref("litellm/anthropic/claude-sonnet-4")
+        GatewayModelRef(gateway="litellm", upstream_provider="anthropic", model="claude-sonnet-4")
+        >>> parse_gateway_ref("nvidia/meta-llama-3.1-405b")  # direct, not gateway
+        None
+        >>> parse_gateway_ref("openrouter/auto")  # 2-segment → None (callers fall back)
+        None
+    """
+    parts = ref.split("/", 2)
+    if len(parts) < 3:
+        return None
+    gateway, upstream, model = parts
+    if not gateway or not upstream or not model:
+        return None
+    entry = get_entry(gateway)
+    if entry is None or entry.type != "gateway":
+        return None
+    return GatewayModelRef(gateway=gateway, upstream_provider=upstream, model=model)

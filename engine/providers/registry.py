@@ -86,19 +86,41 @@ def resolve_model_ref(
     *,
     timeout: float = 60.0,
 ) -> ProviderBase | None:
-    """Resolve a ``<provider>/<model>`` ref against the catalog.
+    """Resolve a model reference against the catalog.
 
-    Returns a configured provider with ``default_model`` set to the model
-    portion, or ``None`` if ``ref`` doesn't match a catalog provider. This is
-    the entry point used by ``agent.yaml`` ``model.primary`` resolution.
+    Supports two ref shapes:
+
+    * **2-segment direct** — ``<provider>/<model>`` (e.g.
+      ``nvidia/meta-llama-3.1-405b-instruct``). Resolves to the catalog
+      provider for ``provider`` with ``default_model = model``.
+
+    * **3-segment gateway** — ``<gateway>/<upstream>/<model>`` (Track H /
+      #164, e.g. ``openrouter/moonshotai/kimi-k2``). Resolves to the
+      gateway's catalog entry; the wire ``model`` field is shaped as
+      ``<upstream>/<model>``. Only matches when the first segment names
+      a catalog entry whose ``type == "gateway"``.
+
+    Returns ``None`` if neither shape matches.
 
     Examples:
         >>> resolve_model_ref("nvidia/meta-llama-3.1-405b-instruct")
         <OpenAICompatibleProvider name="nvidia" model="meta-llama-3.1-405b-instruct">
+        >>> resolve_model_ref("openrouter/moonshotai/kimi-k2")
+        <OpenAICompatibleProvider name="openrouter" model="moonshotai/kimi-k2">
         >>> resolve_model_ref("gpt-4o")  # not in catalog → None
         None
     """
-    from engine.providers.catalog import parse_model_ref
+    from engine.providers.catalog import parse_gateway_ref, parse_model_ref
+
+    # Try 3-segment gateway form first — it's strictly more specific than
+    # the direct form and always wins when the first segment is a gateway.
+    gateway_ref = parse_gateway_ref(ref)
+    if gateway_ref is not None:
+        return create_catalog_provider(
+            gateway_ref.gateway,
+            default_model=gateway_ref.upstream_model,
+            timeout=timeout,
+        )
 
     parsed = parse_model_ref(ref)
     if parsed is None:
