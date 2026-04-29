@@ -281,9 +281,11 @@ jobs:
           PLAYWRIGHT_DOCKER_BASE_URL: http://localhost:3001
 
       - name: Run Docker E2E API smoke (auth + agents + auth gates)
+        # In the e2e stack only the dashboard is host-exposed (:3001); its
+        # nginx proxies /api/* to the api container. The smoke script lets
+        # API_BASE_URL default to DASHBOARD_BASE_URL so we go through nginx.
         run: bash dashboard/tests/e2e-docker/api_smoke.sh
         env:
-          API_BASE_URL: http://localhost:8000
           DASHBOARD_BASE_URL: http://localhost:3001
 
       - name: Show docker logs on failure
