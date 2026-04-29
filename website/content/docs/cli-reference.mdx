@@ -664,31 +664,40 @@ agentbreeder provider [SUBCOMMAND] [OPTIONS]
 
 | Subcommand | Description |
 |------------|-------------|
-| `list` | List all configured providers with status |
-| `add TYPE` | Add a new provider (interactive or with `--api-key` / `--base-url`) |
-| `test NAME` | Test a provider connection |
+| `list` | List configured providers + the OpenAI-compatible catalog |
+| `add NAME` | Add a provider (legacy types or `--type openai_compatible`) |
+| `test NAME` | Test a provider connection (catalog or legacy) |
 | `models NAME` | List available models from a provider |
 | `remove NAME` | Remove a provider and its API key |
 | `disable NAME` | Disable a provider without removing |
 | `enable NAME` | Re-enable a disabled provider |
+| `publish NAME` | Promote a user-local entry to a PR against the upstream catalog |
 
-**Supported provider types:** `openai`, `anthropic`, `google`, `ollama`, `litellm`, `openrouter`
+**Hand-written providers:** `openai`, `anthropic`, `google`, `ollama`, `litellm`, `openrouter` (interactive wizard).
 
-API keys are stored in the project `.env` file (or `~/.agentbreeder/.env` if no project).
+**Catalog providers (OpenAI-compatible):** `nvidia`, `openrouter`, `moonshot`, `groq`, `together`, `fireworks`, `deepinfra`, `cerebras`, `hyperbolic`. See [Providers](providers) for the full list and how to add your own.
+
+API keys are stored in the project `.env` file (or `~/.agentbreeder/.env` if no project). Catalog provider keys live only in your environment — only the env-var **name** is persisted, never the value.
 
 **Examples:**
 ```bash
-agentbreeder provider list                              # List all providers
+# Legacy (hand-written) providers
+agentbreeder provider list                                              # List all providers + catalog
 agentbreeder provider add openai                                        # Interactive setup
-agentbreeder provider add openai --api-key sk-proj-...              # Non-interactive
+agentbreeder provider add openai --api-key sk-proj-...                  # Non-interactive
 agentbreeder provider add ollama                                        # Auto-detect local Ollama
-agentbreeder provider add litellm --base-url http://localhost:4000      # Custom base URL (LiteLLM, Ollama, vLLM)
-agentbreeder provider test openai                       # Verify connection + latency
-agentbreeder provider models openai                     # List available models
-agentbreeder provider disable openai                    # Disable without removing
-agentbreeder provider enable openai                     # Re-enable
-agentbreeder provider remove openai                     # Remove provider + key
-agentbreeder provider list --json                       # JSON output
+agentbreeder provider test openai                                       # Verify connection + latency
+
+# OpenAI-compatible catalog (Track F)
+agentbreeder provider test nvidia                                       # Built-in preset; expects NVIDIA_API_KEY
+agentbreeder provider add my-vllm \
+  --type openai_compatible \
+  --base-url https://vllm.internal/v1 \
+  --api-key-env COMPANY_VLLM_KEY                                        # User-local entry
+agentbreeder provider remove my-vllm                                    # Remove user-local entry
+agentbreeder provider publish my-vllm                                   # Print PR patch for upstream catalog
+
+agentbreeder provider list --json                                       # JSON output
 ```
 
 ---
