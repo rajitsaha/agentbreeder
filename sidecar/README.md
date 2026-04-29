@@ -129,7 +129,7 @@ curl -H "Authorization: Bearer dev-token" \
      http://localhost:8080/invoke
 ```
 
-For a complete docker-compose example see `examples/sidecar-compose/docker-compose.yml`.
+For a complete docker-compose example see `sidecar/examples/compose/docker-compose.yml`.
 
 ---
 
