@@ -331,6 +331,11 @@ def from_catalog(
 
     Reads the api key from the env var declared on the catalog entry. Raises
     :class:`KeyError` if ``name`` is not in the catalog (built-in or user-local).
+
+    For ``type: gateway`` entries (Track H / #164) the ``base_url`` may be
+    overridden by the gateway-specific env var (e.g. ``LITELLM_BASE_URL``,
+    ``OPENROUTER_BASE_URL``) so the same catalog entry serves local-dev
+    docker-compose, self-hosted, and SaaS deployments.
     """
     # Local import to avoid a circular dep — catalog imports nothing from here.
     from engine.providers.catalog import get_entry
@@ -346,9 +351,18 @@ def from_catalog(
     # ``provider_name`` on the instance and on every result.
     from engine.providers.models import ProviderType
 
+    base_url = str(entry.base_url)
+    if entry.type == "gateway":
+        # Gateways can be relocated (local proxy → SaaS endpoint) without
+        # editing the catalog. Convention: <NAME>_BASE_URL overrides the
+        # built-in default.
+        override = os.environ.get(f"{name.upper()}_BASE_URL")
+        if override:
+            base_url = override
+
     config = ProviderConfig(
         provider_type=ProviderType.openai,
-        base_url=str(entry.base_url),
+        base_url=base_url,
         default_model=default_model,
         timeout=timeout,
     )
