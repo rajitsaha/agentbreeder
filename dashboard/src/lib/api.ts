@@ -253,6 +253,25 @@ export interface Provider {
   updated_at: string;
 }
 
+/**
+ * A preset entry in the OpenAI-compatible provider catalog (Track F / issue #160).
+ *
+ * These are read from `engine/providers/catalog.yaml` plus user-local overrides
+ * at `~/.agentbreeder/providers.local.yaml`. The dashboard surfaces them as a
+ * "Configure" list so users can connect a provider in one click.
+ */
+export interface CatalogProvider {
+  name: string;
+  type: "openai_compatible" | "gateway";
+  base_url: string;
+  api_key_env: string;
+  default_headers: Record<string, string>;
+  docs: string | null;
+  discovery: string | null;
+  notable_models: string[];
+  source: "builtin" | "user-local" | "workspace";
+}
+
 export interface ProviderTestResult {
   success: boolean;
   latency_ms: number | null;
@@ -1279,6 +1298,7 @@ export const api = {
       request<ProviderDiscoverResult>(`/providers/${id}/discover`, {
         method: "POST",
       }),
+    catalog: () => request<CatalogProvider[]>("/providers/catalog"),
   },
   mcpServers: {
     list: (params?: { page?: number; per_page?: number }) => {

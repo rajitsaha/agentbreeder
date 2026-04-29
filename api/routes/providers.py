@@ -102,6 +102,38 @@ async def detect_ollama(
     )
 
 
+@router.get("/catalog", response_model=ApiResponse[list[dict]])
+async def list_catalog_providers(
+    _user: User = Depends(get_current_user),
+) -> ApiResponse[list[dict]]:
+    """List built-in + user-local OpenAI-compatible catalog presets.
+
+    Used by the dashboard ``/models`` page to show presets with a Configure
+    button. Each entry is read-only — adding a user-local entry happens via the
+    CLI for now (``agentbreeder provider add … --type openai_compatible``).
+
+    See ``engine/providers/catalog.yaml`` for the source of truth.
+    """
+    from engine.providers.catalog import list_entries
+
+    entries = list_entries()
+    payload = [
+        {
+            "name": name,
+            "type": entry.type,
+            "base_url": str(entry.base_url),
+            "api_key_env": entry.api_key_env,
+            "default_headers": entry.default_headers,
+            "docs": str(entry.docs) if entry.docs else None,
+            "discovery": entry.discovery,
+            "notable_models": entry.notable_models,
+            "source": entry.source,
+        }
+        for name, entry in sorted(entries.items())
+    ]
+    return ApiResponse(data=payload)
+
+
 @router.get("", response_model=ApiResponse[list[ProviderResponse]])
 async def list_providers(
     provider_type: ProviderType | None = Query(None),
