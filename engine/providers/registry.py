@@ -55,6 +55,58 @@ def create_provider(config: ProviderConfig) -> ProviderBase:
     return provider_cls(config)
 
 
+def create_catalog_provider(
+    name: str,
+    *,
+    default_model: str | None = None,
+    timeout: float = 60.0,
+) -> ProviderBase:
+    """Create a provider from the OpenAI-compatible catalog by name.
+
+    Looks up ``name`` in ``engine/providers/catalog.yaml`` (plus user-local
+    overrides) and constructs a generic
+    :class:`engine.providers.openai_compatible.OpenAICompatibleProvider`.
+
+    Use this for providers like ``nvidia``, ``groq``, ``together``, etc. that
+    don't have a hand-written class — they all share the OpenAI Chat
+    Completions wire shape.
+
+    Raises:
+        KeyError: if ``name`` is not in the catalog.
+        AuthenticationError: if the api-key env var declared on the entry is unset.
+    """
+    # Local import to avoid a hard dep cycle (registry is imported widely).
+    from engine.providers.openai_compatible import from_catalog
+
+    return from_catalog(name, default_model=default_model, timeout=timeout)
+
+
+def resolve_model_ref(
+    ref: str,
+    *,
+    timeout: float = 60.0,
+) -> ProviderBase | None:
+    """Resolve a ``<provider>/<model>`` ref against the catalog.
+
+    Returns a configured provider with ``default_model`` set to the model
+    portion, or ``None`` if ``ref`` doesn't match a catalog provider. This is
+    the entry point used by ``agent.yaml`` ``model.primary`` resolution.
+
+    Examples:
+        >>> resolve_model_ref("nvidia/meta-llama-3.1-405b-instruct")
+        <OpenAICompatibleProvider name="nvidia" model="meta-llama-3.1-405b-instruct">
+        >>> resolve_model_ref("gpt-4o")  # not in catalog → None
+        None
+    """
+    from engine.providers.catalog import parse_model_ref
+
+    parsed = parse_model_ref(ref)
+    if parsed is None:
+        return None
+    provider_name, model_id = parsed
+    return create_catalog_provider(provider_name, default_model=model_id, timeout=timeout)
+
+
 def create_provider_from_env(
     provider_type: ProviderType,
     model: str | None = None,
