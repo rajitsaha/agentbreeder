@@ -385,19 +385,23 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Wait for PyPI propagation
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
         run: |
-          VERSION="${{ steps.version.outputs.version }}"
-          echo "Waiting for agentbreeder==$VERSION on PyPI..."
-          for i in $(seq 1 20); do
-            STATUS=$(curl -s "https://pypi.org/pypi/agentbreeder/${VERSION}/json" -o /dev/null -w "%{http_code}")
-            echo "Attempt $i: $STATUS"
-            if [ "$STATUS" = "200" ]; then
-              echo "Package visible on PyPI."
+          echo "Waiting for agentbreeder==$VERSION to be installable via pip..."
+          # Probe the /simple/ index that pip actually uses, not /pypi/<pkg>/<ver>/json.
+          # The JSON endpoint returns 200 the instant the file is uploaded, but pip
+          # reads /simple/ via the Fastly CDN, which lags by tens of seconds — long
+          # enough for the docker build below to start with a stale view.
+          for i in $(seq 1 30); do
+            if pip index versions agentbreeder --pre 2>/dev/null | grep -qE "(^|[^0-9])${VERSION}([^0-9]|$)"; then
+              echo "Attempt $i: pip sees ${VERSION}."
               exit 0
             fi
+            echo "Attempt $i: not yet visible via pip index."
             sleep 30
           done
-          echo "Timed out waiting for PyPI propagation."
+          echo "Timed out waiting for PyPI /simple/ propagation."
           exit 1
 
       - name: Build and push CLI image
@@ -423,18 +427,21 @@ jobs:
       - name: Wait for PyPI propagation
         run: |
           VERSION="${GITHUB_REF#refs/tags/v}"
-          echo "Waiting for agentbreeder==$VERSION and agentbreeder-sdk==$VERSION on PyPI..."
-          for i in $(seq 1 20); do
-            AB=$(curl -s "https://pypi.org/pypi/agentbreeder/${VERSION}/json" -o /dev/null -w "%{http_code}")
-            SDK=$(curl -s "https://pypi.org/pypi/agentbreeder-sdk/${VERSION}/json" -o /dev/null -w "%{http_code}")
-            echo "Attempt $i: agentbreeder=$AB  agentbreeder-sdk=$SDK"
-            if [ "$AB" = "200" ] && [ "$SDK" = "200" ]; then
-              echo "Both packages visible on PyPI."
+          echo "Waiting for agentbreeder==$VERSION and agentbreeder-sdk==$VERSION on PyPI /simple/..."
+          # Probe the /simple/ index (what pip uses), not /pypi/<pkg>/<ver>/json,
+          # which can return 200 before /simple/ has propagated through Fastly.
+          for i in $(seq 1 30); do
+            AB_OK=0; SDK_OK=0
+            pip index versions agentbreeder     --pre 2>/dev/null | grep -qE "(^|[^0-9])${VERSION}([^0-9]|$)" && AB_OK=1
+            pip index versions agentbreeder-sdk --pre 2>/dev/null | grep -qE "(^|[^0-9])${VERSION}([^0-9]|$)" && SDK_OK=1
+            echo "Attempt $i: agentbreeder=$AB_OK  agentbreeder-sdk=$SDK_OK"
+            if [ "$AB_OK" = "1" ] && [ "$SDK_OK" = "1" ]; then
+              echo "Both packages visible to pip."
               exit 0
             fi
             sleep 30
           done
-          echo "Timed out waiting for PyPI propagation after 10 minutes."
+          echo "Timed out waiting for PyPI /simple/ propagation."
           exit 1
 
       - name: Extract version from tag

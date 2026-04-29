@@ -8,6 +8,9 @@ This project follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) an
 
 ## [Unreleased]
 
+### Fixed
+- **Release workflow PyPI propagation race** — `Build & Push CLI Image` and `Update Homebrew Tap` jobs now probe the PyPI `/simple/` index (via `pip index versions`) instead of the `/pypi/<pkg>/<ver>/json` Warehouse endpoint. The JSON endpoint returns 200 the moment a file is uploaded, but `pip install` reads `/simple/` through Fastly, which can lag by tens of seconds — long enough for the v2.0.1 CLI image build to fail with `Could not find a version that satisfies the requirement agentbreeder==2.0.1`.
+
 ---
 
 ## [2.0.1] — 2026-04-29
