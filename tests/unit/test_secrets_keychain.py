@@ -309,9 +309,7 @@ class TestFactoryWorkspace:
         backend = get_backend()
         assert backend.backend_name == "keychain"
 
-    def test_get_backend_none_emits_env_fallback_warning(
-        self, tmp_path, monkeypatch
-    ):
+    def test_get_backend_none_emits_env_fallback_warning(self, tmp_path, monkeypatch):
         """When the install-mode default is env, a deprecation warning fires."""
         from engine.secrets.workspace import reset_env_fallback_warning
 
