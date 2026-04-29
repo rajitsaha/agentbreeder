@@ -179,6 +179,20 @@ agentbreeder/
 │   │   ├── hooks/
 │   │   └── lib/
 │   └── package.json
+├── sidecar/                    # Track J — Go cross-cutting-concerns sidecar
+│   ├── cmd/sidecar/            # main entrypoint
+│   ├── internal/
+│   │   ├── auth/               # bearer-token middleware
+│   │   ├── guardrails/         # PII / content filter rule engine
+│   │   ├── a2a/                # JSON-RPC 2.0 A2A client
+│   │   ├── mcp/                # MCP HTTP/SSE passthrough
+│   │   ├── otelx/              # OTLP/HTTP span exporter
+│   │   ├── cost/               # /api/v1/costs + /api/v1/audit emitter
+│   │   ├── proxy/              # reverse-proxy w/ guardrail egress
+│   │   ├── server/             # chi router assembly
+│   │   └── config/             # env + YAML loader
+│   ├── Dockerfile              # multi-arch distroless image
+│   └── README.md
 ├── deploy/
 │   └── docker-compose.yml      # Local development
 ├── alembic/                    # Database migrations
@@ -241,14 +255,19 @@ Every `agentbreeder deploy` MUST:
 
 There is no "quick deploy" mode that skips governance. This is intentional.
 
-### 3. The Sidecar Pattern (Planned)
-Every deployed agent will get a sidecar container injected automatically. The sidecar will provide:
+### 3. The Sidecar Pattern (Track J — shipped)
+Every deployed agent that declares `guardrails:`, MCP `tools:`, or `a2a:` gets the AgentBreeder sidecar container auto-injected. The sidecar — a single Go binary at `sidecar/` — provides:
 - OpenTelemetry traces for every LLM call, tool use, and agent step
-- Token counting and cost attribution
-- Guardrail enforcement (PII detection, content filtering)
-- Health check endpoint
+- Token counting and cost attribution (writes to `costs` + `audit_log`)
+- Guardrail enforcement (PII detection, content filtering, custom rules)
+- A2A JSON-RPC client at `localhost:9090/a2a/<peer>`
+- MCP passthrough at `localhost:9090/mcp/<server>`
+- Bearer-token validation on inbound traffic (`AGENT_AUTH_TOKEN`)
+- `/health` and `/openapi.json` endpoints
 
-> **Status:** Not yet implemented. Currently, observability is handled via the tracing API (`api/routes/tracing.py`).
+> **Source:** `sidecar/` (Go module), `engine/sidecar/` (Python deployer integration), `website/content/docs/sidecar.mdx` (user docs).
+> **Bypass:** set `AGENTBREEDER_SIDECAR=disabled` for local dev; agents without `guardrails:` / MCP / A2A do not get a sidecar at all.
+> **Image:** `rajits/agentbreeder-sidecar:<version>` (linux/amd64, linux/arm64).
 
 ### 4. Framework Agnosticism
 The `engine/runtimes/` layer abstracts all framework differences. Every runtime implements:
