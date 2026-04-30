@@ -62,30 +62,25 @@ _STATUS_ENUM = sa.Enum(
 
 
 def upgrade() -> None:
-    # PostgreSQL CREATE TYPE has no IF NOT EXISTS; SQLAlchemy's
-    # ``checkfirst=True`` is unreliable in async-bound alembic contexts
-    # (the existence query runs in a separate scope). Use a DO block
-    # that swallows the duplicate_object SQLSTATE so the migration is
-    # idempotent against persisted DB volumes (e.g. CI's docker compose
-    # stack reusing a postgres volume across runs).
-    op.execute(
-        """
-        DO $$ BEGIN
-            CREATE TYPE incidentseverity AS ENUM ('critical', 'high', 'medium', 'low');
-        EXCEPTION
-            WHEN duplicate_object THEN null;
-        END $$;
-        """
-    )
-    op.execute(
-        """
-        DO $$ BEGIN
-            CREATE TYPE incidentstatus AS ENUM ('open', 'investigating', 'mitigated', 'resolved');
-        EXCEPTION
-            WHEN duplicate_object THEN null;
-        END $$;
-        """
-    )
+    # PostgreSQL has no ``CREATE TYPE IF NOT EXISTS`` for enums.
+    # SQLAlchemy's ``checkfirst=True`` is unreliable in async-bound
+    # contexts, and PL/pgSQL DO blocks (with ``EXCEPTION WHEN duplicate_object``)
+    # don't round-trip through asyncpg's prepared-statement protocol —
+    # the inner ``CREATE TYPE`` still bubbles up as ``DuplicateObjectError``.
+    # The bullet-proof idiom is a synchronous pre-check against pg_type.
+    bind = op.get_bind()
+    has_severity = bind.execute(
+        sa.text("SELECT 1 FROM pg_type WHERE typname = 'incidentseverity'")
+    ).first()
+    if not has_severity:
+        op.execute("CREATE TYPE incidentseverity AS ENUM ('critical', 'high', 'medium', 'low')")
+    has_status = bind.execute(
+        sa.text("SELECT 1 FROM pg_type WHERE typname = 'incidentstatus'")
+    ).first()
+    if not has_status:
+        op.execute(
+            "CREATE TYPE incidentstatus AS ENUM ('open', 'investigating', 'mitigated', 'resolved')"
+        )
 
     op.create_table(
         "incidents",
