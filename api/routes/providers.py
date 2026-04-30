@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import logging
 import uuid
+from collections.abc import AsyncIterator
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import StreamingResponse
@@ -346,7 +347,7 @@ async def pull_ollama_model(
     )
     ollama = OllamaProvider(cfg)
 
-    async def event_stream():
+    async def event_stream() -> AsyncIterator[str]:
         try:
             async for event in ollama.pull_model(body.model):
                 yield f"data: {json.dumps(event)}\n\n"
