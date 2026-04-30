@@ -54,7 +54,7 @@ import { ConfigDiffViewer } from "@/components/config-diff-viewer";
 import { VersionSelector, type VersionEntry } from "@/components/version-selector";
 import { cn } from "@/lib/utils";
 import { jsonToYaml, highlightYaml, validateYamlBasic } from "@/lib/yaml";
-import { useState, useMemo, useCallback, useRef, useEffect } from "react";
+import { useState, useMemo, useCallback, useRef } from "react";
 import { useUrlState } from "@/hooks/use-url-state";
 import { useToast } from "@/hooks/use-toast";
 import { useUnsavedChanges } from "@/hooks/use-unsaved-changes";
@@ -471,16 +471,15 @@ function ConfigurationTab({ agent }: { agent: Agent }) {
     [versionsQuery.data],
   );
 
-  // Default the diff selectors to the two newest versions when data arrives.
-  useEffect(() => {
-    if (versionList.length === 0) return;
-    if (!diffVersionA || !versionList.find((v) => v.version === diffVersionA)) {
-      setDiffVersionA(versionList[Math.min(1, versionList.length - 1)].version);
-    }
-    if (!diffVersionB || !versionList.find((v) => v.version === diffVersionB)) {
-      setDiffVersionB(versionList[0].version);
-    }
-  }, [versionList, diffVersionA, diffVersionB]);
+  // Defaults — diff selectors derived during render (no effect needed).
+  // When a saved selection is no longer in the version list we fall back
+  // to: B = newest, A = second-newest (or B if only one version).
+  const defaultDiffB = versionList[0]?.version ?? "";
+  const defaultDiffA = versionList[Math.min(1, Math.max(0, versionList.length - 1))]?.version ?? "";
+  const resolvedDiffA =
+    diffVersionA && versionList.some((v) => v.version === diffVersionA) ? diffVersionA : defaultDiffA;
+  const resolvedDiffB =
+    diffVersionB && versionList.some((v) => v.version === diffVersionB) ? diffVersionB : defaultDiffB;
 
   const yamlStr = useMemo(() => {
     const snapshot = agent.config_snapshot;
@@ -709,23 +708,23 @@ function ConfigurationTab({ agent }: { agent: Agent }) {
               <div className="flex items-center gap-3">
                 <VersionSelector
                   versions={versionList}
-                  selected={diffVersionA}
+                  selected={resolvedDiffA}
                   onChange={setDiffVersionA}
                   label="Before"
                 />
                 <span className="text-xs text-muted-foreground">vs</span>
                 <VersionSelector
                   versions={versionList}
-                  selected={diffVersionB}
+                  selected={resolvedDiffB}
                   onChange={setDiffVersionB}
                   label="After"
                 />
               </div>
               <ConfigDiffViewer
-                before={yamlByVersion[diffVersionA] ?? ""}
-                after={yamlByVersion[diffVersionB] ?? ""}
-                beforeLabel={diffVersionA}
-                afterLabel={diffVersionB}
+                before={yamlByVersion[resolvedDiffA] ?? ""}
+                after={yamlByVersion[resolvedDiffB] ?? ""}
+                beforeLabel={resolvedDiffA}
+                afterLabel={resolvedDiffB}
               />
             </>
           )}
