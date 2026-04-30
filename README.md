@@ -397,8 +397,8 @@ cost rollups, compliance attestations, and a 99.95% SLA.
 Either way, the runtime is the same code. Switch at any time. **No data
 lock-in. No feature lock-out.**
 
-[Try Cloud →](https://www.agentbreeder.io/cloud) &nbsp;·&nbsp; [Self-host docs →](https://www.agentbreeder.io/docs/quickstart)
+[Try Cloud →](https://www.agentbreeder.io/cloud) &nbsp;·&nbsp; [Self-host docs →](https://www.agentbreeder.io/docs/quickstart) &nbsp;·&nbsp; [Join Discord →](https://discord.gg/QT9j3Uj4s5)
 
 ---
 
-[Contributing](CONTRIBUTING.md) · [Issues](https://github.com/agentbreeder/agentbreeder/issues) · [Discussions](https://github.com/agentbreeder/agentbreeder/discussions) · [Apache 2.0](LICENSE) · [Trademark](TRADEMARK.md)
+[Contributing](CONTRIBUTING.md) · [Issues](https://github.com/agentbreeder/agentbreeder/issues) · [Discussions](https://github.com/agentbreeder/agentbreeder/discussions) · [Discord](https://discord.gg/QT9j3Uj4s5) · [Apache 2.0](LICENSE) · [Trademark](TRADEMARK.md)
