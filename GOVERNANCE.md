@@ -101,7 +101,7 @@ faster or slower depending on community needs.
 |---|---|
 | [GitHub Issues](https://github.com/agentbreeder/agentbreeder/issues) | Bug reports, feature requests, tracked work |
 | [GitHub Discussions](https://github.com/agentbreeder/agentbreeder/discussions) | Open-ended questions, RFCs, roadmap input |
-| Discord *(coming soon)* | Real-time chat: `#announcements`, `#help`, `#contributors`, `#cloud` |
+| [Discord](https://discord.gg/QT9j3Uj4s5) | Real-time chat: `#announcements`, `#help`, `#contributors`, `#cloud` |
 | security@agentbreeder.com | Security disclosures (see [SECURITY.md](SECURITY.md)) |
 | saha.rajit@gmail.com | Code of Conduct, license, trademark, governance, partnerships |
 
