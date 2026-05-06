@@ -1058,7 +1058,7 @@ def _ensure_ollama(skip: bool, default_model: str) -> bool:
                 "Run [cyan]ollama serve[/cyan] in another terminal, then re-run quickstart."
             )
             return False
-    _ok(f"Ollama running at [cyan]http://localhost:11434[/cyan]")
+    _ok("Ollama running at [cyan]http://localhost:11434[/cyan]")
 
     # ── Verify bind is reachable from Docker containers ──
     # On macOS, Ollama.app defaults to 127.0.0.1 only. Containers reach the
@@ -1116,7 +1116,7 @@ def _ensure_ollama(skip: bool, default_model: str) -> bool:
         "[cyan]qwen2.5[/cyan] · [cyan]mistral[/cyan][/dim]"
     )
     ans = console.input(
-        f"  [bold]Pull a model now?[/bold] [Y/n / type a model name to override]: "
+        "  [bold]Pull a model now?[/bold] [Y/n / type a model name to override]: "
     ).strip()
     if ans.lower() in ("n", "no", "skip"):
         _warn("No model pulled — agents will need a model before they can run")
@@ -1293,7 +1293,7 @@ def _service_stop_hint(cmd: str) -> str | None:
     generic `lsof` discovery hint.
     """
     cmd_l = cmd.lower()
-    is_macos = sys.platform == "darwin"
+    is_macos = platform.system() == "Darwin"
     if "postgres" in cmd_l:
         return (
             "brew services list | grep -i postgres   "
