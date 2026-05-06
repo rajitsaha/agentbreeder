@@ -390,7 +390,7 @@ def _dashboard_smoke_check(url: str) -> tuple[bool, str | None]:
     if html_resp.status_code != 200:
         return False, f"dashboard returned HTTP {html_resp.status_code}"
     html = html_resp.text
-    if "<div id=\"root\"" not in html and '<div id="root"' not in html:
+    if '<div id="root"' not in html and '<div id="root"' not in html:
         return False, "dashboard HTML missing React mount point"
     # Pull out the Vite bundle path: /assets/index-XXXXXXXX.js
     match = re.search(r'src="(/assets/index-[A-Za-z0-9_-]+\.js)"', html)
@@ -450,7 +450,7 @@ def _podman_socket() -> str | None:
         return None
     # Path may already start with unix:// — strip it. Verify the socket exists.
     if path.startswith("unix://"):
-        path = path[len("unix://"):]
+        path = path[len("unix://") :]
     if not Path(path).exists():
         return None
     return path
@@ -888,9 +888,7 @@ def _rebind_ollama_all_interfaces() -> bool:
     #  3. pkill ollama + spawn `ollama serve` with OLLAMA_HOST set
     restarted = False
     if shutil.which("brew"):
-        r = subprocess.run(
-            ["brew", "services", "restart", "ollama"], capture_output=True
-        )
+        r = subprocess.run(["brew", "services", "restart", "ollama"], capture_output=True)
         restarted = r.returncode == 0
     if not restarted:
         # Quit Ollama.app gracefully if running
@@ -903,9 +901,7 @@ def _rebind_ollama_all_interfaces() -> bool:
         time.sleep(2)
         # Relaunch the app if available, else fall back to `ollama serve`
         if os.path.isdir("/Applications/Ollama.app"):
-            subprocess.run(
-                ["open", "-a", "Ollama"], capture_output=True
-            )
+            subprocess.run(["open", "-a", "Ollama"], capture_output=True)
         elif shutil.which("ollama"):
             env = os.environ.copy()
             env["OLLAMA_HOST"] = "0.0.0.0:11434"
@@ -966,9 +962,7 @@ def _start_ollama() -> bool:
     # Linux: try systemd user/system unit (Ollama installer registers one)
     if system == "Linux" and shutil.which("systemctl"):
         for unit_args in (["--user"], []):
-            r = subprocess.run(
-                ["systemctl", *unit_args, "start", "ollama"], capture_output=True
-            )
+            r = subprocess.run(["systemctl", *unit_args, "start", "ollama"], capture_output=True)
             if r.returncode == 0:
                 for _ in range(8):
                     time.sleep(1)
@@ -1090,7 +1084,7 @@ def _ensure_ollama(skip: bool, default_model: str) -> bool:
                 _warn(
                     "Could not auto-rebind. Run manually:\n"
                     "    [cyan]launchctl setenv OLLAMA_HOST 0.0.0.0:11434[/cyan]\n"
-                    "    [cyan]osascript -e 'tell application \"Ollama\" to "
+                    '    [cyan]osascript -e \'tell application "Ollama" to '
                     "quit'[/cyan] && [cyan]open -a Ollama[/cyan]"
                 )
         else:
@@ -1121,20 +1115,14 @@ def _ensure_ollama(skip: bool, default_model: str) -> bool:
     if ans.lower() in ("n", "no", "skip"):
         _warn("No model pulled — agents will need a model before they can run")
         return False
-    model = (
-        ans
-        if ans and ans.lower() not in ("y", "yes")
-        else default_model
-    )
+    model = ans if ans and ans.lower() not in ("y", "yes") else default_model
 
     console.print(f"\n  [dim]Running: [cyan]ollama pull {model}[/cyan][/dim]\n")
     r = subprocess.run(["ollama", "pull", model])
     if r.returncode == 0:
         _ok(f"Pulled [cyan]{model}[/cyan] — ready for local inference")
         return True
-    _warn(
-        f"Failed to pull {model}. You can retry with [cyan]ollama pull {model}[/cyan]."
-    )
+    _warn(f"Failed to pull {model}. You can retry with [cyan]ollama pull {model}[/cyan].")
     return False
 
 
@@ -1296,8 +1284,7 @@ def _service_stop_hint(cmd: str) -> str | None:
     is_macos = platform.system() == "Darwin"
     if "postgres" in cmd_l:
         return (
-            "brew services list | grep -i postgres   "
-            "# then: brew services stop <name>"
+            "brew services list | grep -i postgres   # then: brew services stop <name>"
             if is_macos
             else "sudo systemctl stop postgresql"
         )
@@ -1310,11 +1297,7 @@ def _service_stop_hint(cmd: str) -> str | None:
             else "sudo systemctl stop mysql"
         )
     if "mongod" in cmd_l:
-        return (
-            "brew services stop mongodb-community"
-            if is_macos
-            else "sudo systemctl stop mongod"
-        )
+        return "brew services stop mongodb-community" if is_macos else "sudo systemctl stop mongod"
     if "neo4j" in cmd_l:
         return "brew services stop neo4j" if is_macos else "sudo systemctl stop neo4j"
     return None
@@ -1576,6 +1559,7 @@ def quickstart(
     # Light pyenv recommendation (does not block — agentbreeder runs on any 3.11+)
     try:
         from cli.main import _print_pyenv_warning as _qs_pyenv_warn  # type: ignore
+
         _qs_pyenv_warn()
     except Exception:
         pass
@@ -1649,7 +1633,9 @@ def quickstart(
                     "    [dim]• [cyan]systemctl --user start podman.socket[/cyan]  (rootless podman)[/dim]"
                 )
             else:
-                console.print("  [dim]Start Docker Desktop, Podman Desktop, or Rancher Desktop.[/dim]")
+                console.print(
+                    "  [dim]Start Docker Desktop, Podman Desktop, or Rancher Desktop.[/dim]"
+                )
         elif binary == "podman":
             console.print("  [dim]Run: [cyan]podman machine start[/cyan][/dim]")
         else:
@@ -1834,9 +1820,7 @@ def quickstart(
 
             all_pids = sorted({p for _, _, owners in conflicts for p, _ in owners})
             if all_pids:
-                console.print(
-                    "  [bold]Free these ports automatically and continue?[/bold]"
-                )
+                console.print("  [bold]Free these ports automatically and continue?[/bold]")
                 console.print(
                     "  [dim]y = SIGTERM (then SIGKILL) the listed PIDs and proceed[/dim]"
                 )
@@ -1944,8 +1928,7 @@ def quickstart(
                 console.print("  [bold]Manual fix:[/bold]")
                 for port, name in taken_ports:
                     console.print(
-                        f"    [cyan]lsof -ti :{port} | xargs kill -9[/cyan]  "
-                        f"[dim]# {name}[/dim]"
+                        f"    [cyan]lsof -ti :{port} | xargs kill -9[/cyan]  [dim]# {name}[/dim]"
                     )
                 console.print()
                 console.print(
@@ -1983,13 +1966,10 @@ def quickstart(
             if (
                 cannot_connect
                 and stale_docker_host.startswith("unix://")
-                and not Path(stale_docker_host[len("unix://"):]).exists()
+                and not Path(stale_docker_host[len("unix://") :]).exists()
             ):
                 compose_env["DOCKER_HOST"] = ""  # subprocess sees empty → uses default
-                _info(
-                    f"Ignoring stale DOCKER_HOST → {stale_docker_host} "
-                    "(socket does not exist)"
-                )
+                _info(f"Ignoring stale DOCKER_HOST → {stale_docker_host} (socket does not exist)")
                 ok, blob = _compose_preflight(compose_cmd, env=compose_env)
                 if ok:
                     _ok("Compose now reaching the default engine socket")
@@ -2010,10 +1990,7 @@ def quickstart(
                 sock = _podman_socket()
                 if sock and "DOCKER_HOST" not in compose_env:
                     compose_env["DOCKER_HOST"] = f"unix://{sock}"
-                    _info(
-                        "Detected docker-compose shim hijack — auto-routing to "
-                        "podman's socket"
-                    )
+                    _info("Detected docker-compose shim hijack — auto-routing to podman's socket")
                     ok, blob = _compose_preflight(compose_cmd, env=compose_env)
                     if ok:
                         _ok(f"Compose now reaching podman at {sock}")
@@ -2025,9 +2002,7 @@ def quickstart(
                             and ".rd/" in blob_l
                             and "docker-compose" in blob_l
                         )
-                        cannot_connect = (
-                            "cannot connect to the docker daemon" in blob_l
-                        )
+                        cannot_connect = "cannot connect to the docker daemon" in blob_l
 
         if not ok:
             console.print()
@@ -2208,25 +2183,19 @@ def quickstart(
                     .lower()
                 )
                 if ans not in ("n", "no", "skip"):
-                    console.print(
-                        "  [dim]Rebuilding dashboard image (~30s)...[/dim]"
-                    )
+                    console.print("  [dim]Rebuilding dashboard image (~30s)...[/dim]")
                     rebuild = _compose_run(
                         compose_cmd,
                         ["up", "-d", "--build", "dashboard"],
                         env=compose_env,
                         capture=True,
                     )
-                    if rebuild.returncode == 0 and _wait_http(
-                        DASHBOARD_URL, timeout=60
-                    ):
+                    if rebuild.returncode == 0 and _wait_http(DASHBOARD_URL, timeout=60):
                         retry_ok, retry_err = _dashboard_smoke_check(DASHBOARD_URL)
                         if retry_ok:
                             _ok("Dashboard rebuilt — bundle now valid")
                         else:
-                            _warn(
-                                f"Dashboard still failing after rebuild: {retry_err}"
-                            )
+                            _warn(f"Dashboard still failing after rebuild: {retry_err}")
                     else:
                         _warn("Dashboard rebuild failed — check compose logs")
             else:
