@@ -1558,7 +1558,7 @@ def quickstart(
 
     # Light pyenv recommendation (does not block — agentbreeder runs on any 3.11+)
     try:
-        from cli.main import _print_pyenv_warning as _qs_pyenv_warn  # type: ignore
+        from cli.main import _print_pyenv_warning as _qs_pyenv_warn
 
         _qs_pyenv_warn()
     except Exception:
