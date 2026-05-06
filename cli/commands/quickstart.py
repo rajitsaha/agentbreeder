@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import os
 import platform
+import re
 import secrets
 import shutil
 import socket
@@ -371,6 +372,39 @@ def _wait_http(url: str, timeout: int = 120, interval: float = 3.0) -> bool:
             pass
         time.sleep(interval)
     return False
+
+
+def _dashboard_smoke_check(url: str) -> tuple[bool, str | None]:
+    """Validate the dashboard is serving a usable Vite-built bundle.
+
+    Returns (ok, error_reason). A failure here typically means the published
+    Docker image is stale (e.g. shipped with mismatched react/react-dom
+    versions causing a runtime crash, leaving the page blank). When that
+    happens, rebuilding from source via `--dev` (or pulling a newer image)
+    is the fix.
+    """
+    try:
+        html_resp = httpx.get(url, timeout=5.0)
+    except (httpx.ConnectError, httpx.TimeoutException, httpx.ReadError) as exc:
+        return False, f"dashboard unreachable: {exc}"
+    if html_resp.status_code != 200:
+        return False, f"dashboard returned HTTP {html_resp.status_code}"
+    html = html_resp.text
+    if "<div id=\"root\"" not in html and '<div id="root"' not in html:
+        return False, "dashboard HTML missing React mount point"
+    # Pull out the Vite bundle path: /assets/index-XXXXXXXX.js
+    match = re.search(r'src="(/assets/index-[A-Za-z0-9_-]+\.js)"', html)
+    if not match:
+        # Older or differently-built bundles may not match — accept silently
+        return True, None
+    bundle_path = match.group(1)
+    try:
+        bundle_resp = httpx.get(url.rstrip("/") + bundle_path, timeout=10.0)
+    except (httpx.ConnectError, httpx.TimeoutException, httpx.ReadError) as exc:
+        return False, f"bundle fetch failed: {exc}"
+    if bundle_resp.status_code != 200 or len(bundle_resp.content) < 1024:
+        return False, f"bundle suspiciously small ({len(bundle_resp.content)} bytes)"
+    return True, None
 
 
 # ── Docker / Compose helpers ────────────────────────────────────────────────
@@ -790,6 +824,115 @@ def _ollama_models() -> list[str]:
     return []
 
 
+def _ollama_bind_is_localhost_only() -> bool | None:
+    """Detect whether Ollama is bound only to 127.0.0.1 on macOS.
+
+    When bound to 127.0.0.1, Docker/Podman containers cannot reach it via
+    host.docker.internal:11434 — the API container will fall back to cloud
+    providers or fail. Returns:
+      True  → bound only to 127.0.0.1 (needs rebind to 0.0.0.0)
+      False → bound to 0.0.0.0 / *  (good)
+      None  → could not determine (lsof unavailable, not macOS, etc.)
+    """
+    if platform.system() != "Darwin":
+        return None
+    if not shutil.which("lsof"):
+        return None
+    try:
+        r = subprocess.run(
+            ["lsof", "-nP", "-iTCP:11434", "-sTCP:LISTEN"],
+            capture_output=True,
+            text=True,
+            timeout=5,
+        )
+    except (subprocess.SubprocessError, OSError):
+        return None
+    if r.returncode != 0 or not r.stdout.strip():
+        return None
+    # lsof output column for the address looks like "127.0.0.1:11434" or
+    # "*:11434" or "[::1]:11434". We want True only if EVERY listening
+    # address is 127.0.0.1 / [::1] (loopback-only).
+    listening_addrs: list[str] = []
+    for line in r.stdout.splitlines()[1:]:  # skip header
+        parts = line.split()
+        if len(parts) < 9:
+            continue
+        # Address is the 9th column ("NAME"); may include "->" for ESTABLISHED
+        addr = parts[8]
+        if "->" in addr:
+            continue
+        listening_addrs.append(addr)
+    if not listening_addrs:
+        return None
+    loopback_prefixes = ("127.", "[::1]:", "localhost:")
+    return all(a.startswith(loopback_prefixes) for a in listening_addrs)
+
+
+def _rebind_ollama_all_interfaces() -> bool:
+    """Rebind macOS Ollama daemon to 0.0.0.0:11434 so containers can reach it.
+
+    Sets the launchd-wide OLLAMA_HOST env var, then restarts whichever Ollama
+    process is currently running (Ollama.app or `ollama serve`). Returns True
+    if the daemon comes back up bound to a non-loopback interface.
+    """
+    if platform.system() != "Darwin":
+        return False
+    # Set the env var for any future launchd-launched processes (Ollama.app)
+    subprocess.run(
+        ["launchctl", "setenv", "OLLAMA_HOST", "0.0.0.0:11434"],
+        capture_output=True,
+    )
+    # Try to restart the Ollama service. Approach in priority order:
+    #  1. brew services restart ollama  (if installed via brew)
+    #  2. quit Ollama.app via osascript + relaunch
+    #  3. pkill ollama + spawn `ollama serve` with OLLAMA_HOST set
+    restarted = False
+    if shutil.which("brew"):
+        r = subprocess.run(
+            ["brew", "services", "restart", "ollama"], capture_output=True
+        )
+        restarted = r.returncode == 0
+    if not restarted:
+        # Quit Ollama.app gracefully if running
+        subprocess.run(
+            ["osascript", "-e", 'tell application "Ollama" to quit'],
+            capture_output=True,
+        )
+        # Hard-kill the daemon if still around
+        subprocess.run(["pkill", "-f", "ollama"], capture_output=True)
+        time.sleep(2)
+        # Relaunch the app if available, else fall back to `ollama serve`
+        if os.path.isdir("/Applications/Ollama.app"):
+            subprocess.run(
+                ["open", "-a", "Ollama"], capture_output=True
+            )
+        elif shutil.which("ollama"):
+            env = os.environ.copy()
+            env["OLLAMA_HOST"] = "0.0.0.0:11434"
+            try:
+                subprocess.Popen(
+                    ["ollama", "serve"],
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                    start_new_session=True,
+                    env=env,
+                )
+            except Exception:
+                return False
+        restarted = True
+    # Wait for the daemon to come back up, then verify the bind
+    for _ in range(15):
+        time.sleep(1)
+        if _ollama_running():
+            bind_localhost = _ollama_bind_is_localhost_only()
+            if bind_localhost is False:
+                return True
+            if bind_localhost is None:
+                # Couldn't verify — assume rebind worked since daemon is up
+                return True
+    return False
+
+
 def _ollama_install_command() -> tuple[list[str], str] | None:
     """Return (cmd_parts, human_description) or None if no auto-install path."""
     system = platform.system()
@@ -916,6 +1059,45 @@ def _ensure_ollama(skip: bool, default_model: str) -> bool:
             )
             return False
     _ok(f"Ollama running at [cyan]http://localhost:11434[/cyan]")
+
+    # ── Verify bind is reachable from Docker containers ──
+    # On macOS, Ollama.app defaults to 127.0.0.1 only. Containers reach the
+    # host via host.docker.internal, which routes to a non-loopback IP — so a
+    # 127.0.0.1-only bind is invisible to the API container. Detect and
+    # offer to rebind to 0.0.0.0:11434 in one click.
+    bind_localhost = _ollama_bind_is_localhost_only()
+    if bind_localhost is True:
+        console.print()
+        _warn(
+            "Ollama is listening on [cyan]127.0.0.1[/cyan] only — Docker "
+            "containers cannot reach it via [cyan]host.docker.internal[/cyan]."
+        )
+        ans = (
+            console.input(
+                "  [bold]Rebind Ollama to 0.0.0.0:11434 so containers can "
+                "reach it?[/bold] [dim](runs: [cyan]launchctl setenv "
+                "OLLAMA_HOST 0.0.0.0:11434[/cyan] + restarts Ollama)[/dim] "
+                "[Y/n]: "
+            )
+            .strip()
+            .lower()
+        )
+        if ans not in ("n", "no", "skip"):
+            console.print("  [dim]Rebinding Ollama daemon...[/dim]")
+            if _rebind_ollama_all_interfaces():
+                _ok("Ollama rebound to 0.0.0.0:11434 — reachable from containers")
+            else:
+                _warn(
+                    "Could not auto-rebind. Run manually:\n"
+                    "    [cyan]launchctl setenv OLLAMA_HOST 0.0.0.0:11434[/cyan]\n"
+                    "    [cyan]osascript -e 'tell application \"Ollama\" to "
+                    "quit'[/cyan] && [cyan]open -a Ollama[/cyan]"
+                )
+        else:
+            _info(
+                "Skipping rebind — local Ollama models will be unreachable "
+                "from API container; agents will use cloud providers."
+            )
 
     # ── Pull a model ──
     models = _ollama_models()
@@ -1793,10 +1975,38 @@ def quickstart(
             )
             cannot_connect = "cannot connect to the docker daemon" in blob_l
 
-            # Auto-recovery: if podman is running and a Rancher (or any other)
+            # Auto-recovery #1: stale DOCKER_HOST. If the user's shell exports
+            # DOCKER_HOST=unix:///path/that/no/longer/exists (e.g. a removed
+            # Rancher socket), every docker-compose call obeys it and fails.
+            # Strip it from the subprocess env (NOT the user's shell) and retry.
+            stale_docker_host = os.environ.get("DOCKER_HOST", "")
+            if (
+                cannot_connect
+                and stale_docker_host.startswith("unix://")
+                and not Path(stale_docker_host[len("unix://"):]).exists()
+            ):
+                compose_env["DOCKER_HOST"] = ""  # subprocess sees empty → uses default
+                _info(
+                    f"Ignoring stale DOCKER_HOST → {stale_docker_host} "
+                    "(socket does not exist)"
+                )
+                ok, blob = _compose_preflight(compose_cmd, env=compose_env)
+                if ok:
+                    _ok("Compose now reaching the default engine socket")
+                else:
+                    blob_l = blob.lower()
+                    rancher_hijack = (
+                        ".rd/docker.sock" in blob_l
+                        or "/users/" in blob_l
+                        and ".rd/" in blob_l
+                        and "docker-compose" in blob_l
+                    )
+                    cannot_connect = "cannot connect to the docker daemon" in blob_l
+
+            # Auto-recovery #2: if podman is running and a Rancher (or any other)
             # docker-compose shim is hijacking the call, redirect it at podman's
             # socket via DOCKER_HOST and retry the pre-flight.
-            if (rancher_hijack or cannot_connect) and binary == "podman":
+            if not ok and (rancher_hijack or cannot_connect) and binary == "podman":
                 sock = _podman_socket()
                 if sock and "DOCKER_HOST" not in compose_env:
                     compose_env["DOCKER_HOST"] = f"unix://{sock}"
@@ -1974,6 +2184,59 @@ def quickstart(
                 progress.console.print(f"  [yellow]⚠[/yellow] {svc_name} not ready — continuing")
             else:
                 progress.console.print(f"  [dim]○[/dim] {svc_name} still starting")
+
+    # ── Dashboard content smoke check ────────────────────────────────────────
+    # The dashboard HTTP can respond 200 even when the published image ships a
+    # broken Vite bundle (e.g. mismatched react/react-dom versions cause a
+    # runtime crash → blank page). Validate the bundle and offer to rebuild
+    # from source if anything is off and we have a build context available.
+    if services_ok.get("dashboard"):
+        smoke_ok, smoke_err = _dashboard_smoke_check(DASHBOARD_URL)
+        if not smoke_ok:
+            _warn(f"Dashboard smoke check failed — {smoke_err}")
+            # If we're running from a source checkout (build context exists),
+            # offer to rebuild the dashboard image locally.
+            dashboard_src = REPO_ROOT / "dashboard" / "package.json"
+            if dashboard_src.exists():
+                ans = (
+                    console.input(
+                        "  [bold]Rebuild dashboard from source now?[/bold] "
+                        "[dim](runs: compose up -d --build dashboard)[/dim] "
+                        "[Y/n]: "
+                    )
+                    .strip()
+                    .lower()
+                )
+                if ans not in ("n", "no", "skip"):
+                    console.print(
+                        "  [dim]Rebuilding dashboard image (~30s)...[/dim]"
+                    )
+                    rebuild = _compose_run(
+                        compose_cmd,
+                        ["up", "-d", "--build", "dashboard"],
+                        env=compose_env,
+                        capture=True,
+                    )
+                    if rebuild.returncode == 0 and _wait_http(
+                        DASHBOARD_URL, timeout=60
+                    ):
+                        retry_ok, retry_err = _dashboard_smoke_check(DASHBOARD_URL)
+                        if retry_ok:
+                            _ok("Dashboard rebuilt — bundle now valid")
+                        else:
+                            _warn(
+                                f"Dashboard still failing after rebuild: {retry_err}"
+                            )
+                    else:
+                        _warn("Dashboard rebuild failed — check compose logs")
+            else:
+                _info(
+                    "If the dashboard appears blank, pull a fresh image:\n"
+                    f"    [cyan]{compose_cmd} -f deploy/docker-compose.quickstart.yml "
+                    "pull dashboard && "
+                    f"{compose_cmd} -f deploy/docker-compose.quickstart.yml "
+                    "up -d dashboard[/cyan]"
+                )
 
     # ── Step 6: Seed data ────────────────────────────────────────────────────
     _step("Seeding Sample Data", 6, total_steps)
