@@ -114,12 +114,33 @@ def _chroma_client():
     return chromadb.HttpClient(host="localhost", port=8001)
 
 
-def _chroma_is_up() -> bool:
+# Sentinel string used by callers to detect "package not installed" so they can
+# print a precise install hint instead of the generic "not reachable" message.
+CHROMADB_NOT_INSTALLED = "chromadb-package-not-installed"
+
+
+def _chroma_status() -> tuple[bool, str | None]:
+    """Return (ok, error_code).
+
+    error_code is one of:
+      None                       — chromadb client is installed AND server is reachable
+      CHROMADB_NOT_INSTALLED     — chromadb python package is not installed
+      "unreachable: <details>"   — package installed, but server cannot be reached
+    """
+    try:
+        import chromadb  # noqa: F401
+    except ImportError:
+        return False, CHROMADB_NOT_INSTALLED
     try:
         _chroma_client().heartbeat()
-        return True
-    except Exception:
-        return False
+        return True, None
+    except Exception as exc:
+        return False, f"unreachable: {exc}"
+
+
+def _chroma_is_up() -> bool:
+    ok, _ = _chroma_status()
+    return ok
 
 
 def _load_docs_from_dir(docs_dir: Path) -> list[dict]:
@@ -212,8 +233,18 @@ def seed_chromadb(
     embedding_model: str = "default",
 ) -> dict:
     """Seed ChromaDB with documents from docs_dir. Returns a status dict."""
-    if not _chroma_is_up():
-        return {"ok": False, "error": f"ChromaDB not reachable at {CHROMADB_BASE}"}
+    ok, err = _chroma_status()
+    if not ok:
+        if err == CHROMADB_NOT_INSTALLED:
+            return {
+                "ok": False,
+                "error": (
+                    "chromadb python client not installed. "
+                    "Install with: pip install 'agentbreeder[rag]'"
+                ),
+                "code": CHROMADB_NOT_INSTALLED,
+            }
+        return {"ok": False, "error": f"ChromaDB not reachable at {CHROMADB_BASE} ({err})"}
 
     source_dir = docs_dir or DOCS_DIR
 
@@ -256,8 +287,18 @@ def seed_chromadb(
 
 def list_chromadb() -> dict:
     """Return info about seeded collections."""
-    if not _chroma_is_up():
-        return {"ok": False, "error": f"ChromaDB not reachable at {CHROMADB_BASE}"}
+    ok, err = _chroma_status()
+    if not ok:
+        if err == CHROMADB_NOT_INSTALLED:
+            return {
+                "ok": False,
+                "error": (
+                    "chromadb python client not installed. "
+                    "Install with: pip install 'agentbreeder[rag]'"
+                ),
+                "code": CHROMADB_NOT_INSTALLED,
+            }
+        return {"ok": False, "error": f"ChromaDB not reachable at {CHROMADB_BASE} ({err})"}
     try:
         client = _chroma_client()
         collections = client.list_collections()

@@ -468,13 +468,16 @@ def _load_seed_module():
         return None
 
 
-def _seed_chromadb() -> bool:
-    """Seed ChromaDB via deploy/seed/seed.py. Returns True on success."""
+def _seed_chromadb() -> dict:
+    """Seed ChromaDB via deploy/seed/seed.py.
+
+    Returns the full status dict from seed.seed_chromadb() so callers can
+    distinguish "not installed" from "not reachable" and print precise hints.
+    """
     mod = _load_seed_module()
     if mod is None:
-        return False
-    result = mod.seed_chromadb()
-    return result.get("ok", False)
+        return {"ok": False, "error": "could not load deploy/seed/seed.py"}
+    return mod.seed_chromadb()
 
 
 def _seed_neo4j() -> bool:
@@ -1981,11 +1984,20 @@ def quickstart(
         # ChromaDB
         console.print("  [dim]Seeding ChromaDB knowledge base...[/dim]")
         if services_ok.get("chromadb"):
-            chroma_ok = _seed_chromadb()
-            if chroma_ok:
+            chroma_result = _seed_chromadb()
+            if chroma_result.get("ok"):
                 _ok("ChromaDB seeded from deploy/seed/docs/ (collection: agentbreeder_knowledge)")
+            elif chroma_result.get("code") == "chromadb-package-not-installed":
+                _warn(
+                    "ChromaDB seed skipped — chromadb python client not installed.\n"
+                    "    Install it with: [bold cyan]pip install 'agentbreeder[rag]'[/bold cyan]\n"
+                    "    Then re-run: [bold cyan]agentbreeder seed --chromadb[/bold cyan]"
+                )
             else:
-                _warn("ChromaDB seed failed — RAG agent may not have knowledge base data")
+                _warn(
+                    f"ChromaDB seed failed — {chroma_result.get('error', 'unknown error')}\n"
+                    "    RAG agent may not have knowledge base data."
+                )
         else:
             _warn("ChromaDB not ready — skipping vector seed")
 
