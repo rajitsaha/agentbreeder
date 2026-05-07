@@ -432,7 +432,9 @@ class TestSeedChromadbNeo4j:
         from cli.commands.quickstart import _seed_chromadb
 
         with patch("cli.commands.quickstart._load_seed_module", return_value=None):
-            assert _seed_chromadb() is False
+            result = _seed_chromadb()
+        assert result["ok"] is False
+        assert "error" in result
 
     def test_seed_chromadb_ok(self):
         from cli.commands.quickstart import _seed_chromadb
@@ -440,7 +442,8 @@ class TestSeedChromadbNeo4j:
         mock_mod = Mock()
         mock_mod.seed_chromadb.return_value = {"ok": True}
         with patch("cli.commands.quickstart._load_seed_module", return_value=mock_mod):
-            assert _seed_chromadb() is True
+            result = _seed_chromadb()
+        assert result["ok"] is True
 
     def test_seed_chromadb_not_ok(self):
         from cli.commands.quickstart import _seed_chromadb
@@ -448,7 +451,8 @@ class TestSeedChromadbNeo4j:
         mock_mod = Mock()
         mock_mod.seed_chromadb.return_value = {"ok": False}
         with patch("cli.commands.quickstart._load_seed_module", return_value=mock_mod):
-            assert _seed_chromadb() is False
+            result = _seed_chromadb()
+        assert result["ok"] is False
 
     def test_seed_neo4j_module_none(self):
         from cli.commands.quickstart import _seed_neo4j

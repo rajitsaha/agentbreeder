@@ -124,6 +124,9 @@ services:
 
   api:
     image: rajits/agentbreeder-api:latest
+    build:
+      context: ..
+      dockerfile: Dockerfile
     ports:
       - "8000:8000"
     environment:
@@ -165,6 +168,9 @@ services:
 
   dashboard:
     image: rajits/agentbreeder-dashboard:latest
+    build:
+      context: ../dashboard
+      dockerfile: Dockerfile
     ports:
       - "3001:3001"
     environment:

@@ -78,9 +78,10 @@ def _print_pyenv_warning() -> None:
 # after `pip install`. Suppressed on subsequent runs via a marker file.
 # Re-show any time with `agentbreeder welcome`.
 
-_WELCOME_MARKER = Path(
-    os.environ.get("AGENTBREEDER_HOME") or (Path.home() / ".config" / "agentbreeder")
-) / ".welcomed"
+_WELCOME_MARKER = (
+    Path(os.environ.get("AGENTBREEDER_HOME") or (Path.home() / ".config" / "agentbreeder"))
+    / ".welcomed"
+)
 
 
 def _print_welcome() -> None:
